@@ -82,6 +82,8 @@ Release che contano.
 | TanStack Query | Solo per Dashboard e Seguire (aggiornamenti ottimistici). Le pagine pubbliche sono Server Components. | — |
 | Zustand | Non installato finché non serve uno stato client globale che l'URL non può rappresentare. | 0006 |
 | RLS | Catalogo, Release e Sintesi in sola lettura per `anon`; scrive solo il server con la service role. Tecnologie seguite: `user_id = auth.uid()`. | — |
+| shadcn/ui | Solo primitivi accessibili (Dialog, Tooltip, menu), copiati nel progetto e sempre ristilizzati sui token di `DESIGN.md`. Mai l'aspetto di default: niente card, badge, ombre o raggi standard. I componenti del sistema (Follow Toggle, righe, note, verdetti) sono su misura. | — |
+| Strumenti | pnpm; Vitest per i test unitari e di integrazione, Playwright per gli end-to-end; CI su GitHub Actions; migrazioni con Supabase CLI e Postgres locale; ultime versioni stabili al setup, fissate nel lockfile. | — |
 | Qualità | Niente `any` né cast non validati; file sotto ~200 righe; commenti solo per decisioni non ovvie; WCAG (contrasto, `aria-*`, focus visibile, tastiera); dark mode di default. | — |
 
 ## Operatività Anthropic
