@@ -43,7 +43,7 @@ Release che contano.
 | Output strutturato | Titolo (≤ 120 caratteri), 3–5 punti chiave, breaking changes (cosa cambia + come migrare), **Intervento richiesto** (sì/no), modello e versione del prompt. Validato con Zod; se non valido → `failed`. | — |
 | Nessuna invenzione | Breaking changes e Intervento richiesto si basano solo sulle Note. | — |
 | Note lunghe | Mai troncate in silenzio: oltre la soglia di sicurezza → `failed` con il motivo. | 0007 |
-| Credito API esaurito | Non è un fallimento: le Release restano `pending` senza consumare tentativi, e l'amministratore viene avvisato. | 0007 |
+| Credito API esaurito | Non è un fallimento: le Release restano `pending` senza consumare tentativi, e l'amministratore viene avvisato con una issue GitHub aperta dal job (una sola aperta alla volta, niente duplicati). | 0007 |
 
 ## Esperienza utente
 
@@ -120,4 +120,6 @@ scraping dei blog.
 ## Aperto
 
 - Nome del progetto.
-- **Design**: da definire prima di PRD e issue.
+
+Il design dell'MVP è chiuso: fanno fede `DESIGN.md` e i mock approvati in `design/mocks/`. PRD
+pubblicato come issue [#1](https://github.com/RobertoZeppilli/release-tracker/issues/1).
