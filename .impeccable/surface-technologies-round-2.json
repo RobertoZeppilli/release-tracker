@@ -1,0 +1,221 @@
+{
+  "title": "Choose the Technologies structure",
+  "question": "Consiglio: Stack manifest. Risponde nell ordine giusto a \"cosa seguo?\" e poi \"cosa potrei seguire?\", riusa le righe del picker della Dashboard senza cambiarle, e la nota 10 of 10 sta proprio sopra i Follow che disabilita. Follow prompt e veloce da tastiera ma toglie le descrizioni; Slot register mette il limite al centro della pagina e perde senso con Pro. Scegline una (o usa steer).",
+  "options": [
+    {
+      "id": "follow-prompt",
+      "label": "Follow prompt",
+      "kicker": "THE ROLL",
+      "thesis": "The page is a prompt: a large Mono filter line `follow ▌` at the top narrows the Catalog as you type, arrow keys move through matches and Enter toggles Follow; below it, the whole Catalog is an `ls`-style multi-column grid of names with their latest version, followed ones marked.",
+      "palette": [
+        "#0f1115",
+        "#e7e9ec",
+        "#9aa3ad",
+        "#6cc4d8",
+        "#262b33"
+      ],
+      "materials": [
+        "Mono filter prompt with live match count",
+        "ls-style grid of name + latest version",
+        "Follow Toggle per cell",
+        "`note:` line for no match and for 10 of 10"
+      ],
+      "viewport": "Header `technologies` with `7 of 10 followed`; prompt `follow re▌` with `3 matches`; grid of 40 cells in 3 columns, React, Redux and Remix highlighted, followed cells show a check and `Following`.",
+      "risk": "Grid cells have no room for the one-line description, so choosing an unfamiliar Technology needs a hover or its Technology page; a new keyboard model to learn on a page visited rarely.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          {
+            "label": "top bar · 7 of 10 followed",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "follow re▌ · 3 matches",
+            "x": 0,
+            "y": 1,
+            "w": 12,
+            "h": 2,
+            "accent": true
+          },
+          {
+            "label": "react 19.0.0 ✓",
+            "x": 0,
+            "y": 3,
+            "w": 4,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "redux 5.0.1",
+            "x": 4,
+            "y": 3,
+            "w": 4,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "remix 2.15.0",
+            "x": 8,
+            "y": 3,
+            "w": 4,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "catalog grid · 40 names in 3 columns",
+            "x": 0,
+            "y": 4,
+            "w": 12,
+            "h": 5
+          },
+          {
+            "label": "retired (1) · followed only",
+            "x": 0,
+            "y": 9,
+            "w": 12,
+            "h": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "stack-manifest",
+      "label": "Stack manifest",
+      "thesis": "Like a package manifest: `following (7)` comes first as your stack, one picker row per followed Technology with its Following toggle; then `catalog (33)`, a filterable list of the rest in the same rows; `retired (1)` closes the page when present. The quota and the 10-of-10 note sit on the catalog title, where the next Follow happens.",
+      "palette": [
+        "#0f1115",
+        "#e7e9ec",
+        "#9aa3ad",
+        "#7b848f",
+        "#6cc4d8"
+      ],
+      "materials": [
+        "section titles with counts",
+        "Dashboard picker rows: name, faint facts, Follow Toggle",
+        "filter input on the catalog title",
+        "`note:` lines for limit, no match and retired"
+      ],
+      "viewport": "Status line `you follow 7 of 10 technologies`; `following (7)` with React, Vite, TypeScript… each `Following`; `catalog (33)` title with the filter input starting just above the fold.",
+      "risk": "Following a Technology moves its row between sections, which can surprise; the toggle must stay in place until the next visit or filter change.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          {
+            "label": "top bar · 7 of 10 followed",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "you follow 7 of 10 technologies",
+            "x": 0,
+            "y": 1,
+            "w": 12,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "following (7): name · facts · Following",
+            "x": 0,
+            "y": 2,
+            "w": 12,
+            "h": 3,
+            "accent": true
+          },
+          {
+            "label": "catalog (33) · filter",
+            "x": 0,
+            "y": 5,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "catalog rows: name · latest · description · Follow",
+            "x": 0,
+            "y": 6,
+            "w": 12,
+            "h": 3
+          },
+          {
+            "label": "retired (1)",
+            "x": 0,
+            "y": 9,
+            "w": 12,
+            "h": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "slot-register",
+      "label": "Slot register",
+      "thesis": "The Free limit made physical: ten numbered slots in a Mono register at the top, `[1] react  [2] vite … [8] —  [9] —  [10] —`, each filled slot unfollowable in place; below, the Catalog list whose Follow fills the next empty slot. At ten filled slots the register reads `note: all 10 slots used`.",
+      "palette": [
+        "#0f1115",
+        "#e7e9ec",
+        "#7b848f",
+        "#353b45",
+        "#6cc4d8"
+      ],
+      "materials": [
+        "10-slot Mono register in two rows of five",
+        "empty slot as faint `—`",
+        "Catalog picker rows with Follow Toggle",
+        "filter input above the Catalog"
+      ],
+      "viewport": "Register with 7 filled slots and 3 faint empty ones; `catalog (40)` with filter, rows for Angular, Astro, Bun… followed rows show `Following`.",
+      "risk": "Puts the limit at the centre of the page; when Pro removes the limit the register has no meaning, and a retired Technology occupying a slot needs its own mark inside the register.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          {
+            "label": "top bar",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "[1] react [2] vite [3] typescript [4] node [5] next",
+            "x": 0,
+            "y": 1,
+            "w": 12,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "[6] tailwind [7] zod [8] — [9] — [10] —",
+            "x": 0,
+            "y": 2,
+            "w": 12,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "catalog (40) · filter",
+            "x": 0,
+            "y": 3,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "catalog rows: name · latest · description · Follow",
+            "x": 0,
+            "y": 4,
+            "w": 12,
+            "h": 6
+          }
+        ]
+      }
+    }
+  ],
+  "reroll": true,
+  "steer": true
+}

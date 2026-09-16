@@ -1,0 +1,72 @@
+{
+  "title": "Choose the Dashboard structure",
+  "question": "All three keep the Compiler Diagnostic world, the page verdict on top, the 30-day window with dates and the inline Catalog empty state. Recommendation: Stack status. The Spotlight rule is already per Technology (a featured release, or the latest major in compact form), so one row per followed Technology answers 'did anything I use change, and must I act?' in one scan, with Latest, Previews and Weekly Digest below as quieter lists. Triage rail splits attention across two columns and collapses on mobile; Check run is the most consistent with the Release page but mixes Technologies in one long list. Lock one, or steer.",
+  "options": [
+    {
+      "id": "triage-rail",
+      "label": "Triage rail",
+      "kicker": "THE ROLL",
+      "thesis": "Two lanes: the main column holds what can need action (Spotlight, then Latest), a narrow right rail holds what never does (Previews, Weekly Digest by ISO week).",
+      "palette": ["#0f1115", "#e7e9ec", "#f2c14e", "#7bd88f", "#6cc4d8"],
+      "materials": ["page verdict line", "release rows with row verdict", "rail of ISO-week digest groups", "significance glyph column"],
+      "viewport": "Verdict 'warning: 2 need action' with '7 technologies · 12 releases in 30 days'; left: Spotlight rows with action releases first and breaking titles open; right rail: Previews list and 'week 37' digest group.",
+      "risk": "On mobile the rail drops below the main column, and on desktop two columns compete for the eye in a 2-minute check.",
+      "wireframe": {
+        "cols": 12, "rows": 10,
+        "regions": [
+          {"label": "top bar · 7 of 10 followed", "x": 0, "y": 0, "w": 12, "h": 1},
+          {"label": "verdict: 2 need action · counts", "x": 0, "y": 1, "w": 12, "h": 1, "accent": true},
+          {"label": "spotlight: action rows first", "x": 0, "y": 2, "w": 8, "h": 4, "accent": true},
+          {"label": "latest: notable rows", "x": 0, "y": 6, "w": 8, "h": 4},
+          {"label": "previews", "x": 8, "y": 2, "w": 4, "h": 3},
+          {"label": "weekly digest · w37 · w36", "x": 8, "y": 5, "w": 4, "h": 5}
+        ]
+      }
+    },
+    {
+      "id": "check-run",
+      "label": "Check run",
+      "thesis": "The dashboard reads like a check over your whole stack: one verdict, then four sections in one column, each a list of diagnostic release rows newest first, ending in a tally.",
+      "palette": ["#0f1115", "#e7e9ec", "#f2c14e", "#ff7b6b", "#9aa3ad"],
+      "materials": ["page verdict line", "section titles with counts", "release rows across technologies", "closing tally"],
+      "viewport": "Verdict and count row; 'spotlight (3)' with Vite 6.0.0 action row and its breaking titles, TypeScript 5.7 safe row; 'latest (6)' starts at the fold.",
+      "risk": "Technologies are mixed inside each section, so 'what happened to React?' needs reading every row.",
+      "wireframe": {
+        "cols": 12, "rows": 10,
+        "regions": [
+          {"label": "top bar · 7 of 10 followed", "x": 0, "y": 0, "w": 12, "h": 1},
+          {"label": "verdict: 2 need action · counts", "x": 0, "y": 1, "w": 12, "h": 1, "accent": true},
+          {"label": "spotlight (3): release rows", "x": 0, "y": 2, "w": 12, "h": 3, "accent": true},
+          {"label": "latest (6): release rows", "x": 0, "y": 5, "w": 12, "h": 2},
+          {"label": "previews (2)", "x": 0, "y": 7, "w": 12, "h": 1},
+          {"label": "weekly digest: folded weeks", "x": 0, "y": 8, "w": 12, "h": 1},
+          {"label": "tally", "x": 0, "y": 9, "w": 12, "h": 1}
+        ]
+      }
+    },
+    {
+      "id": "stack-status",
+      "label": "Stack status",
+      "thesis": "Like git status for your stack: Spotlight is one row per followed Technology (its featured release, or its latest major in compact form), so every Technology is accounted for once; Latest, Previews and Weekly Digest follow as quieter lists.",
+      "palette": ["#0f1115", "#e7e9ec", "#f2c14e", "#7bd88f", "#7b848f"],
+      "materials": ["page verdict line", "technology column in spotlight", "compact 'latest major' rows", "folded ISO-week digest rows"],
+      "viewport": "Verdict and count row; Spotlight table: Vite 6.0.0 warning with breaking titles, TypeScript 5.7 ok, React 19.0.0 compact 'latest major · 9 months ago', four more one-line rows; Latest starts below the fold.",
+      "risk": "Seven or more followed Technologies make Spotlight tall, so compact rows must stay truly one line.",
+      "wireframe": {
+        "cols": 12, "rows": 10,
+        "regions": [
+          {"label": "top bar · 7 of 10 followed", "x": 0, "y": 0, "w": 12, "h": 1},
+          {"label": "verdict: 2 need action · counts", "x": 0, "y": 1, "w": 12, "h": 1, "accent": true},
+          {"label": "vite 6.0.0 · warning · breaking titles", "x": 0, "y": 2, "w": 12, "h": 2, "accent": true},
+          {"label": "typescript 5.7 · ok", "x": 0, "y": 4, "w": 12, "h": 1},
+          {"label": "react · latest major 19 (compact) + 4 rows", "x": 0, "y": 5, "w": 12, "h": 2},
+          {"label": "latest", "x": 0, "y": 7, "w": 12, "h": 1},
+          {"label": "previews", "x": 0, "y": 8, "w": 12, "h": 1},
+          {"label": "weekly digest: w37 folded", "x": 0, "y": 9, "w": 12, "h": 1}
+        ]
+      }
+    }
+  ],
+  "reroll": true,
+  "steer": true
+}

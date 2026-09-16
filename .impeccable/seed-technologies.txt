@@ -1,0 +1,45 @@
+﻿SURFACE CONCEPT SEED (key: f97be3fe; mode: operate; source: api; approved pool: c3b204a1eed6; 306/564 human-approved; rerun with --scope surface --mode operate --from f97be3fe --candidate-count 7 to reproduce this roll against this catalog revision)
+DEALT INDICES: 5, 2, 6 (index 5 leads)
+  After ordering the task's grounded structural candidates by resonance,
+  deal candidates 5, 2, 6 of your own grounded list to the
+  table; index 5 leads, and the deal never points at a challenger.
+  The deal is the roll, not a suggestion: the dice decide which structures
+  reach the user, so the ranking rut stays broken while the user still gets a
+  real choice, and the full ranked list stays yours. In an attended run,
+  present the three dealt structures as full cards of equal salience, the
+  lead carrying kicker THE ROLL, with steer and re-roll, and let the user
+  lock one in; the world is already settled, so this choice is composition.
+  Visualize every dealt card: with image generation available and a
+  comp-led default (.impeccable/config.json buildPath; the page toggle
+  handles the exception), declare a comp per card and generate after
+  serving, lead first; otherwise author each card's wireframe field (see
+  serve-question --schema) and the page draws the schematic. Carry the
+  recorded default in the payload as buildPath with toggle: true. Locking a card
+  approves its comp: a surface round that put three visualized structures on
+  the table replaces the three-option comp round in visualize.md. Re-roll
+  yourself only when every dealt structure fails audience identification or
+  product clarity on named factual grounds.
+  The assignment exists to refuse the model's ranking rut, never to outrank
+  the user or the brief. Never expose assignment metadata in user-facing labels.
+CHALLENGERS:
+  1. an early-80s rhythm machine step row, sixteen candy-colored step keys under a running chase light, pattern banks behind them and a tempo readout above, accents lighting deeper as the loop swings around again
+     SOURCE ID: signals-instruments-drum-machine-step-row
+     CREATIVE SPARK: you punch four steps into the red quarter of the row and hit run, the chase light comes around, and the empty machine suddenly has a pulse you made, so you lean in and accent the offbeat
+     SYSTEM GRAMMAR:
+       - Palette/material: charcoal panel ground, the step row quartered in red, orange, yellow, and white keys, lit LEDs as the only glow, silkscreen white labels for everything else
+       - Type/composition: instrument names as small silkscreen caps above their rows, the tempo in a red segmented readout, the sixteen-step row as the page's one unbroken line
+       - Topology/navigation: patterns are pages and banks are chapters; the step row is a timeline you write into place, and the chase light always tells you where now is
+       - Controls/state: tapping a step arms it and lights it, a second tap accents it brighter, the chase light sweeps in tempo, and an empty pattern is sixteen dark keys of invitation
+       - Responsive/motion: the sixteen-step row never wraps, it scales; motion is the chase light and a key's press flash, both locked to the clock
+     WEB LEVERAGE: web audio clocks the chase light and playback while each step key stays a toggle button operable by keyboard
+     QUALITY BAR: board https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row.webp · hero https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row-hero.webp
+  2. a live scene rendered as typewriter characters, where density of glyphs stands in for light and an at-sign can be a face if it moves correctly
+     SOURCE ID: medium-native-ascii-live-scene-render
+     CREATIVE SPARK: A rotating skull made entirely of dollar signs and periods; you squint and it is sculpture, you focus and it is text, and it is both at every distance.
+     SYSTEM GRAMMAR:
+       - Palette/material: single-ink phosphor, green or amber on black; tone is glyph density from period to at-sign, and the densest glyph is the highlight
+       - Type/composition: one strict monospace grid as the entire composition, the luminance ramp serving as the typographic scale, captions living inside the same grid
+       - Topology/navigation: the world is a fixed character grid; you move the camera, and the alphabet re-renders the view.
+       - Controls/state: the luminance ramp is the palette; swapping ramps changes mood while geometry stays put.
+       - Responsive/motion: cell count adapts to viewport while glyphs stay monospace-true
+     WEB LEVERAGE: Canvas or camera frames sample down to a live glyph grid, so video, 3D, and pointer input all become selectable text.

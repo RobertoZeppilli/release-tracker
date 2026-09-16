@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vite releases and upgrade path</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #353b45;
+  --text: #e7e9ec; --text-muted: #9aa3ad; --text-faint: #7b848f;
+  --breaking: #ff7b6b; --action: #f2c14e; --help: #6cc4d8; --ok: #7bd88f;
+  --focus: #6cc4d8; --selection: rgba(108, 196, 216, 0.28);
+  --mono: "Fragment Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --sans: "Hanken Grotesk", system-ui, sans-serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 72px;
+  --radius: 6px; --measure: 72ch;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #c6c6bf;
+  --text: #16181c; --text-muted: #525a63; --text-faint: #636b74;
+  --breaking: #b42a1f; --action: #8a5a00; --help: #0b6b80; --ok: #1d7a3a;
+  --focus: #0b6b80; --selection: rgba(11, 107, 128, 0.18);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--ground); }
+body { margin: 0; background: var(--ground); color: var(--text); font: 400 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--selection); color: var(--text); }
+a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+* { scrollbar-color: var(--rule-strong) transparent; }
+svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; flex: none; }
+svg.sig { width: 12px; height: 12px; flex: none; }
+
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: var(--space-4); top: var(--space-4); background: var(--raised); padding: var(--space-2) var(--space-3); z-index: 10; }
+
+.topbar { border-bottom: 1px solid var(--rule); }
+.topbar-inner, main { max-width: 1040px; margin: 0 auto; padding: 0 var(--space-5); }
+.topbar-inner { height: 56px; display: flex; align-items: center; gap: var(--space-5); }
+.wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; }
+.path { list-style: none; margin: 0; padding: 0; font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); }
+.path a { text-decoration: none; }
+.path a:hover, .path [aria-current] { color: var(--text); }
+.topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn:hover { background: var(--raised); border-color: var(--text-faint); }
+.btn-icon { width: 34px; padding: 0; justify-content: center; }
+
+main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
+
+/* Technology header */
+.tech-head { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.tech-head h1 { margin: 0; font: 600 22px/1.2 var(--sans); letter-spacing: -0.01em; }
+.tech-facts { display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 13px var(--mono); color: var(--text-muted); }
+.tech-facts strong { color: var(--text); font-weight: 400; }
+.tech-head .follow { margin-left: auto; }
+
+/* Upgrade path form */
+.range-form { margin-top: var(--space-6); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; font: 400 14px var(--mono); color: var(--text-muted); }
+.range-form label { color: var(--text-muted); }
+.range-form input { width: 11ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.range-form input:hover { border-color: var(--text-faint); }
+.range-form input[aria-invalid="true"] { border-color: var(--breaking); }
+.range-form .to { color: var(--text); }
+.field-error a { color: inherit; }
+.field-error { flex-basis: 100%; margin: 0; font: 400 14px var(--mono); color: var(--breaking); display: none; }
+
+/* Range verdict */
+.verdict { margin-top: var(--space-6); }
+.verdict-line { margin: 0; font: 400 clamp(1.9rem, 5.2vw, 3.4rem)/1.08 var(--mono); letter-spacing: -0.035em; text-wrap: balance; }
+.verdict-line > span:first-child { margin-right: 0.4ch; }
+.verdict-line .claim { display: inline-block; }
+.verdict-line .glyph { vertical-align: -0.08em; }
+.verdict-line .glyph { width: 0.8em; height: 0.8em; stroke-width: 1.75; }
+.sev-action { color: var(--action); }
+.sev-ok { color: var(--ok); }
+.sev-breaking { color: var(--breaking); }
+.range-sentence { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); font-size: 16px; }
+.range-sentence strong { color: var(--text); font-weight: 600; }
+
+/* Stat rows */
+.stat { list-style: none; margin: var(--space-5) 0 0; padding: 0; max-width: 820px; border-top: 1px solid var(--rule); }
+.stat li { display: grid; grid-template-columns: 3ch 1ch minmax(120px, 1fr) auto; gap: var(--space-4); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--rule); font: 400 14px var(--mono); }
+.stat .major { color: var(--text); }
+.bar-track { display: block; }
+.bar { display: flex; height: 8px; gap: 2px; min-width: 28px; }
+.bar span { display: block; height: 100%; }
+.bar .b-featured { background: var(--text); }
+.bar .b-notable { background: var(--text-muted); }
+.stat .pipe { color: var(--text-faint); }
+.bar .b-digest { background: var(--rule-strong); }
+.bar .b-preview { background: transparent; box-shadow: inset 0 0 0 1px var(--text-faint); }
+.stat .words { color: var(--text-muted); white-space: nowrap; }
+.stat .words .n-action { color: var(--action); white-space: nowrap; }
+.legend { margin: var(--space-2) 0 0; display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 12px var(--mono); color: var(--text-faint); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 10px; height: 8px; }
+
+/* Major groups */
+.group { margin-top: var(--space-7); }
+.group-title { margin: 0 0 var(--space-3); display: flex; align-items: baseline; gap: var(--space-3); font: 600 13px var(--mono); color: var(--text-muted); letter-spacing: 0.02em; }
+.group-title .major { color: var(--text); font-size: 16px; }
+.group-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
+.releases { list-style: none; margin: 0; padding: 0; }
+.rel { display: grid; grid-template-columns: 11ch 14ch 11ch 1fr; column-gap: var(--space-4); align-items: baseline; padding: var(--space-3) 0; border-bottom: 1px solid var(--rule); }
+.rel-sig { display: inline-flex; align-items: center; gap: 6px; font: 400 13px var(--mono); color: var(--text-muted); }
+.rel-version { font: 400 16px var(--mono); color: var(--text); text-decoration: none; }
+.rel-version:hover { text-decoration: underline; text-decoration-color: currentColor; }
+.rel-date { font: 400 13px var(--mono); color: var(--text-faint); }
+.rel-main { min-width: 0; }
+.rel-title { margin: 0; font: 500 16px/1.45 var(--sans); }
+.rel-verdict { margin: 2px 0 0; font: 400 13px var(--mono); }
+.rel-verdict.none { color: var(--text-muted); }
+.breaks { list-style: none; margin: var(--space-3) 0 0; padding: 0; font: 400 14px/1.6 var(--sans); }
+.breaks li { display: grid; grid-template-columns: auto 1fr; column-gap: var(--space-3); padding: 2px 0; }
+.breaks .code { font: 400 13px/1.75 var(--mono); color: var(--breaking); white-space: nowrap; }
+.read-more { display: inline-flex; gap: 1ch; margin-top: var(--space-3); font: 400 13px var(--mono); color: var(--help); text-decoration: none; }
+.read-more .arrow { color: var(--text-faint); }
+.read-more .label { border-bottom: 1px dashed var(--help); }
+.read-more:hover .label { border-bottom-style: solid; }
+
+.digest { border-bottom: 1px solid var(--rule); }
+.digest summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 11ch 1fr auto; column-gap: var(--space-4); align-items: center; padding: var(--space-2) 0; font: 400 13px var(--mono); color: var(--text-muted); }
+.digest summary::-webkit-details-marker { display: none; }
+.nowrap { white-space: nowrap; }
+.digest summary:hover { color: var(--text); }
+.digest summary .chev { transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); justify-self: end; }
+.digest[open] summary .chev { transform: rotate(90deg); }
+.digest-lines { list-style: none; margin: 0 0 var(--space-3); padding: 0 0 0 calc(11ch + var(--space-4)); display: grid; grid-template-columns: repeat(auto-fill, minmax(22ch, 1fr)); gap: 2px var(--space-4); font: 400 13px var(--mono); }
+.digest-lines a { text-decoration: none; color: var(--text); }
+.digest-lines a:hover { text-decoration: underline; }
+.digest-lines time { color: var(--text-faint); margin-left: 1ch; }
+
+.previews { margin-top: var(--space-7); }
+.previews p { margin: 0; color: var(--text-muted); }
+.previews .rel { border-top: 1px solid var(--rule); }
+
+.foot { margin-top: var(--space-7); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+
+/* States */
+.retired-note { display: none; margin-top: var(--space-5); padding: var(--space-3) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.retired-note p { margin: 0; color: var(--text-muted); }
+.retired-note .label { font: 400 14px var(--mono); color: var(--text-muted); }
+main[data-state="retired"] .retired-note { display: block; }
+main[data-state="retired"] .tech-head .follow { display: none; }
+main[data-state="retired"] .previews { display: none; }
+main[data-state="invalid"] .field-error { display: block; }
+
+.verdict-safe { display: none; }
+
+/* Design-review control, not part of the product */
+.review { position: fixed; right: var(--space-4); bottom: var(--space-4); background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
+.review select { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 3px 4px; }
+
+@media (max-width: 880px) {
+  .rel { grid-template-columns: auto auto 1fr; row-gap: var(--space-1); }
+  .rel-date { justify-self: end; }
+  .stat .words { white-space: normal; }
+  .rel-main { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .topbar-inner, main { padding: 0 var(--space-4); }
+  main { padding-top: var(--space-5); padding-bottom: 120px; }
+  .path { display: none; }
+  .tech-head .follow { margin-left: 0; }
+  .stat li { grid-template-columns: 3ch 1ch 1fr; row-gap: var(--space-1); }
+  .stat .words { grid-column: 1 / -1; white-space: normal; }
+  .rel { grid-template-columns: auto auto 1fr; row-gap: var(--space-1); }
+  .rel-date { justify-self: end; }
+  .rel-main { grid-column: 1 / -1; }
+  .digest summary { grid-template-columns: auto 1fr auto; }
+  .digest summary .range, .digest summary .sep { display: none; }
+  .digest summary .na { display: block; }
+  .digest summary > span { min-width: 0; }
+  .digest-lines { padding-left: 0; }
+  .review { left: var(--space-4); justify-content: space-between; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .digest summary .chev { transition: none; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="g-warning" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="g-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="g-error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
+  <symbol id="g-breaking" viewBox="0 0 24 24"><path d="M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z"/><path d="M12 8v4M12 16h.01"/></symbol>
+  <symbol id="g-note" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="g-pending" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="s-featured" viewBox="0 0 12 12"><path d="M6 1 11 6 6 11 1 6Z" fill="currentColor"/></symbol>
+  <symbol id="s-notable" viewBox="0 0 12 12"><path d="M6 1.7 10.3 6 6 10.3 1.7 6Z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="s-digest" viewBox="0 0 12 12"><circle cx="6" cy="6" r="2" fill="currentColor"/></symbol>
+  <symbol id="s-preview" viewBox="0 0 12 12"><path d="M6 1.7 10.3 6 6 10.3 1.7 6Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 1.6"/></symbol>
+</svg>
+<a class="skip" href="#content">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="#">release-tracker</a>
+    <nav aria-label="Breadcrumb">
+      <ol class="path">
+        <li><a href="#">technologies</a></li><li aria-hidden="true">/</li>
+        <li><span aria-current="page">vite</span></li>
+      </ol>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn btn-icon" type="button" id="theme" aria-label="Switch to light theme">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+      <a class="btn" href="#">Sign in</a>
+    </div>
+  </div>
+</header>
+
+<main id="content" data-state="range">
+  <div class="tech-head">
+    <h1>Vite</h1>
+    <div class="tech-facts">
+      <span>latest <strong>6.0.3</strong></span>
+      <span>npm vite</span>
+      <span>github vitejs/vite</span>
+    </div>
+    <a class="btn follow" href="#">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Follow
+    </a>
+  </div>
+
+  <div class="retired-note" role="note">
+    <p><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> Vite is no longer tracked. Releases up to 6.0.3 stay readable, but new versions are not detected.</p>
+  </div>
+
+  <form class="range-form" action="#" method="get" id="range-form">
+    <label for="from">Upgrade from</label>
+    <input id="from" name="from" value="5.2.0" list="versions" autocomplete="off" spellcheck="false" aria-describedby="from-error">
+    <datalist id="versions"><option value="5.2.0"><option value="5.2.1"><option value="5.2.2"><option value="5.2.3"><option value="5.2.4"><option value="5.2.5"><option value="5.2.6"><option value="5.2.7"><option value="5.2.8"><option value="5.2.9"><option value="5.2.10"><option value="5.2.11"><option value="5.2.12"><option value="5.2.13"><option value="5.2.14"><option value="5.3.0"><option value="5.3.1"><option value="5.3.2"><option value="5.3.3"><option value="5.3.4"><option value="5.3.5"><option value="5.4.0"><option value="5.4.1"><option value="5.4.2"><option value="5.4.3"><option value="5.4.4"><option value="5.4.5"><option value="5.4.6"><option value="5.4.7"><option value="5.4.8"><option value="5.4.9"><option value="5.4.10"><option value="5.4.11"><option value="6.0.0"><option value="6.0.1"><option value="6.0.2"><option value="6.0.3"></datalist>
+    <span>to</span><span class="to">6.0.3</span>
+    <button class="btn" type="submit">Check</button>
+    <p class="field-error" id="from-error"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href="#">5.4.0</a> or <a href="#">5.4.11</a>? The path below is still from 5.2.0.</p>
+  </form>
+
+  <section class="verdict" aria-labelledby="range-verdict">
+    <p class="verdict-line" id="range-verdict"><span class="sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span class="claim">1 needs action</span></p>
+    <p class="range-sentence">Between <strong class="mono">5.2.0</strong> and <strong class="mono">6.0.3</strong> there are <strong><span class="mono">36</span> releases</strong>: <strong><span class="mono">1</span> needs action</strong>, <span class="mono">2</span> are notable (<span class="mono">1</span> safe, <span class="mono">1</span> with no summary: check its notes), and <span class="mono">33</span> are digest fixes you can skip.</p>
+
+    <ul class="stat" aria-label="Releases per major version">
+      <li>
+        <span class="major">v6</span><span class="pipe" aria-hidden="true">|</span>
+        <span class="bar-track" aria-hidden="true"><span class="bar" style="width:12.5%"><span class="b-featured" style="flex:1"></span><span class="b-digest" style="flex:3"></span></span></span>
+        <span class="words">4 releases · 1 featured <span class="n-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: needs action</span> · 3 digest</span>
+      </li>
+      <li>
+        <span class="major">v5</span><span class="pipe" aria-hidden="true">|</span>
+        <span class="bar-track" aria-hidden="true"><span class="bar" style="width:100%"><span class="b-notable" style="flex:2"></span><span class="b-digest" style="flex:30"></span></span></span>
+        <span class="words">32 releases · 2 notable, 1 not summarized · 30 digest</span>
+      </li>
+    </ul>
+    <p class="legend" aria-hidden="true">
+      <span><svg class="sig" style="color:var(--text)"><use href="#s-featured"/></svg><i style="background:var(--text)"></i>featured</span>
+      <span><svg class="sig" style="color:var(--text-muted)"><use href="#s-notable"/></svg><i style="background:var(--text-muted)"></i>notable</span>
+      <span><svg class="sig" style="color:var(--text-faint)"><use href="#s-digest"/></svg><i style="background:var(--rule-strong)"></i>digest</span>
+    </p>
+  </section>
+
+  <section class="group" aria-labelledby="g6">
+    <h2 class="group-title" id="g6"><span class="major">v6</span>4 releases</h2>
+    <ul class="releases">
+      <li class="rel">
+        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg>featured</span>
+        <a class="rel-version" href="release.html">6.0.0</a>
+        <time class="rel-date" datetime="2024-11-26">2024-11-26</time>
+        <div class="rel-main">
+          <p class="rel-title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
+          <p class="rel-verdict sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required · 4 breaking changes</p>
+          <ul class="breaks" aria-label="Breaking changes in 6.0.0">
+            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <span class="mono">resolve.conditions</span> no longer include the defaults</span></li>
+            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><span class="mono">json.stringify</span> now defaults to <span class="mono">'auto'</span></span></li>
+            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></li>
+            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></li>
+          </ul>
+          <a class="read-more" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
+        </div>
+      </li>
+      <li>
+        <details class="digest">
+          <summary>
+            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+            <span><span class="nowrap">3 digest releases</span><span class="range"> · 6.0.1 to 6.0.3</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="digest-lines">
+            <li><a href="#">6.0.1</a><time datetime="2024-11-27">2024-11-27</time></li>
+            <li><a href="#">6.0.2</a><time datetime="2024-12-02">2024-12-02</time></li>
+            <li><a href="#">6.0.3</a><time datetime="2024-12-05">2024-12-05</time></li>
+          </ul>
+        </details>
+      </li>
+    </ul>
+  </section>
+
+  <section class="group" aria-labelledby="g5">
+    <h2 class="group-title" id="g5"><span class="major">v5</span>32 releases after 5.2.0</h2>
+    <ul class="releases">
+      <li>
+        <details class="digest">
+          <summary>
+            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+            <span><span class="nowrap">14 digest releases</span><span class="range"> · 5.2.1 to 5.2.14</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="digest-lines">
+            <li><a href="#">5.2.1</a><time datetime="2024-03-21">2024-03-21</time></li><li><a href="#">5.2.2</a><time datetime="2024-03-24">2024-03-24</time></li>
+            <li><a href="#">5.2.3</a><time datetime="2024-04-02">2024-04-02</time></li><li><a href="#">5.2.4</a><time datetime="2024-04-03">2024-04-03</time></li>
+            <li><a href="#">5.2.5</a><time datetime="2024-04-04">2024-04-04</time></li><li><a href="#">5.2.6</a><time datetime="2024-04-04">2024-04-04</time></li>
+            <li><a href="#">5.2.7</a><time datetime="2024-04-05">2024-04-05</time></li><li><a href="#">5.2.8</a><time datetime="2024-04-05">2024-04-05</time></li>
+            <li><a href="#">5.2.9</a><time datetime="2024-04-15">2024-04-15</time></li><li><a href="#">5.2.10</a><time datetime="2024-04-20">2024-04-20</time></li>
+            <li><a href="#">5.2.11</a><time datetime="2024-05-02">2024-05-02</time></li><li><a href="#">5.2.12</a><time datetime="2024-05-28">2024-05-28</time></li>
+            <li><a href="#">5.2.13</a><time datetime="2024-06-06">2024-06-06</time></li><li><a href="#">5.2.14</a><time datetime="2024-08-08">2024-08-08</time></li>
+          </ul>
+        </details>
+      </li>
+      <li class="rel">
+        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg>notable</span>
+        <a class="rel-version" href="#">5.3.0</a>
+        <time class="rel-date" datetime="2024-06-13">2024-06-13</time>
+        <div class="rel-main">
+          <p class="rel-title">Dev server warmup and HMR improvements, with new options for asset handling.</p>
+          <p class="rel-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
+        </div>
+      </li>
+      <li>
+        <details class="digest">
+          <summary>
+            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+            <span><span class="nowrap">5 digest releases</span><span class="range"> · 5.3.1 to 5.3.5</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="digest-lines">
+            <li><a href="#">5.3.1</a><time datetime="2024-06-14">2024-06-14</time></li><li><a href="#">5.3.2</a><time datetime="2024-06-27">2024-06-27</time></li>
+            <li><a href="#">5.3.3</a><time datetime="2024-07-03">2024-07-03</time></li><li><a href="#">5.3.4</a><time datetime="2024-07-16">2024-07-16</time></li>
+            <li><a href="#">5.3.5</a><time datetime="2024-07-25">2024-07-25</time></li>
+          </ul>
+        </details>
+      </li>
+      <li class="rel">
+        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg>notable</span>
+        <a class="rel-version" href="#">5.4.0</a>
+        <time class="rel-date" datetime="2024-08-07">2024-08-07</time>
+        <div class="rel-main">
+          <p class="rel-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: no summary for this older release · <a href="#">read the release notes</a></p>
+        </div>
+      </li>
+      <li>
+        <details class="digest">
+          <summary>
+            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+            <span><span class="nowrap">11 digest releases</span><span class="range"> · 5.4.1 to 5.4.11</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="digest-lines">
+            <li><a href="#">5.4.1</a><time datetime="2024-08-15">2024-08-15</time></li><li><a href="#">5.4.2</a><time datetime="2024-08-20">2024-08-20</time></li>
+            <li><a href="#">5.4.3</a><time datetime="2024-09-03">2024-09-03</time></li><li><a href="#">5.4.4</a><time datetime="2024-09-11">2024-09-11</time></li>
+            <li><a href="#">5.4.5</a><time datetime="2024-09-16">2024-09-16</time></li><li><a href="#">5.4.6</a><time datetime="2024-09-16">2024-09-16</time></li>
+            <li><a href="#">5.4.7</a><time datetime="2024-09-20">2024-09-20</time></li><li><a href="#">5.4.8</a><time datetime="2024-09-25">2024-09-25</time></li>
+            <li><a href="#">5.4.9</a><time datetime="2024-10-14">2024-10-14</time></li><li><a href="#">5.4.10</a><time datetime="2024-10-24">2024-10-24</time></li>
+            <li><a href="#">5.4.11</a><time datetime="2024-11-11">2024-11-11</time></li>
+          </ul>
+        </details>
+      </li>
+    </ul>
+  </section>
+
+  <section class="previews" aria-labelledby="pv">
+    <h2 class="group-title" id="pv"><span class="major">previews</span>ahead of 6.0.3</h2>
+    <ul class="releases">
+      <li class="rel">
+        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg>preview</span>
+        <a class="rel-version" href="#">6.1.0-beta.0</a>
+        <time class="rel-date" datetime="2025-01-08">2025-01-08</time>
+        <div class="rel-main">
+          <p class="rel-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-pending"/></svg>pending: summary queued · <a href="#">read the release notes</a></p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot"><span>releases detected via npm · notes from GitHub</span><span>sample content for design review</span></p>
+</main>
+
+<div class="review" role="group" aria-label="Design review controls">
+  <label for="state-select">page state</label>
+  <select id="state-select">
+    <option value="range">upgrade path from 5.2.0</option>
+    <option value="invalid">invalid from version</option>
+    <option value="retired">retired technology</option>
+  </select>
+</div>
+
+<script>
+const root = document.documentElement;
+const themeButton = document.getElementById("theme");
+themeButton.addEventListener("click", () => {
+  const next = root.dataset.theme === "dark" ? "light" : "dark";
+  root.dataset.theme = next;
+  themeButton.setAttribute("aria-label", `Switch to ${next === "dark" ? "light" : "dark"} theme`);
+});
+
+const main = document.getElementById("content");
+const fromInput = document.getElementById("from");
+document.getElementById("state-select").addEventListener("change", (event) => {
+  const state = event.target.value;
+  main.dataset.state = state;
+  fromInput.value = state === "invalid" ? "5.9.0" : "5.2.0";
+  fromInput.setAttribute("aria-invalid", String(state === "invalid"));
+});
+document.getElementById("range-form").addEventListener("submit", (event) => event.preventDefault());
+</script>
+</body>
+</html>

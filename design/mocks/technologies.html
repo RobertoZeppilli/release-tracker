@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Technologies · release-tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #353b45;
+  --text: #e7e9ec; --text-muted: #9aa3ad; --text-faint: #7b848f;
+  --breaking: #ff7b6b; --action: #f2c14e; --help: #6cc4d8; --ok: #7bd88f;
+  --focus: #6cc4d8; --selection: rgba(108, 196, 216, 0.28);
+  --mono: "Fragment Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --sans: "Hanken Grotesk", system-ui, sans-serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 72px;
+  --radius: 6px; --measure: 72ch;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #c6c6bf;
+  --text: #16181c; --text-muted: #525a63; --text-faint: #636b74;
+  --breaking: #b42a1f; --action: #8a5a00; --help: #0b6b80; --ok: #1d7a3a;
+  --focus: #0b6b80; --selection: rgba(11, 107, 128, 0.18);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--ground); scroll-behavior: smooth; }
+body { margin: 0; background: var(--ground); color: var(--text); font: 400 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--selection); color: var(--text); }
+a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+* { scrollbar-color: var(--rule-strong) transparent; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; flex: none; }
+
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: var(--space-4); top: var(--space-4); background: var(--raised); padding: var(--space-2) var(--space-3); z-index: 10; }
+
+/* Top bar */
+.topbar { border-bottom: 1px solid var(--rule); }
+.topbar-inner, main { max-width: 1040px; margin: 0 auto; padding: 0 var(--space-5); }
+.topbar-inner { height: 56px; display: flex; align-items: center; gap: var(--space-5); }
+.wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; white-space: nowrap; }
+.nav { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); }
+.nav a { text-decoration: none; }
+.nav a:hover, .nav [aria-current] { color: var(--text); }
+.topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
+.quota { font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; margin-right: var(--space-2); white-space: nowrap; }
+.quota strong { color: var(--text); font-weight: 400; }
+.quota:hover { color: var(--text); }
+.btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn:hover { background: var(--raised); border-color: var(--text-faint); }
+.btn-icon { width: 34px; padding: 0; justify-content: center; }
+
+main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
+
+/* Status */
+.status-line { margin: 0; font: 400 clamp(1.5rem, 3.6vw, 2.3rem)/1.15 var(--mono); letter-spacing: -0.03em; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.status-line .glyph { width: 0.8em; height: 0.8em; stroke-width: 1.75; vertical-align: -0.08em; }
+.status-line .label { margin-right: 0.4ch; }
+.status-line .claim { display: inline-block; }
+.status-line .short { display: none; }
+.status-line strong { color: var(--text); font-weight: 400; }
+.intro { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); }
+
+/* Filter: one Mono sentence, like the Upgrade Path Form */
+.filter { margin-top: var(--space-5); display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
+.filter input { height: 38px; width: 26ch; padding: 0 var(--space-3); background: var(--sunken); color: var(--text); border: 1px solid var(--rule-strong); border-radius: var(--radius); font: 400 16px var(--mono); caret-color: var(--help); }
+.filter input::placeholder { color: var(--text-faint); }
+.filter input:hover { border-color: var(--text-faint); }
+.filter input::-webkit-search-cancel-button { filter: grayscale(1); opacity: 0.6; }
+.filter .matches strong { color: var(--text); font-weight: 400; }
+
+/* Sections */
+.section { margin-top: var(--space-7); }
+.section-title { margin: 0 0 var(--space-2); display: flex; align-items: baseline; gap: var(--space-3); font: 600 13px var(--mono); color: var(--text-muted); letter-spacing: 0.02em; }
+.section-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
+
+/* Notes and errors: grammar lines */
+.line { margin: 0 0 var(--space-3); font: 400 14px/1.7 var(--mono); color: var(--text-muted); max-width: 900px; }
+.line .prose { font: 400 16px/1.6 var(--sans); }
+.line strong { color: var(--text); font-weight: 400; }
+.sev-error { color: var(--breaking); }
+
+/* Picker rows: name | facts | toggle */
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: 16ch minmax(0, 1fr) auto; column-gap: var(--space-4); align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--rule); }
+.rows > .row:first-child { border-top: 1px solid var(--rule); }
+.tech { font: 600 16px/1.45 var(--sans); letter-spacing: -0.01em; color: var(--text); text-decoration: none; }
+a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; }
+.facts { font: 400 13px/1.6 var(--mono); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.facts strong { color: var(--text-muted); font-weight: 400; }
+.row-error { grid-column: 2 / -1; margin: var(--space-2) 0 0; font: 400 13px/1.6 var(--mono); color: var(--breaking); }
+.row-note { font: 400 13px/1.6 var(--mono); color: var(--text-muted); white-space: nowrap; }
+
+/* Follow Toggle */
+.btn .when-on { display: none; }
+.btn .when-off, .btn[aria-pressed="true"] .when-on { display: inline-flex; align-items: center; gap: var(--space-2); }
+.btn[aria-pressed="true"] .when-off { display: none; }
+.btn[aria-pressed="true"] { border-color: var(--rule); color: var(--text-muted); }
+.btn[aria-pressed="true"]:hover { color: var(--text); }
+.btn[aria-disabled="true"] { border-color: var(--rule); color: var(--text-faint); cursor: not-allowed; }
+.btn[aria-disabled="true"]:hover { background: transparent; border-color: var(--rule); }
+
+[hidden] { display: none !important; }
+
+.foot { margin-top: var(--space-7); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+
+/* Design-review control, not part of the product */
+.review { position: fixed; right: var(--space-4); bottom: var(--space-4); background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
+.review select { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 3px 4px; }
+
+@media (max-width: 640px) {
+  .topbar-inner, main { padding: 0 var(--space-4); }
+  .topbar-inner { gap: var(--space-3); }
+  .nav { display: none; }
+  .quota { margin-right: 0; }
+  .quota .of { display: none; }
+  .status-line .long { display: none; }
+  .status-line .short { display: inline-block; }
+  main { padding-top: var(--space-5); padding-bottom: 120px; }
+  .filter input { width: 100%; order: 2; }
+  .filter label { order: 1; }
+  .filter .matches { order: 1; margin-left: auto; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 2px; }
+  .row .facts { grid-column: 1 / 2; grid-row: 2; }
+  .row .btn, .row .row-note { grid-row: 1 / 3; grid-column: 2; }
+  .row .row-note { white-space: normal; text-align: right; max-width: 16ch; }
+  .row-error { grid-column: 1 / -1; grid-row: 3; }
+  .review { left: var(--space-4); justify-content: space-between; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="g-note" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="g-error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+</svg>
+<a class="skip" href="#content">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="#">release-tracker</a>
+    <nav aria-label="Main">
+      <ul class="nav">
+        <li><a href="dashboard.html">dashboard</a></li>
+        <li><a href="#" aria-current="page">technologies</a></li>
+      </ul>
+    </nav>
+    <div class="topbar-actions">
+      <a class="quota" href="#" aria-label="Followed technologies"><strong data-count>7</strong><span class="of"> of 10</span> followed</a>
+      <button class="btn btn-icon" type="button" id="theme" aria-label="Switch to light theme">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+      <a class="btn" href="#">Sign out</a>
+    </div>
+  </div>
+</header>
+
+<main id="content">
+  <h1 class="sr-only">Technologies</h1>
+
+  <section aria-label="Follow status">
+    <p class="status-line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg><span class="label">note:</span><span class="claim long" aria-live="polite">you follow <strong data-count>7</strong> of 10 technologies</span><span class="claim short" aria-live="polite"><strong data-count>7</strong> of 10 followed</span></p>
+    <p class="intro">Your dashboard shows releases from the technologies you follow. Releases are detected for every technology in the catalog, and each release is summarized once, for everyone.</p>
+    <p class="filter" role="search">
+      <label for="filter">filter</label>
+      <input id="filter" type="search" placeholder="name or description" autocomplete="off" spellcheck="false" aria-describedby="matches">
+      <span class="matches" id="matches" aria-live="polite"></span>
+    </p>
+  </section>
+
+  <section class="section" id="following" aria-labelledby="following-title">
+    <h2 class="section-title" id="following-title">following (7)</h2>
+    <ul class="rows" id="following-rows"></ul>
+  </section>
+
+  <section class="section" id="catalog" aria-labelledby="catalog-title">
+    <h2 class="section-title" id="catalog-title">catalog (35)</h2>
+    <p class="line" id="limit-note" hidden><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: <strong>10</strong> of 10 followed · unfollow one to follow another</p>
+    <ul class="rows" id="catalog-rows"></ul>
+  </section>
+
+  <section class="section" id="retired" aria-labelledby="retired-title" hidden>
+    <h2 class="section-title" id="retired-title">retired (1)</h2>
+    <p class="line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: <span class="prose">These are no longer in the catalog and get no new releases. Past releases stay readable. They still count toward your 10, and once unfollowed they can't be followed again.</span></p>
+    <ul class="rows" id="retired-rows"></ul>
+  </section>
+
+  <section class="section" id="no-match" aria-live="polite" hidden>
+    <p class="line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: no technology matches "<strong id="no-match-q"></strong>"</p>
+    <p class="intro">The catalog is curated, and requests for new technologies aren't open yet.</p>
+  </section>
+
+  <p class="foot"><span>catalog: 42 technologies, alphabetical</span><span>sample content for design review</span></p>
+</main>
+
+<div class="review" role="group" aria-label="Design review controls">
+  <label for="state-select">page state</label>
+  <select id="state-select">
+    <option value="seven">7 followed</option>
+    <option value="full">10 of 10 followed</option>
+    <option value="rejected">follow rejected by server</option>
+    <option value="retired">8 followed, 1 retired</option>
+    <option value="nomatch">filter with no match</option>
+  </select>
+</div>
+
+<script>
+const CATALOG = [
+  ["Angular", "19.0.4", "web application framework"],
+  ["Astro", "5.0.4", "content-driven web framework"],
+  ["Biome", "1.9.4", "formatter and linter for web projects"],
+  ["Deno", "2.1.4", "JavaScript and TypeScript runtime"],
+  ["Django", "5.1.4", "Python web framework"],
+  ["Drizzle ORM", "0.38.0", "TypeScript ORM for SQL databases"],
+  ["Electron", "33.2.1", "desktop apps with web technologies"],
+  ["esbuild", "0.24.0", "JavaScript bundler"],
+  ["ESLint", "9.16.0", "JavaScript linter"],
+  ["Expo", "52.0.18", "platform for React Native apps"],
+  ["Express", "5.0.1", "web framework for Node.js"],
+  ["FastAPI", "0.115.6", "Python API framework"],
+  ["Go", "1.23.4", "programming language"],
+  ["Hono", "4.6.13", "web framework for edge runtimes"],
+  ["Jest", "29.7.0", "JavaScript test runner"],
+  ["Next.js", "15.1.0", "React framework"],
+  ["Node.js", "23.4.0", "JavaScript runtime"],
+  ["Nuxt", "3.14.1592", "Vue framework"],
+  ["Playwright", "1.49.1", "browser testing and automation"],
+  ["pnpm", "9.15.0", "package manager"],
+  ["Prettier", "3.4.2", "code formatter"],
+  ["Prisma", "6.0.1", "ORM for Node.js and TypeScript"],
+  ["Python", "3.13.1", "programming language"],
+  ["React", "19.0.0", "library for web and native UIs"],
+  ["React Native", "0.76.5", "framework for native apps"],
+  ["React Router", "7.0.2", "routing for React"],
+  ["Redux Toolkit", "2.5.0", "state management for Redux"],
+  ["Remix", "2.15.1", "full-stack React framework"],
+  ["Rust", "1.83.0", "systems programming language"],
+  ["Storybook", "8.4.7", "workshop for UI components"],
+  ["Supabase JS", "2.47.3", "Supabase client library"],
+  ["Svelte", "5.12.0", "UI compiler"],
+  ["SvelteKit", "2.10.1", "Svelte framework"],
+  ["Tailwind CSS", "3.4.16", "utility-first CSS"],
+  ["TanStack Query", "5.62.3", "async state for web apps"],
+  ["Turborepo", "2.3.3", "monorepo build system"],
+  ["TypeScript", "5.7.2", "typed superset of JavaScript"],
+  ["Vite", "6.0.3", "frontend build tool"],
+  ["Vitest", "2.1.8", "Vite-native test runner"],
+  ["Vue", "3.5.13", "progressive web framework"],
+  ["Webpack", "5.97.1", "module bundler"],
+  ["Zod", "3.24.1", "TypeScript schema validation"],
+];
+const RETIRED = ["Create React App", "5.0.1", "React app setup"];
+const LIMIT = 10;
+const STACK = ["Next.js", "Node.js", "React", "Tailwind CSS", "TypeScript", "Vite", "Vitest"];
+const STATES = {
+  seven: { follows: STACK },
+  full: { follows: [...STACK, "Playwright", "Prisma", "Zod"] },
+  rejected: { follows: [...STACK, "Playwright", "Prisma", "Zod"], rejected: "TanStack Query" },
+  retired: { follows: STACK, retired: true },
+  nomatch: { follows: STACK, query: "qwik" },
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const slug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+function toggle(name, on, retired) {
+  const label = `${on ? "Unfollow" : "Follow"} ${name}`;
+  return `<button class="btn follow" type="button" aria-pressed="${on}" aria-label="${esc(label)}" data-name="${esc(name)}"${retired ? " data-retired" : ""}>` +
+    `<span class="when-off"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Follow</span>` +
+    `<span class="when-on"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Following</span></button>`;
+}
+
+function row([name, version, desc], on, opts = {}) {
+  const facts = opts.retired
+    ? `last <strong>${version}</strong> · ${desc} · retired 2024-10`
+    : `latest <strong>${version}</strong> · ${desc}`;
+  const error = opts.rejected
+    ? `<p class="row-error" id="err-${slug(name)}"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: not followed · you already follow 10 (one was added in another session) · unfollow one to follow another</p>`
+    : "";
+  return `<li class="row" data-search="${esc((name + " " + desc).toLowerCase())}">` +
+    `<a class="tech" href="technology.html">${esc(name)}</a>` +
+    `<span class="facts">${facts}</span>${toggle(name, on, opts.retired)}${error}</li>`;
+}
+
+function render(stateKey) {
+  const state = STATES[stateKey];
+  const follows = new Set(state.follows);
+  const following = CATALOG.filter(([n]) => follows.has(n));
+  const rest = CATALOG.filter(([n]) => !follows.has(n));
+
+  $("following-rows").innerHTML = following.map((t) => row(t, true)).join("");
+  $("catalog-rows").innerHTML = rest.map((t) => row(t, false, { rejected: t[0] === state.rejected })).join("");
+  $("retired-rows").innerHTML = state.retired ? row(RETIRED, true, { retired: true }) : "";
+  $("retired").hidden = !state.retired;
+
+  if (state.rejected) {
+    const btn = document.querySelector(`[data-name="${state.rejected}"]`);
+    btn.setAttribute("aria-describedby", `err-${slug(state.rejected)}`);
+  }
+  $("filter").value = state.query || "";
+  sync();
+  applyFilter();
+}
+
+function sync() {
+  const pressed = [...document.querySelectorAll(".follow[aria-pressed='true']")].length;
+  document.querySelectorAll("[data-count]").forEach((el) => { el.textContent = String(pressed); });
+  const full = pressed >= LIMIT;
+  $("limit-note").hidden = !full;
+  document.querySelectorAll(".follow[aria-pressed='false']").forEach((btn) => {
+    btn.setAttribute("aria-disabled", String(full));
+    const described = (btn.getAttribute("aria-describedby") || "").split(" ").filter((id) => id && id !== "limit-note");
+    if (full) described.push("limit-note");
+    if (described.length) btn.setAttribute("aria-describedby", described.join(" "));
+    else btn.removeAttribute("aria-describedby");
+  });
+}
+
+function applyFilter() {
+  const q = $("filter").value.trim().toLowerCase();
+  let shown = 0;
+  let total = 0;
+  for (const id of ["following", "catalog", "retired"]) {
+    const section = $(id);
+    const rows = [...section.querySelectorAll(".row")];
+    let visible = 0;
+    rows.forEach((r) => {
+      const match = !q || r.dataset.search.includes(q);
+      r.hidden = !match;
+      if (match) visible++;
+    });
+    total += rows.length;
+    const title = section.querySelector(".section-title");
+    title.textContent = `${id} (${q ? `${visible} of ${rows.length}` : rows.length})`;
+    shown += visible;
+    if (id !== "retired" || rows.length) section.hidden = rows.length > 0 && visible === 0;
+  }
+  const noMatch = q && shown === 0;
+  $("no-match").hidden = !noMatch;
+  $("no-match-q").textContent = $("filter").value.trim();
+  $("matches").innerHTML = q
+    ? `<strong>${shown}</strong> of ${total} match`
+    : `<strong>${total}</strong> technologies`;
+}
+
+document.addEventListener("click", (event) => {
+  const btn = event.target.closest(".follow");
+  if (!btn || btn.getAttribute("aria-disabled") === "true") return;
+  const on = btn.getAttribute("aria-pressed") !== "true";
+  const name = btn.dataset.name;
+  const rowEl = btn.closest(".row");
+  rowEl.querySelector(".row-error")?.remove();
+  if (!on && btn.hasAttribute("data-retired")) {
+    btn.outerHTML = `<span class="row-note" role="status">unfollowed · can't be followed again</span>`;
+  } else {
+    btn.setAttribute("aria-pressed", String(on));
+    btn.setAttribute("aria-label", `${on ? "Unfollow" : "Follow"} ${name}`);
+  }
+  sync();
+});
+
+$("filter").addEventListener("input", applyFilter);
+
+const root = document.documentElement;
+$("theme").addEventListener("click", () => {
+  const next = root.dataset.theme === "dark" ? "light" : "dark";
+  root.dataset.theme = next;
+  $("theme").setAttribute("aria-label", `Switch to ${next === "dark" ? "light" : "dark"} theme`);
+});
+
+$("state-select").addEventListener("change", (event) => render(event.target.value));
+render(new URLSearchParams(location.search).get("state") || "seven");
+$("state-select").value = new URLSearchParams(location.search).get("state") || "seven";
+</script>
+</body>
+</html>

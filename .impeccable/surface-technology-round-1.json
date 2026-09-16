@@ -1,0 +1,235 @@
+{
+  "title": "Choose the Technology page structure",
+  "question": "Recommendation: Range diff-stat. It answers first (how many releases, how many need action), groups by major where breaking changes live, and folds noise. For clarity it would keep releases in chronological order inside each group and spell counts out in words, not as a bare bar. Upgrade trace reads newest-first (inverted for an upgrade); Upgrade build log puts the answer at the end. Lock one, or steer.",
+  "options": [
+    {
+      "id": "stack-trace",
+      "label": "Upgrade trace",
+      "kicker": "THE ROLL",
+      "thesis": "The upgrade path reads like a stack trace: one frame per release from your version to latest, frames needing action expanded, the rest one line each.",
+      "palette": [
+        "#0f1115",
+        "#e7e9ec",
+        "#ff7b6b",
+        "#f2c14e",
+        "#6cc4d8"
+      ],
+      "materials": [
+        "numbered frames",
+        "at vite@x.y.z lines",
+        "collapsed digest frames",
+        "from/to version input"
+      ],
+      "viewport": "Header with Follow and a 'from' version field; verdict 'warning: 1 of 11 releases needs action'; frames #0 latest to #10 your version, action frames open with their breaking titles.",
+      "risk": "Newest-first frame order can feel inverted to readers who think of upgrades as moving forward in time.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          {
+            "label": "header · follow · from field",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "verdict: 1 of 11 needs action",
+            "x": 0,
+            "y": 1,
+            "w": 9,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "#0 6.0.1 one line",
+            "x": 0,
+            "y": 2,
+            "w": 9,
+            "h": 1
+          },
+          {
+            "label": "#1 6.0.0 expanded: breaking[1-4]",
+            "x": 0,
+            "y": 3,
+            "w": 9,
+            "h": 3,
+            "accent": true
+          },
+          {
+            "label": "#2-#9 one line each",
+            "x": 0,
+            "y": 6,
+            "w": 9,
+            "h": 3
+          },
+          {
+            "label": "#10 5.2.0 you are here",
+            "x": 0,
+            "y": 9,
+            "w": 9,
+            "h": 1
+          },
+          {
+            "label": "previews",
+            "x": 9,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "build-log",
+      "label": "Upgrade build log",
+      "thesis": "Checking an upgrade reads like running a build: releases run oldest to newest as log lines and end in one tally with what to fix.",
+      "palette": [
+        "#0f1115",
+        "#e7e9ec",
+        "#ff7b6b",
+        "#f2c14e",
+        "#7bd88f"
+      ],
+      "materials": [
+        "log lines with right-aligned status",
+        "check vite 5.2.0 → 6.0.1",
+        "closing tally",
+        "digest lines dimmed"
+      ],
+      "viewport": "A command-like line 'check vite [5.2.0] → 6.0.1' with an editable from version, chronological lines ending in ok / action / preview, tally pinned at the bottom of the viewport.",
+      "risk": "The answer lands at the end of the log, so the tally must be pinned or repeated at the top.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          {
+            "label": "check vite [5.2.0] → 6.0.1",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "5.2.x lines · ok",
+            "x": 0,
+            "y": 1,
+            "w": 12,
+            "h": 2
+          },
+          {
+            "label": "5.3 / 5.4 · ok",
+            "x": 0,
+            "y": 3,
+            "w": 12,
+            "h": 2
+          },
+          {
+            "label": "6.0.0-beta · preview",
+            "x": 0,
+            "y": 5,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "6.0.0 · action (4 breaking)",
+            "x": 0,
+            "y": 6,
+            "w": 12,
+            "h": 2,
+            "accent": true
+          },
+          {
+            "label": "6.0.1 · ok",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "tally (pinned)",
+            "x": 0,
+            "y": 9,
+            "w": 12,
+            "h": 1,
+            "accent": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "diff-stat",
+      "label": "Range diff-stat",
+      "thesis": "Like git diff --stat for a version range: one summary for the whole jump, then releases grouped by major with digests folded.",
+      "palette": [
+        "#0f1115",
+        "#e7e9ec",
+        "#ff7b6b",
+        "#f2c14e",
+        "#9aa3ad"
+      ],
+      "materials": [
+        "5.2.0..6.0.1 range header",
+        "stat bar per major",
+        "folded digest groups",
+        "significance glyph column"
+      ],
+      "viewport": "Range header '5.2.0..6.0.1 · 11 releases · 1 needs action' with a stat bar; a v6 group open with 6.0.0 and its breaking titles; a v5 group with notable rows and a folded '7 digest releases' row.",
+      "risk": "Grouping by major hides the exact order of releases inside a group.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          {
+            "label": "header · follow",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "range + stat bar",
+            "x": 0,
+            "y": 1,
+            "w": 12,
+            "h": 2,
+            "accent": true
+          },
+          {
+            "label": "v6: 6.0.0 action · breaking titles",
+            "x": 0,
+            "y": 3,
+            "w": 12,
+            "h": 3,
+            "accent": true
+          },
+          {
+            "label": "v5: notable rows",
+            "x": 0,
+            "y": 6,
+            "w": 12,
+            "h": 2
+          },
+          {
+            "label": "folded: 7 digest releases",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 1
+          },
+          {
+            "label": "previews",
+            "x": 0,
+            "y": 9,
+            "w": 12,
+            "h": 1
+          }
+        ]
+      }
+    }
+  ],
+  "reroll": true,
+  "steer": true,
+  "followup": true
+}

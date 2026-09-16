@@ -1,0 +1,11 @@
+# Codice organizzato per moduli di dominio
+
+`src/modules/<modulo>` (catalog, releases, detection, summaries, dashboard, plans) sostituisce la
+divisione iniziale per tipo tecnico (`hooks/`, `services/`, `types/`, `validators/`, `stores/`),
+che avrebbe sparso ogni concetto del glossario su più cartelle. Ogni modulo separa `domain/`
+(TypeScript puro, testato unitariamente), `server/` (adattatori esterni, solo lato server) e `ui/`,
+ed espone solo il proprio `index.ts`. I tipi derivano sempre dagli schemi Zod, senza una cartella
+`types/` parallela.
+
+Zustand non è installato: lo stato UI condivisibile (filtri, tab) vive nell'URL. Si introduce solo
+quando emerge uno stato client globale che l'URL non può rappresentare.

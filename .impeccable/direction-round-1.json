@@ -1,0 +1,122 @@
+{
+  "title": "Choose the visual world",
+  "question": "The roll assigned Departure Board & Timetable. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Departure Board & Timetable",
+      "kicker": "THE ROLL",
+      "lineage": "Swiss railway departure boards, enamel station signage and the printed Kursbuch timetable",
+      "thesis": "Your stack as a station: releases are departures, and a service notice tells you whether your train still leaves on time.",
+      "palette": ["#0b1622", "#eef2f5", "#ffd21f", "#e2231a", "#5f7385"],
+      "materials": ["backlit board rows", "enamel notice plates", "timetable footnote symbols", "tabular numerals"],
+      "viewport": "Release page: a board row (Vite · 6.0.0 · date · Significance) under a full-width yellow service-notice plate 'Action required · 3 breaking changes', then key points and numbered changes.",
+      "risk": "Pushed too literally it becomes a transit theme park; the grammar must stay rows, plates and footnotes, never trains.",
+      "raised": [
+        {"from": "Patent drawing sheet", "raise": "Every breaking change carries a reference numeral that links to the exact passage in the original release notes, so nothing is claimed without its source."},
+        {"from": "Emission-line rail", "raise": "State is never carried by colour alone: every Significance and Summary state owns a glyph and plate shape that survives greyscale."},
+        {"from": "Provenance ribbon", "raise": "What the Summary says and what the release notes say are visibly different registers, so readers always know what is quoted and what is summarised."}
+      ]
+    },
+    {
+      "id": "model-pick",
+      "kicker": "IMPECCABLE’S PICK",
+      "label": "Compiler Diagnostic",
+      "lineage": "rustc / TypeScript error reports",
+      "thesis": "Every release rendered as a compiler diagnostic: error[breaking], an arrow to what changed, help: how to migrate.",
+      "palette": ["#0f1115", "#e6e6e6", "#ff6b5b", "#f2c14e", "#6cc4d8"],
+      "materials": ["monospace gutters", "caret underlines", "labelled help/note lines"],
+      "viewport": "A diagnostic block per breaking change under a one-line verdict 'warning: action required (3)'.",
+      "risk": "The most familiar look in dev tooling: close to every dark terminal-styled product in the category."
+    },
+    {
+      "id": "challenger-lexicon",
+      "label": "Lexicon Shoulder & Plate",
+      "verdict": "competitive",
+      "lineage": "nineteenth-century lexicon pages",
+      "thesis": "Releases as entries ranked by apparatus, guide words naming the span you are reading.",
+      "palette": ["#16130f", "#e9e1d0", "#c2452d", "#2f5d8a"],
+      "materials": ["fixed text measure", "shoulder margin index", "bordered colour plates"],
+      "viewport": "A Release as a dictionary entry: headword, verdict in the shoulder, breaking changes as numbered senses.",
+      "case": "Fuses well for reading long release notes; loses on audience identification and fights the dark default.",
+      "risk": "Drifts into the bookish editorial look that reads slow for a two-minute check.",
+      "hero": "https://impeccable.style/worlds/cards/rw-lexicon-shoulder-and-plate-hero.webp"
+    },
+    {
+      "id": "challenger-emission",
+      "label": "Emission-line Rail",
+      "verdict": "declined",
+      "lineage": "spectrogram plates",
+      "thesis": "Everything hangs off one rail; state is line form, not hue.",
+      "palette": ["#1c1d1f", "#e8e2d4", "#ffcf3a"],
+      "materials": ["hairlines", "charcoal continuum"],
+      "viewport": "Releases as ticks on one calibrated rail.",
+      "case": "Loses both axes: developers do not read state from line height.",
+      "risk": "Unreadable for a quick check.",
+      "kept": "State survives without colour."
+    },
+    {
+      "id": "challenger-patent",
+      "label": "Patent Drawing Sheet",
+      "verdict": "declined",
+      "lineage": "utility patent figures",
+      "thesis": "A release exploded into numbered parts tied by leader lines.",
+      "palette": ["#ffffff", "#111111", "#b3122e"],
+      "materials": ["india ink line", "hatching"],
+      "viewport": "Fig. 1: the release exploded into its changes.",
+      "case": "Loses both axes: diagrams need illustration that release notes cannot supply.",
+      "risk": "Decorative drawing with no data behind it.",
+      "kept": "Reference numerals tying claims to their source."
+    },
+    {
+      "id": "challenger-cutting-bench",
+      "label": "Cutting Bench Select Rail",
+      "verdict": "declined",
+      "lineage": "film editing benches",
+      "thesis": "Releases as frames on a perforated rail.",
+      "palette": ["#000000", "#ff7a1a", "#ffffff"],
+      "materials": ["film grain", "tape flags"],
+      "viewport": "A strip of release frames.",
+      "case": "Loses both axes: no link between editing film and upgrading code.",
+      "risk": "Pure costume.",
+      "kept": "Rank by grid span, not type size."
+    },
+    {
+      "id": "challenger-provenance",
+      "label": "Provenance Ribbon",
+      "verdict": "declined",
+      "lineage": "museum provenance records",
+      "thesis": "Custody of an object told as one ribbon.",
+      "palette": ["#d9ccb0", "#b0241c", "#8a8a8a"],
+      "materials": ["silk ribbon", "archival buff"],
+      "viewport": "A ribbon of custody events.",
+      "case": "Loses both axes.",
+      "risk": "Museum mood with no task.",
+      "kept": "Known versus inferred shown as different registers."
+    },
+    {
+      "id": "challenger-alphabet",
+      "label": "Alphabet Storm",
+      "verdict": "declined",
+      "lineage": "surreal typography",
+      "thesis": "Letters becoming weather.",
+      "palette": ["#ffffff", "#111111", "#c0c0c0"],
+      "materials": ["particle type"],
+      "viewport": "Words forming weather fronts.",
+      "case": "Loses both axes: fights readability.",
+      "risk": "Unusable for reading.",
+      "kept": "Nothing beyond its commitment."
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "The dark developer-SaaS look (Linear, Vercel), executed impeccably.",
+    "palette": ["#0a0a0a", "#171717", "#ededed", "#3b82f6"],
+    "materials": ["hairline borders", "neutral greys", "one blue accent", "Geist-style sans"],
+    "viewport": "Header with verdict badge, card with key points, list of breaking changes.",
+    "risk": "Indistinguishable from the competition by design."
+  },
+  "steer": true
+}

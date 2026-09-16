@@ -1,0 +1,537 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-16T00:00:00Z",
+  "title": "Design System: release-tracker",
+  "extensions": {
+    "themes": {
+      "default": "dark",
+      "mechanism": ":root[data-theme=\"light\"] overrides the same custom properties; light-* frontmatter keys are the light values of the unprefixed roles",
+      "cssVariables": [
+        "--ground",
+        "--raised",
+        "--sunken",
+        "--rule",
+        "--rule-strong",
+        "--text",
+        "--text-muted",
+        "--text-faint",
+        "--breaking",
+        "--breaking-wash",
+        "--action",
+        "--help",
+        "--help-wash",
+        "--ok",
+        "--focus",
+        "--selection",
+        "--mono",
+        "--sans",
+        "--space-1..8",
+        "--radius",
+        "--measure"
+      ]
+    },
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Terminal Ground",
+        "canonical": "#0f1115",
+        "lightCounterpart": "light-ground",
+        "tonalRamp": [
+          "#0b0d10",
+          "#0f1115",
+          "#161a20",
+          "#262b33",
+          "#353b45",
+          "#7b848f",
+          "#9aa3ad",
+          "#e7e9ec"
+        ]
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Raised Plane",
+        "canonical": "#161a20",
+        "lightCounterpart": "light-raised"
+      },
+      "sunken": {
+        "role": "neutral",
+        "displayName": "Sunken Well",
+        "canonical": "#0b0d10",
+        "lightCounterpart": "light-sunken"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#262b33",
+        "lightCounterpart": "light-rule"
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Rule Strong",
+        "canonical": "#353b45",
+        "lightCounterpart": "light-rule-strong"
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "canonical": "#e7e9ec",
+        "lightCounterpart": "light-text"
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Text Muted",
+        "canonical": "#9aa3ad",
+        "lightCounterpart": "light-text-muted"
+      },
+      "text-faint": {
+        "role": "neutral",
+        "displayName": "Text Faint",
+        "canonical": "#7b848f",
+        "lightCounterpart": "light-text-faint"
+      },
+      "breaking": {
+        "role": "primary",
+        "displayName": "Breaking Coral",
+        "canonical": "#ff7b6b",
+        "lightCounterpart": "light-breaking",
+        "glyph": "octagon-alert (breaking), circle-x (error)",
+        "tonalRamp": [
+          "#3d100b",
+          "#6b1d14",
+          "#9a2a1e",
+          "#b42a1f",
+          "#e0503f",
+          "#ff7b6b",
+          "#ffa89c",
+          "#ffd8d2"
+        ]
+      },
+      "action": {
+        "role": "secondary",
+        "displayName": "Action Amber",
+        "canonical": "#f2c14e",
+        "lightCounterpart": "light-action",
+        "glyph": "triangle-alert",
+        "tonalRamp": [
+          "#2e2000",
+          "#553a00",
+          "#8a5a00",
+          "#b07c10",
+          "#d6a02c",
+          "#f2c14e",
+          "#f7d98f",
+          "#fcefcf"
+        ]
+      },
+      "help": {
+        "role": "secondary",
+        "displayName": "Help Cyan",
+        "canonical": "#6cc4d8",
+        "lightCounterpart": "light-help",
+        "glyph": "wrench",
+        "tonalRamp": [
+          "#032a33",
+          "#064b5a",
+          "#0b6b80",
+          "#2a8ea3",
+          "#4aabc0",
+          "#6cc4d8",
+          "#a3dce8",
+          "#d8f1f6"
+        ]
+      },
+      "ok": {
+        "role": "tertiary",
+        "displayName": "Ok Green",
+        "canonical": "#7bd88f",
+        "lightCounterpart": "light-ok",
+        "glyph": "circle-check",
+        "tonalRamp": [
+          "#082e14",
+          "#105225",
+          "#1d7a3a",
+          "#3a9c55",
+          "#5bbd72",
+          "#7bd88f",
+          "#aee8b9",
+          "#dcf6e1"
+        ]
+      },
+      "breaking-wash": {
+        "role": "primary",
+        "displayName": "Breaking Wash",
+        "canonical": "rgba(255, 123, 107, 0.10)",
+        "purpose": "Background of source lines cited by a breaking change."
+      },
+      "help-wash": {
+        "role": "secondary",
+        "displayName": "Help Wash",
+        "canonical": "rgba(108, 196, 216, 0.10)",
+        "purpose": "Background of source lines cited by a note."
+      },
+      "focus": {
+        "role": "secondary",
+        "displayName": "Focus Ring",
+        "canonical": "#6cc4d8"
+      },
+      "selection": {
+        "role": "secondary",
+        "displayName": "Selection",
+        "canonical": "rgba(108, 196, 216, 0.28)"
+      }
+    },
+    "typographyMeta": {
+      "verdict": {
+        "displayName": "Verdict",
+        "purpose": "The single ready-state verdict line, severity label in its ink."
+      },
+      "status": {
+        "displayName": "Status",
+        "purpose": "Verdict line for pending, unavailable, skipped and failed Summary states."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Technology name in the release header; version follows in muted mono."
+      },
+      "summary-title": {
+        "displayName": "Summary Title",
+        "purpose": "Summary title under the verdict, balanced wrap, 72ch."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Breaking-change heading beside its breaking[n]: code."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Key points, diagnostic explanations (68ch), help text."
+      },
+      "diagnostic": {
+        "displayName": "Diagnostic",
+        "purpose": "Gutters, quote rows, note:/help: labels."
+      },
+      "source": {
+        "displayName": "Source",
+        "purpose": "Numbered release-notes view and fix diffs."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Cite pointers, breadcrumb path, header facts."
+      },
+      "section-title": {
+        "displayName": "Section Title",
+        "purpose": "Lowercase mono section heading with count and trailing hairline rule."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Provenance line and footer."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "caret-draw",
+        "value": "clip-path inset(0 100% 0 0) -> inset(0 0 0 0), 650ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards",
+        "purpose": "The single motion moment: underline draws beneath each cited span when a cite pointer is followed. Reduced motion: no animation, underline shown immediately."
+      },
+      {
+        "name": "disclosure-chevron",
+        "value": "transform rotate(90deg) 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Source view open/close chevron."
+      },
+      {
+        "name": "scroll",
+        "value": "scroll-behavior: smooth",
+        "purpose": "Anchor scrolling; auto under prefers-reduced-motion."
+      },
+      {
+        "name": "digest-chevron",
+        "value": "transform rotate(90deg) 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Folded digest row open/close chevron; no transition under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "md",
+        "value": "880px",
+        "purpose": "max-width, technology page only: release rows reflow to significance, version, right-aligned date, then full-width content; stat words may wrap."
+      },
+      {
+        "name": "sm",
+        "value": "640px",
+        "purpose": "max-width, all pages: side padding 16px; carets hidden (in-quote 2px breaking underline instead), path and source meta hidden, gutters 4.5ch, note and diagnostic heads stack.",
+        "technologyPage": "Stat words drop to a full-width second line; release rows keep the reflow; digest summary hides the version range and puts 'no action needed' on its own line; digest list loses its indent; verdict claim wraps below the label as a unit.",
+        "dashboard": "Nav hidden; quota reads 'N followed'; stack rows reflow to technology, version, right-aligned date, then full-width content; section legend wraps to its own line; week summary hides the range and puts 'no action needed' on its own line; expanded week list one column, no indent; catalog picker facts drop under the name with the button spanning both lines.",
+        "technologies": "Nav hidden; quota reads 'N followed'; status claim shortens to 'N of 10 followed'; filter label and right-aligned match count share line one, input full width below; picker rows two columns with facts under the name and the toggle or unfollowed note (right-aligned, 16ch max) spanning both lines; row error full width on a third line."
+      }
+    ],
+    "layout": {
+      "container": "1040px max, 24px side padding (16px at sm)",
+      "measure": "72ch",
+      "diagnosticMax": "900px",
+      "topbarHeight": "56px",
+      "gutters": {
+        "diagnostic": "5ch",
+        "notesLabel": "8.5ch",
+        "sourceLineNumber": "6ch",
+        "mobile": "4.5ch"
+      },
+      "releaseRow": "grid 11ch significance / 14ch version / 11ch date / 1fr content, 16px column gap, 12px vertical padding, 1px rule below",
+      "statList": "820px max; grid 3ch major / 1ch pipe / minmax(120px,1fr) bar / auto words, 16px gap, 8px vertical padding",
+      "stackRow": "grid 14ch technology / 17ch version with significance glyph / 11ch date / minmax(0,1fr) content, 16px column gap, 12px vertical padding (8px compact), 1px rule between rows and above the first",
+      "weekRow": "summary grid 14ch / 1fr / auto, 8px vertical padding; expanded lines indented calc(14ch + 16px), auto-fill minmax(28ch, 1fr)",
+      "pickerRow": "Technologies page: grid 16ch name / minmax(0,1fr) facts / auto toggle, 16px column gap, 12px vertical padding, align-items center, 1px rule between rows and above the first; row error spans columns 2 to end."
+    },
+    "focus": "outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px",
+    "summaryStates": [
+      "ready (action required | safe to upgrade)",
+      "pending",
+      "processing",
+      "unavailable",
+      "skipped",
+      "failed"
+    ],
+    "significanceGlyphs": {
+      "featured": "filled diamond, 12x12 viewBox: M6 1 11 6 6 11 1 6Z fill currentColor",
+      "notable": "outlined diamond: M6 1.7 10.3 6 6 10.3 1.7 6Z stroke 1.5",
+      "digest": "dot: circle r=2 fill currentColor",
+      "preview": "outlined diamond with stroke-dasharray 2 1.6",
+      "rule": "Neutral only (text, text-muted, text-faint, rule-strong); never a severity ink. Always 12px SVG shapes, never a rotated CSS square. Paired with a Mono 13px muted label word, or with a section legend plus a screen-reader label in Dashboard rows."
+    },
+    "verdictRule": "The verdict keeps its token scale; copy must fit one line at the 1040px container. The claim is inline-block and wraps as a unit.",
+    "dashboard": {
+      "pageVerdict": "Verdict scale: 'warning: N need action' | 'ok: nothing needs action'; Mono 14px/1.7 muted count sentence, numbers in text, counts link to sections, no severity ink.",
+      "spotlightOrder": "One row per followed Technology: action rows, then ok rows, then compact 'latest major · none featured in 30 days' rows.",
+      "thisWeekMark": "Mono 12px text-muted 'this week' under the date for releases in the current ISO week (UTC).",
+      "emptyState": "Status-scale muted 'note:' line, muted intro, aria-live 'N of 10 followed' count, catalog picker rows with aria-pressed Follow/Following toggle, 'Open dashboard' button once N > 0."
+    },
+    "technologies": {
+      "followStatus": "Status-scale text-muted line: info glyph + 'note:' + inline-block live claim 'you follow N of 10 technologies' (count in text); 'N of 10 followed' at sm. Muted Grotesk intro 12px below.",
+      "filter": "role=search Mono 14px/1.7 muted sentence 24px below the intro: 'filter' label, 38px sunken search input 26ch (Mono 16px text, rule-strong border, text-faint on hover, 6px radius), live count 'N technologies' or 'N of M match' (first number in text).",
+      "sections": "following (N), catalog (N), retired (N) only when present; while filtering 'following (N of M)'; sections with no match hidden; toggled rows stay put until the next visit.",
+      "limit": "At 10 of 10: note line under the catalog title 'note: 10 of 10 followed · unfollow one to follow another'; unpressed toggles aria-disabled (focusable), border rule, text text-faint, cursor not-allowed, no hover change, aria-describedby the note.",
+      "rowError": "Server-rejected follow: toggle reverts; x-circle + 'error: ...' Mono 13px/1.6 in breaking under the row, 8px above, spanning facts and toggle columns; toggle described by it; cleared on the next click in the row.",
+      "retired": "Note line (Mono 14px muted note: + Grotesk 16px muted prose, no rules) then picker rows with facts 'last X · desc · retired YYYY-MM'; unfollow replaces the toggle with role=status Mono 13px muted 'unfollowed · can't be followed again'.",
+      "noMatch": "Sections hidden; polite live section 48px below the filter: 'note: no technology matches \"q\"' (query in text) plus one muted Grotesk sentence; no form, no link, no ink."
+    }
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Outlined 34px button with optional 16px stroke icon; used for header actions.",
+      "html": "<a class=\"ds-btn\" href=\"#\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8\"/></svg>Release notes</a>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border: 1px solid var(--rule-strong, #353b45); border-radius: 6px; background: transparent; color: var(--text, #e7e9ec); font: 500 14px 'Hanken Grotesk', system-ui, sans-serif; text-decoration: none; cursor: pointer; } .ds-btn:hover { background: var(--raised, #161a20); border-color: var(--text-faint, #7b848f); } .ds-btn:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "34px square outlined button (theme toggle).",
+      "html": "<button class=\"ds-btn-icon\" type=\"button\" aria-label=\"Switch to light theme\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41\"/></svg></button>",
+      "css": ".ds-btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--rule-strong, #353b45); border-radius: 6px; background: transparent; color: var(--text, #e7e9ec); cursor: pointer; } .ds-btn-icon:hover { background: var(--raised, #161a20); border-color: var(--text-faint, #7b848f); } .ds-btn-icon:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-btn-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Top Bar Navigation",
+      "kind": "nav",
+      "description": "Mono wordmark and breadcrumb path over a hairline rule.",
+      "html": "<header class=\"ds-topbar\"><a class=\"ds-wordmark\" href=\"#\">release-tracker</a><ol class=\"ds-path\"><li><a href=\"#\">technologies</a></li><li aria-hidden=\"true\">/</li><li><a href=\"#\">vite</a></li><li aria-hidden=\"true\">/</li><li><span aria-current=\"page\">6.0.0</span></li></ol></header>",
+      "css": ".ds-topbar { height: 56px; display: flex; align-items: center; gap: 24px; padding: 0 24px; border-bottom: 1px solid var(--rule, #262b33); background: var(--ground, #0f1115); color: var(--text, #e7e9ec); } .ds-wordmark { font: 400 14px 'Fragment Mono', ui-monospace, monospace; color: inherit; text-decoration: none; } .ds-path { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-path a { color: inherit; text-decoration: none; } .ds-path a:hover, .ds-path [aria-current] { color: var(--text, #e7e9ec); } .ds-path a:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; }"
+    },
+    {
+      "name": "Verdict Line",
+      "kind": "custom",
+      "description": "Display-scale severity verdict with glyph, label word and count row. Copy fits one line at the 1040px container; the claim is inline-block and wraps as a unit.",
+      "html": "<div class=\"ds-verdict\"><p class=\"ds-verdict-line\"><span class=\"ds-sev-action\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4M12 17h.01\"/></svg>warning:</span> <span class=\"ds-claim\">action required</span></p><p class=\"ds-verdict-count\"><a href=\"#\"><strong>4</strong> breaking changes</a><span><strong>4</strong> key points</span></p></div>",
+      "css": ".ds-verdict { background: var(--ground, #0f1115); color: var(--text, #e7e9ec); padding: 16px; } .ds-verdict-line { margin: 0; font: 400 clamp(1.9rem, 5.2vw, 3.4rem)/1.08 'Fragment Mono', ui-monospace, monospace; letter-spacing: -0.035em; } .ds-sev-action { color: var(--action, #f2c14e); } .ds-verdict-line svg { width: 0.8em; height: 0.8em; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; margin-right: 0.35em; vertical-align: -0.08em; } .ds-verdict-count { margin: 12px 0 0; display: flex; gap: 16px; font: 400 15px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-verdict-count strong { color: var(--text, #e7e9ec); font-weight: 400; } .ds-verdict-count a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule-strong, #353b45); } .ds-verdict-count a:hover { border-bottom-color: currentColor; } .ds-verdict-count a:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-claim { display: inline-block; }"
+    },
+    {
+      "name": "Cite Pointer",
+      "kind": "chip",
+      "refersTo": "cite-pointer",
+      "description": "Mono cyan link to a release-notes line range; dashed underline, solid on hover.",
+      "html": "<a class=\"ds-cite\" href=\"#L12\">release-notes:12-13</a>",
+      "css": ".ds-cite { font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--help, #6cc4d8); text-decoration: none; border-bottom: 1px dashed currentColor; white-space: nowrap; } .ds-cite:hover { border-bottom-style: solid; } .ds-cite:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; }"
+    },
+    {
+      "name": "Breaking Diagnostic",
+      "kind": "custom",
+      "description": "breaking[n]: heading, --> pointer, quote + caret row, | explanation, = help:, fix diff.",
+      "html": "<article class=\"ds-diag\"><h3 class=\"ds-diag-head\"><span class=\"ds-code\">breaking[1]:</span><span>Custom <code>resolve.conditions</code> no longer include the defaults</span></h3><div class=\"ds-body\"><div class=\"ds-gut\"><span>--&gt;</span><span><a class=\"ds-cite\" href=\"#\">release-notes:12-13</a></span></div><div class=\"ds-gut ds-quote\"><span>12</span><span>The default value of resolve.conditions has changed.</span></div><div class=\"ds-gut ds-carets\" aria-hidden=\"true\"><span>|</span><span><span style=\"visibility:hidden\">The default value of </span><span class=\"ds-car\">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div><div class=\"ds-gut\"><span>|</span><span class=\"ds-what\">If you set <code>resolve.conditions</code>, Vite stops adding its defaults.</span></div><div class=\"ds-gut\"><span>=</span><span><span class=\"ds-help\">help:</span> <span class=\"ds-what\">spread the exported defaults into your list.</span></span></div><div class=\"ds-gut\"><span></span><span><pre class=\"ds-fix\"><span class=\"ds-del\">- conditions: ['custom']</span>\n<span class=\"ds-add\">+ conditions: ['custom', ...defaultClientConditions]</span></pre></span></div></div></article>",
+      "css": ".ds-diag { background: var(--ground, #0f1115); color: var(--text, #e7e9ec); padding: 16px; max-width: 900px; } .ds-diag-head { margin: 0; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; font: 500 18px/1.45 'Hanken Grotesk', system-ui, sans-serif; } .ds-code { font: 400 16px/1.7 'Fragment Mono', ui-monospace, monospace; color: var(--breaking, #ff7b6b); } .ds-diag code { font: 0.92em 'Fragment Mono', ui-monospace, monospace; background: var(--sunken, #0b0d10); padding: 1px 5px; border-radius: 4px; } .ds-body { margin-top: 8px; font: 400 14px/1.7 'Fragment Mono', ui-monospace, monospace; } .ds-gut { display: grid; grid-template-columns: 5ch 1fr; } .ds-gut > span:first-child { color: var(--text-faint, #7b848f); text-align: right; padding-right: 1.5ch; user-select: none; } .ds-quote { background: var(--sunken, #0b0d10); border-radius: 4px 4px 0 0; padding-top: 6px; } .ds-quote > span:last-child { color: var(--text-muted, #9aa3ad); white-space: pre-wrap; } .ds-carets { background: var(--sunken, #0b0d10); border-radius: 0 0 4px 4px; padding-bottom: 4px; line-height: 1; } .ds-carets > span:last-child { white-space: pre-wrap; } .ds-car { color: var(--breaking, #ff7b6b); } .ds-what { font: 400 16px/1.6 'Hanken Grotesk', system-ui, sans-serif; } .ds-help { color: var(--help, #6cc4d8); } .ds-cite { font-size: 13px; color: var(--help, #6cc4d8); text-decoration: none; border-bottom: 1px dashed currentColor; } .ds-cite:hover { border-bottom-style: solid; } .ds-cite:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-fix { margin: 8px 0 0; padding: 12px 16px; background: var(--sunken, #0b0d10); border: 1px solid var(--rule, #262b33); border-radius: 6px; overflow-x: auto; font: 400 13.5px/1.6 'Fragment Mono', ui-monospace, monospace; } .ds-del { color: var(--breaking, #ff7b6b); } .ds-add { color: var(--ok, #7bd88f); } @media (max-width: 640px) { .ds-carets { display: none; } .ds-quote { border-radius: 4px; padding-bottom: 6px; } }"
+    },
+    {
+      "name": "Note Line",
+      "kind": "card",
+      "description": "Key point row: muted mono note: label, grotesk prose, cite pointer.",
+      "html": "<ul class=\"ds-notes\"><li><span class=\"ds-note-label\">note:</span><span>Supported Node.js versions are 18, 20 and 22 or later. <a class=\"ds-cite\" href=\"#\">release-notes:10</a></span></li></ul>",
+      "css": ".ds-notes { list-style: none; margin: 0; padding: 0; max-width: 72ch; border-top: 1px solid var(--rule, #262b33); background: var(--ground, #0f1115); color: var(--text, #e7e9ec); font: 400 16px/1.6 'Hanken Grotesk', system-ui, sans-serif; } .ds-notes li { display: grid; grid-template-columns: 8.5ch 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--rule, #262b33); } .ds-note-label { font: 400 14px/1.6 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-cite { margin-left: 8px; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--help, #6cc4d8); text-decoration: none; border-bottom: 1px dashed currentColor; } .ds-cite:hover { border-bottom-style: solid; } .ds-cite:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; }"
+    },
+    {
+      "name": "Source View",
+      "kind": "card",
+      "refersTo": "source-view",
+      "description": "Folded numbered release-notes listing on the one raised plane; cited ranges tinted by severity with a drawn underline.",
+      "html": "<details class=\"ds-source\" open><summary>release-notes <span class=\"ds-meta\">github.com/vitejs/vite · 31 lines</span></summary><ol class=\"ds-lines\"><li><span class=\"ds-h\"># Vite 6.0</span></li><li><span>Vite 6 is the most significant major since Vite 2.</span></li><li class=\"ds-cited\"><span>The default value of <span class=\"ds-span\">resolve.conditions has changed</span>.</span></li></ol></details>",
+      "css": ".ds-source { border: 1px solid var(--rule, #262b33); border-radius: 6px; background: var(--raised, #161a20); color: var(--text, #e7e9ec); } .ds-source summary { cursor: pointer; display: flex; gap: 12px; padding: 12px 16px; font: 400 14px 'Fragment Mono', ui-monospace, monospace; } .ds-source summary:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-meta { margin-left: auto; color: var(--text-muted, #9aa3ad); font-size: 13px; } .ds-lines { border-top: 1px solid var(--rule, #262b33); margin: 0; padding: 12px 0; list-style: none; counter-reset: line; font: 400 13.5px/1.75 'Fragment Mono', ui-monospace, monospace; } .ds-lines li { display: grid; grid-template-columns: 6ch 1fr; counter-increment: line; color: var(--text-muted, #9aa3ad); } .ds-lines li::before { content: counter(line); color: var(--text-faint, #7b848f); text-align: right; padding-right: 2ch; } .ds-h { color: var(--text, #e7e9ec); } .ds-cited { background: var(--breaking-wash, rgba(255,123,107,0.10)); } .ds-span { position: relative; color: var(--text, #e7e9ec); } .ds-cited .ds-span::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--breaking, #ff7b6b); clip-path: inset(0 100% 0 0); animation: ds-caret 650ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards; } @keyframes ds-caret { to { clip-path: inset(0 0 0 0); } } @media (prefers-reduced-motion: reduce) { .ds-cited .ds-span::after { animation: none; clip-path: none; } }"
+    },
+    {
+      "name": "Status Line",
+      "kind": "custom",
+      "description": "Non-ready Summary state: status-scale mono line plus muted explanation.",
+      "html": "<section class=\"ds-status\"><p class=\"ds-status-line\"><span class=\"ds-muted\">pending:</span> summary queued</p><p>Summaries usually land within a few hours; the full release notes are already below.</p></section>",
+      "css": ".ds-status { max-width: 72ch; background: var(--ground, #0f1115); color: var(--text, #e7e9ec); padding: 16px; font: 400 16px/1.6 'Hanken Grotesk', system-ui, sans-serif; } .ds-status-line { margin: 0; font: 400 clamp(1.5rem, 3.6vw, 2.3rem)/1.15 'Fragment Mono', ui-monospace, monospace; letter-spacing: -0.03em; } .ds-muted { color: var(--text-muted, #9aa3ad); } .ds-status p:not(.ds-status-line) { margin: 12px 0 0; color: var(--text-muted, #9aa3ad); }"
+    },
+    {
+      "name": "Significance Glyphs",
+      "kind": "custom",
+      "description": "Neutral shape glyphs for release significance; never severity colour.",
+      "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"ds-s-featured\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-notable\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/></symbol><symbol id=\"ds-s-digest\" viewBox=\"0 0 12 12\"><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-preview\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-dasharray=\"2 1.6\"/></symbol></svg><p class=\"ds-sigs\"><span class=\"ds-rel-sig\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-featured\"/></svg>featured</span><span class=\"ds-rel-sig\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-notable\"/></svg>notable</span><span class=\"ds-rel-sig\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-digest\"/></svg>digest</span><span class=\"ds-rel-sig\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-preview\"/></svg>preview</span></p>",
+      "css": ".ds-glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; } .ds-sig { width: 12px; height: 12px; flex: none; } .ds-sigs { margin: 0; display: flex; gap: 24px; padding: 16px; background: var(--ground, #0f1115); } .ds-rel-sig { display: inline-flex; align-items: center; gap: 6px; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); }"
+    },
+    {
+      "name": "Stat Row",
+      "kind": "custom",
+      "refersTo": "stat-row",
+      "description": "Per-major diff-stat: major, | gutter, neutral bar sized relative to the largest group, counts in words, legend repeating the shape glyphs.",
+      "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"ds-s-featured\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-notable\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/></symbol><symbol id=\"ds-s-digest\" viewBox=\"0 0 12 12\"><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-preview\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-dasharray=\"2 1.6\"/></symbol></svg><div class=\"ds-statwrap\"><ul class=\"ds-stat\"><li><span class=\"ds-major\">v6</span><span class=\"ds-pipe\" aria-hidden=\"true\">|</span><span aria-hidden=\"true\"><span class=\"ds-bar\" style=\"width:12.5%\"><span class=\"ds-b-featured\" style=\"flex:1\"></span><span class=\"ds-b-digest\" style=\"flex:3\"></span></span></span><span class=\"ds-words\">4 releases · 1 featured <span class=\"ds-n-action\"><svg class=\"ds-glyph\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4M12 17h.01\"/></svg>warning: needs action</span> · 3 digest</span></li><li><span class=\"ds-major\">v5</span><span class=\"ds-pipe\" aria-hidden=\"true\">|</span><span aria-hidden=\"true\"><span class=\"ds-bar\" style=\"width:100%\"><span class=\"ds-b-notable\" style=\"flex:2\"></span><span class=\"ds-b-digest\" style=\"flex:30\"></span></span></span><span class=\"ds-words\">32 releases · 2 notable, 1 not summarized · 30 digest</span></li></ul><p class=\"ds-legend\" aria-hidden=\"true\"><span><svg class=\"ds-sig\" style=\"color:var(--text,#e7e9ec)\"><use href=\"#ds-s-featured\"/></svg><i style=\"background:var(--text,#e7e9ec)\"></i>featured</span><span><svg class=\"ds-sig\" style=\"color:var(--text-muted,#9aa3ad)\"><use href=\"#ds-s-notable\"/></svg><i style=\"background:var(--text-muted,#9aa3ad)\"></i>notable</span><span><svg class=\"ds-sig\" style=\"color:var(--text-faint,#7b848f)\"><use href=\"#ds-s-digest\"/></svg><i style=\"background:var(--rule-strong,#353b45)\"></i>digest</span></p></div>",
+      "css": ".ds-glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; } .ds-sig { width: 12px; height: 12px; flex: none; } .ds-statwrap { background: var(--ground, #0f1115); color: var(--text, #e7e9ec); padding: 16px; } .ds-stat { list-style: none; margin: 0; padding: 0; max-width: 820px; border-top: 1px solid var(--rule, #262b33); } .ds-stat li { display: grid; grid-template-columns: 3ch 1ch minmax(120px, 1fr) auto; gap: 16px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--rule, #262b33); font: 400 14px 'Fragment Mono', ui-monospace, monospace; } .ds-pipe { color: var(--text-faint, #7b848f); } .ds-bar { display: flex; height: 8px; gap: 2px; min-width: 28px; } .ds-bar span { display: block; height: 100%; } .ds-b-featured { background: var(--text, #e7e9ec); } .ds-b-notable { background: var(--text-muted, #9aa3ad); } .ds-b-digest { background: var(--rule-strong, #353b45); } .ds-words { color: var(--text-muted, #9aa3ad); white-space: nowrap; } .ds-n-action { color: var(--action, #f2c14e); white-space: nowrap; } .ds-legend { margin: 8px 0 0; display: flex; gap: 16px; flex-wrap: wrap; font: 400 12px 'Fragment Mono', ui-monospace, monospace; color: var(--text-faint, #7b848f); } .ds-legend span { display: inline-flex; align-items: center; gap: 6px; } .ds-legend i { display: inline-block; width: 10px; height: 8px; } @media (max-width: 640px) { .ds-stat li { grid-template-columns: 3ch 1ch 1fr; row-gap: 4px; } .ds-words { grid-column: 1 / -1; white-space: normal; } }"
+    },
+    {
+      "name": "Release Row",
+      "kind": "custom",
+      "refersTo": "release-row",
+      "description": "Significance, version, date, summary title and a row verdict; neutral pending/note verdicts carry no ink.",
+      "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"ds-s-featured\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-notable\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/></symbol><symbol id=\"ds-s-digest\" viewBox=\"0 0 12 12\"><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-preview\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-dasharray=\"2 1.6\"/></symbol></svg><ul class=\"ds-releases\"><li class=\"ds-rel\"><span class=\"ds-rel-sig\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-featured\"/></svg>featured</span><a class=\"ds-rel-version\" href=\"#\">6.0.0</a><time class=\"ds-rel-date\">2024-11-26</time><div class=\"ds-rel-main\"><p class=\"ds-rel-title\">Environment API arrives as experimental, while defaults change for resolve conditions.</p><p class=\"ds-rel-verdict ds-sev-action\"><svg class=\"ds-glyph\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4M12 17h.01\"/></svg>warning: action required · 4 breaking changes</p><a class=\"ds-read-more\" href=\"#\"><span class=\"ds-arrow\" aria-hidden=\"true\">--&gt;</span><span class=\"ds-label\">migrate to vite 6.0.0</span></a></div></li><li class=\"ds-rel\"><span class=\"ds-rel-sig\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-preview\"/></svg>preview</span><a class=\"ds-rel-version\" href=\"#\">6.1.0-beta.0</a><time class=\"ds-rel-date\">2025-01-08</time><div class=\"ds-rel-main\"><p class=\"ds-rel-verdict ds-none\"><svg class=\"ds-glyph\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/></svg>pending: summary queued · <a href=\"#\">read the release notes</a></p></div></li></ul>",
+      "css": ".ds-glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; } .ds-sig { width: 12px; height: 12px; flex: none; } .ds-releases { list-style: none; margin: 0; padding: 16px; background: var(--ground, #0f1115); color: var(--text, #e7e9ec); } .ds-rel { display: grid; grid-template-columns: 11ch 14ch 11ch 1fr; column-gap: 16px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--rule, #262b33); } .ds-rel-sig { display: inline-flex; align-items: center; gap: 6px; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-rel-version { font: 400 16px 'Fragment Mono', ui-monospace, monospace; color: var(--text, #e7e9ec); text-decoration: none; } .ds-rel-version:hover { text-decoration: underline; } .ds-rel-date { font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--text-faint, #7b848f); } .ds-rel-main { min-width: 0; } .ds-rel-title { margin: 0; font: 500 16px/1.45 'Hanken Grotesk', system-ui, sans-serif; } .ds-rel-verdict { margin: 2px 0 0; font: 400 13px 'Fragment Mono', ui-monospace, monospace; } .ds-sev-action { color: var(--action, #f2c14e); } .ds-none { color: var(--text-muted, #9aa3ad); } .ds-none a { color: inherit; text-decoration-color: var(--rule-strong, #353b45); text-underline-offset: 3px; } .ds-read-more { display: inline-flex; gap: 1ch; margin-top: 12px; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--help, #6cc4d8); text-decoration: none; } .ds-read-more .ds-arrow { color: var(--text-faint, #7b848f); } .ds-read-more .ds-label { border-bottom: 1px dashed var(--help, #6cc4d8); } .ds-read-more:hover .ds-label { border-bottom-style: solid; } .ds-rel a:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } @media (max-width: 880px) { .ds-rel { grid-template-columns: auto auto 1fr; row-gap: 4px; } .ds-rel-date { justify-self: end; } .ds-rel-main { grid-column: 1 / -1; } }"
+    },
+    {
+      "name": "Digest Row",
+      "kind": "custom",
+      "refersTo": "digest-row",
+      "description": "Consecutive digest releases folded into one details row; range hidden on mobile.",
+      "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"ds-s-featured\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-notable\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/></symbol><symbol id=\"ds-s-digest\" viewBox=\"0 0 12 12\"><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-preview\" viewBox=\"0 0 12 12\"><path d=\"M6 1.7 10.3 6 6 10.3 1.7 6Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-dasharray=\"2 1.6\"/></symbol></svg><details class=\"ds-digest\"><summary><span class=\"ds-rel-sig\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-digest\"/></svg>digest</span><span><span class=\"ds-nowrap\">14 digest releases</span><span class=\"ds-range\"> · 5.2.1 to 5.2.14</span><span class=\"ds-nowrap ds-na\"><span class=\"ds-sep\"> · </span>no action needed</span></span><svg class=\"ds-chev\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg></summary><ul class=\"ds-digest-lines\"><li><a href=\"#\">5.2.1</a><time>2024-03-21</time></li><li><a href=\"#\">5.2.2</a><time>2024-03-24</time></li><li><a href=\"#\">5.2.3</a><time>2024-04-02</time></li></ul></details>",
+      "css": ".ds-digest { border-bottom: 1px solid var(--rule, #262b33); background: var(--ground, #0f1115); padding: 0 16px; } .ds-digest summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 11ch 1fr auto; column-gap: 16px; align-items: center; padding: 8px 0; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-digest summary::-webkit-details-marker { display: none; } .ds-digest summary:hover { color: var(--text, #e7e9ec); } .ds-digest summary:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-rel-sig { display: inline-flex; align-items: center; gap: 6px; } .ds-sig { width: 12px; height: 12px; } .ds-nowrap { white-space: nowrap; } .ds-chev { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; justify-self: end; transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-digest[open] .ds-chev { transform: rotate(90deg); } .ds-digest-lines { list-style: none; margin: 0 0 12px; padding: 0 0 0 calc(11ch + 16px); display: grid; grid-template-columns: repeat(auto-fill, minmax(22ch, 1fr)); gap: 2px 16px; font: 400 13px 'Fragment Mono', ui-monospace, monospace; } .ds-digest-lines a { color: var(--text, #e7e9ec); text-decoration: none; } .ds-digest-lines a:hover { text-decoration: underline; } .ds-digest-lines time { color: var(--text-faint, #7b848f); margin-left: 1ch; } @media (max-width: 640px) { .ds-digest summary { grid-template-columns: auto 1fr auto; } .ds-range, .ds-sep { display: none; } .ds-na { display: block; } .ds-digest-lines { padding-left: 0; } } @media (prefers-reduced-motion: reduce) { .ds-chev { transition: none; } }"
+    },
+    {
+      "name": "Help Pointer Link",
+      "kind": "chip",
+      "refersTo": "help-pointer",
+      "description": "Navigational link in compiler grammar: faint --> arrow, cyan label with dashed underline, solid on hover.",
+      "html": "<p style=\"margin:0;padding:16px;background:var(--ground,#0f1115)\"><a class=\"ds-pointer\" href=\"#\"><span class=\"ds-arrow\" aria-hidden=\"true\">--&gt;</span><span class=\"ds-label\">migrate to vite 6.0.0</span></a></p>",
+      "css": ".ds-pointer { display: inline-flex; gap: 1ch; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--help, #6cc4d8); text-decoration: none; } .ds-pointer .ds-arrow { color: var(--text-faint, #7b848f); } .ds-pointer .ds-label { border-bottom: 1px dashed var(--help, #6cc4d8); } .ds-pointer:hover .ds-label { border-bottom-style: solid; } .ds-pointer:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; }"
+    },
+    {
+      "name": "Stack Status Row",
+      "kind": "custom",
+      "refersTo": "stack-row",
+      "description": "Dashboard row: technology | version with significance glyph | date (+ this week) | content; section legend names the significance; compact latest-major rows close Spotlight.",
+      "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"ds-s-featured\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-digest\" viewBox=\"0 0 12 12\"><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"currentColor\"/></symbol></svg><section class=\"ds-dash\"><h2 class=\"ds-sect\">spotlight (7)<span class=\"ds-aside\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-featured\"/></svg>featured <span class=\"ds-fact\">· last 30 days</span></span></h2><ul class=\"ds-rows\"><li class=\"ds-row\"><a class=\"ds-tech\" href=\"#\">Vite</a><span class=\"ds-ver\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-featured\"/></svg><a href=\"#\">6.0.0</a></span><span class=\"ds-when\"><time>2024-12-05</time><span class=\"ds-recent\">this week</span></span><div class=\"ds-main\"><p class=\"ds-title\">Environment API arrives as experimental, while defaults change for resolve conditions.</p><p class=\"ds-verdict ds-sev-action\"><svg class=\"ds-glyph\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4M12 17h.01\"/></svg>warning: action required · 4 breaking changes</p><a class=\"ds-pointer ds-mt\" href=\"#\"><span class=\"ds-arrow\" aria-hidden=\"true\">--&gt;</span><span class=\"ds-label\">migrate to vite 6.0.0</span></a></div></li><li class=\"ds-row ds-compact\"><a class=\"ds-tech\" href=\"#\">Next.js</a><span class=\"ds-ver\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-featured\"/></svg><a href=\"#\">15.0.0</a></span><span class=\"ds-when\"><time>2024-10-21</time></span><p class=\"ds-main\">latest major · none featured in 30 days</p></li></ul></section>",
+      "css": ".ds-glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; } .ds-sig { width: 12px; height: 12px; flex: none; } .ds-pointer { display: inline-flex; gap: 1ch; font: 400 13px 'Fragment Mono', ui-monospace, monospace; color: var(--help, #6cc4d8); text-decoration: none; } .ds-pointer .ds-arrow { color: var(--text-faint, #7b848f); } .ds-pointer .ds-label { border-bottom: 1px dashed var(--help, #6cc4d8); } .ds-pointer:hover .ds-label { border-bottom-style: solid; } .ds-pointer:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-mt { margin-top: 12px; } .ds-dash { background: var(--ground, #0f1115); color: var(--text, #e7e9ec); padding: 16px; } .ds-sect { margin: 0 0 8px; display: flex; align-items: baseline; gap: 12px; font: 600 13px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); letter-spacing: 0.02em; } .ds-sect::after { content: ''; flex: 1; height: 1px; background: var(--rule, #262b33); transform: translateY(-4px); } .ds-aside { order: 2; display: inline-flex; align-items: center; gap: 6px; font-weight: 400; letter-spacing: 0; } .ds-fact { color: var(--text-faint, #7b848f); } .ds-rows { list-style: none; margin: 0; padding: 0; } .ds-row { display: grid; grid-template-columns: 14ch 17ch 11ch minmax(0, 1fr); column-gap: 16px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--rule, #262b33); font: 400 16px/1.45 'Hanken Grotesk', system-ui, sans-serif; } .ds-rows > .ds-row:first-child { border-top: 1px solid var(--rule, #262b33); } .ds-tech { font: 600 16px/1.45 'Hanken Grotesk', system-ui, sans-serif; letter-spacing: -0.01em; color: var(--text, #e7e9ec); text-decoration: none; } .ds-tech:hover { text-decoration: underline; } .ds-ver { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted, #9aa3ad); } .ds-ver a { font: 400 16px 'Fragment Mono', ui-monospace, monospace; color: var(--text, #e7e9ec); text-decoration: none; } .ds-ver a:hover { text-decoration: underline; } .ds-when { display: flex; flex-direction: column; font: 400 13px/1.45 'Fragment Mono', ui-monospace, monospace; color: var(--text-faint, #7b848f); } .ds-recent { color: var(--text-muted, #9aa3ad); font-size: 12px; } .ds-main { min-width: 0; margin: 0; } .ds-title { margin: 0; font: 500 16px/1.45 'Hanken Grotesk', system-ui, sans-serif; } .ds-verdict { margin: 2px 0 0; font: 400 13px/1.6 'Fragment Mono', ui-monospace, monospace; } .ds-sev-action { color: var(--action, #f2c14e); } .ds-compact { padding: 8px 0; } .ds-compact .ds-main { font: 400 13px/1.6 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-compact .ds-tech { font-weight: 500; color: var(--text-muted, #9aa3ad); } .ds-compact .ds-tech:hover { color: var(--text, #e7e9ec); } .ds-row a:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } @media (max-width: 640px) { .ds-row { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: 4px; } .ds-when { text-align: right; } .ds-main { grid-column: 1 / -1; } .ds-sect { flex-wrap: wrap; row-gap: 4px; } .ds-sect::after { order: 1; } .ds-aside { order: 3; flex-basis: 100%; } }"
+    },
+    {
+      "name": "Week Row",
+      "kind": "custom",
+      "refersTo": "week-row",
+      "description": "Weekly Digest: one folded details row per ISO week (UTC); expanded lines newest first with Technology names.",
+      "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"ds-s-featured\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"currentColor\"/></symbol><symbol id=\"ds-s-digest\" viewBox=\"0 0 12 12\"><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"currentColor\"/></symbol></svg><details class=\"ds-week\"><summary><span class=\"ds-wk\"><svg class=\"ds-sig\" aria-hidden=\"true\"><use href=\"#ds-s-digest\"/></svg>week 49</span><span><span class=\"ds-nowrap\">9 digest releases</span><span class=\"ds-range\"> · Dec 2 to 8</span><span class=\"ds-nowrap ds-na\"><span class=\"ds-sep\"> · </span>no action needed</span></span><svg class=\"ds-chev\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg></summary><ul class=\"ds-week-lines\"><li><span class=\"ds-t\">Vite</span> <a href=\"#\">6.0.3</a><time>12-05</time></li><li><span class=\"ds-t\">Next.js</span> <a href=\"#\">14.2.20</a><time>12-04</time></li><li><span class=\"ds-t\">React</span> <a href=\"#\">18.3.2</a><time>12-04</time></li></ul></details>",
+      "css": ".ds-sig { width: 12px; height: 12px; flex: none; } .ds-week { border-top: 1px solid var(--rule, #262b33); border-bottom: 1px solid var(--rule, #262b33); background: var(--ground, #0f1115); padding: 0 16px; } .ds-week summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 14ch minmax(0, 1fr) auto; column-gap: 16px; align-items: center; padding: 8px 0; font: 400 13px/1.6 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-week summary::-webkit-details-marker { display: none; } .ds-week summary:hover { color: var(--text, #e7e9ec); } .ds-week summary:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-wk { display: inline-flex; align-items: center; gap: 6px; color: var(--text, #e7e9ec); } .ds-nowrap { white-space: nowrap; } .ds-chev { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; justify-self: end; transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-week[open] .ds-chev { transform: rotate(90deg); } .ds-week-lines { list-style: none; margin: 0 0 12px; padding: 0 0 0 calc(14ch + 16px); display: grid; grid-template-columns: repeat(auto-fill, minmax(28ch, 1fr)); gap: 2px 16px; font: 400 13px/1.6 'Fragment Mono', ui-monospace, monospace; } .ds-t { color: var(--text-muted, #9aa3ad); } .ds-week-lines a { color: var(--text, #e7e9ec); text-decoration: none; } .ds-week-lines a:hover { text-decoration: underline; } .ds-week-lines time { color: var(--text-faint, #7b848f); margin-left: 1ch; } @media (max-width: 640px) { .ds-week summary { grid-template-columns: auto minmax(0, 1fr) auto; } .ds-range, .ds-sep { display: none; } .ds-na { display: block; } .ds-week-lines { padding-left: 0; grid-template-columns: 1fr; } } @media (prefers-reduced-motion: reduce) { .ds-chev { transition: none; } }"
+    },
+    {
+      "name": "Follow Toggle",
+      "kind": "button",
+      "refersTo": "button-pressed",
+      "description": "aria-pressed Follow/Following button in the catalog picker, beside the live 'N of 10 followed' count.",
+      "html": "<div class=\"ds-pick\"><p class=\"ds-fcount\"><span aria-live=\"polite\"><strong>1</strong> of 10 followed</span></p><button class=\"ds-btn\" type=\"button\" aria-pressed=\"false\" aria-label=\"Follow React\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>Follow</button><button class=\"ds-btn\" type=\"button\" aria-pressed=\"true\" aria-label=\"Unfollow Vite\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>Following</button></div>",
+      "css": ".ds-pick { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 16px; background: var(--ground, #0f1115); } .ds-fcount { margin: 0 12px 0 0; font: 400 14px/1.7 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-fcount strong { color: var(--text, #e7e9ec); font-weight: 400; } .ds-btn { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border: 1px solid var(--rule-strong, #353b45); border-radius: 6px; background: transparent; color: var(--text, #e7e9ec); font: 500 14px 'Hanken Grotesk', system-ui, sans-serif; cursor: pointer; } .ds-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-btn:hover { background: var(--raised, #161a20); border-color: var(--text-faint, #7b848f); } .ds-btn[aria-pressed=\"true\"] { border-color: var(--rule, #262b33); color: var(--text-muted, #9aa3ad); } .ds-btn[aria-pressed=\"true\"]:hover { color: var(--text, #e7e9ec); } .ds-btn:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; }"
+    },
+    {
+      "name": "Upgrade Path Form",
+      "kind": "input",
+      "refersTo": "range-input",
+      "description": "Mono sentence form 'Upgrade from [version] to latest [Check]' with an invalid-version error line and linked suggestions.",
+      "html": "<form class=\"ds-range-form\" action=\"#\"><label for=\"ds-from\">Upgrade from</label><input id=\"ds-from\" value=\"5.9.0\" aria-invalid=\"true\" aria-describedby=\"ds-from-error\"><span>to</span><span class=\"ds-to\">6.0.3</span><button class=\"ds-btn\" type=\"submit\">Check</button><p class=\"ds-field-error\" id=\"ds-from-error\"><svg class=\"ds-glyph\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m15 9-6 6M9 9l6 6\"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href=\"#\">5.4.0</a> or <a href=\"#\">5.4.11</a>? The path below is still from 5.2.0.</p></form>",
+      "css": ".ds-glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; } .ds-sig { width: 12px; height: 12px; flex: none; } .ds-range-form { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 16px; background: var(--ground, #0f1115); font: 400 14px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-range-form input { width: 11ch; height: 38px; padding: 0 12px; font: 400 16px 'Fragment Mono', ui-monospace, monospace; color: var(--text, #e7e9ec); background: var(--sunken, #0b0d10); border: 1px solid var(--rule-strong, #353b45); border-radius: 6px; } .ds-range-form input:hover { border-color: var(--text-faint, #7b848f); } .ds-range-form input:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-range-form input[aria-invalid=\"true\"] { border-color: var(--breaking, #ff7b6b); } .ds-to { color: var(--text, #e7e9ec); } .ds-btn { display: inline-flex; align-items: center; height: 34px; padding: 0 12px; border: 1px solid var(--rule-strong, #353b45); border-radius: 6px; background: transparent; color: var(--text, #e7e9ec); font: 500 14px 'Hanken Grotesk', system-ui, sans-serif; cursor: pointer; } .ds-btn:hover { background: var(--raised, #161a20); border-color: var(--text-faint, #7b848f); } .ds-field-error { flex-basis: 100%; margin: 0; font: 400 14px 'Fragment Mono', ui-monospace, monospace; color: var(--breaking, #ff7b6b); } .ds-field-error a { color: inherit; text-underline-offset: 3px; }"
+    },
+    {
+      "name": "Retired Note",
+      "kind": "custom",
+      "description": "Muted note: line between rules for a technology no longer tracked; no ink.",
+      "html": "<div class=\"ds-retired\" role=\"note\"><p><span class=\"ds-label\"><svg class=\"ds-glyph\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4M12 8h.01\"/></svg>note:</span> Vite is no longer tracked. Releases up to 6.0.3 stay readable, but new versions are not detected.</p></div>",
+      "css": ".ds-glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; } .ds-sig { width: 12px; height: 12px; flex: none; } .ds-retired { padding: 12px 0; border-top: 1px solid var(--rule, #262b33); border-bottom: 1px solid var(--rule, #262b33); background: var(--ground, #0f1115); } .ds-retired p { margin: 0; color: var(--text-muted, #9aa3ad); font: 400 16px/1.6 'Hanken Grotesk', system-ui, sans-serif; } .ds-label { font: 400 14px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); }"
+    },
+    {
+      "name": "Catalog Picker Row",
+      "kind": "custom",
+      "refersTo": "picker-row",
+      "description": "Technologies page row: linked name, faint facts, Follow Toggle; disabled at the limit with a note line; server-rejected follow shows an error line under the row; retired rows end in an unfollowed status.",
+      "html": "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"ds-g-note\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4M12 8h.01\"/></symbol><symbol id=\"ds-g-error\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m15 9-6 6M9 9l6 6\"/></symbol></svg><section class=\"ds-tp\"><h2 class=\"ds-sect\">catalog (32)</h2><p class=\"ds-line\" id=\"ds-limit\"><svg class=\"ds-glyph\" aria-hidden=\"true\"><use href=\"#ds-g-note\"/></svg>note: <strong>10</strong> of 10 followed · unfollow one to follow another</p><ul class=\"ds-rows\"><li class=\"ds-prow\"><a class=\"ds-tech\" href=\"#\">Astro</a><span class=\"ds-facts\">latest <strong>5.0.4</strong> · content-driven web framework</span><button class=\"ds-btn\" type=\"button\" aria-pressed=\"false\" aria-disabled=\"true\" aria-describedby=\"ds-limit\" aria-label=\"Follow Astro\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>Follow</button></li><li class=\"ds-prow\"><a class=\"ds-tech\" href=\"#\">TanStack Query</a><span class=\"ds-facts\">latest <strong>5.62.3</strong> · async state for web apps</span><button class=\"ds-btn\" type=\"button\" aria-pressed=\"false\" aria-describedby=\"ds-err\" aria-label=\"Follow TanStack Query\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>Follow</button><p class=\"ds-row-error\" id=\"ds-err\"><svg class=\"ds-glyph\" aria-hidden=\"true\"><use href=\"#ds-g-error\"/></svg>error: not followed · you already follow 10 (one was added in another session) · unfollow one to follow another</p></li><li class=\"ds-prow\"><a class=\"ds-tech\" href=\"#\">Create React App</a><span class=\"ds-facts\">last <strong>5.0.1</strong> · React app setup · retired 2024-10</span><span class=\"ds-row-note\" role=\"status\">unfollowed · can't be followed again</span></li></ul></section>",
+      "css": ".ds-glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; } .ds-tp { background: var(--ground, #0f1115); color: var(--text, #e7e9ec); padding: 16px; } .ds-sect { margin: 0 0 8px; display: flex; align-items: baseline; gap: 12px; font: 600 13px 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); letter-spacing: 0.02em; } .ds-sect::after { content: ''; flex: 1; height: 1px; background: var(--rule, #262b33); transform: translateY(-4px); } .ds-line { margin: 0 0 12px; max-width: 900px; font: 400 14px/1.7 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); } .ds-line strong { color: var(--text, #e7e9ec); font-weight: 400; } .ds-rows { list-style: none; margin: 0; padding: 0; } .ds-prow { display: grid; grid-template-columns: 16ch minmax(0, 1fr) auto; column-gap: 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--rule, #262b33); } .ds-rows > .ds-prow:first-child { border-top: 1px solid var(--rule, #262b33); } .ds-tech { font: 600 16px/1.45 'Hanken Grotesk', system-ui, sans-serif; letter-spacing: -0.01em; color: var(--text, #e7e9ec); text-decoration: none; } .ds-tech:hover { text-decoration: underline; } .ds-facts { font: 400 13px/1.6 'Fragment Mono', ui-monospace, monospace; color: var(--text-faint, #7b848f); } .ds-facts strong { color: var(--text-muted, #9aa3ad); font-weight: 400; } .ds-btn { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border: 1px solid var(--rule-strong, #353b45); border-radius: 6px; background: transparent; color: var(--text, #e7e9ec); font: 500 14px 'Hanken Grotesk', system-ui, sans-serif; cursor: pointer; white-space: nowrap; } .ds-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-btn:hover { background: var(--raised, #161a20); border-color: var(--text-faint, #7b848f); } .ds-btn[aria-disabled=\"true\"] { border-color: var(--rule, #262b33); color: var(--text-faint, #7b848f); cursor: not-allowed; } .ds-btn[aria-disabled=\"true\"]:hover { background: transparent; border-color: var(--rule, #262b33); } .ds-btn:focus-visible, .ds-tech:focus-visible { outline: 2px solid var(--focus, #6cc4d8); outline-offset: 3px; border-radius: 3px; } .ds-row-error { grid-column: 2 / -1; margin: 8px 0 0; font: 400 13px/1.6 'Fragment Mono', ui-monospace, monospace; color: var(--breaking, #ff7b6b); } .ds-row-note { font: 400 13px/1.6 'Fragment Mono', ui-monospace, monospace; color: var(--text-muted, #9aa3ad); white-space: nowrap; } @media (max-width: 640px) { .ds-prow { grid-template-columns: minmax(0, 1fr) auto; row-gap: 2px; } .ds-prow .ds-facts { grid-column: 1 / 2; grid-row: 2; } .ds-prow .ds-btn, .ds-prow .ds-row-note { grid-row: 1 / 3; grid-column: 2; } .ds-row-note { white-space: normal; text-align: right; max-width: 16ch; } .ds-row-error { grid-column: 1 / -1; grid-row: 3; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Compiler Diagnostic",
+    "overview": "A release reads like compiler output. One verdict line at display size, numbered `breaking[n]:` diagnostics that each point at their source lines with `-->`, quote the cited text over a caret row, and end in `= help:`. The release notes sit below as a numbered source view, clearly a separate part of the page from the Summary. Every claim can be checked against a highlighted line range.\n\nThe ground is terminal dark with one raised plane and one sunken well. Diagnostic severity is the only colour on the page. Fragment Mono carries the grammar: labels, versions, gutters, pointers, counts and metadata. Hanken Grotesk carries the prose that explains what changes. The page is dense and working-scale, not a marketing page. Width is set by a 72ch measure, and hierarchy comes from typography and gutters, not cards.\n\nA light theme mirrors every role with darker severity inks on a warm off-white ground. Dark is the default.",
+    "keyCharacteristics": [
+      "Severity colour is always paired with a label word and a glyph.",
+      "Monospace grammar (`note:`, `breaking[n]:`, `-->`, `|`, `=`, `help:`) is the component language.",
+      "Flat surfaces: three tonal layers (ground, raised, sunken) and 1px rules. No shadows.",
+      "One motion moment: the caret underline draws beneath cited spans.",
+      "The Summary and the source notes use different registers: grammar plus prose above, a numbered listing below."
+    ],
+    "rules": [
+      {
+        "name": "The Severity Pairing Rule",
+        "body": "A severity colour never appears alone. It always comes with its label word and its glyph: warning (triangle) + `warning:`, ok (check circle) + `ok:`, breaking (octagon) + `breaking[n]:`, error (x circle) + `error:`, note (info circle) + `note:`, help (wrench) + `help:`, pending (clock) + `pending:`.",
+        "section": "colors"
+      },
+      {
+        "name": "The Severity-Only Colour Rule",
+        "body": "Hue means severity. There are no brand or decorative accents. `note:` and non-error status lines (`pending:`, unavailable, skipped) stay in `text-muted`. Only breaking, action, help and ok get an ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Neutral Significance Rule",
+        "body": "Release significance (featured, notable, digest, preview) is a shape, never a hue. Featured is a filled diamond, notable an outlined diamond, digest a small dot, preview a dashed outlined diamond. They are always 12px SVG shapes (never a rotated CSS square), drawn in `text`, `text-muted`, `text-faint` or `rule-strong`, and never in a severity ink. Severity can sit beside a significance glyph, but always as its own glyph and label.",
+        "section": "colors"
+      },
+      {
+        "name": "The One-Line Verdict Rule",
+        "body": "The verdict keeps its token scale on every surface. The copy is shortened to fit, and the scale never shrinks. At the 1040px container the whole verdict (glyph, label and claim) must fit on one line, so a range verdict reads `warning: 1 needs action`, not `warning: 1 release needs action`. The claim after the label is set inline-block, so when narrow screens force a wrap, it drops to the next line as a unit and never splits mid-phrase.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two Registers Rule",
+        "body": "Anything a compiler would print (labels, codes, pointers, versions, counts, line numbers, dates) is set in Fragment Mono. Sentences a person reads are set in Hanken Grotesk. Don't mix them within one role.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Raised Plane Rule",
+        "body": "Only the release-notes source view sits on `raised`. Quoted and code material sinks. Nothing floats.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do pair every severity ink with its glyph and label word (see The Severity Pairing Rule).",
+      "Do cite every key point and breaking change with a `release-notes:N` or `N-M` pointer that highlights exactly those lines in the source view.",
+      "Do set grammar, numbers and line references in Fragment Mono with tabular numerals, and explanations in Hanken Grotesk.",
+      "Do replace caret rows with an in-quote 2px `breaking` underline at 640px and below.",
+      "Do keep the caret-draw as the single motion moment, with an immediate fallback under reduced motion.",
+      "Do define both themes for every colour role. Dark is the default.",
+      "Do mark release significance with the neutral SVG shape glyphs (see The Neutral Significance Rule).",
+      "Do give navigational links their grammar: a faint `-->` arrow and a cyan dashed-underline label.",
+      "Do keep neutral row verdicts (`note:`, `pending:`) and dashboard counts in `text-muted`, with no ink.",
+      "Do write counts in words beside every bar, using the list's own vocabulary, with a legend that repeats the shape glyphs.",
+      "Do shorten verdict copy until it fits on one line at the 1040px container, and set the claim inline-block so it wraps as a unit (see The One-Line Verdict Rule).",
+      "Do disable a Follow toggle at the limit with `aria-disabled`, keep it focusable, and describe it by the `note:` line that explains the limit."
+    ],
+    "donts": [
+      "Don't use hue for anything but severity. There are no brand accents or decorative colour.",
+      "Don't add shadows or extra raised surfaces. Depth is `sunken` / `ground` / one `raised`.",
+      "Don't wrap diagnostics in cards or badges. Structure comes from gutters and grammar.",
+      "Don't colour `note:` or non-error status lines. They stay `text-muted`.",
+      "Don't give significance (featured, notable, digest, preview) a severity ink, and don't let a bar carry meaning without its counts in words.",
+      "Don't shrink the verdict scale to fit longer copy."
+    ]
+  }
+}

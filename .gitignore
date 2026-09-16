@@ -1,0 +1,14 @@
+# OS / tool artifacts
+*.stackdump
+.DS_Store
+
+# Impeccable local-only
+.impeccable/config.local.json
+.impeccable/questions/
+
+# Node (future app)
+node_modules/
+.next/
+.env*
+!.env.example
+.vercel/
