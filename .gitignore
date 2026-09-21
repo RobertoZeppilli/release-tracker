@@ -12,3 +12,10 @@ node_modules/
 .env*
 !.env.example
 .vercel/
+/coverage
+/out/
+/build
+*.pem
+*.tsbuildinfo
+next-env.d.ts
+.pnpm-debug.log*
