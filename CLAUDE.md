@@ -32,8 +32,10 @@ Parla con l'utente **in italiano**.
 - Un branch per issue, PR che chiude l'issue.
 - Commit, push, PR e creazione di issue **solo dopo conferma dell'utente**.
 - Dai consigli con una raccomandazione motivata.
-- Se il contesto supera ~35%, proponi di aggiornare `docs/HANDOFF.md` e aprire una nuova sessione.
+- Se il contesto supera ~30%, proponi di aggiornare `docs/HANDOFF.md` e aprire una nuova sessione.
 
 ## Comandi
 
-Da aggiungere con l'issue #2 (Fondamenta), quando esistono.
+- `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm typecheck` · `pnpm test` (Vitest).
+- Variabili d'ambiente: copia `.env.example` in `.env.local`; lo schema Zod è in `src/env/`.
+- Next.js 16: leggi `AGENTS.md` e le guide in `node_modules/next/dist/docs/` prima di usare API di Next.
