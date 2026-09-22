@@ -16,27 +16,30 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#9 (#9 nella PR #35, verificata in produzione: React e TypeScript importati). Sbloccate: **#10**
-  (Sintesi completa, consigliata: sblocca #15), #16 (login, sblocca #17 con la #9), #25, #36. Vedi i "Blocked by" (`gh issue view N`).
+- Fatte: #2–#10 (#10 nella PR #37). Sbloccate: **#15** (cron giornaliero, consigliata: mette in moto
+  Rilevamento e Sintesi), #11 (credito esaurito), #12 (puntatori alle righe), #13 (rivalidazione),
+  #16 (login, sblocca #17 con la #9), #25, #36. Vedi i "Blocked by" (`gh issue view N`).
 - Avviso per credito API esaurito = issue GitHub aperta dal job, una sola alla volta (`docs/DECISIONI.md`).
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Ultima sessione (2026-09-22): #9 Strategie, Fonte CHANGELOG, React e TypeScript
+## Ultima sessione (2026-09-22): #10 Pipeline delle Sintesi con un fake della Batch API
 
-- Regole nuove in `CONTEXT.md` (Strategia di classificazione, Anteprima): `semver`, `node` (major pari featured,
-  dispari notable), `typescript` (la prima stabile di ogni x.y è featured: 5.9.2, non 5.9.0), `zerover` (0.y.0
-  featured). Anteprima = solo `beta`/`rc` con al massimo un numero; build con hash o data escluse.
-- `classify(version, strategy, observed)`: il terzo argomento sono le Versioni osservate dalle Fonti di rilevamento
-  (serve a TypeScript). Chi chiama il Rilevamento (#11 e seguenti) deve passarle tutte.
-- Fonte `notes` di tipo `changelog` (`repo`, `path`): `detection/domain/changelog.ts` (`extractChangelogSection`,
-  `headingAnchor`), file letto da `raw.githubusercontent.com/<repo>/HEAD/<path>`, link con l'àncora GitHub.
-  `githubRepo(sources)` in `catalog` per i link "View on GitHub".
-- `RetiredNote` (catalog/ui) su pagina Tecnologia e Release; E2E `retired.spec.ts`; `seedTechnology(…, { retired })`.
-- Aperte: #36 (tag GitHub delle Anteprime di TypeScript `v6.0-rc`, oggi `unavailable`); commento su #23 per la nota
-  di ritiro sulla Release, che nel mock manca. Le Note GitHub di TypeScript sono quasi solo link al blog: da tenere
-  presente nella #14.
+- Dominio `summaries`: `SummaryContentSchema` (titolo ≤ 120, 3–5 punti chiave, breaking changes con migrazione),
+  `parseSummaryOutput`, `prepareSummaryRequest` (prompt `v1`, modello `claude-opus-5`, soglia di 80.000 caratteri:
+  oltre → `failed`, mai troncare) e la porta `SummaryBatches` (`submit` → batch id, `collect` → `null` se in corso).
+- Regola nuova in `CONTEXT.md`: **Intervento richiesto = sì esattamente con almeno una breaking change**, e ogni
+  breaking change dice come migrare; un output che rompe il legame è `failed`.
+- Database: `summaries.batch_id` e `claim_pending_summaries(max_count)` (unico `UPDATE … RETURNING` con
+  `skip locked`, solo service role). Server: `submitPendingSummaries` (se l'invio fallisce si torna a `pending`)
+  e `collectSummaryBatches` (validazione, `ready`/`failed` col motivo, modello e versione del prompt salvati).
+- Endpoint `GET /api/jobs/summaries/{submit,collect}` con `Authorization: Bearer <CRON_SECRET>` (`CRON_SECRET`
+  opzionale nello schema env, vuoto = assente). `createSummaryBatches()` restituisce `null`: **503 finché la #14**
+  non collega Anthropic. Il fake della Batch API sta in `tests/integration/fake-summary-batches.ts`.
+- Pagina della Release: `SummaryView` (verdetto con conteggio, titolo, punti chiave `note:`, `breaking[n]:` con
+  `help:`, backtick resi come `<code>`); una Sintesi `ready` con contenuto non valido si legge come `failed`.
+- Scelta da rivedere nella #11: una richiesta del batch in errore o scaduta va subito a `failed`, senza rinvio.
 
 ## Ambiente
 
@@ -50,10 +53,11 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
-## Da fare: #10 Sintesi completa
+## Da fare: #15 Cron giornaliero di Rilevamento e Sintesi
 
-`gh issue view 10`, skill `claude-api` (Message Batches API, ADR 0007). Estende `SummaryVerdictSchema`
-(oggi solo `{ actionRequired }`) e la fixture E2E che scrive `content`. Alternative già sbloccate: #16, #25, #36.
+`gh issue view 15`. Il Rilevamento vero (Fonti `detection`, idempotente, `significanceOverride` rispettata,
+Anteprime) più la pianificazione su Vercel delle due fasi della Sintesi, che esistono già. `CRON_SECRET` va
+impostato su Vercel. Alternative sbloccate: #11, #12, #13, #16, #25, #36.
 
 ## Preferenze dell'utente
 
@@ -65,5 +69,5 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 ## Skill suggerite
 
 - `tdd` per i moduli `domain` (classificazione, `buildDashboard`, `computeUpgradePath`).
-- `claude-api` per #10 e #14 (Message Batches API, ADR 0007).
+- `claude-api` per la #14 (adattatore reale della Message Batches API, ADR 0007).
 - `impeccable` solo per landing, login, 404.
