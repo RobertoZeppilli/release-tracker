@@ -26,7 +26,11 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 - **#2 Fondamenta**: mergiata (PR #27). Token in `src/app/globals.css`, env Zod in `src/env/`, moduli in
   `src/modules/` con `index.ts` + `server/index.ts`, regole ESLint in `eslint/`, CI in `.github/workflows/ci.yml`.
-- **#3 Supabase locale**: implementata sul branch `issue-3-supabase-locale`, PR aperta (`gh pr list`).
+- **#4 Deploy**: progetti Supabase (Frankfurt) e Vercel creati dall'utente, variabili su Vercel e segreti
+  su GitHub impostati (elenco nel `README.md`). Codice sul branch `issue-4-deploy`, PR aperta: env Zod
+  con `src/env/server.ts` per la secret key, workflow `Migrations` (`supabase db push` su `main`),
+  `vercel.json` in `fra1`. Da verificare dopo il merge: primo run del workflow (permessi del token).
+- **#3 Supabase locale**: mergiata (PR #28).
   - Docker Desktop (WSL2) installato per l'utente in `%LOCALAPPDATA%\Programs\DockerDesktop`; RAM di WSL
     limitata a 6 GB in `~/.wslconfig`. Si resta su Supabase (valutate e scartate Neon e PGlite).
   - Migrazione `supabase/migrations/…_initial_schema.sql`: tabelle, enum, vincolo unico Tecnologia +
@@ -39,8 +43,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Da fare
 
-1. Verificare la CI della PR della #3 e farla mergiare; poi la prossima issue sbloccata (#4 deploy è HITL,
-   #5 Catalogo è AFK). Una issue per volta, branch dedicato, PR che chiude la issue.
+1. Chiudere la #4 (anteprima Vercel verde, merge, run del workflow Migrations); poi la prossima issue (#5 Catalogo è AFK).
 2. Rispettare i criteri di accettazione dell'issue; fermarsi e chiedere sulle HITL.
 
 ## Preferenze dell'utente
