@@ -16,7 +16,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Ordine: #2 Fondamenta → #3 Supabase locale → (#4 deploy, #5 Catalogo) → … vedi "Blocked by" di ogni issue
+- Fatte: #2, #3, #4. Prossima: #5 Catalogo → vedi "Blocked by" di ogni issue
   (`gh issue list`, `gh issue view N`).
 - Decisione recente: avviso per credito API esaurito = issue GitHub aperta dal job, una sola alla volta
   (in `docs/DECISIONI.md`).
@@ -24,27 +24,39 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Ultima sessione (2026-09-22)
 
-- **#2 Fondamenta**: mergiata (PR #27). Token in `src/app/globals.css`, env Zod in `src/env/`, moduli in
+- **#2 Fondamenta** (PR #27): token in `src/app/globals.css`, env Zod in `src/env/`, moduli in
   `src/modules/` con `index.ts` + `server/index.ts`, regole ESLint in `eslint/`, CI in `.github/workflows/ci.yml`.
-- **#4 Deploy**: progetti Supabase (Frankfurt) e Vercel creati dall'utente, variabili su Vercel e segreti
-  su GitHub impostati (elenco nel `README.md`). Codice sul branch `issue-4-deploy`, PR aperta: env Zod
-  con `src/env/server.ts` per la secret key, workflow `Migrations` (`supabase db push` su `main`),
-  `vercel.json` in `fra1`. Da verificare dopo il merge: primo run del workflow (permessi del token).
-- **#3 Supabase locale**: mergiata (PR #28).
-  - Docker Desktop (WSL2) installato per l'utente in `%LOCALAPPDATA%\Programs\DockerDesktop`; RAM di WSL
-    limitata a 6 GB in `~/.wslconfig`. Si resta su Supabase (valutate e scartate Neon e PGlite).
-  - Migrazione `supabase/migrations/…_initial_schema.sql`: tabelle, enum, vincolo unico Tecnologia +
-    Versione, RLS (lettura pubblica, scrittura solo service role con grant revocati; follow e `plans` del
-    solo proprietario), trigger che crea il Piano `free` a ogni nuovo utente.
-  - Test di integrazione in `tests/integration/` (URL e chiavi da `supabase status`, nessun env), smoke
-    Playwright in `tests/e2e/`; progetti Vitest `unit` e `integration`; job CI `integration`.
-  - Non incluso (fette successive): limite di 10 follow e divieto di seguire Tecnologie ritirate
-    (#16/#18), variabili Supabase nello schema env dell'app.
+- **#3 Supabase locale** (PR #28): migrazione `…_initial_schema.sql` (tabelle, enum, vincolo unico
+  Tecnologia + Versione, RLS: lettura pubblica, scrittura solo service role con grant revocati, `follows`
+  e `plans` del solo proprietario, trigger che crea il Piano `free`). Test di integrazione in
+  `tests/integration/` (helper `seedContent`, `createDeveloper` in `supabase.ts`; URL e chiavi da
+  `supabase status`), smoke Playwright in `tests/e2e/`. Il limite di 10 follow resta per #16/#18.
+- **#4 Deploy** (PR #29): produzione su Vercel (Hobby, `fra1`) e Supabase remoto (Free, Frankfurt,
+  "expose new tables" e "automatic RLS" spenti; anteprime e produzione condividono il database).
+  - Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `src/env/index.ts`;
+    `SUPABASE_SECRET_KEY` solo in `src/env/server.ts` (`server-only`); prefissi `sb_publishable_`/`sb_secret_`
+    validati. Migrazione `service_role_grants` con grant espliciti. Passi manuali nel `README.md`.
+  - Workflow `Migrations`: `supabase link` + `db push` su push a `main` che tocca `supabase/migrations/`.
+    Primo run riuscito dopo aver dato al token Supabase **sola lettura su tutte le categorie del
+    progetto** (`link` legge anche chiavi API e configurazioni; con solo Projects/Database fallisce).
+  - Da confermare con l'utente: dominio di produzione online con i token di `DESIGN.md`.
+- **Ambiente**: Docker Desktop (WSL2) installato per utente in `%LOCALAPPDATA%\Programs\DockerDesktop`,
+  RAM di WSL limitata a 6 GB in `~/.wslconfig`. Se `docker` non è nel PATH della sessione, aggiungere
+  `…/DockerDesktop/resources/bin`. `.env.local` contiene già i valori del Supabase locale.
 
-## Da fare
+## Da fare: #5 Catalogo come codice
 
-1. Chiudere la #4 (anteprima Vercel verde, merge, run del workflow Migrations); poi la prossima issue (#5 Catalogo è AFK).
-2. Rispettare i criteri di accettazione dell'issue; fermarsi e chiedere sulle HITL.
+Branch `issue-5-catalogo` da `main`. Leggere `gh issue view 5`, ADR 0005 e 0006, il modulo `catalog` nel
+PRD #1, `design/mocks/technology.html` (solo intestazione). Usare la skill `tdd` per `planCatalogSync`.
+
+- Decisione da proporre all'utente: **dove gira il sync "a ogni deploy"**. Raccomandazione: un job su
+  GitHub Actions dopo `Migrations` su push a `main`, non nella build di Vercel: le anteprime delle PR
+  condividono il database di produzione e un sync nella build scriverebbe il Catalogo di un branch.
+- Probabile nuova migrazione: vincolo unico sulle Fonti (es. Tecnologia + ruolo + tipo) per poter
+  aggiornare invece di duplicare; `technologies.slug` è già unico.
+- Pagina `/technologies/[slug]`: Server Component con ISR, lettura con la publishable key (RLS pubblica),
+  404 per slug sconosciuto; leggere prima le guide di Next 16 in `node_modules/next/dist/docs/`.
+- Poi: seguire i "Blocked by"; fermarsi e chiedere sulle HITL (#14, #22, #26).
 
 ## Preferenze dell'utente
 
