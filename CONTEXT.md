@@ -78,7 +78,9 @@ _Evitare_: summary, riassunto AI, descrizione.
 **Intervento richiesto**:
 Il giudizio esplicito di una **Sintesi** su se aggiornare alla **Release** richiede modifiche al
 codice di chi la usa. Si basa solo su ciò che dicono le **Note di rilascio**: se non citano
-breaking changes, non se ne deducono.
+breaking changes, non se ne deducono. È _sì_ esattamente quando la **Sintesi** elenca almeno una
+breaking change, e ogni breaking change dice come migrare: un output che non rispetta questo
+legame è una **Sintesi** _Fallita_.
 _Evitare_: breaking flag, safe to upgrade.
 
 **Stato della sintesi**:

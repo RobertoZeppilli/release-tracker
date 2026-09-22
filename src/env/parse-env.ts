@@ -9,6 +9,8 @@ const EnvSchema = z.object({
 // Server-only: never read these from a module that can reach the client bundle.
 const ServerEnvSchema = z.object({
   SUPABASE_SECRET_KEY: z.string().startsWith("sb_secret_"),
+  // Bearer token of the job endpoints. Without it they refuse every request; empty counts as unset.
+  CRON_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(32).optional()),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

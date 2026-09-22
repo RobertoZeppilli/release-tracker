@@ -46,6 +46,7 @@ Release che contano.
 | Nessuna invenzione | Breaking changes e Intervento richiesto si basano solo sulle Note. | — |
 | Note lunghe | Mai troncate in silenzio: oltre la soglia di sicurezza → `failed` con il motivo. | 0007 |
 | Credito API esaurito | Non è un fallimento: le Release restano `pending` senza consumare tentativi, e l'amministratore viene avvisato con una issue GitHub aperta dal job (una sola aperta alla volta, niente duplicati). | 0007 |
+| Endpoint dei job | `GET /api/jobs/summaries/submit` e `/collect`, solo con `Authorization: Bearer <CRON_SECRET>` (l'header di Vercel Cron); senza segreto configurato rifiutano tutto. Il batch inviato si ritrova da `summaries.batch_id`. | 0007 |
 
 ## Esperienza utente
 

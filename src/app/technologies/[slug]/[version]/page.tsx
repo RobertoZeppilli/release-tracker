@@ -9,6 +9,7 @@ import { RetiredNote } from "@/modules/catalog/ui";
 import { versionFromPath } from "@/modules/releases";
 import { getRelease } from "@/modules/releases/server";
 import { type ExternalSource, ReleaseHeader, ReleaseNotesSource, SummaryStatusBlock } from "@/modules/releases/ui";
+import { SummaryView } from "@/modules/summaries/ui";
 
 // ISR like the Technology page: rendered on the first visit, regenerated at most once an hour.
 export const revalidate = 3600;
@@ -65,6 +66,7 @@ export default async function ReleasePage({ params }: Props) {
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
         <ReleaseHeader technologyName={technology.name} release={release} source={source} />
         {technology.retired && <RetiredNote name={technology.name} latest={null} />}
+        {release.summary && <SummaryView summary={release.summary} />}
         <SummaryStatusBlock release={release} hasGitHub={githubRepo(technology.sources) !== null} />
         {release.notes && <ReleaseNotesSource body={release.notes.body} url={release.notes.url} />}
         <p className="mt-7 flex flex-wrap gap-4 font-mono text-meta text-text-faint">
