@@ -26,6 +26,7 @@ Release che contano.
 | Niente Sintesi senza Note | Se mancano le **Note di rilascio**, la Sintesi è _Non disponibile_; non si generano sintesi dal solo numero di versione. Niente scraping dei blog nell'MVP. | — |
 | **Anteprime** nell'MVP | Beta e rc sono Release con Rilevanza `preview`; la Sintesi solo per la prima Anteprima di una nuova major. Canary, nightly ed experimental esclusi dal Rilevamento. | — |
 | Catalogo come codice | Un file per Tecnologia nel repository, validato con Zod, sincronizzato su Supabase al deploy. **Correzioni di rilevanza** direttamente sul database, mai sovrascritte. | [0005](./adr/0005-catalogo-come-codice.md) |
+| Sync del Catalogo | File `catalog/<slug>.json`; il workflow GitHub `Deploy database` applica le migrazioni e poi il sync a ogni push su `main`. Mai nella build di Vercel: le anteprime condividono il database di produzione. | 0005 |
 | Ritirare, mai cancellare | Una Tecnologia tolta dal Catalogo diventa **ritirata**: niente più Rilevamento, contenuti ancora online. | 0005 |
 
 ## Pipeline dei dati

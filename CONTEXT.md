@@ -18,13 +18,15 @@ _Evitare_: registry, lista pacchetti.
 **Tecnologia ritirata**:
 Una **Tecnologia** tolta dal **Catalogo**: non ha più **Rilevamento**, ma le sue **Release** e
 **Sintesi** restano consultabili e chi la seguiva la vede segnalata. Una **Tecnologia** non si
-cancella mai.
+cancella mai. Se il suo file torna nel **Catalogo**, torna seguibile e rilevata.
 _Evitare_: eliminata, disattivata, archiviata.
 
 **Fonte**:
 Un canale esterno da cui si osservano le **Release** di una **Tecnologia** (es. repository GitHub,
 pacchetto npm). Una **Tecnologia** ha una o più **Fonti**, ognuna con un ruolo: **rilevare** le
 nuove **Versioni** (es. npm) o **fornire le Note di rilascio** (es. GitHub Releases, `CHANGELOG.md`).
+Una **Tecnologia** ha al massimo una **Fonte** per ruolo e tipo. Una **Fonte** tolta dal **Catalogo**
+si cancella: è configurazione, e le **Note di rilascio** che ha fornito restano.
 _Evitare_: provider, integrazione, feed.
 
 **Seguire**:

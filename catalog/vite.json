@@ -1,0 +1,9 @@
+{
+  "name": "Vite",
+  "description": "Frontend build tool",
+  "classificationStrategy": "semver",
+  "sources": [
+    { "role": "detection", "kind": "npm", "package": "vite" },
+    { "role": "notes", "kind": "github-releases", "repo": "vitejs/vite", "tagFormat": "v{version}" }
+  ]
+}

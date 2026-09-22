@@ -1,0 +1,46 @@
+name: Deploy database
+
+# Every push to main deploys the app on Vercel; this brings the database along:
+# migrations first, then the Catalog (ADR 0005). Both steps are idempotent.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys against the remote database at the same time.
+concurrency:
+  group: deploy-database
+  cancel-in-progress: false
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}"
+      - run: pnpm exec supabase db push
+
+  catalog:
+    needs: migrations
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm catalog:sync
