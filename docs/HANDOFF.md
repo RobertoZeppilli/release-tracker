@@ -16,40 +16,44 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Fatte: #2, #3, #4, #5. Prossima: **#6** Classificazione e Importazione iniziale di Vite → poi vedi
+- Fatte: #2, #3, #4, #5, #6. Prossima: **#7** Pagina pubblica della Release senza Sintesi → poi vedi
   i "Blocked by" di ogni issue (`gh issue list`, `gh issue view N`).
 - Avviso per credito API esaurito = issue GitHub aperta dal job, una sola alla volta (`docs/DECISIONI.md`).
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Ultima sessione (2026-09-22): #5 Catalogo come codice (PR #30 e correzione #31)
+## Ultima sessione (2026-09-22): #6 Classificazione e Importazione iniziale di Vite
 
-- **Catalogo**: `catalog/<slug>.json` (slug = nome del file), schema Zod in
-  `src/modules/catalog/domain/catalog-entry.ts`. Fonti come unione discriminata su `kind`: per ora
-  `npm` (`detection`, `package`) e `github-releases` (`notes`, `repo`, `tagFormat` con `{version}`);
-  #9 aggiunge `CHANGELOG.md`. Almeno una Fonte `detection`, al massimo una per ruolo + tipo.
-  `ClassificationStrategySchema` è in `releases` e oggi vale solo `semver` (la #6 ci aggancia `classify`).
-- `parseCatalog` raccoglie tutti gli errori con file e campo; `catalog/catalog.test.ts` valida i file reali in `pnpm test`.
-- `planCatalogSync(entries, stored)` → `insert` · `update` (con `removedSourceIds`, riattiva una
-  ritirata) · `retire`; nessun `delete`. Server: `syncCatalog(db, entries)`, `readCatalogDirectory()`,
-  `getTechnology(db, slug)` (il client lo passa il chiamante: `catalog/server` non importa `@/env`).
-- Migrazione `…_catalog_sync.sql`: unico `(technology_id, role, kind)` su `sources`;
-  `release_notes.source_id` `on delete set null`. Regole nuove in `CONTEXT.md` (Fonte tolta = cancellata,
-  Tecnologia che torna = riattivata) e `docs/DECISIONI.md` (dove gira il sync).
-- **Deploy**: workflow `Deploy database` a ogni push su `main`: `db push`, poi `pnpm catalog:sync`
-  (`tsx --conditions=react-server scripts/sync-catalog.mts`, solo `NEXT_PUBLIC_SUPABASE_URL` +
-  `SUPABASE_SECRET_KEY`, dai secret GitHub `SUPABASE_URL`/`SUPABASE_SECRET_KEY`). Mai nella build Vercel.
-- **CI**: `check` = lint, typecheck, unit. `integration` = Supabase locale, test di integrazione, sync del
-  Catalogo con le sole due variabili del deploy, build, E2E Playwright.
-- Test di integrazione in sequenza (`fileParallelism: false`, il sync legge tutte le Tecnologie);
-  `server-only` ridiretto a `empty.js` nel progetto Vitest `integration`. Il test del sync ricorda e
-  ripristina le Tecnologie attive di altri.
-- **Pagina** `/technologies/[slug]`: `revalidate = 3600`, `generateStaticParams` → `[]` (la build non
-  tocca il database), `SiteHeader` in `src/components/`, `TechnologyHeader` in `catalog/ui`. Mancano
-  `latest <version>` (arriva con le Release) e Follow (#18); la nota "retired" c'è già (#9 la completa).
-- Verificato in produzione: `/technologies/vite` 200 con intestazione, slug sconosciuto 404, cache Vercel MISS → HIT.
-- Lezione: prima del merge verificare con `gh secret list` i secret che il workflow usa.
+- **releases/domain** (TDD): `classify(version, strategy)` (SemVer: x.0.0 `featured`, x.y.0 `notable`,
+  x.y.z `digest`, beta/rc `preview`, alpha/canary/nightly/altro suffisso o non-SemVer `excluded`; regola in
+  `CONTEXT.md`), `selectInitialImport(releases, now)` → aggiunge `history`, `initialSummaryStatus`
+  (`unavailable` senza Note prevale, poi `skipped` per Storico e `digest`, altrimenti `pending`; manca ancora
+  "prima Anteprima di una major", serve al Rilevamento), `groupByMajor` (major decrescenti, ordine di
+  Versione, `digest` consecutive ripiegate, Anteprime solo oltre l'ultima stabile), `version.ts` (parse e confronto SemVer).
+- **releases/server** `listReleases(db, technologyId)` (applica `significance_override`); **releases/ui**
+  `ReleaseList`, `SignificanceLabel` (SVG 12px neutri). `TechnologyHeader` ora riceve `latest`.
+- **detection**: interfaccia `SourceAdapters` (`listVersions`, `findNotes`) in `domain`; adattatori reali in
+  `server/source-adapters.ts` con `fetch` iniettato (npm: documento completo del pacchetto, nome scoped
+  codificato; GitHub Releases: pagine da 100 finché trova tutti i tag via `tagFormat`, salta draft e body vuoti).
+  `importTechnology(db, technology, adapters, now)` idempotente (upsert `ignoreDuplicates` su releases,
+  release_notes, summaries); `technologiesAwaitingImport(db)` = Tecnologie attive senza Release.
+  `catalog/server` esporta `listActiveTechnologies`.
+- **Script** `pnpm catalog:sync`: sync, poi import delle Tecnologie in attesa (un errore non ferma le altre,
+  exit code 1). `GITHUB_TOKEN` opzionale: nel workflow `Deploy database` è il token del job
+  (`permissions: contents: read`); anche la CI lo passa, quindi l'E2E gira su dati reali di npm/GitHub.
+- Vite reale in locale: 77 Release, 3 `pending` (8.0.0, 8.3.0, 8.2.0). In produzione l'import parte al
+  primo deploy dopo il merge: **verificare** `/technologies/vite` e il log del job `catalog`.
+- Differenze note col mock: niente "no action needed" nelle digest (nessuna Sintesi a sostenerlo), niente link
+  alla Release (#7), niente riga dello Stato della sintesi.
+- **ADR 0006 aggiornato**: `index.ts` di un modulo = solo domain; i componenti stanno in `ui/index.ts`
+  (`@/modules/<m>/ui`, consentito da ESLint, vietato da `domain`). Motivo: la CI si è rotta perché lo script
+  di sync (`tsx --conditions=react-server`) importava `@/modules/releases` e con esso `lucide-react`
+  (`react.createContext is not a function`). Mai rimettere componenti nell'indice del dominio.
+- Tailwind: `--spacing` è azzerato nel tema, quindi `pl-0` non esiste: usare `pl-[0]`; le chiavi nominate
+  (`mb-3`, `size-3` = 12px) funzionano.
+- Lezione: aprire un `<details>` via JS prima dell'idratazione causa un falso errore di hydration negli screenshot;
+  cliccare dopo `networkidle`.
 
 ## Ambiente
 
@@ -59,18 +63,14 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
-## Da fare: #6 Classificazione e Importazione iniziale di Vite
+## Da fare: #7 Pagina pubblica della Release senza Sintesi
 
-Branch `issue-6-…` da `main`. Leggere `gh issue view 6`, ADR 0001 e 0003, i moduli `releases` e
-`detection` nel PRD #1, `design/mocks/technology.html` (lista delle Release per major, diamanti di
-Rilevanza neutri). Skill `tdd` per `classify`, Stato iniziale della Sintesi e `selectInitialImport`.
-
-- Da proporre all'utente: **dove parte l'Importazione iniziale** "quando una Tecnologia entra nel
-  Catalogo". Ipotesi: `syncCatalog` restituisce gli `insert` e lo script di sync avvia l'import per quei
-  slug nello stesso job di `Deploy database` (chiamate a npm e GitHub solo dal job, mai dal client).
-- Adattatori npm e GitHub Releases dietro un'interfaccia `Source`, con fake nei test di integrazione.
-  Serve probabilmente un token GitHub per i limiti di rate.
-- Idempotenza su Tecnologia + Versione (vincolo già presente); le Note si salvano così come sono.
+Branch `issue-7-…` da `main`. Leggere `gh issue view 7` e `design/mocks/release.html` (stati `pending`,
+`processing`, `unavailable`, `skipped`; `.impeccable/brief-release.md`). Rotta `/technologies/[slug]/[version]`
+con ISR come la pagina della Tecnologia; 404 per Versione sconosciuta; Note come sorgente numerata ripiegata,
+apribile da tastiera; E2E sui quattro stati con **dati di fixture** (non i dati reali di Vite).
+Collegare le Versioni di `ReleaseList` (righe e digest) alla nuova pagina. Attenzione alle Versioni con `+`
+nell'URL (codifica).
 
 ## Preferenze dell'utente
 

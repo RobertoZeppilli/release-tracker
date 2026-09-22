@@ -39,6 +39,7 @@ Release che contano.
 | **Stato della sintesi** | `pending` · `processing` · `ready` · `unavailable` · `skipped` · `failed`. La Release è visibile in qualsiasi stato. | — |
 | Quali Release si riassumono | `featured`, `notable` e la prima `preview` di una major. Le `digest` no. | — |
 | Piano Vercel Hobby | Cron al massimo una volta al giorno: Rilevamento giornaliero, Sintesi pianificata dopo. Alternativa futura: `pg_cron` di Supabase. | 0003 |
+| Dove parte l'Importazione iniziale | Nello stesso job del sync del Catalogo, dopo il sync: si importa ogni Tecnologia attiva senza Release, così un import interrotto riparte al deploy successivo. Il job usa il proprio `GITHUB_TOKEN` per i limiti di GitHub. | 0005 |
 | **Importazione iniziale** limitata | Solo gli ultimi 12 mesi + l'ultima Release `featured`. Sintesi solo per l'ultima `featured` e le `notable` degli ultimi 90 giorni; il resto va nello **Storico** (`skipped`). | — |
 | Claude Opus 5 via Batch API | Invio di un batch giornaliero, raccolta dei risultati in un'esecuzione successiva. ~$0,023 per Sintesi. | [0007](./adr/0007-sintesi-con-opus-5-via-batch-api.md) |
 | Output strutturato | Titolo (≤ 120 caratteri), 3–5 punti chiave, breaking changes (cosa cambia + come migrare), **Intervento richiesto** (sì/no), modello e versione del prompt. Validato con Zod; se non valido → `failed`. | — |
@@ -61,6 +62,7 @@ Release che contano.
 | Weekly Digest | Vista calcolata per settimana ISO (UTC), non salvata. Diventerà un'entità con le email. |
 | Stato "Visto" per Release | Rimandato: arriva con le Notifiche. |
 | Filtri e tab | Nell'URL. |
+| Anteprime nella pagina della Tecnologia | Solo quelle successive all'ultima Versione stabile, in una sezione a parte; quelle già seguite dalla loro stabile non si elencano. |
 | **Cammino di upgrade** | Nell'MVP: la pagina di una Tecnologia accetta `?from=<version>` e mostra le Release fino all'ultima stabile e quante richiedono intervento. Pubblico, senza login, calcolato sulle Release salvate. |
 
 ## Piani e pagamenti
@@ -78,7 +80,7 @@ Release che contano.
 | Decisione | Dettaglio | ADR |
 |---|---|---|
 | Stack | Next.js App Router, TypeScript strict, Supabase (Postgres, RLS, Auth), Tailwind, shadcn/ui, Lucide, TanStack Query v5, Zod, compatibile con React Compiler. | — |
-| Moduli di dominio | `src/modules/{catalog,releases,detection,summaries,dashboard,plans}` con `domain/` (TS puro), `server/` (`server-only`), `ui/`; import tra moduli solo da `index.ts`, controllati da ESLint. | [0006](./adr/0006-moduli-di-dominio.md) |
+| Moduli di dominio | `src/modules/{catalog,releases,detection,summaries,dashboard,plans}` con `domain/` (TS puro), `server/` (`server-only`), `ui/`; import tra moduli solo dagli indici (`index.ts` per il dominio, `ui/index.ts`, `server/index.ts`), controllati da ESLint. | [0006](./adr/0006-moduli-di-dominio.md) |
 | Tipi | Derivati dagli schemi Zod (`z.infer`); nessuna cartella `types/` parallela. | 0006 |
 | TanStack Query | Solo per Dashboard e Seguire (aggiornamenti ottimistici). Le pagine pubbliche sono Server Components. | — |
 | Zustand | Non installato finché non serve uno stato client globale che l'URL non può rappresentare. | 0006 |

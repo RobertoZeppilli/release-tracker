@@ -41,3 +41,9 @@ export async function readStoredTechnologies(db: SupabaseClient): Promise<Stored
   if (error) throw error;
   return z.array(z.unknown()).parse(data).map(toStoredTechnology);
 }
+
+export async function listActiveTechnologies(db: SupabaseClient): Promise<StoredTechnology[]> {
+  const { data, error } = await db.from("technologies").select(TECHNOLOGY_COLUMNS).eq("retired", false).order("slug");
+  if (error) throw error;
+  return z.array(z.unknown()).parse(data).map(toStoredTechnology);
+}
