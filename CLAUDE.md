@@ -36,6 +36,9 @@ Parla con l'utente **in italiano**.
 
 ## Comandi
 
-- `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm typecheck` · `pnpm test` (Vitest).
+- `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm typecheck` · `pnpm test` (Vitest, unitari).
+- Database (serve Docker Desktop attivo): `pnpm db:start` · `pnpm db:reset` · `pnpm db:stop`;
+  nuova migrazione con `pnpm exec supabase migration new <nome>`.
+- `pnpm test:integration` (Vitest su Supabase locale) · `pnpm test:e2e` (Playwright).
 - Variabili d'ambiente: copia `.env.example` in `.env.local`; lo schema Zod è in `src/env/`.
 - Next.js 16: leggi `AGENTS.md` e le guide in `node_modules/next/dist/docs/` prima di usare API di Next.
