@@ -46,6 +46,10 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   primo deploy dopo il merge: **verificare** `/technologies/vite` e il log del job `catalog`.
 - Differenze note col mock: niente "no action needed" nelle digest (nessuna Sintesi a sostenerlo), niente link
   alla Release (#7), niente riga dello Stato della sintesi.
+- **ADR 0006 aggiornato**: `index.ts` di un modulo = solo domain; i componenti stanno in `ui/index.ts`
+  (`@/modules/<m>/ui`, consentito da ESLint, vietato da `domain`). Motivo: la CI si è rotta perché lo script
+  di sync (`tsx --conditions=react-server`) importava `@/modules/releases` e con esso `lucide-react`
+  (`react.createContext is not a function`). Mai rimettere componenti nell'indice del dominio.
 - Tailwind: `--spacing` è azzerato nel tema, quindi `pl-0` non esiste: usare `pl-[0]`; le chiavi nominate
   (`mb-3`, `size-3` = 12px) funzionano.
 - Lezione: aprire un `<details>` via JS prima dell'idratazione causa un falso errore di hydration negli screenshot;

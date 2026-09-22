@@ -80,7 +80,7 @@ Release che contano.
 | Decisione | Dettaglio | ADR |
 |---|---|---|
 | Stack | Next.js App Router, TypeScript strict, Supabase (Postgres, RLS, Auth), Tailwind, shadcn/ui, Lucide, TanStack Query v5, Zod, compatibile con React Compiler. | — |
-| Moduli di dominio | `src/modules/{catalog,releases,detection,summaries,dashboard,plans}` con `domain/` (TS puro), `server/` (`server-only`), `ui/`; import tra moduli solo da `index.ts`, controllati da ESLint. | [0006](./adr/0006-moduli-di-dominio.md) |
+| Moduli di dominio | `src/modules/{catalog,releases,detection,summaries,dashboard,plans}` con `domain/` (TS puro), `server/` (`server-only`), `ui/`; import tra moduli solo dagli indici (`index.ts` per il dominio, `ui/index.ts`, `server/index.ts`), controllati da ESLint. | [0006](./adr/0006-moduli-di-dominio.md) |
 | Tipi | Derivati dagli schemi Zod (`z.infer`); nessuna cartella `types/` parallela. | 0006 |
 | TanStack Query | Solo per Dashboard e Seguire (aggiornamenti ottimistici). Le pagine pubbliche sono Server Components. | — |
 | Zustand | Non installato finché non serve uno stato client globale che l'URL non può rappresentare. | 0006 |

@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { TechnologyHeader } from "@/modules/catalog";
 import { createPublicClient } from "@/lib/supabase";
 import { getTechnology } from "@/modules/catalog/server";
-import { groupByMajor, ReleaseList } from "@/modules/releases";
+import { TechnologyHeader } from "@/modules/catalog/ui";
+import { groupByMajor } from "@/modules/releases";
 import { listReleases } from "@/modules/releases/server";
+import { ReleaseList } from "@/modules/releases/ui";
 
 // ISR: no page is built ahead (the build has no database); each is rendered on its first visit,
 // then served from cache and regenerated at most once an hour.

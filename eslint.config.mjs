@@ -5,11 +5,12 @@ import { noServerImportInClient } from "./eslint/no-server-import-in-client.mjs"
 
 const MODULES = "catalog|releases|detection|summaries|dashboard|plans";
 
-// ADR 0006: a module is imported only through its index (`@/modules/x`) or, on the server,
-// its server index (`@/modules/x/server`). Anything deeper belongs to the module itself.
+// ADR 0006: a module is imported only through its domain index (`@/modules/x`), its UI index
+// (`@/modules/x/ui`) or, on the server, its server index (`@/modules/x/server`).
+// Anything deeper belongs to the module itself.
 const moduleBoundaries = {
-  regex: `(^|/)modules/(${MODULES})/(?!server$).+`,
-  message: "Import a module only from its index (@/modules/<module>) or @/modules/<module>/server.",
+  regex: `(^|/)modules/(${MODULES})/(?!(server|ui)$).+`,
+  message: "Import a module only from @/modules/<module>, @/modules/<module>/ui or @/modules/<module>/server.",
 };
 
 // Relative paths that leave the current module to reach another one.
@@ -42,6 +43,10 @@ const eslintConfig = defineConfig([
             {
               regex: "^(react|react-dom|next)(/|$)",
               message: "Domain code is pure TypeScript: no React or Next.js.",
+            },
+            {
+              regex: `((^|/)modules/(${MODULES})|^\\.\\.)/ui$`,
+              message: "Domain code is pure TypeScript: no UI components.",
             },
           ],
         },

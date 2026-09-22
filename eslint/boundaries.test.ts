@@ -14,6 +14,18 @@ describe("module boundaries", () => {
     expect(await ruleIds(code, "src/modules/dashboard/domain/fixture.ts")).toEqual([]);
   });
 
+  it("allows importing a module's components from its ui index", async () => {
+    const code = 'import { ReleaseList } from "@/modules/releases/ui";\nexport { ReleaseList };\n';
+    expect(await ruleIds(code, "src/app/fixture.tsx")).toEqual([]);
+  });
+
+  it.each([
+    ["src/modules/dashboard/domain/fixture.ts", "@/modules/releases/ui"],
+    ["src/modules/releases/domain/fixture.ts", "../ui"],
+  ])("rejects UI components in domain code (%s)", async (filePath, source) => {
+    expect(await ruleIds(`export * from "${source}";\n`, filePath)).toContain("no-restricted-imports");
+  });
+
   it("rejects importing past a module index", async () => {
     const code = 'export { SignificanceSchema } from "@/modules/releases/domain/significance";\n';
     expect(await ruleIds(code, "src/app/fixture.ts")).toContain("no-restricted-imports");

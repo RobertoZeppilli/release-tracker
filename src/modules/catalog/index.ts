@@ -6,4 +6,3 @@ export {
   type StoredSource,
   type StoredTechnology,
 } from "./domain/plan-catalog-sync";
-export { TechnologyHeader } from "./ui/technology-header";

@@ -8,4 +8,3 @@ export {
 } from "./domain/initial-summary-status";
 export { type ImportCandidate, selectInitialImport } from "./domain/select-initial-import";
 export { SignificanceSchema, type Significance } from "./domain/significance";
-export { ReleaseList } from "./ui/release-list";
