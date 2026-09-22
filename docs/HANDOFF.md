@@ -16,31 +16,27 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#8 (#8 nella PR #34, verificata in produzione). Sbloccate: **#9** (consigliata: Fonte
-  CHANGELOG, sblocca #15 e #17), #10, #16, #25. Vedi i "Blocked by" (`gh issue view N`).
+- Fatte: #2–#9 (#9 nella PR #35, verificata in produzione: React e TypeScript importati). Sbloccate: **#10**
+  (Sintesi completa, consigliata: sblocca #15), #16 (login, sblocca #17 con la #9), #25, #36. Vedi i "Blocked by" (`gh issue view N`).
 - Avviso per credito API esaurito = issue GitHub aperta dal job, una sola alla volta (`docs/DECISIONI.md`).
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Ultima sessione (2026-09-22): #8 Cammino di upgrade con `?from=`
+## Ultima sessione (2026-09-22): #9 Strategie, Fonte CHANGELOG, React e TypeScript
 
-- Regola nuova in `CONTEXT.md` (Cammino di upgrade): una `from` ben formata ma non registrata dà comunque il Cammino,
-  con una nota e le Versioni registrate più vicine (lo Storico copre 12 mesi). Errore solo per `malformed`,
-  `notOlder` (più recente dell'ultima stabile) o `noStable`. Accetta `v6.0.0` e spazi.
-- **releases/domain** `upgrade-path.ts`: `computeUpgradePath`, `PathRelease` (`actionRequired: boolean | null`,
-  null = niente Sintesi ready), `SummarizedRelease` (+ `summaryStatus`). Helper condivisi in `version.ts`:
-  `sortByVersion`, `splitByMajor`; `foldDigests` esportato da `group-by-major.ts`.
-- **summaries/domain** `SummaryVerdictSchema = { actionRequired: boolean }`: schema minimo, la #10 lo estende.
-  `listReleases` legge `summaries(status, content)`; contenuto non valido conta come Sintesi mancante.
-- **Pagina statica + isola client**: `UpgradePathView` (`"use client"`) legge `?from` con `useSearchParams` dentro
-  `Suspense` e calcola il Cammino nel browser; la pagina resta ISR (●). Form con `next/form` (GET).
-- UI: `release-rows.tsx` (righe condivise con `ReleaseList`), `upgrade-form`, `upgrade-verdict` (barre in un'unica
-  griglia `subgrid`), `release-verdict`, `severity-label`; testi in `upgrade-path-copy.ts` (testato).
-- Major in ordine dalla più vecchia (PRD), mentre il mock `technology.html` mette la v6 prima: da aggiungere alla #23.
-  Righe del Cammino senza titolo né breaking changes: arrivano con la Sintesi completa (#10).
-- Fixture E2E: `status: "ready"` con `actionRequired` scrive solo `{ actionRequired }` in `content`; aggiornarla
-  quando la #10 completa lo schema.
+- Regole nuove in `CONTEXT.md` (Strategia di classificazione, Anteprima): `semver`, `node` (major pari featured,
+  dispari notable), `typescript` (la prima stabile di ogni x.y è featured: 5.9.2, non 5.9.0), `zerover` (0.y.0
+  featured). Anteprima = solo `beta`/`rc` con al massimo un numero; build con hash o data escluse.
+- `classify(version, strategy, observed)`: il terzo argomento sono le Versioni osservate dalle Fonti di rilevamento
+  (serve a TypeScript). Chi chiama il Rilevamento (#11 e seguenti) deve passarle tutte.
+- Fonte `notes` di tipo `changelog` (`repo`, `path`): `detection/domain/changelog.ts` (`extractChangelogSection`,
+  `headingAnchor`), file letto da `raw.githubusercontent.com/<repo>/HEAD/<path>`, link con l'àncora GitHub.
+  `githubRepo(sources)` in `catalog` per i link "View on GitHub".
+- `RetiredNote` (catalog/ui) su pagina Tecnologia e Release; E2E `retired.spec.ts`; `seedTechnology(…, { retired })`.
+- Aperte: #36 (tag GitHub delle Anteprime di TypeScript `v6.0-rc`, oggi `unavailable`); commento su #23 per la nota
+  di ritiro sulla Release, che nel mock manca. Le Note GitHub di TypeScript sono quasi solo link al blog: da tenere
+  presente nella #14.
 
 ## Ambiente
 
@@ -54,10 +50,10 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
-## Da fare: #9 React e TypeScript, Strategie, Fonte CHANGELOG, Tecnologia ritirata
+## Da fare: #10 Sintesi completa
 
-Branch `issue-9-…` da `main`, `gh issue view 9`, mock `technology.html?state=retired`. `classify` e l'estrazione
-dal CHANGELOG con TDD (skill `tdd`).
+`gh issue view 10`, skill `claude-api` (Message Batches API, ADR 0007). Estende `SummaryVerdictSchema`
+(oggi solo `{ actionRequired }`) e la fixture E2E che scrive `content`. Alternative già sbloccate: #16, #25, #36.
 
 ## Preferenze dell'utente
 
