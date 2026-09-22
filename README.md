@@ -24,10 +24,13 @@ Frankfurt). Anteprime delle PR e produzione condividono lo stesso database.
 
 - **App**: ogni push su `main` va in produzione, ogni PR riceve un deploy di anteprima (integrazione Git
   di Vercel, nessun workflow nel repository).
-- **Migrazioni**: il workflow `Migrations` esegue `supabase db push` sul database remoto a ogni push su
-  `main` che tocca `supabase/migrations/`. Si può rilanciare a mano da GitHub → Actions → Migrations →
-  "Run workflow". Le migrazioni devono restare compatibili con la versione dell'app già online, perché
-  i due deploy partono in parallelo.
+- **Database**: il workflow `Deploy database` gira a ogni push su `main`: prima `supabase db push`, poi
+  `pnpm catalog:sync`, che porta il Catalogo (`catalog/*.json`) sul database remoto. Si può rilanciare a
+  mano da GitHub → Actions → Deploy database → "Run workflow". Le migrazioni devono restare compatibili
+  con la versione dell'app già online, perché app e database si aggiornano in parallelo.
+- **Catalogo**: un file `catalog/<slug>.json` per Tecnologia, validato da `pnpm test`. Togliere un file
+  ritira la Tecnologia, non la cancella. Il sync non gira mai nella build di Vercel: le anteprime
+  condividono il database di produzione. In locale: `pnpm catalog:sync` con le variabili di `.env.local`.
 
 ### Configurazione manuale (una volta)
 
@@ -50,5 +53,7 @@ Frankfurt). Anteprime delle PR e produzione condividono lo stesso database.
    | `SUPABASE_ACCESS_TOKEN` | Supabase → Account → Access Tokens; permessi minimi, scadenza 1 anno |
    | `SUPABASE_DB_PASSWORD` | Password del database (reimpostabile da Project Settings → Database) |
    | `SUPABASE_PROJECT_ID` | Project ref, l'ID nell'URL della dashboard |
+   | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
+   | `SUPABASE_SECRET_KEY` | Supabase → Project Settings → API Keys (`sb_secret_…`), per il sync del Catalogo |
 
 Nessun segreto sta nel repository: `.env.local` è ignorato da git e la CI usa valori segnaposto.

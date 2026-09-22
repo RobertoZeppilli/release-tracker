@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
-    "db:reset": "supabase db reset"
+    "db:reset": "supabase db reset",
+    "catalog:sync": "tsx --conditions=react-server scripts/sync-catalog.mts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
@@ -37,6 +38,7 @@
     "eslint-config-next": "16.3.5",
     "supabase": "^2.117.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.1"
   },
