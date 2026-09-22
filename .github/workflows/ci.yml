@@ -49,7 +49,8 @@ jobs:
             echo "SUPABASE_SECRET_KEY=$SECRET_KEY"
           } >> "$GITHUB_ENV"
           rm supabase.env
-      - run: pnpm catalog:sync
+      # Same variables as the Deploy database workflow, so a dependency on the app env fails here.
+      - run: env -u NEXT_PUBLIC_SITE_URL -u NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY pnpm catalog:sync
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
