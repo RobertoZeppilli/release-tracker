@@ -38,7 +38,7 @@ export default async function TechnologyPage({ params }: Props) {
       <SiteHeader path={["technologies", technology.slug]} />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
         <TechnologyHeader technology={technology} latest={grouped.latest} />
-        <ReleaseList grouped={grouped} retired={technology.retired} />
+        <ReleaseList slug={technology.slug} grouped={grouped} retired={technology.retired} />
       </main>
     </>
   );

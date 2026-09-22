@@ -16,44 +16,32 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Fatte: #2, #3, #4, #5, #6. Prossima: **#7** Pagina pubblica della Release senza Sintesi → poi vedi
+- Fatte: #2, #3, #4, #5, #6, #7 (PR #33). Prossima: **#8** Cammino di upgrade con `?from=` → poi vedi
   i "Blocked by" di ogni issue (`gh issue list`, `gh issue view N`).
 - Avviso per credito API esaurito = issue GitHub aperta dal job, una sola alla volta (`docs/DECISIONI.md`).
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Ultima sessione (2026-09-22): #6 Classificazione e Importazione iniziale di Vite
+## Ultima sessione (2026-09-22): #7 Pagina pubblica della Release senza Sintesi
 
-- **releases/domain** (TDD): `classify(version, strategy)` (SemVer: x.0.0 `featured`, x.y.0 `notable`,
-  x.y.z `digest`, beta/rc `preview`, alpha/canary/nightly/altro suffisso o non-SemVer `excluded`; regola in
-  `CONTEXT.md`), `selectInitialImport(releases, now)` → aggiunge `history`, `initialSummaryStatus`
-  (`unavailable` senza Note prevale, poi `skipped` per Storico e `digest`, altrimenti `pending`; manca ancora
-  "prima Anteprima di una major", serve al Rilevamento), `groupByMajor` (major decrescenti, ordine di
-  Versione, `digest` consecutive ripiegate, Anteprime solo oltre l'ultima stabile), `version.ts` (parse e confronto SemVer).
-- **releases/server** `listReleases(db, technologyId)` (applica `significance_override`); **releases/ui**
-  `ReleaseList`, `SignificanceLabel` (SVG 12px neutri). `TechnologyHeader` ora riceve `latest`.
-- **detection**: interfaccia `SourceAdapters` (`listVersions`, `findNotes`) in `domain`; adattatori reali in
-  `server/source-adapters.ts` con `fetch` iniettato (npm: documento completo del pacchetto, nome scoped
-  codificato; GitHub Releases: pagine da 100 finché trova tutti i tag via `tagFormat`, salta draft e body vuoti).
-  `importTechnology(db, technology, adapters, now)` idempotente (upsert `ignoreDuplicates` su releases,
-  release_notes, summaries); `technologiesAwaitingImport(db)` = Tecnologie attive senza Release.
-  `catalog/server` esporta `listActiveTechnologies`.
-- **Script** `pnpm catalog:sync`: sync, poi import delle Tecnologie in attesa (un errore non ferma le altre,
-  exit code 1). `GITHUB_TOKEN` opzionale: nel workflow `Deploy database` è il token del job
-  (`permissions: contents: read`); anche la CI lo passa, quindi l'E2E gira su dati reali di npm/GitHub.
-- Vite reale in locale: 77 Release, 3 `pending` (8.0.0, 8.3.0, 8.2.0). In produzione l'import parte al
-  primo deploy dopo il merge: **verificare** `/technologies/vite` e il log del job `catalog`.
-- Differenze note col mock: niente "no action needed" nelle digest (nessuna Sintesi a sostenerlo), niente link
-  alla Release (#7), niente riga dello Stato della sintesi.
-- **ADR 0006 aggiornato**: `index.ts` di un modulo = solo domain; i componenti stanno in `ui/index.ts`
-  (`@/modules/<m>/ui`, consentito da ESLint, vietato da `domain`). Motivo: la CI si è rotta perché lo script
-  di sync (`tsx --conditions=react-server`) importava `@/modules/releases` e con esso `lucide-react`
-  (`react.createContext is not a function`). Mai rimettere componenti nell'indice del dominio.
-- Tailwind: `--spacing` è azzerato nel tema, quindi `pl-0` non esiste: usare `pl-[0]`; le chiavi nominate
-  (`mb-3`, `size-3` = 12px) funzionano.
-- Lezione: aprire un `<details>` via JS prima dell'idratazione causa un falso errore di hydration negli screenshot;
-  cliccare dopo `networkidle`.
+- Rotta `src/app/technologies/[slug]/[version]/page.tsx` (ISR 1h, `generateStaticParams` vuoto, 404 per Versione
+  o Tecnologia sconosciuta). **Next 16 passa il parametro ancora codificato**: `releasePath` codifica
+  (`+` → `%2B`), `versionFromPath` decodifica e restituisce `null` su segmento malformato.
+- **releases/domain** `release-page.ts`: `ReleaseDetail`, `releasePath`, `versionFromPath`, `noteLines`.
+  **releases/server** `getRelease(db, technologyId, version)` (embed 1:1 di `release_notes` e `summaries`).
+  **releases/ui**: `ReleaseHeader`, `OpenNotesLink` (client: apre il `<details>` prima dello scroll),
+  `ReleaseNotesSource` (`<details id="release-notes">`, righe `#L1…` con contatore CSS), `SummaryStatusBlock`.
+- Stati: `pending`/`processing` (date assolute, niente "today" per via della cache), `unavailable` (niente Note,
+  pulsante "View on GitHub" verso i commit), `skipped` (testo diverso per digest e Storico), `failed`. `ready` non
+  mostra ancora nulla: la Sintesi arriva con la #9.
+- `ReleaseList` riceve `slug` e collega ogni Versione; `SiteHeader` accetta voci `{ label, href }`.
+- **E2E con fixture**: `tests/e2e/fixtures.ts` crea una Tecnologia `e2e-…` col service role (chiavi da
+  `supabase status`) e la cancella a fine file. Da riusare per le prossime pagine.
+- Da sapere per #8/#9: le Note GitHub di Vite dicono solo "Please refer to CHANGELOG.md": una Sintesi su quel
+  testo è inutile, serve la Fonte CHANGELOG.
+- "technologies" nel percorso non è un link finché non esiste `/technologies` (#16).
+- Verificare in produzione dopo il merge: `/technologies/vite/8.0.0` e un link da `/technologies/vite`.
 
 ## Ambiente
 
@@ -63,14 +51,10 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
-## Da fare: #7 Pagina pubblica della Release senza Sintesi
+## Da fare: #8 Cammino di upgrade con `?from=`
 
-Branch `issue-7-…` da `main`. Leggere `gh issue view 7` e `design/mocks/release.html` (stati `pending`,
-`processing`, `unavailable`, `skipped`; `.impeccable/brief-release.md`). Rotta `/technologies/[slug]/[version]`
-con ISR come la pagina della Tecnologia; 404 per Versione sconosciuta; Note come sorgente numerata ripiegata,
-apribile da tastiera; E2E sui quattro stati con **dati di fixture** (non i dati reali di Vite).
-Collegare le Versioni di `ReleaseList` (righe e digest) alla nuova pagina. Attenzione alle Versioni con `+`
-nell'URL (codifica).
+Branch `issue-8-…` da `main`. Leggere `gh issue view 8` e i mock. Dominio `computeUpgradePath` con TDD
+(skill `tdd`); E2E con le fixture di `tests/e2e/fixtures.ts`.
 
 ## Preferenze dell'utente
 

@@ -1,6 +1,8 @@
 import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { GroupedReleases, ListedRelease, MajorRow } from "../domain/group-by-major";
+import { releasePath } from "../domain/release-page";
 import { SignificanceLabel } from "./significance-glyph";
 
 const ROW = "grid grid-cols-[11ch_14ch_11ch_1fr] items-baseline gap-x-4 border-b border-rule py-3 max-[880px]:grid-cols-[auto_1fr_auto]";
@@ -13,11 +15,15 @@ function plural(count: number, word: string): string {
   return `${count} ${word}${count === 1 ? "" : "s"}`;
 }
 
-function ReleaseRow({ release }: { release: ListedRelease }) {
+const VERSION_LINK = "no-underline hover:underline";
+
+function ReleaseRow({ slug, release }: { slug: string; release: ListedRelease }) {
   return (
     <li className={ROW}>
       <SignificanceLabel significance={release.significance} />
-      <span className="font-mono text-body text-text">{release.version}</span>
+      <Link href={releasePath(slug, release.version)} className={`font-mono text-body text-text ${VERSION_LINK}`}>
+        {release.version}
+      </Link>
       <time dateTime={isoDate(release.publishedAt)} className="font-mono text-label text-text-faint max-[880px]:justify-self-end">
         {isoDate(release.publishedAt)}
       </time>
@@ -25,7 +31,7 @@ function ReleaseRow({ release }: { release: ListedRelease }) {
   );
 }
 
-function DigestRow({ releases }: { releases: ListedRelease[] }) {
+function DigestRow({ slug, releases }: { slug: string; releases: ListedRelease[] }) {
   const first = releases[0].version;
   const last = releases[releases.length - 1].version;
   return (
@@ -45,7 +51,9 @@ function DigestRow({ releases }: { releases: ListedRelease[] }) {
         <ul className="mb-3 grid grid-cols-[repeat(auto-fill,minmax(22ch,1fr))] gap-x-4 gap-y-[2px] pl-[calc(11ch+var(--spacing-4))] font-mono text-label max-[640px]:pl-[0]">
           {releases.map((release) => (
             <li key={release.version}>
-              <span className="text-text">{release.version}</span>
+              <Link href={releasePath(slug, release.version)} className={`text-text ${VERSION_LINK}`}>
+                {release.version}
+              </Link>
               <time dateTime={isoDate(release.publishedAt)} className="ml-[1ch] text-text-faint">
                 {isoDate(release.publishedAt)}
               </time>
@@ -57,8 +65,8 @@ function DigestRow({ releases }: { releases: ListedRelease[] }) {
   );
 }
 
-function Row({ row }: { row: MajorRow<ListedRelease> }) {
-  return row.type === "release" ? <ReleaseRow release={row.release} /> : <DigestRow releases={row.releases} />;
+function Row({ slug, row }: { slug: string; row: MajorRow<ListedRelease> }) {
+  return row.type === "release" ? <ReleaseRow slug={slug} release={row.release} /> : <DigestRow slug={slug} releases={row.releases} />;
 }
 
 function Group({ id, title, detail, children }: { id: string; title: string; detail: string; children: ReactNode }) {
@@ -76,7 +84,15 @@ function Group({ id, title, detail, children }: { id: string; title: string; det
 }
 
 // Upcoming Previews are hidden for a retired Technology: none will follow.
-export function ReleaseList({ grouped, retired }: { grouped: GroupedReleases<ListedRelease>; retired: boolean }) {
+export function ReleaseList({
+  slug,
+  grouped,
+  retired,
+}: {
+  slug: string;
+  grouped: GroupedReleases<ListedRelease>;
+  retired: boolean;
+}) {
   if (grouped.majors.length === 0 && grouped.previews.length === 0) {
     return <p className="mt-6 font-mono text-diagnostic text-text-muted">No releases recorded yet.</p>;
   }
@@ -85,14 +101,14 @@ export function ReleaseList({ grouped, retired }: { grouped: GroupedReleases<Lis
       {grouped.majors.map((group) => (
         <Group key={group.major} id={`v${group.major}`} title={`v${group.major}`} detail={plural(group.count, "release")}>
           {group.rows.map((row) => (
-            <Row key={row.type === "release" ? row.release.version : `digest-${row.releases[0].version}`} row={row} />
+            <Row key={row.type === "release" ? row.release.version : `digest-${row.releases[0].version}`} slug={slug} row={row} />
           ))}
         </Group>
       ))}
       {!retired && grouped.previews.length > 0 && (
         <Group id="previews" title="previews" detail={grouped.latest ? `ahead of ${grouped.latest}` : "upcoming"}>
           {grouped.previews.map((release) => (
-            <ReleaseRow key={release.version} release={release} />
+            <ReleaseRow key={release.version} slug={slug} release={release} />
           ))}
         </Group>
       )}
