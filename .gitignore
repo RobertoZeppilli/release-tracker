@@ -19,3 +19,8 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 .pnpm-debug.log*
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
