@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { MAX_NOTES_LENGTH, PROMPT_VERSION, SUMMARY_MODEL } from "@/modules/summaries";
+import { CreditExhaustedError, MAX_NOTES_LENGTH, PROMPT_VERSION, SUMMARY_MODEL } from "@/modules/summaries";
 import { collectSummaryBatches, submitPendingSummaries } from "@/modules/summaries/server";
 import { fakeSummaryBatches, succeeded } from "./fake-summary-batches";
 import { serviceClient } from "./supabase";
@@ -126,14 +126,18 @@ describe("summaries pipeline", () => {
     expect(summary.failure_reason).toMatch(/invalid output[\s\S]*title/);
   });
 
-  it("fails an errored batch request with its reason", async () => {
-    const releaseId = await seedPending("3.1.0");
-    const batches = fakeSummaryBatches(() => ({ type: "errored", message: "invalid_request_error" }));
+  // Only an exhausted credit is reversible: a spent request is not retried (ADR 0007).
+  it.each(["errored", "expired", "canceled"] as const)("fails a %s batch request with its reason", async (type) => {
+    const releaseId = await seedPending(`3.1.0-${type}`);
+    const batches = fakeSummaryBatches(() => ({ type, message: "invalid_request_error" }));
 
     await submitPendingSummaries(serviceClient(), batches);
     await collectSummaryBatches(serviceClient(), batches);
 
-    expect(await readSummary(releaseId)).toMatchObject({ status: "failed", failure_reason: "batch request errored: invalid_request_error" });
+    expect(await readSummary(releaseId)).toMatchObject({
+      status: "failed",
+      failure_reason: `batch request ${type}: invalid_request_error`,
+    });
   });
 
   it("fails notes over the threshold without sending them", async () => {
@@ -145,6 +149,58 @@ describe("summaries pipeline", () => {
     expect(report.failed).toContain(releaseId);
     expect(batches.sent.flat().map((request) => request.releaseId)).not.toContain(releaseId);
     expect((await readSummary(releaseId)).failure_reason).toMatch(/over the \d+ limit/);
+  });
+
+  it("keeps the Summaries pending when the credit is exhausted, without consuming the batch", async () => {
+    const releaseId = await seedPending("6.0.0");
+    const batches = fakeSummaryBatches(() => succeeded(content));
+    batches.submit = async () => {
+      throw new CreditExhaustedError();
+    };
+
+    const report = await submitPendingSummaries(serviceClient(), batches);
+
+    expect(report).toMatchObject({ batchId: null, submitted: [], pending: [releaseId] });
+    expect(await readSummary(releaseId)).toMatchObject({
+      status: "pending",
+      batch_id: null,
+      model: null,
+      prompt_version: null,
+      failure_reason: null,
+    });
+  });
+
+  it("queues the Summary again when the credit runs out inside the batch", async () => {
+    const releaseId = await seedPending("6.1.0");
+    const batches = fakeSummaryBatches(() => ({ type: "credit_exhausted", message: "credit balance is too low" }));
+
+    await submitPendingSummaries(serviceClient(), batches);
+    const report = await collectSummaryBatches(serviceClient(), batches);
+
+    expect(report.pending).toContain(releaseId);
+    expect(report.failed).not.toContain(releaseId);
+    expect(await readSummary(releaseId)).toMatchObject({
+      status: "pending",
+      batch_id: null,
+      failure_reason: null,
+      content: null,
+    });
+  });
+
+  it("summarises the queued Releases on the first run after the credit is topped up", async () => {
+    const releaseId = await seedPending("6.2.0");
+    const batches = fakeSummaryBatches(() => succeeded(content));
+    const send = batches.submit;
+    batches.submit = async () => {
+      throw new CreditExhaustedError();
+    };
+
+    await submitPendingSummaries(serviceClient(), batches);
+    batches.submit = send;
+    expect((await submitPendingSummaries(serviceClient(), batches)).submitted).toContain(releaseId);
+    expect((await collectSummaryBatches(serviceClient(), batches)).ready).toContain(releaseId);
+
+    expect(await readSummary(releaseId)).toMatchObject({ status: "ready", content, failure_reason: null });
   });
 
   it("puts the Summaries back in the queue when the batch cannot be sent", async () => {

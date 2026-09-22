@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import type { SummaryBatches, SummaryRequest } from "../domain/summary-batches";
+import { CreditExhaustedError, type SummaryBatches, type SummaryRequest } from "../domain/summary-batches";
 import { PROMPT_VERSION, prepareSummaryRequest, SUMMARY_MODEL } from "../domain/summary-prompt";
 import { chunks } from "./chunks";
 
@@ -15,7 +15,8 @@ const ClaimedReleaseSchema = z.array(
   }),
 );
 
-export type SubmitReport = { batchId: string | null; submitted: string[]; failed: string[] };
+// `pending`: claimed but put back in the queue, to be taken again by a later run.
+export type SubmitReport = { batchId: string | null; submitted: string[]; failed: string[]; pending: string[] };
 
 // Phase one of ADR 0007: take the pending Summaries and send them in a single batch.
 // The collect run, a later execution, reads the results.
@@ -27,7 +28,7 @@ export async function submitPendingSummaries(
   const claimed = await db.rpc("claim_pending_summaries", { max_count: maxCount });
   if (claimed.error) throw claimed.error;
   const ids = ClaimedSchema.parse(claimed.data).map((row) => row.release_id);
-  if (ids.length === 0) return { batchId: null, submitted: [], failed: [] };
+  if (ids.length === 0) return { batchId: null, submitted: [], failed: [], pending: [] };
 
   const requests: SummaryRequest[] = [];
   const failed: string[] = [];
@@ -45,19 +46,21 @@ export async function submitPendingSummaries(
       failed.push(release.id);
     }
   }
-  if (requests.length === 0) return { batchId: null, submitted: [], failed };
+  if (requests.length === 0) return { batchId: null, submitted: [], failed, pending: [] };
 
-  const submitted = requests.map((request) => request.releaseId);
+  const sending = requests.map((request) => request.releaseId);
   let batchId: string;
   try {
     batchId = await batches.submit(requests);
   } catch (error) {
     // Nothing was sent: the next run takes these Summaries again.
-    await setStatus(db, submitted, { status: "pending" });
+    await setStatus(db, sending, { status: "pending" });
+    // An exhausted credit is a wait, not a failure, so the job reports it instead of erroring.
+    if (error instanceof CreditExhaustedError) return { batchId: null, submitted: [], failed, pending: sending };
     throw error;
   }
-  await setStatus(db, submitted, { batch_id: batchId, model: SUMMARY_MODEL, prompt_version: PROMPT_VERSION });
-  return { batchId, submitted, failed };
+  await setStatus(db, sending, { batch_id: batchId, model: SUMMARY_MODEL, prompt_version: PROMPT_VERSION });
+  return { batchId, submitted: sending, failed, pending: [] };
 }
 
 async function loadReleases(db: SupabaseClient, ids: string[]) {

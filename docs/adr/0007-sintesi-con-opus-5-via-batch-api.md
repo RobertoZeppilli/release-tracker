@@ -9,6 +9,8 @@ prezzo di qualche ora di ritardo sulle Sintesi, irrilevante con un Rilevamento g
 
 ## Consequences
 
-Un credito API esaurito non è un errore della Sintesi: le Release restano in attesa senza consumare
-tentativi, e l'amministratore viene avvisato. Note di rilascio oltre la soglia di sicurezza non si
-troncano: la Sintesi va in stato Fallita con il motivo.
+Un credito API esaurito non è un errore della Sintesi: le Release restano in attesa e la prima
+esecuzione dopo la ricarica le riprende. Avvisare l'amministratore è compito della Console di
+Anthropic, che manda le email di credito basso e può ricaricare da sola; un canale di avviso nostro
+costerebbe un modulo e un token per duplicare quella notifica. Note di rilascio oltre la soglia di
+sicurezza non si troncano: la Sintesi va in stato Fallita con il motivo.

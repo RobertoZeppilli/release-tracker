@@ -5,7 +5,8 @@ import { parseSummaryOutput } from "../domain/summary-output";
 
 const SubmittedSchema = z.array(z.object({ release_id: z.uuid(), batch_id: z.string() }));
 
-export type CollectReport = { ready: string[]; failed: string[]; stillProcessing: string[] };
+// `pending`: put back in the queue, to be taken again by a later run.
+export type CollectReport = { ready: string[]; failed: string[]; stillProcessing: string[]; pending: string[] };
 
 // Phase two of ADR 0007: read the results of every batch sent by an earlier run and validate them.
 export async function collectSummaryBatches(db: SupabaseClient, batches: SummaryBatches): Promise<CollectReport> {
@@ -21,7 +22,7 @@ export async function collectSummaryBatches(db: SupabaseClient, batches: Summary
     byBatch.set(row.batch_id, [...(byBatch.get(row.batch_id) ?? []), row.release_id]);
   }
 
-  const report: CollectReport = { ready: [], failed: [], stillProcessing: [] };
+  const report: CollectReport = { ready: [], failed: [], stillProcessing: [], pending: [] };
   for (const [batchId, releaseIds] of byBatch) {
     const results = await batches.collect(batchId);
     if (results === null) {
@@ -46,10 +47,13 @@ export async function collectSummaryBatches(db: SupabaseClient, batches: Summary
 
 type Outcome =
   | { status: "ready"; content: unknown; failure_reason: null }
-  | { status: "failed"; content: null; failure_reason: string };
+  | { status: "failed"; content: null; failure_reason: string }
+  | { status: "pending"; content: null; failure_reason: null; batch_id: null };
 
 function settle(result: SummaryResult | undefined): Outcome {
   if (result === undefined) return failed("missing from the batch results");
+  // Not the request's fault, so it goes back in the queue instead of being spent (ADR 0007).
+  if (result.type === "credit_exhausted") return { status: "pending", content: null, failure_reason: null, batch_id: null };
   if (result.type !== "succeeded") return failed(`batch request ${result.type}: ${result.message}`);
   const parsed = parseSummaryOutput(result.text);
   return parsed.ok ? { status: "ready", content: parsed.content, failure_reason: null } : failed(parsed.reason);

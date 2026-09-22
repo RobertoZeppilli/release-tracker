@@ -1,4 +1,9 @@
-export type { SummaryBatches, SummaryRequest, SummaryResult } from "./domain/summary-batches";
+export {
+  CreditExhaustedError,
+  type SummaryBatches,
+  type SummaryRequest,
+  type SummaryResult,
+} from "./domain/summary-batches";
 export {
   type BreakingChange,
   BreakingChangeSchema,
