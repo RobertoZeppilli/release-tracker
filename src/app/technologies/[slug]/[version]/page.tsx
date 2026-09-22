@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { createPublicClient } from "@/lib/supabase";
-import type { StoredTechnology } from "@/modules/catalog";
+import { githubRepo, type StoredTechnology } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
+import { RetiredNote } from "@/modules/catalog/ui";
 import { versionFromPath } from "@/modules/releases";
 import { getRelease } from "@/modules/releases/server";
 import { type ExternalSource, ReleaseHeader, ReleaseNotesSource, SummaryStatusBlock } from "@/modules/releases/ui";
@@ -37,9 +38,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Where to look when a Release has no notes: the commit history if the Technology is on GitHub.
 function externalSource(technology: StoredTechnology, version: string): ExternalSource | null {
-  for (const source of technology.sources) {
-    if (source.kind === "github-releases") return { label: "View on GitHub", href: `https://github.com/${source.repo}/commits` };
-  }
+  const repo = githubRepo(technology.sources);
+  if (repo) return { label: "View on GitHub", href: `https://github.com/${repo}/commits` };
   for (const source of technology.sources) {
     if (source.kind === "npm") return { label: "View on npm", href: `https://www.npmjs.com/package/${source.package}/v/${version}` };
   }
@@ -64,7 +64,8 @@ export default async function ReleasePage({ params }: Props) {
       <SiteHeader path={["technologies", { label: technology.slug, href: `/technologies/${technology.slug}` }, release.version]} />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
         <ReleaseHeader technologyName={technology.name} release={release} source={source} />
-        <SummaryStatusBlock release={release} hasGitHub={technology.sources.some((item) => item.kind === "github-releases")} />
+        {technology.retired && <RetiredNote name={technology.name} latest={null} />}
+        <SummaryStatusBlock release={release} hasGitHub={githubRepo(technology.sources) !== null} />
         {release.notes && <ReleaseNotesSource body={release.notes.body} url={release.notes.url} />}
         <p className="mt-7 flex flex-wrap gap-4 font-mono text-meta text-text-faint">
           {release.notes?.url && <a href={release.notes.url}>{notesLinkLabel(release.notes.url)}</a>}

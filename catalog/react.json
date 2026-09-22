@@ -1,0 +1,9 @@
+{
+  "name": "React",
+  "description": "Library for web and native user interfaces",
+  "classificationStrategy": "semver",
+  "sources": [
+    { "role": "detection", "kind": "npm", "package": "react" },
+    { "role": "notes", "kind": "changelog", "repo": "facebook/react", "path": "CHANGELOG.md" }
+  ]
+}

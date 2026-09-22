@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { extractChangelogSection, headingAnchor } from "../domain/changelog";
 import type { FoundNotes, NotesSource, ObservedVersion, SourceAdapters } from "../domain/source-adapters";
 
 type Fetch = typeof fetch;
@@ -29,6 +30,8 @@ export function createSourceAdapters({ githubToken, fetch = globalThis.fetch }: 
       switch (source.kind) {
         case "github-releases":
           return findGitHubReleaseNotes(fetch, githubToken, source, versions);
+        case "changelog":
+          return findChangelogNotes(fetch, source, versions);
       }
     },
   };
@@ -66,6 +69,25 @@ async function findGitHubReleaseNotes(
       found.set(version, { body: release.body, url: release.html_url });
     }
     if (releases.length < PER_PAGE) break;
+  }
+  return found;
+}
+
+// The raw file is served without the API's rate limit; HEAD is the default branch.
+async function findChangelogNotes(
+  fetch: Fetch,
+  source: Extract<NotesSource, { kind: "changelog" }>,
+  versions: readonly string[],
+): Promise<Map<string, FoundNotes>> {
+  const response = await fetch(`https://raw.githubusercontent.com/${source.repo}/HEAD/${source.path}`);
+  if (!response.ok) throw new Error(`GET ${response.url || source.path} failed: ${response.status} ${response.statusText}`);
+  const markdown = await response.text();
+  const found = new Map<string, FoundNotes>();
+  for (const version of versions) {
+    const section = extractChangelogSection(markdown, version);
+    if (!section) continue;
+    const url = `https://github.com/${source.repo}/blob/HEAD/${source.path}#${headingAnchor(section.heading)}`;
+    found.set(version, { body: section.body, url });
   }
   return found;
 }

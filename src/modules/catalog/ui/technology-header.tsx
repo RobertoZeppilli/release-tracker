@@ -1,12 +1,13 @@
-import { Info } from "lucide-react";
 import type { Source } from "../domain/catalog-entry";
 import type { StoredTechnology } from "../domain/plan-catalog-sync";
+import { RetiredNote } from "./retired-note";
 
 function sourceLabel(source: Source): string {
   switch (source.kind) {
     case "npm":
       return `npm ${source.package}`;
     case "github-releases":
+    case "changelog":
       return `github ${source.repo}`;
   }
 }
@@ -28,17 +29,7 @@ export function TechnologyHeader({ technology, latest }: { technology: StoredTec
           ))}
         </ul>
       </div>
-      {technology.retired && (
-        <div role="note" className="mt-5 border-y border-rule py-3">
-          <p className="text-text-muted">
-            <span className="font-mono text-diagnostic">
-              <Info aria-hidden className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-              note:
-            </span>{" "}
-            {technology.name} is no longer tracked. Its releases stay readable, but new versions are not detected.
-          </p>
-        </div>
-      )}
+      {technology.retired && <RetiredNote name={technology.name} latest={latest} />}
     </>
   );
 }

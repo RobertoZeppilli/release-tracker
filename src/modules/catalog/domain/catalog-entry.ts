@@ -6,6 +6,12 @@ const RepoSchema = z.string().regex(/^[\w.-]+\/[\w.-]+$/, "expected owner/name")
 // How a Source spells a Version in its tags, e.g. `v{version}` or `vite@{version}`.
 const TagFormatSchema = z.string().includes("{version}", { error: "must contain {version}" });
 
+// A file path inside the repository, e.g. `CHANGELOG.md` or `packages/react/CHANGELOG.md`.
+const RepoPathSchema = z
+  .string()
+  .regex(/^[\w.-]+(\/[\w.-]+)*$/, "expected a path inside the repository")
+  .refine((path) => !path.split("/").includes(".."), { error: "must not leave the repository" });
+
 export const SourceSchema = z.discriminatedUnion("kind", [
   z.strictObject({ role: z.literal("detection"), kind: z.literal("npm"), package: z.string().min(1) }),
   z.strictObject({
@@ -14,7 +20,14 @@ export const SourceSchema = z.discriminatedUnion("kind", [
     repo: RepoSchema,
     tagFormat: TagFormatSchema,
   }),
+  z.strictObject({ role: z.literal("notes"), kind: z.literal("changelog"), repo: RepoSchema, path: RepoPathSchema }),
 ]);
+
+// The GitHub repository a Technology lives in, if any of its Sources names one.
+export function githubRepo(sources: readonly Source[]): string | null {
+  for (const source of sources) if (source.kind === "github-releases" || source.kind === "changelog") return source.repo;
+  return null;
+}
 
 export type Source = z.infer<typeof SourceSchema>;
 
