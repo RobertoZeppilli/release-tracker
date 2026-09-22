@@ -47,9 +47,10 @@ Esiste una sola **Release** per **Versione**, qualunque sia il numero di **Fonti
 _Evitare_: aggiornamento, update, rilascio.
 
 **Anteprima**:
-Una **Release** beta o release candidate. Solo la prima **Anteprima** di una nuova major riceve una
-**Sintesi**. Canary, nightly, experimental, alpha e ogni altro suffisso di pre-release non sono
-**Release** e non vengono registrate.
+Una **Release** beta o release candidate: il suffisso è esattamente `beta` o `rc`, eventualmente
+seguito da un numero (`-beta`, `-rc.1`). Solo la prima **Anteprima** di una nuova major riceve una
+**Sintesi**. Canary, nightly, experimental, alpha, le build con hash o data (`-rc.0-next-…`) e ogni
+altro suffisso di pre-release non sono **Release** e non vengono registrate.
 _Evitare_: pre-release, canary, preview.
 
 **Versione**:
@@ -104,8 +105,16 @@ Le **Release importate** che non ricevono una **Sintesi** (_Non generata_): cons
 _Evitare_: archivio (è il posto del Digest), legacy.
 
 **Strategia di classificazione**:
-La regola con cui una **Tecnologia** traduce una **Versione** in una **Rilevanza** (es. SemVer
-puro, LTS pari/dispari per Node).
+La regola con cui una **Tecnologia** traduce una **Versione** in una **Rilevanza**. Le **Anteprime**
+seguono la stessa regola in tutte le Strategie.
+- `semver` (SemVer puro): x.0.0 _In evidenza_, x.y.0 _Novità_, le patch _Digest_.
+- `node` (LTS pari/dispari): le major pari (x.0.0) sono _In evidenza_ perché diventeranno LTS; le
+  major dispari e le x.y.0 sono _Novità_; le patch _Digest_.
+- `typescript`: ogni x.y è _In evidenza_, ma la sua prima stabile non è x.y.0 (5.9.0-beta, 5.9.1-rc,
+  5.9.2). È _In evidenza_ la prima **Versione** stabile di ogni x.y tra quelle osservate dalle **Fonti**;
+  le successive sono _Digest_.
+- `zerover` (librerie 0.x): in 0.x rompe la minor, quindi 0.y.0 è _In evidenza_ e ogni altra 0.y.z è
+  _Digest_; da 1.0.0 vale `semver`.
 _Evitare_: parser, regola SemVer.
 
 **Correzione di rilevanza**:
@@ -175,7 +184,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Sintesi | `Summary` | |
 | Intervento richiesto | `actionRequired` | UI: "Action required" · "Safe to upgrade" |
 | Stato della sintesi | `SummaryStatus` | `pending` · `processing` · `ready` · `unavailable` · `skipped` · `failed` |
-| Strategia di classificazione | `ClassificationStrategy` | |
+| Strategia di classificazione | `ClassificationStrategy` | `semver` · `node` · `typescript` · `zerover` |
 | Correzione di rilevanza | `significanceOverride` | |
 | Tecnologia ritirata | `retired` | |
 | Rilevamento | `Detection` | |

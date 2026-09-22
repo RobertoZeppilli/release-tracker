@@ -1,0 +1,9 @@
+{
+  "name": "TypeScript",
+  "description": "JavaScript with syntax for types",
+  "classificationStrategy": "typescript",
+  "sources": [
+    { "role": "detection", "kind": "npm", "package": "typescript" },
+    { "role": "notes", "kind": "github-releases", "repo": "microsoft/TypeScript", "tagFormat": "v{version}" }
+  ]
+}

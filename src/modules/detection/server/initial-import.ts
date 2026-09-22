@@ -29,8 +29,10 @@ export async function importTechnology(
   adapters: SourceAdapters,
   now: Date,
 ): Promise<number> {
-  const candidates = (await observeVersions(technology, adapters)).flatMap(({ version, publishedAt }) => {
-    const significance = classify(version, technology.classificationStrategy);
+  const observed = await observeVersions(technology, adapters);
+  const observedVersions = observed.map(({ version }) => version);
+  const candidates = observed.flatMap(({ version, publishedAt }) => {
+    const significance = classify(version, technology.classificationStrategy, observedVersions);
     return significance === "excluded" ? [] : [{ version, publishedAt, significance }];
   });
   const selected = selectInitialImport(candidates, now);

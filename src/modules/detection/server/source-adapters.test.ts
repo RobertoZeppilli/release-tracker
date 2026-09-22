@@ -80,3 +80,25 @@ describe("GitHub Releases adapter", () => {
     expect(requested).toHaveLength(2);
   });
 });
+
+describe("CHANGELOG.md adapter", () => {
+  const changelog = { role: "notes", kind: "changelog", repo: "facebook/react", path: "CHANGELOG.md" } as const;
+  const raw = "https://raw.githubusercontent.com/facebook/react/HEAD/CHANGELOG.md";
+
+  it("reads the file once and links each section by its anchor", async () => {
+    const { fetch, requested } = fakeFetch({});
+    const withFile: typeof globalThis.fetch = async (input, init) =>
+      String(input) === raw ? new Response("## 19.2.1 (Dec 3, 2025)\n\n- Fix\n\n## 19.2.0\n\n- Feature\n") : fetch(input, init);
+    const notes = await createSourceAdapters({ fetch: withFile }).findNotes(changelog, ["19.2.1", "19.2.0", "19.3.0"]);
+    expect([...notes]).toEqual([
+      ["19.2.1", { body: "- Fix", url: "https://github.com/facebook/react/blob/HEAD/CHANGELOG.md#1921-dec-3-2025" }],
+      ["19.2.0", { body: "- Feature", url: "https://github.com/facebook/react/blob/HEAD/CHANGELOG.md#1920" }],
+    ]);
+    expect(requested).toHaveLength(0);
+  });
+
+  it("fails loudly when the file is missing", async () => {
+    const { fetch } = fakeFetch({});
+    await expect(createSourceAdapters({ fetch }).findNotes(changelog, ["19.2.0"])).rejects.toThrow(/404/);
+  });
+});

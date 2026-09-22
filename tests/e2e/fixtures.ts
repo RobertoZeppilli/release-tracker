@@ -26,7 +26,10 @@ export type FixtureRelease = {
 export type FixtureTechnology = { slug: string; name: string; repo: string; remove: () => Promise<void> };
 
 // A Technology of its own for each run, so pages cached by earlier runs never interfere.
-export async function seedTechnology(releases: FixtureRelease[]): Promise<FixtureTechnology> {
+export async function seedTechnology(
+  releases: FixtureRelease[],
+  { retired = false }: { retired?: boolean } = {},
+): Promise<FixtureTechnology> {
   const db = serviceClient();
   const slug = `e2e-${randomUUID().slice(0, 8)}`;
   const name = `Fixture ${slug.slice(4)}`;
@@ -34,7 +37,7 @@ export async function seedTechnology(releases: FixtureRelease[]): Promise<Fixtur
 
   const technology = await db
     .from("technologies")
-    .insert({ slug, name, classification_strategy: "semver" })
+    .insert({ slug, name, classification_strategy: "semver", retired })
     .select("id")
     .single();
   if (technology.error) throw technology.error;

@@ -52,6 +52,14 @@ describe("parseCatalog", () => {
     expect(() => parseCatalog([file("catalog/vite.json", wrong)])).toThrow(/classificationStrategy: .*\n.*priority/);
   });
 
+  it("accepts a CHANGELOG.md Source and rejects a path outside the repository", () => {
+    const changelog = { role: "notes", kind: "changelog", repo: "facebook/react", path: "packages/react/CHANGELOG.md" };
+    const react = { ...vite, sources: [vite.sources[0], changelog] };
+    expect(parseCatalog([file("catalog/react.json", react)])[0].sources[1]).toEqual(changelog);
+    const escaping = { ...react, sources: [vite.sources[0], { ...changelog, path: "../secrets.md" }] };
+    expect(() => parseCatalog([file("catalog/react.json", escaping)])).toThrow(/sources\.1\.path: must not leave/);
+  });
+
   it("reports every broken file, not only the first", () => {
     const files = [file("catalog/a.json", {}), file("catalog/b.json", {})];
     expect(() => parseCatalog(files)).toThrow(/catalog\/a\.json[\s\S]*catalog\/b\.json/);
