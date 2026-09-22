@@ -1,7 +1,8 @@
 name: Deploy database
 
 # Every push to main deploys the app on Vercel; this brings the database along:
-# migrations first, then the Catalog (ADR 0005). Both steps are idempotent.
+# migrations first, then the Catalog (ADR 0005) and the Initial Import of new Technologies.
+# Every step is idempotent.
 on:
   push:
     branches: [main]
@@ -35,6 +36,10 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      # The job's own token: enough to read public releases, with a higher GitHub rate limit.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4

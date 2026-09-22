@@ -5,6 +5,8 @@ import { SiteHeader } from "@/components/site-header";
 import { TechnologyHeader } from "@/modules/catalog";
 import { createPublicClient } from "@/lib/supabase";
 import { getTechnology } from "@/modules/catalog/server";
+import { groupByMajor, ReleaseList } from "@/modules/releases";
+import { listReleases } from "@/modules/releases/server";
 
 // ISR: no page is built ahead (the build has no database); each is rendered on its first visit,
 // then served from cache and regenerated at most once an hour.
@@ -28,12 +30,14 @@ export default async function TechnologyPage({ params }: Props) {
   const { slug } = await params;
   const technology = await loadTechnology(slug);
   if (!technology) notFound();
+  const grouped = groupByMajor(await listReleases(createPublicClient(), technology.id));
 
   return (
     <>
       <SiteHeader path={["technologies", technology.slug]} />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
-        <TechnologyHeader technology={technology} />
+        <TechnologyHeader technology={technology} latest={grouped.latest} />
+        <ReleaseList grouped={grouped} retired={technology.retired} />
       </main>
     </>
   );

@@ -48,7 +48,8 @@ _Evitare_: aggiornamento, update, rilascio.
 
 **Anteprima**:
 Una **Release** beta o release candidate. Solo la prima **Anteprima** di una nuova major riceve una
-**Sintesi**. Canary, nightly ed experimental non sono **Release** e non vengono registrate.
+**Sintesi**. Canary, nightly, experimental, alpha e ogni altro suffisso di pre-release non sono
+**Release** e non vengono registrate.
 _Evitare_: pre-release, canary, preview.
 
 **Versione**:

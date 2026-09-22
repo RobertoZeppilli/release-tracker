@@ -50,7 +50,10 @@ jobs:
           } >> "$GITHUB_ENV"
           rm supabase.env
       # Same variables as the Deploy database workflow, so a dependency on the app env fails here.
+      # The Initial Import reads the real npm and GitHub Sources.
       - run: env -u NEXT_PUBLIC_SITE_URL -u NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY pnpm catalog:sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
