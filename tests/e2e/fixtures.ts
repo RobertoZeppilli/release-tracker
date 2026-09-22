@@ -17,8 +17,10 @@ export type FixtureRelease = {
   version: string;
   significance: "featured" | "notable" | "digest" | "preview";
   origin: "imported" | "detected";
-  status: "pending" | "processing" | "unavailable" | "skipped";
+  status: "pending" | "processing" | "ready" | "unavailable" | "skipped";
   notes: string | null;
+  // Only for a `ready` Summary: the verdict the Upgrade Path counts.
+  actionRequired?: boolean;
 };
 
 export type FixtureTechnology = { slug: string; name: string; repo: string; remove: () => Promise<void> };
@@ -63,7 +65,8 @@ export async function seedTechnology(releases: FixtureRelease[]): Promise<Fixtur
       const notes = await db.from("release_notes").insert({ release_id: releaseId, body: release.notes, url });
       if (notes.error) throw notes.error;
     }
-    const summary = await db.from("summaries").insert({ release_id: releaseId, status: release.status });
+    const content = release.actionRequired === undefined ? null : { actionRequired: release.actionRequired };
+    const summary = await db.from("summaries").insert({ release_id: releaseId, status: release.status, content });
     if (summary.error) throw summary.error;
   }
 

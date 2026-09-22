@@ -1,87 +1,5 @@
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
-import type { ReactNode } from "react";
-import type { GroupedReleases, ListedRelease, MajorRow } from "../domain/group-by-major";
-import { releasePath } from "../domain/release-page";
-import { SignificanceLabel } from "./significance-glyph";
-
-const ROW = "grid grid-cols-[11ch_14ch_11ch_1fr] items-baseline gap-x-4 border-b border-rule py-3 max-[880px]:grid-cols-[auto_1fr_auto]";
-
-function isoDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-function plural(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
-}
-
-const VERSION_LINK = "no-underline hover:underline";
-
-function ReleaseRow({ slug, release }: { slug: string; release: ListedRelease }) {
-  return (
-    <li className={ROW}>
-      <SignificanceLabel significance={release.significance} />
-      <Link href={releasePath(slug, release.version)} className={`font-mono text-body text-text ${VERSION_LINK}`}>
-        {release.version}
-      </Link>
-      <time dateTime={isoDate(release.publishedAt)} className="font-mono text-label text-text-faint max-[880px]:justify-self-end">
-        {isoDate(release.publishedAt)}
-      </time>
-    </li>
-  );
-}
-
-function DigestRow({ slug, releases }: { slug: string; releases: ListedRelease[] }) {
-  const first = releases[0].version;
-  const last = releases[releases.length - 1].version;
-  return (
-    <li className="border-b border-rule">
-      <details className="group">
-        <summary className="grid cursor-pointer list-none grid-cols-[11ch_1fr_auto] items-center gap-x-4 py-2 font-mono text-label text-text-muted hover:text-text max-[640px]:grid-cols-[auto_1fr_auto] [&::-webkit-details-marker]:hidden">
-          <SignificanceLabel significance="digest" />
-          <span className="min-w-0">
-            {plural(releases.length, "digest release")}
-            {releases.length > 1 && <span className="max-[640px]:hidden"> · {first} to {last}</span>}
-          </span>
-          <ChevronRight
-            aria-hidden
-            className="size-4 justify-self-end transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-open:rotate-90 motion-reduce:transition-none"
-          />
-        </summary>
-        <ul className="mb-3 grid grid-cols-[repeat(auto-fill,minmax(22ch,1fr))] gap-x-4 gap-y-[2px] pl-[calc(11ch+var(--spacing-4))] font-mono text-label max-[640px]:pl-[0]">
-          {releases.map((release) => (
-            <li key={release.version}>
-              <Link href={releasePath(slug, release.version)} className={`text-text ${VERSION_LINK}`}>
-                {release.version}
-              </Link>
-              <time dateTime={isoDate(release.publishedAt)} className="ml-[1ch] text-text-faint">
-                {isoDate(release.publishedAt)}
-              </time>
-            </li>
-          ))}
-        </ul>
-      </details>
-    </li>
-  );
-}
-
-function Row({ slug, row }: { slug: string; row: MajorRow<ListedRelease> }) {
-  return row.type === "release" ? <ReleaseRow slug={slug} release={row.release} /> : <DigestRow slug={slug} releases={row.releases} />;
-}
-
-function Group({ id, title, detail, children }: { id: string; title: string; detail: string; children: ReactNode }) {
-  return (
-    <section aria-labelledby={id} className="mt-7">
-      <h2
-        id={id}
-        className="mb-3 flex items-baseline gap-3 font-mono text-section-title font-semibold tracking-[0.02em] text-text-muted after:h-px after:flex-1 after:-translate-y-1 after:bg-rule after:content-['']"
-      >
-        <span className="text-body text-text">{title}</span> {detail}
-      </h2>
-      <ul>{children}</ul>
-    </section>
-  );
-}
+import type { GroupedReleases, ListedRelease } from "../domain/group-by-major";
+import { Group, plural, ReleaseRow, Row, rowKey } from "./release-rows";
 
 // Upcoming Previews are hidden for a retired Technology: none will follow.
 export function ReleaseList({
@@ -101,7 +19,7 @@ export function ReleaseList({
       {grouped.majors.map((group) => (
         <Group key={group.major} id={`v${group.major}`} title={`v${group.major}`} detail={plural(group.count, "release")}>
           {group.rows.map((row) => (
-            <Row key={row.type === "release" ? row.release.version : `digest-${row.releases[0].version}`} slug={slug} row={row} />
+            <Row key={rowKey(row)} slug={slug} row={row} />
           ))}
         </Group>
       ))}
