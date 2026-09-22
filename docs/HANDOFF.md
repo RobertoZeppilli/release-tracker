@@ -16,7 +16,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#8 (#8 nella PR del branch `issue-8-upgrade-path`). Sbloccate: **#9** (consigliata: Fonte
+- Fatte: #2–#8 (#8 nella PR #34, verificata in produzione). Sbloccate: **#9** (consigliata: Fonte
   CHANGELOG, sblocca #15 e #17), #10, #16, #25. Vedi i "Blocked by" (`gh issue view N`).
 - Avviso per credito API esaurito = issue GitHub aperta dal job, una sola alla volta (`docs/DECISIONI.md`).
 - Differenze note tra mock da uniformare: raccolte nella #23.
@@ -56,9 +56,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Da fare: #9 React e TypeScript, Strategie, Fonte CHANGELOG, Tecnologia ritirata
 
-Dopo il merge della PR della #8: verificare in produzione `/technologies/vite?from=7.0.0`. Poi branch `issue-9-…`
-da `main`, `gh issue view 9`, mock `technology.html?state=retired`. `classify` e l'estrazione dal CHANGELOG con TDD
-(skill `tdd`).
+Branch `issue-9-…` da `main`, `gh issue view 9`, mock `technology.html?state=retired`. `classify` e l'estrazione
+dal CHANGELOG con TDD (skill `tdd`).
 
 ## Preferenze dell'utente
 
