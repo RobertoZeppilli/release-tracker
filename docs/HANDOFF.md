@@ -39,7 +39,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   - Workflow `Migrations`: `supabase link` + `db push` su push a `main` che tocca `supabase/migrations/`.
     Primo run riuscito dopo aver dato al token Supabase **sola lettura su tutte le categorie del
     progetto** (`link` legge anche chiavi API e configurazioni; con solo Projects/Database fallisce).
-  - Da confermare con l'utente: dominio di produzione online con i token di `DESIGN.md`.
+  - Confermato dall'utente: il dominio di produzione mostra la pagina dei token in tema scuro.
 - **Ambiente**: Docker Desktop (WSL2) installato per utente in `%LOCALAPPDATA%\Programs\DockerDesktop`,
   RAM di WSL limitata a 6 GB in `~/.wslconfig`. Se `docker` non è nel PATH della sessione, aggiungere
   `…/DockerDesktop/resources/bin`. `.env.local` contiene già i valori del Supabase locale.
