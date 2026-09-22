@@ -12,7 +12,9 @@ function utc(date: Date): string {
 function block(release: ReleaseDetail, hasGitHub: boolean): Block | null {
   const recorded = release.origin === "detected" ? `Detected ${utc(release.recordedAt)}.` : `Imported ${utc(release.recordedAt)}.`;
   const queued = `${recorded} Summaries usually land within a few hours; the full release notes are already below.`;
-  switch (release.summaryStatus) {
+  // A ready row whose content does not validate reads as failed: there is no Summary to show.
+  const status = release.summaryStatus === "ready" && release.summary === null ? "failed" : release.summaryStatus;
+  switch (status) {
     case "pending":
       return { Icon: Clock, label: "pending:", title: "summary queued", body: queued, tone: "muted" };
     case "processing":

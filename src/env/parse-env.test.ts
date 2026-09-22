@@ -38,4 +38,12 @@ describe("parseServerEnv", () => {
   it("rejects a key that is not a secret key", () => {
     expect(() => parseServerEnv({ SUPABASE_SECRET_KEY: "sb_publishable_local" })).toThrow(/SUPABASE_SECRET_KEY/);
   });
+
+  it("accepts a missing or empty job secret", () => {
+    expect(parseServerEnv({ SUPABASE_SECRET_KEY: "sb_secret_local", CRON_SECRET: "" }).CRON_SECRET).toBeUndefined();
+  });
+
+  it("rejects a short job secret", () => {
+    expect(() => parseServerEnv({ SUPABASE_SECRET_KEY: "sb_secret_local", CRON_SECRET: "short" })).toThrow(/CRON_SECRET/);
+  });
 });

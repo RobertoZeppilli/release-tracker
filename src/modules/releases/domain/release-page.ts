@@ -1,3 +1,4 @@
+import type { StoredSummary } from "@/modules/summaries";
 import type { SummaryStatus } from "./initial-summary-status";
 import type { Significance } from "./significance";
 
@@ -9,6 +10,8 @@ export type ReleaseDetail = {
   recordedAt: Date;
   notes: { body: string; url: string | null } | null;
   summaryStatus: SummaryStatus | null;
+  // Only for a `ready` Summary whose content validates.
+  summary: StoredSummary | null;
 };
 
 // A Version may hold characters that are not safe in a path segment, such as `+` in build metadata.
