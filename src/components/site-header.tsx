@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 
+export type PathItem = string | { label: string; href: string };
+
 // `path` is the breadcrumb after the wordmark; the last item is the current page.
-export function SiteHeader({ path }: { path: readonly string[] }) {
+export function SiteHeader({ path }: { path: readonly PathItem[] }) {
   return (
     <>
       <a
@@ -20,12 +22,19 @@ export function SiteHeader({ path }: { path: readonly string[] }) {
             <ol className="flex gap-2 font-mono text-label text-text-muted">
               {path.map((item, index) => {
                 const current = index === path.length - 1;
+                const label = typeof item === "string" ? item : item.label;
                 return (
-                  <li key={item} className="flex gap-2">
+                  <li key={label} className="flex gap-2">
                     {index > 0 && <span aria-hidden>/</span>}
-                    <span aria-current={current ? "page" : undefined} className={current ? "text-text" : undefined}>
-                      {item}
-                    </span>
+                    {typeof item === "string" ? (
+                      <span aria-current={current ? "page" : undefined} className={current ? "text-text" : undefined}>
+                        {item}
+                      </span>
+                    ) : (
+                      <Link href={item.href} className="no-underline hover:text-text">
+                        {item.label}
+                      </Link>
+                    )}
                   </li>
                 );
               })}
