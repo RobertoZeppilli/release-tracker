@@ -134,6 +134,12 @@ _Evitare_: newsletter, riepilogo, archivio.
 Le **Release** di una **Tecnologia** comprese tra una **Versione** di partenza indicata da chi legge e
 l'ultima **Release** stabile, con il conto di quelle che richiedono un **Intervento richiesto**.
 È una vista calcolata, non salvata.
+La **Versione** di partenza deve essere ben formata e non più recente dell'ultima **Release** stabile;
+uguale all'ultima vuol dire già aggiornato. Se non è tra le **Release** registrate (lo **Storico** copre
+solo gli ultimi 12 mesi), il Cammino si calcola comunque con le **Release** successive, con una nota e
+le **Versioni** registrate più vicine. Le **Release** senza **Sintesi** _Pronta_ non contano né come
+sicure né come **Intervento richiesto**: il Cammino dice quante sono. Le _Digest_ non si riassumono e
+non entrano in questo conto.
 _Evitare_: migration path, diff di versioni, upgrade guide.
 
 ## Account e piani

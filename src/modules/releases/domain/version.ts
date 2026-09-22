@@ -33,3 +33,22 @@ function compareIdentifier(a: string | undefined, b: string | undefined): number
   if (numeric.test(a) !== numeric.test(b)) return numeric.test(a) ? -1 : 1;
   return a < b ? -1 : a > b ? 1 : 0;
 }
+
+export type Versioned<T> = { release: T; version: ParsedVersion };
+
+// Releases whose Version is not SemVer cannot be placed in order, so they are left out.
+export function sortByVersion<T extends { version: string }>(releases: readonly T[]): Versioned<T>[] {
+  return releases
+    .flatMap((release) => {
+      const version = parseVersion(release.version);
+      return version ? [{ release, version }] : [];
+    })
+    .sort((a, b) => compareVersions(a.version, b.version));
+}
+
+// Keeps the order it is given, within and across majors.
+export function splitByMajor<T>(sorted: readonly Versioned<T>[]): Map<number, T[]> {
+  const byMajor = new Map<number, T[]>();
+  for (const { release, version } of sorted) byMajor.set(version.major, [...(byMajor.get(version.major) ?? []), release]);
+  return byMajor;
+}
