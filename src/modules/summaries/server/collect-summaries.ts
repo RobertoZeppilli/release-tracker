@@ -3,26 +3,45 @@ import { z } from "zod";
 import type { SummaryBatches, SummaryResult } from "../domain/summary-batches";
 import { parseSummaryOutput } from "../domain/summary-output";
 
-const SubmittedSchema = z.array(z.object({ release_id: z.uuid(), batch_id: z.string() }));
+const SubmittedSchema = z.array(
+  z.object({
+    release_id: z.uuid(),
+    batch_id: z.string(),
+    releases: z.object({ version: z.string(), technologies: z.object({ slug: z.string() }) }),
+  }),
+);
+
+// How the public pages address a Release, so the caller can revalidate them without another query.
+type ChangedRelease = { slug: string; version: string };
 
 // `pending`: put back in the queue, to be taken again by a later run.
-export type CollectReport = { ready: string[]; failed: string[]; stillProcessing: string[]; pending: string[] };
+// `changed`: every Release whose Summary was settled, whatever the outcome — each of them reads
+// differently on its page now.
+export type CollectReport = {
+  ready: string[];
+  failed: string[];
+  stillProcessing: string[];
+  pending: string[];
+  changed: ChangedRelease[];
+};
 
 // Phase two of ADR 0007: read the results of every batch sent by an earlier run and validate them.
 export async function collectSummaryBatches(db: SupabaseClient, batches: SummaryBatches): Promise<CollectReport> {
   const { data, error } = await db
     .from("summaries")
-    .select("release_id, batch_id")
+    .select("release_id, batch_id, releases!inner(version, technologies!inner(slug))")
     .eq("status", "processing")
     .not("batch_id", "is", null);
   if (error) throw error;
 
   const byBatch = new Map<string, string[]>();
+  const pageOf = new Map<string, ChangedRelease>();
   for (const row of SubmittedSchema.parse(data)) {
     byBatch.set(row.batch_id, [...(byBatch.get(row.batch_id) ?? []), row.release_id]);
+    pageOf.set(row.release_id, { slug: row.releases.technologies.slug, version: row.releases.version });
   }
 
-  const report: CollectReport = { ready: [], failed: [], stillProcessing: [], pending: [] };
+  const report: CollectReport = { ready: [], failed: [], stillProcessing: [], pending: [], changed: [] };
   for (const [batchId, releaseIds] of byBatch) {
     const results = await batches.collect(batchId);
     if (results === null) {
@@ -40,6 +59,8 @@ export async function collectSummaryBatches(db: SupabaseClient, batches: Summary
         .eq("batch_id", batchId);
       if (update.error) throw update.error;
       report[outcome.status].push(releaseId);
+      const page = pageOf.get(releaseId);
+      if (page) report.changed.push(page);
     }
   }
   return report;
