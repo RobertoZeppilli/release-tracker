@@ -44,6 +44,7 @@ Release che contano.
 | Claude Opus 5 via Batch API | Invio di un batch giornaliero, raccolta dei risultati in un'esecuzione successiva. ~$0,023 per Sintesi. | [0007](./adr/0007-sintesi-con-opus-5-via-batch-api.md) |
 | Output strutturato | Titolo (≤ 120 caratteri), 3–5 punti chiave, breaking changes (cosa cambia + come migrare), **Intervento richiesto** (sì/no), modello e versione del prompt. Validato con Zod; se non valido → `failed`. | — |
 | Nessuna invenzione | Breaking changes e Intervento richiesto si basano solo sulle Note. | — |
+| Formato imposto dall'API | La richiesta porta lo schema Zod della Sintesi come `output_config.format`: il modello non può rispondere in prosa o dentro un blocco markdown. Lunghezze e conteggi restano solo suggerimenti, quindi la validazione Zod resta l'ultima parola. | — |
 | Note lunghe | Mai troncate in silenzio: oltre la soglia di sicurezza → `failed` con il motivo. | 0007 |
 | Credito API esaurito | Non è un fallimento: le Release restano `pending` e si riprendono da sole all'esecuzione successiva. L'avviso all'amministratore resta alla Console di Anthropic (email di credito basso e ricarica automatica); nessun canale di avviso nostro nell'MVP. | 0007 |
 | Endpoint dei job | `GET /api/jobs/summaries/submit` e `/collect`, solo con `Authorization: Bearer <CRON_SECRET>` (l'header di Vercel Cron); senza segreto configurato rifiutano tutto. Il batch inviato si ritrova da `summaries.batch_id`. | 0007 |

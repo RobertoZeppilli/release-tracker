@@ -17,7 +17,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #14 Anthropic reale + set di
     valutazione (la prossima, vedi la sezione dedicata in fondo), #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#13 (la #13 nella PR #40). Sbloccate: #15 (cron giornaliero),
+- Fatte: #2–#13 (la #13 nella PR #40). In corso: **#14**, punti 1 e 2 fatti (PR aperta, issue aperta). Sbloccate: #15 (cron giornaliero),
   #16 (login, sblocca #17 con la #9), #25, #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
@@ -26,6 +26,56 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-23 (3): #14 Adattatore Anthropic reale (PR aperta, issue **non** chiusa)
+
+260 unitari, 32 di integrazione, `typecheck`, `lint` e `build` puliti. Una Release vera riassunta
+davvero (`react 19.2.0`, due giri, ~8 centesimi in tutto).
+
+### Fatto: il punto 1 e il punto 2 del piano
+
+- `@anthropic-ai/sdk`; `ANTHROPIC_API_KEY` nello schema Zod (opzionale come `CRON_SECRET`) e in
+  `.env.example`. La chiave **non** la legge il modulo: `createSummaryBatches(apiKey)` la riceve dalla
+  rotta del job. Importare `@/modules/summaries/server` non deve pretendere un ambiente completo —
+  è la suite di integrazione ad averlo scoperto, i tipi no.
+- `summaries/server/anthropic-batches.ts`: la Message Batches API dietro la porta `SummaryBatches`,
+  `custom_id` = id della Release. Credito esaurito riconosciuto in **due** punti: `billing_error`/402
+  all'invio → `CreditExhaustedError`, `billing_error` dentro i risultati → `credit_exhausted` (un
+  batch accettato può restare senza credito a metà). Risposta troncata (`max_tokens`), rifiutata
+  (`refusal`) o senza testo → `errored`: sarebbe JSON parziale.
+- Il client dell'adattatore è un tipo **strutturale ristretto** a ciò che legge; che l'SDK vero ci
+  stia dentro lo dimostra `createSummaryBatches`. Così i test rispondono con oggetti semplici e il
+  progetto non ha bisogno di cast (vietati da eslint).
+- `pnpm summary:try <slug> <version>`: una sola Release vera dal database locale, stampa la Sintesi
+  e marca `[INVENTED QUOTE: …]` ogni citazione che non si trova verbatim. È il germe del comando di
+  valutazione del punto 3.
+
+### Che cosa ha insegnato la chiamata vera (il motivo per cui si fa)
+
+Il primo giro col prompt `v2` è **fallito due volte insieme**, con un contenuto ottimo: JSON dentro
+una cornice ```` ```json ```` e titolo di 133 caratteri (limite 120). Rimedi, dal più forte:
+
+1. **`output_config.format`** dallo schema Zod (`zodOutputFormat(SummaryContentSchema)`): il modello
+   non può più rispondere in prosa o incorniciato. Attenzione: lunghezze e conteggi (`max(120)`,
+   `min(3).max(5)`) **non** sono vincolati dalla decodifica, restano descrizioni — `parseSummaryOutput`
+   resta l'ultima parola.
+2. **Prompt `v3`**: il limite del titolo è dichiarato come regola dura ("conta i caratteri").
+3. `parseSummaryOutput` toglie comunque una cornice markdown: un difetto così banale non vale una
+   Sintesi già pagata.
+
+Secondo giro: titolo 101 caratteri, 5 punti chiave, 3 breaking change, **tutte le citazioni trovate
+verbatim**, nessuna inventata. Il prompt `v3` regge fuori dai test.
+
+### Scelte dell'adattatore da rimettere in discussione col set di valutazione
+
+`effort: "medium"` e `max_tokens: 8000` (il pensiero di Opus 5 conta lì dentro) sono scelte a naso,
+non misurate: sono le prime due leve da provare se il report del punto 3 dirà che la qualità non basta.
+
+### Che cosa manca alla #14 (punto 3, in una sessione nuova)
+
+Set di 10–15 Release reali, comando di valutazione con report confrontabile tra versioni del prompt,
+e la tua approvazione del primo report. Vedi la sezione "Il set" qui sotto, che resta valida.
+**Nessun lancio senza avvisare l'utente**: il credito caricato è di $5.
 
 ## Sessione del 2026-09-23 (2): #13 Rivalidazione delle pagine pubbliche (chiusa, PR #40 in `main`)
 
@@ -153,7 +203,7 @@ La #12 ha cambiato la forma dei punti chiave (`string` → `{ text, quote? }`) e
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
-## Prossima sessione: **#14**, collegamento reale ad Anthropic (decisa con l'utente il 2026-09-23)
+## Contesto della #14 (deciso con l'utente il 2026-09-23)
 
 La chiave API **esiste già**: creata in un'area di lavoro dedicata (limite di spesa, limiti di
 frequenza e report d'uso separati dal resto dell'organizzazione), messa su Vercel come
@@ -171,9 +221,9 @@ come passarlo via codice, e non è confermato che l'invocazione da cron porti qu
 incognite dentro la fetta che deve invece dimostrare la qualità delle Sintesi. Issuer e rule si
 creano comunque solo con un token `org:admin`, cioè a mano in Console.
 
-### L'ordine concordato
+### L'ordine concordato (1 e 2 fatti)
 
-1. **Adattatore** (autonomo): `pnpm add @anthropic-ai/sdk`, `ANTHROPIC_API_KEY` nello schema Zod di
+1. ~~**Adattatore** (autonomo)~~: `pnpm add @anthropic-ai/sdk`, `ANTHROPIC_API_KEY` nello schema Zod di
    `src/env/parse-env.ts` (`ServerEnvSchema`, `startsWith("sk-ant-")`, **opzionale** come
    `CRON_SECRET`: senza chiave i job restano 503 invece di impedire l'avvio dell'app), riga in
    `.env.example`, poi l'adattatore vero dietro `createSummaryBatches()` — stesso contratto del fake
