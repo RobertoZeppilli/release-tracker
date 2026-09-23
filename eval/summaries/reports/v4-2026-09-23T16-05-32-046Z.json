@@ -1,0 +1,312 @@
+{
+  "promptVersion": "v4",
+  "model": "claude-opus-5",
+  "batchId": "msgbatch_01Sr8WtomVq29NQCAoqJwPuL",
+  "startedAt": "2026-09-23T16:05:32.046Z",
+  "totals": {
+    "cases": 14,
+    "evaluated": 14,
+    "unusable": 0,
+    "actionRequiredMatches": 14,
+    "missing": 0,
+    "unexpected": 3,
+    "inventedQuotes": 0,
+    "quoted": 77,
+    "unquoted": 4
+  },
+  "cases": [
+    {
+      "slug": "react",
+      "version": "19.0.0",
+      "outcome": "evaluated",
+      "title": "React 19 adds Actions, `use` and stable Server Components, and removes many long-deprecated APIs",
+      "actionRequired": true,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [
+          "proptypes",
+          "string-refs",
+          "reactdom-render",
+          "finddomnode"
+        ],
+        "missing": [],
+        "tolerated": [
+          "defaultprops",
+          "legacy-context",
+          "createfactory",
+          "module-factories",
+          "test-renderer-shallow",
+          "test-utils",
+          "unmount",
+          "umd",
+          "ts-types",
+          "jsx-transform"
+        ],
+        "unexpected": [
+          {
+            "change": "Legacy mode, `renderToStaticNodeStream()` and several `unstable_` DOM APIs are removed.",
+            "quote": "verbatim"
+          },
+          {
+            "change": "`react-dom` now throws if its version does not match `react`.",
+            "quote": "verbatim"
+          },
+          {
+            "change": "`react-is` drops `isConcurrentMode` and `isAsyncMode`.",
+            "quote": "verbatim"
+          }
+        ],
+        "inventedQuotes": [],
+        "quoted": 16,
+        "unquoted": 0,
+        "titleLength": 96
+      }
+    },
+    {
+      "slug": "react",
+      "version": "19.2.0",
+      "outcome": "evaluated",
+      "title": "React 19.2 adds `<Activity>`, `useEffectEvent`, `cacheSignal`, performance tracks and resume APIs for prerendering.",
+      "actionRequired": true,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [
+          "useid",
+          "reconciler-arguments"
+        ],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 7,
+        "unquoted": 0,
+        "titleLength": 115
+      }
+    },
+    {
+      "slug": "react",
+      "version": "19.2.7",
+      "outcome": "evaluated",
+      "title": "Patch release fixing missing `FormData` entries in Server Actions, a regression introduced in 19.2.6.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 3,
+        "unquoted": 0,
+        "titleLength": 101
+      }
+    },
+    {
+      "slug": "typescript",
+      "version": "6.0.3",
+      "outcome": "evaluated",
+      "title": "TypeScript 6.0.3 is a stable patch release; details live in the 6.0 announcement blog post.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 4,
+        "unquoted": 0,
+        "titleLength": 91
+      }
+    },
+    {
+      "slug": "vite",
+      "version": "8.3.0-beta.0",
+      "outcome": "evaluated",
+      "title": "Beta adds a top-level `tsconfig` option, new server close hooks and Rolldown-based asset URL handling.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 102
+      }
+    },
+    {
+      "slug": "vite",
+      "version": "8.2.2",
+      "outcome": "evaluated",
+      "title": "Vite 8.2.2 release notes contain no details; changes are only listed in the linked CHANGELOG.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 1,
+        "unquoted": 2,
+        "titleLength": 93
+      }
+    },
+    {
+      "slug": "eslint",
+      "version": "10.11.0",
+      "outcome": "evaluated",
+      "title": "Rule improvements for `no-unsafe-finally`, `new-cap` and `object-shorthand`, plus performance fast paths.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 105
+      }
+    },
+    {
+      "slug": "eslint",
+      "version": "10.9.1",
+      "outcome": "evaluated",
+      "title": "Patch release fixing a `no-loss-of-precision` false positive with trailing decimal points.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 3,
+        "unquoted": 0,
+        "titleLength": 90
+      }
+    },
+    {
+      "slug": "tailwindcss",
+      "version": "4.3.0",
+      "outcome": "evaluated",
+      "title": "Tailwind CSS 4.3.0 adds scrollbar, zoom, tab and container-size utilities plus flexible `@variant` syntax",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 105
+      }
+    },
+    {
+      "slug": "tailwindcss",
+      "version": "4.2.4",
+      "outcome": "evaluated",
+      "title": "Patch fixing `@import` and `@plugin` resolution with Vite aliases in `@tailwindcss/vite`",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 1,
+        "unquoted": 2,
+        "titleLength": 88
+      }
+    },
+    {
+      "slug": "zod",
+      "version": "4.6.0",
+      "outcome": "evaluated",
+      "title": "Zod 4.6 adds `.validate()`, `z.properties()` and `z.iban()`, plus faster CJS — with several behavior changes",
+      "actionRequired": true,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [
+          "emoji",
+          "enum-options",
+          "error-maps"
+        ],
+        "missing": [],
+        "tolerated": [
+          "metadata-getters",
+          "base64",
+          "email-pattern",
+          "json-schema-fold"
+        ],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 12,
+        "unquoted": 0,
+        "titleLength": 108
+      }
+    },
+    {
+      "slug": "zod",
+      "version": "4.6.5",
+      "outcome": "evaluated",
+      "title": "Zod 4.6.5 refines `z.instanceof().properties()` typing and lands `z.currencyCode()` plus docs updates.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 102
+      }
+    },
+    {
+      "slug": "prisma",
+      "version": "7.10.0",
+      "outcome": "evaluated",
+      "title": "Prisma 7.10.0 adds the `@prisma/prisma7` side-by-side package, hardens Studio's local server, and fixes many client bugs",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 120
+      }
+    },
+    {
+      "slug": "vitest",
+      "version": "5.0.1",
+      "outcome": "evaluated",
+      "title": "Vitest 5.0.1 is a patch release with UI trace view improvements and many bug fixes.",
+      "actionRequired": false,
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 83
+      }
+    }
+  ]
+}

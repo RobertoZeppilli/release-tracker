@@ -1,5 +1,11 @@
 export { type Citation, citationSpans, type CitedSpan, locateCitation } from "./domain/citations";
 export {
+  evaluateSummary,
+  type ExpectedBreakingChange,
+  type ExpectedSummary,
+  type SummaryEvaluation,
+} from "./domain/evaluation";
+export {
   CreditExhaustedError,
   type SummaryBatches,
   type SummaryRequest,

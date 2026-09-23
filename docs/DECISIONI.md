@@ -44,6 +44,8 @@ Release che contano.
 | Claude Opus 5 via Batch API | Invio di un batch giornaliero, raccolta dei risultati in un'esecuzione successiva. ~$0,023 per Sintesi. | [0007](./adr/0007-sintesi-con-opus-5-via-batch-api.md) |
 | Output strutturato | Titolo (≤ 120 caratteri), 3–5 punti chiave, breaking changes (cosa cambia + come migrare), **Intervento richiesto** (sì/no), modello e versione del prompt. Validato con Zod; se non valido → `failed`. | — |
 | Nessuna invenzione | Breaking changes e Intervento richiesto si basano solo sulle Note. | — |
+| Sintesi pagata, non buttata | Un difetto di forma che non tocca il contenuto si corregge leggendo, non facendo fallire la Sintesi: si toglie la cornice markdown e si tengono i primi 5 punti chiave se il modello ne manda sei. Restano `failed` gli output che rompono il contenuto o il legame breaking changes / Intervento richiesto. | — |
+| Fine riga normalizzati | Le Note arrivano da GitHub con `CRLF` e la pagina le mostra normalizzate a `LF`: `locateCitation` normalizza entrambi i lati, altrimenti una citazione su più righe perde il puntatore senza che nessuno se ne accorga. | — |
 | Formato imposto dall'API | La richiesta porta lo schema Zod della Sintesi come `output_config.format`: il modello non può rispondere in prosa o dentro un blocco markdown. Lunghezze e conteggi restano solo suggerimenti, quindi la validazione Zod resta l'ultima parola. | — |
 | Note lunghe | Mai troncate in silenzio: oltre la soglia di sicurezza → `failed` con il motivo. | 0007 |
 | Credito API esaurito | Non è un fallimento: le Release restano `pending` e si riprendono da sole all'esecuzione successiva. L'avviso all'amministratore resta alla Console di Anthropic (email di credito basso e ricarica automatica); nessun canale di avviso nostro nell'MVP. | 0007 |
@@ -102,8 +104,11 @@ Release che contano.
 - Unitari sui `domain/`, in particolare le Strategie di classificazione su Versioni reali.
 - Integrazione della presa in carico atomica su Postgres locale di Supabase.
 - End-to-end con Playwright per Seguire e Dashboard.
-- Set di valutazione di 10–15 Release reali per le Sintesi, da rilanciare a ogni cambio di prompt o
-  modello.
+- Set di valutazione di 14 Release reali in `eval/summaries/` (`pnpm summary:eval`), da rilanciare a
+  ogni cambio di prompt o modello; ogni giro lascia un report confrontabile in
+  `eval/summaries/reports/`. Le Note sono copiate nel set, non lette dal database: il Catalogo cambia,
+  il set no. Il giudizio umano sta nelle attese del set (**Intervento richiesto** e breaking changes
+  obbligatorie o solo tollerate); le invenzioni si verificano da sole con `locateCitation`.
 
 ## Ordine di sviluppo
 

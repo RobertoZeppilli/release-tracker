@@ -14,11 +14,9 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 ## Stato
 
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
-  - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #14 Anthropic reale + set di
-    valutazione (la prossima, vedi la sezione dedicata in fondo), #22 Catalogo ~40 Tecnologie,
+  - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#13 (la #13 nella PR #40). In corso: **#14**, punti 1 e 2 fatti (PR aperta, issue aperta). Sbloccate: #15 (cron giornaliero),
-  #16 (login, sblocca #17 con la #9), #25, #36.
+- Fatte: #2–#14. Sbloccate: **#15** (cron giornaliero), #16 (login, sblocca #17 con la #9), #25, #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -27,7 +25,61 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-23 (3): #14 Adattatore Anthropic reale (PR aperta, issue **non** chiusa)
+## Sessione del 2026-09-23 (4): #14 Set di valutazione delle Sintesi (chiusa)
+
+271 unitari, `typecheck`, `lint` puliti. Due giri veri del set, ~50 centesimi in tutto.
+
+### Il report è il prodotto della fetta
+
+`pnpm summary:eval` (`--dry` per elencare i casi senza spendere) manda i 14 casi in **un solo batch**,
+confronta e lascia un report in `eval/summaries/reports/`. `v3` → `v4`:
+
+| | v3 | v4 |
+|---|---|---|
+| casi valutati | 13/14 | 14/14 |
+| Intervento richiesto corretto | 13/13 | 14/14 |
+| breaking changes mancanti | 0 | 0 |
+| citazioni inventate | 1 | 0 |
+| citazioni verbatim | 66 su 72 | 77 su 81 |
+
+Le 6 patch-sonda (Note che rimandano solo al changelog) dicono tutte "nessun intervento": il modello
+**non inventa** quando non c'è niente da dire. È il risultato che la #14 doveva stabilire.
+
+### Com'è fatto il set (dettagli in `eval/summaries/README.md`)
+
+- Le Note sono **copiate** in `eval/summaries/notes/`, non lette dal database: il Catalogo cambia, il
+  set no, altrimenti due report non sono confrontabili. 8 Tecnologie, di cui 5 fuori dal Catalogo,
+  prese da GitHub con `gh api`.
+- `set.json` porta il giudizio umano: `actionRequired` (`true`, `false` o **`"either"`** quando le
+  Note descrivono un cambio di comportamento senza chiamarlo breaking), le breaking changes
+  **obbligatorie** e quelle **tollerate** (legittime ma non richieste: citarne una non è un errore).
+  `match` sono parole che devono comparire nella coppia cambiamento + migrazione, così una Sintesi
+  che raggruppa più rimozioni in un punto solo conta lo stesso.
+- Il confronto è puro e testato: `summaries/domain/evaluation.ts`, lo script è solo I/O.
+
+### I due difetti che solo una chiamata vera poteva trovare
+
+1. **Fine riga**. Le Note di GitHub hanno `CRLF`, il modello cita con `LF`, la pagina cerca nel testo
+   normalizzato: una citazione su più righe perdeva il puntatore **in silenzio**, in produzione.
+   `locateCitation` ora normalizza entrambi i lati.
+2. **Una Sintesi buttata per un sesto punto chiave**: `output_config.format` vincola la forma, mai i
+   conteggi. `parseSummaryOutput` tiene i primi 5 (arrivano in ordine di importanza) invece di
+   perdere una Sintesi pagata, e il prompt dichiara il limite come regola dura → **`PROMPT_VERSION`
+   a `v4`**. Entrambe le scelte sono in `docs/DECISIONI.md`.
+
+### Attenzione per chi riprende
+
+- Il set si allarga quando il report segnala una rivendicazione **inattesa ma vera**: è il set a
+  essere incompleto, non la Sintesi. Fatto due volte (react 19.0.0 e 19.2.0); le ultime tre aggiunte
+  non sono ancora passate per un giro, quindi il prossimo report dovrebbe avere `unexpected: 0`.
+- Il titolo di `prisma 7.10.0` è di **esattamente 120 caratteri**: il limite regge, ma senza margine.
+- `effort: "medium"` e `max_tokens: 8000` restano scelte a naso: il report dice che la qualità basta,
+  quindi non le ho toccate. Sono le prime leve se un giro futuro peggiora.
+- Nel database **locale** ci sono 6 Sintesi vere caricate a mano dal batch `v4` (react 19.0.0, 19.2.0,
+  19.2.7, vite 8.2.2, 8.3.0-beta.0, typescript 6.0.3), per guardare le pagine: `pnpm db:reset` le
+  toglie. In produzione non c'è ancora nessuna Sintesi.
+
+## Sessione del 2026-09-23 (3): #14 Adattatore Anthropic reale (PR #41 in `main`)
 
 260 unitari, 32 di integrazione, `typecheck`, `lint` e `build` puliti. Una Release vera riassunta
 davvero (`react 19.2.0`, due giri, ~8 centesimi in tutto).
@@ -70,12 +122,6 @@ verbatim**, nessuna inventata. Il prompt `v3` regge fuori dai test.
 
 `effort: "medium"` e `max_tokens: 8000` (il pensiero di Opus 5 conta lì dentro) sono scelte a naso,
 non misurate: sono le prime due leve da provare se il report del punto 3 dirà che la qualità non basta.
-
-### Che cosa manca alla #14 (punto 3, in una sessione nuova)
-
-Set di 10–15 Release reali, comando di valutazione con report confrontabile tra versioni del prompt,
-e la tua approvazione del primo report. Vedi la sezione "Il set" qui sotto, che resta valida.
-**Nessun lancio senza avvisare l'utente**: il credito caricato è di $5.
 
 ## Sessione del 2026-09-23 (2): #13 Rivalidazione delle pagine pubbliche (chiusa, PR #40 in `main`)
 
@@ -221,7 +267,7 @@ come passarlo via codice, e non è confermato che l'invocazione da cron porti qu
 incognite dentro la fetta che deve invece dimostrare la qualità delle Sintesi. Issuer e rule si
 creano comunque solo con un token `org:admin`, cioè a mano in Console.
 
-### L'ordine concordato (1 e 2 fatti)
+### L'ordine concordato (tutto fatto: adattatore, prova, set di valutazione)
 
 1. ~~**Adattatore** (autonomo)~~: `pnpm add @anthropic-ai/sdk`, `ANTHROPIC_API_KEY` nello schema Zod di
    `src/env/parse-env.ts` (`ServerEnvSchema`, `startsWith("sk-ant-")`, **opzionale** come
@@ -240,13 +286,6 @@ Il prompt `v2` chiede già una citazione **verbatim** delle Note per ogni breaki
 change assente dalle Note" è automatico. All'utente resta il giudizio che nessuna macchina dà —
 l'**Intervento richiesto** atteso e le breaking changes **mancanti**, marcate una volta nel set
 atteso e poi confrontate a ogni versione del prompt.
-
-### Il set
-
-Varietà richiesta: Note brevi e lunghe, con e senza breaking changes, Tecnologie diverse. Il Catalogo
-oggi ne ha poche (~5 fino alla #22), quindi si pesca dalle Release già importate e, se non bastano,
-se ne aggiungono a mano: il set è un file di fixture, non deve coincidere col Catalogo.
-**Preparare una lista candidata e farla approvare**, non sceglierle a freddo.
 
 ### Soldi
 
