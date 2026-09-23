@@ -14,8 +14,9 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 ## Stato
 
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
-  - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
-    valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
+  - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #14 Anthropic reale + set di
+    valutazione (la prossima, vedi la sezione dedicata in fondo), #22 Catalogo ~40 Tecnologie,
+    #26 landing page (serve il nome del prodotto).
 - Fatte: #2–#13 (la #13 nella PR #40). Sbloccate: #15 (cron giornaliero),
   #16 (login, sblocca #17 con la #9), #25, #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
@@ -152,13 +153,63 @@ La #12 ha cambiato la forma dei punti chiave (`string` → `{ text, quote? }`) e
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
-## Da fare: scegliere la prossima fetta
+## Prossima sessione: **#14**, collegamento reale ad Anthropic (decisa con l'utente il 2026-09-23)
+
+La chiave API **esiste già**: creata in un'area di lavoro dedicata (limite di spesa, limiti di
+frequenza e report d'uso separati dal resto dell'organizzazione), messa su Vercel come
+`ANTHROPIC_API_KEY`, **solo Production**, marcata *Sensitive*. Non è una Admin key (`sk-ant-admin…`,
+rifiutata dalla Messages API). **Da verificare a inizio sessione**: che l'utente l'abbia messa anche
+in `.env.local`, perché il comando di valutazione gira in locale.
+
+**Federazione delle identità (WIF): scartata**, non riproporla senza che l'utente la rilanci. Era
+allettante (nessun segreto da conservare: un JWT OIDC di breve durata scambiato con un token legato a
+un service account, GA, gestita dagli SDK con quattro variabili d'ambiente). Scartata perché i
+nostri job girano **su Vercel, non in GitHub Actions**: l'emittente da registrare sarebbe quello di
+Vercel (`https://oidc.vercel.com/<team>`), il token nelle Function arriva **per richiesta**
+nell'header `x-vercel-oidc-token` e non come variabile d'ambiente, l'SDK TypeScript non documenta
+come passarlo via codice, e non è confermato che l'invocazione da cron porti quell'header. Tre
+incognite dentro la fetta che deve invece dimostrare la qualità delle Sintesi. Issuer e rule si
+creano comunque solo con un token `org:admin`, cioè a mano in Console.
+
+### L'ordine concordato
+
+1. **Adattatore** (autonomo): `pnpm add @anthropic-ai/sdk`, `ANTHROPIC_API_KEY` nello schema Zod di
+   `src/env/parse-env.ts` (`ServerEnvSchema`, `startsWith("sk-ant-")`, **opzionale** come
+   `CRON_SECRET`: senza chiave i job restano 503 invece di impedire l'avvio dell'app), riga in
+   `.env.example`, poi l'adattatore vero dietro `createSummaryBatches()` — stesso contratto del fake
+   in `tests/integration/fake-summary-batches.ts`. **Invocare prima la skill `claude-api`**: modello
+   `claude-opus-5`, e le forme dell'API sono cambiate (niente `budget_tokens`, niente prefill).
+2. **Prova su una sola Release vera**, qualche centesimo, per vedere se il prompt `v2` regge fuori
+   dai test.
+3. **Set di valutazione e report**, possibilmente in una sessione nuova.
+
+### Le invenzioni si verificano da sole
+
+Il prompt `v2` chiede già una citazione **verbatim** delle Note per ogni breaking change e
+`locateCitation` (#12) dice se quella citazione esiste nel testo: il criterio "nessuna breaking
+change assente dalle Note" è automatico. All'utente resta il giudizio che nessuna macchina dà —
+l'**Intervento richiesto** atteso e le breaking changes **mancanti**, marcate una volta nel set
+atteso e poi confrontate a ogni versione del prompt.
+
+### Il set
+
+Varietà richiesta: Note brevi e lunghe, con e senza breaking changes, Tecnologie diverse. Il Catalogo
+oggi ne ha poche (~5 fino alla #22), quindi si pesca dalle Release già importate e, se non bastano,
+se ne aggiungono a mano: il set è un file di fixture, non deve coincidere col Catalogo.
+**Preparare una lista candidata e farla approvare**, non sceglierle a freddo.
+
+### Soldi
+
+Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
+dimezzato dalla Batch API — pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
+
+## Da fare dopo: le altre fette
 
 Sbloccate: **#15** (cron giornaliero), **#16** (login, sblocca #17 con la #9), **#25**, **#36**.
 Tutte `ready-for-agent`; `gh issue view N` per i "Blocked by" e i criteri.
 La #15 è la continuazione naturale della #13: porta Rilevamento e Sintesi dentro un cron di Vercel,
 ed è lì che il Rilevamento comincerà a rivalidare.
-HITL: #4 deploy, #14 Anthropic reale, #22 Catalogo, #26 landing page.
+HITL: #22 Catalogo, #26 landing page (la #4 deploy è chiusa).
 
 ## Preferenze dell'utente
 
