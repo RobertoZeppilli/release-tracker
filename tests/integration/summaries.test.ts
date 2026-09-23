@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
+import { publicPagesFor } from "@/modules/releases";
 import { CreditExhaustedError, MAX_NOTES_LENGTH, PROMPT_VERSION, SUMMARY_MODEL } from "@/modules/summaries";
 import { collectSummaryBatches, submitPendingSummaries } from "@/modules/summaries/server";
 import { fakeSummaryBatches, succeeded } from "./fake-summary-batches";
@@ -29,9 +30,10 @@ const SummaryRowSchema = z.object({
 });
 
 let technologyId: string;
+let slug: string;
 
 beforeEach(async () => {
-  const slug = `summaries-${randomUUID()}`;
+  slug = `summaries-${randomUUID()}`;
   const inserted = await serviceClient()
     .from("technologies")
     .insert({ slug, name: "Summary test", classification_strategy: "semver" })
@@ -207,6 +209,34 @@ describe("summaries pipeline", () => {
     expect((await collectSummaryBatches(serviceClient(), batches)).ready).toContain(releaseId);
 
     expect(await readSummary(releaseId)).toMatchObject({ status: "ready", content, failure_reason: null });
+  });
+
+  it("names the pages of every settled Release, so the job can revalidate them", async () => {
+    const releaseId = await seedPending("7.0.0");
+    const batches = fakeSummaryBatches(() => succeeded(content));
+
+    await submitPendingSummaries(serviceClient(), batches);
+    batches.processing = true;
+    const processing = await collectSummaryBatches(serviceClient(), batches);
+    expect(processing.changed).not.toContainEqual({ slug, version: "7.0.0" });
+
+    batches.processing = false;
+    const report = await collectSummaryBatches(serviceClient(), batches);
+
+    expect(report.ready).toContain(releaseId);
+    expect(report.changed).toContainEqual({ slug, version: "7.0.0" });
+    expect(publicPagesFor(report.changed)).toEqual(
+      expect.arrayContaining([`/technologies/${slug}`, `/technologies/${slug}/7.0.0`]),
+    );
+  });
+
+  it("names the page of a Release put back in the queue: its status block changed too", async () => {
+    await seedPending("7.1.0");
+    const batches = fakeSummaryBatches(() => ({ type: "credit_exhausted", message: "credit balance is too low" }));
+
+    await submitPendingSummaries(serviceClient(), batches);
+
+    expect((await collectSummaryBatches(serviceClient(), batches)).changed).toContainEqual({ slug, version: "7.1.0" });
   });
 
   it("puts the Summaries back in the queue when the batch cannot be sent", async () => {
