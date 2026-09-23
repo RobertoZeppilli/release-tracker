@@ -155,3 +155,35 @@
     border-radius: 4px;
   }
 }
+
+/* The one motion moment (DESIGN.md): the caret underline draws beneath a cited span in the notes. */
+@keyframes caret {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@layer components {
+  .cited-span {
+    position: relative;
+    color: var(--text);
+  }
+
+  .cited-span::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--cite);
+    clip-path: inset(0 100% 0 0);
+    animation: caret 650ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cited-span::after {
+      animation: none;
+      clip-path: none;
+    }
+  }
+}

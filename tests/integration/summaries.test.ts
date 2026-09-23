@@ -8,8 +8,14 @@ import { serviceClient } from "./supabase";
 
 const content = {
   title: "Node 18 is dropped and the build gets faster.",
-  keyPoints: ["Node 18 is no longer supported.", "Builds are faster.", "Preload is smarter."],
-  breakingChanges: [{ change: "Node 18 is no longer supported", migration: "Upgrade to Node 20 or later." }],
+  keyPoints: [
+    { text: "Node 18 is no longer supported.", quote: "drop Node 18" },
+    { text: "Builds are faster." },
+    { text: "Preload is smarter." },
+  ],
+  breakingChanges: [
+    { change: "Node 18 is no longer supported", migration: "Upgrade to Node 20 or later.", quote: "drop Node 18" },
+  ],
   actionRequired: true,
 };
 

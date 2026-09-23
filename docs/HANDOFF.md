@@ -16,15 +16,32 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#10 (#10 nella PR #37). Sbloccate: **#15** (cron giornaliero, consigliata: mette in moto
-  Rilevamento e Sintesi), #11 (credito esaurito), #12 (puntatori alle righe), #13 (rivalidazione),
-  #16 (login, sblocca #17 con la #9), #25, #36. Vedi i "Blocked by" (`gh issue view N`).
-- Avviso per credito API esaurito = issue GitHub aperta dal job, una sola alla volta (`docs/DECISIONI.md`).
+- Fatte: #2–#12 (la #12 è sul branch, non ancora in PR). Sbloccate: #13
+  (rivalidazione), #15 (cron giornaliero), #16 (login, sblocca #17 con la #9), #25, #36.
+  Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
+  (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
+- Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
+  rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Ultima sessione (2026-09-22): #10 Pipeline delle Sintesi con un fake della Batch API
+## Sessione del 2026-09-22 (2): #11 Credito API esaurito
+
+- Un credito esaurito non è un fallimento: le Release tornano `pending` e la prima esecuzione dopo la
+  ricarica le riprende. Prima finivano a `failed`, che è definitivo.
+- Il caso attraversa la porta **tipizzato**, mai come testo di un errore: `CreditExhaustedError` da
+  `submit`, variante `credit_exhausted` di `SummaryResult` da `collect`. Riconoscere la risposta vera di
+  Anthropic è dell'adattatore della #14. `SubmitReport` e `CollectReport` hanno ora `pending: string[]`.
+- Il job risponde 200 col report, non solleva: un cron che strilla ogni giorno finché non ricarichi è rumore.
+  `errored`, `expired` e `canceled` restano `failed` senza rinvio.
+- **Scopo ridotto rispetto al testo originale della #11**: tolta l'issue GitHub di avviso (un modulo, un
+  token e due variabili per duplicare le email di credito basso di Anthropic). Se servirà un canale di
+  avviso, va deciso una volta per tutti gli avvisi insieme alle Notifiche.
+- Niente migrazioni, niente variabili d'ambiente nuove, nessun contatore dei tentativi (non c'è riprova
+  con backoff nell'MVP).
+
+## Sessione del 2026-09-22 (1): #10 Pipeline delle Sintesi con un fake della Batch API
 
 - Dominio `summaries`: `SummaryContentSchema` (titolo ≤ 120, 3–5 punti chiave, breaking changes con migrazione),
   `parseSummaryOutput`, `prepareSummaryRequest` (prompt `v1`, modello `claude-opus-5`, soglia di 80.000 caratteri:
@@ -39,7 +56,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   non collega Anthropic. Il fake della Batch API sta in `tests/integration/fake-summary-batches.ts`.
 - Pagina della Release: `SummaryView` (verdetto con conteggio, titolo, punti chiave `note:`, `breaking[n]:` con
   `help:`, backtick resi come `<code>`); una Sintesi `ready` con contenuto non valido si legge come `failed`.
-- Scelta da rivedere nella #11: una richiesta del batch in errore o scaduta va subito a `failed`, senza rinvio.
+- Scelta confermata nella #11: una richiesta del batch in errore o scaduta va subito a `failed`, senza rinvio.
 
 ## Ambiente
 
@@ -53,11 +70,52 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
-## Da fare: #15 Cron giornaliero di Rilevamento e Sintesi
+## Sessione del 2026-09-23: #12 Puntatori alle righe (fetta chiusa)
 
-`gh issue view 15`. Il Rilevamento vero (Fonti `detection`, idempotente, `significanceOverride` rispettata,
-Anteprime) più la pianificazione su Vercel delle due fasi della Sintesi, che esistono già. `CRON_SECRET` va
-impostato su Vercel. Alternative sbloccate: #11, #12, #13, #16, #25, #36.
+**Lavoro non committato sul branch `12-puntatori-righe-note`** (creato tardi: la metà dati era stata
+scritta per sbaglio su `main` e poi spostata lì). Tutto verde: 241 unitari, 30 di integrazione,
+25 E2E, `typecheck`, `lint` e `build` puliti.
+
+### Scelta di fondo: la Sintesi cita, noi calcoliamo
+
+I numeri di riga **non** si chiedono al modello, che li conta male e sbaglia in modo invisibile. La
+Sintesi restituisce una citazione **verbatim** delle Note e le righe si derivano cercandola nel testo
+salvato. Una citazione che non si trova esatta è inventata: niente puntatore. Così il criterio
+"riferimento fuori intervallo" e la regola "Nessuna invenzione" sono la stessa regola, e l'offset del
+caret arriva gratis.
+
+### Com'è fatto
+
+- `summaries/domain/citations.ts`: `locateCitation(notes, quote)` → `{ fromLine, toLine, column,
+  length }` o `null`, e `citationSpans(lines, citation)` → lo stratto `[start, end)` per ogni riga
+  citata (una citazione su più righe porta un a capo per interruzione, contato lì). Righe 1-based come
+  i numeri mostrati, `column` e gli offset 0-based.
+- `SummaryContentSchema`: `quote` opzionale su punti chiave e breaking change; **i punti chiave sono
+  `{ text, quote? }`**, non più stringhe. `PROMPT_VERSION` a **`v2`** (il prompt chiede la citazione e
+  vieta di accorciarla). Nessuna migrazione: in produzione non esiste nessuna Sintesi (#14).
+- `summaries/ui/citation-context.tsx`: `CitationProvider` client con `{ citation, severity, nonce }`.
+  Il **nonce** serve a ridisegnare il caret quando si riclicca lo stesso puntatore. Il provider sta
+  nella pagina della Release perché i puntatori (modulo `summaries`) e le Note (modulo `releases`)
+  sono in moduli diversi; `releases` importava già da `@/modules/summaries`, la direzione è quella.
+- `cite-pointer.tsx`: `release-notes:8` o `8-9`, `href="#L<n>"` vero (un indirizzo copiato funziona),
+  `preventDefault` + `history.replaceState` per l'ancora nell'URL. `breaking-change-item.tsx` estratto
+  da `summary-view.tsx` con le righe `-->`, quote e caret; `glyph.tsx` condiviso.
+- `ReleaseNotesSource` è ora **client** e prende `lines: string[]`, non più `body`: la pagina chiama
+  `noteLines` una volta sola, così le citazioni si cercano esattamente nel testo che viene mostrato.
+  Apre il `<details>`, centra la riga e le sposta il focus (`tabIndex={-1}` su ogni riga); stesso
+  effetto all'arrivo con un `#L<n>` nell'hash.
+- `.cited-span` e `@keyframes caret` in `globals.css` (l'unico momento di movimento, `animation: none`
+  sotto `prefers-reduced-motion`). Sotto i 640px la riga dei caret sparisce e lo stratto citato prende
+  una sottolineatura coral dentro la quote row, come in `DESIGN.md`.
+- Gutter con `font-variant-ligatures: none`, altrimenti Fragment Mono rende `-->` come `⟶`.
+- E2E `tests/e2e/citations.spec.ts`: clic, tastiera, citazione inventata senza puntatore, ancora
+  diretta. Le fixture E2E sono state adeguate alla nuova forma dei punti chiave.
+
+Verificato in Chrome contro `design/mocks/release.html`, desktop e 390px: combacia.
+
+### Resta da fare sulla fetta
+
+Commit, PR che chiude la #12. Poi: #13 (rivalidazione), #15 (cron giornaliero), #16 (login), #25, #36.
 
 ## Preferenze dell'utente
 

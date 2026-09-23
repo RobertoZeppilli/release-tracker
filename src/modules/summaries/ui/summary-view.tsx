@@ -1,20 +1,23 @@
-import { CircleCheck, Info, type LucideIcon, OctagonAlert, TriangleAlert, Wrench } from "lucide-react";
-import type { BreakingChange, StoredSummary } from "../domain/summary-content";
+import { CircleCheck, Info, TriangleAlert } from "lucide-react";
+import { locateCitation } from "../domain/citations";
+import type { StoredSummary } from "../domain/summary-content";
+import { BreakingChangeItem } from "./breaking-change-item";
+import { CitePointer } from "./cite-pointer";
+import { Glyph } from "./glyph";
 import { InlineCode } from "./inline-code";
-
-// DESIGN.md: severity is always a glyph plus a label, never colour alone.
-function Glyph({ Icon }: { Icon: LucideIcon }) {
-  return <Icon aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.8em] align-[-0.08em]" />;
-}
 
 function plural(count: number, word: string): string {
   return `${word}${count === 1 ? "" : "s"}`;
 }
 
-export function SummaryView({ summary }: { summary: StoredSummary }) {
+// `notes` are the release notes as the source view below renders them: the line numbers of a citation
+// are derived from that same text, so a quote the notes do not contain simply gets no pointer.
+export function SummaryView({ summary, notes = [] }: { summary: StoredSummary; notes?: string[] }) {
   const { content, model, promptVersion } = summary;
   const breaking = content.breakingChanges.length;
   const provenance = ["summary", "from the release notes only", model, promptVersion && `prompt ${promptVersion}`];
+  const body = notes.join("\n");
+  const cite = (quote: string | undefined) => (quote ? locateCitation(body, quote) : null);
   return (
     <section aria-labelledby="verdict" className="mt-6">
       <p id="verdict" className="flex flex-wrap items-baseline gap-x-[0.4ch] font-mono text-verdict">
@@ -52,17 +55,21 @@ export function SummaryView({ summary }: { summary: StoredSummary }) {
       <p className="mt-2 font-mono text-meta text-text-faint">{provenance.filter(Boolean).join(" · ")}</p>
 
       <ul aria-label="Key points" className="mt-5 max-w-measure border-t border-rule">
-        {content.keyPoints.map((point, index) => (
-          <li key={index} className="grid grid-cols-[8.5ch_1fr] gap-3 border-b border-rule py-2">
-            <span className="whitespace-nowrap font-mono text-[14px] leading-[1.6] text-text-muted">
-              <Glyph Icon={Info} />
-              note:
-            </span>{" "}
-            <span>
-              <InlineCode text={point} />
-            </span>
-          </li>
-        ))}
+        {content.keyPoints.map((point, index) => {
+          const citation = cite(point.quote);
+          return (
+            <li key={index} className="grid grid-cols-[8.5ch_1fr] gap-3 border-b border-rule py-2 max-[640px]:grid-cols-1 max-[640px]:gap-0">
+              <span className="whitespace-nowrap font-mono text-[14px] leading-[1.6] text-text-muted">
+                <Glyph Icon={Info} />
+                note:
+              </span>{" "}
+              <span>
+                <InlineCode text={point.text} />
+                {citation && <CitePointer citation={citation} severity="note" className="ml-2" />}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
       {breaking > 0 && (
@@ -74,39 +81,10 @@ export function SummaryView({ summary }: { summary: StoredSummary }) {
             breaking changes ({breaking})
           </h2>
           {content.breakingChanges.map((change, index) => (
-            <BreakingChangeItem key={index} number={index + 1} change={change} />
+            <BreakingChangeItem key={index} number={index + 1} change={change} lines={notes} citation={cite(change.quote)} />
           ))}
         </>
       )}
     </section>
-  );
-}
-
-function BreakingChangeItem({ number, change }: { number: number; change: BreakingChange }) {
-  const id = `b${number}`;
-  return (
-    <article aria-labelledby={id} className="mb-6 max-w-[900px]">
-      <h3 id={id} className="grid grid-cols-[auto_1fr] gap-x-3 font-sans text-title font-medium">
-        <span className="whitespace-nowrap font-mono text-[16px] leading-[1.7] text-breaking">
-          <Glyph Icon={OctagonAlert} />
-          breaking[{number}]:
-        </span>{" "}
-        <span>
-          <InlineCode text={change.change} />
-        </span>
-      </h3>
-      <p className="mt-2 grid grid-cols-[5ch_1fr] font-mono text-diagnostic">
-        <span aria-hidden className="select-none pr-[1.5ch] text-right text-text-faint">
-          =
-        </span>
-        <span className="font-sans text-body">
-          <span className="font-mono text-[14px] text-help">
-            <Glyph Icon={Wrench} />
-            help:
-          </span>{" "}
-          <InlineCode text={change.migration} />
-        </span>
-      </p>
-    </article>
   );
 }
