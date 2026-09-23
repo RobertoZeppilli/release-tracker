@@ -1,3 +1,4 @@
+export { type Citation, citationSpans, type CitedSpan, locateCitation } from "./domain/citations";
 export {
   CreditExhaustedError,
   type SummaryBatches,

@@ -3,8 +3,18 @@ import { parseSummaryOutput } from "./summary-output";
 
 const valid = {
   title: "Environment API arrives as experimental, while defaults change for resolve conditions.",
-  keyPoints: ["The Environment API is experimental.", "Node 21 is no longer supported.", "More HTML elements are processed."],
-  breakingChanges: [{ change: "Custom `resolve.conditions` no longer include the defaults", migration: "Spread the exported defaults into your list." }],
+  keyPoints: [
+    { text: "The Environment API is experimental.", quote: "Environment API" },
+    { text: "Node 21 is no longer supported." },
+    { text: "More HTML elements are processed." },
+  ],
+  breakingChanges: [
+    {
+      change: "Custom `resolve.conditions` no longer include the defaults",
+      migration: "Spread the exported defaults into your list.",
+      quote: "no longer includes the defaults",
+    },
+  ],
   actionRequired: true,
 };
 
@@ -37,8 +47,9 @@ describe("parseSummaryOutput", () => {
   });
 
   it("rejects fewer than 3 or more than 5 key points", () => {
-    expect(reason(output({ keyPoints: ["one", "two"] }))).toMatch(/keyPoints/);
-    expect(reason(output({ keyPoints: ["1", "2", "3", "4", "5", "6"] }))).toMatch(/keyPoints/);
+    const point = (text: string) => ({ text });
+    expect(reason(output({ keyPoints: ["one", "two"].map(point) }))).toMatch(/keyPoints/);
+    expect(reason(output({ keyPoints: ["1", "2", "3", "4", "5", "6"].map(point) }))).toMatch(/keyPoints/);
   });
 
   it("rejects a breaking change without a migration", () => {
@@ -49,6 +60,11 @@ describe("parseSummaryOutput", () => {
   it("rejects an action required verdict that does not match the breaking changes", () => {
     expect(reason(output({ actionRequired: false }))).toMatch(/actionRequired/);
     expect(reason(output({ breakingChanges: [] }))).toMatch(/actionRequired/);
+  });
+
+  // The quote is how a claim is traced back to the notes: optional, but never empty when present.
+  it("rejects an empty quote", () => {
+    expect(reason(output({ keyPoints: [{ text: "one", quote: " " }, { text: "two" }, { text: "three" }] }))).toMatch(/quote/);
   });
 
   it("rejects text that is not JSON", () => {

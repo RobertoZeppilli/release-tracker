@@ -3,7 +3,7 @@ import { type FixtureTechnology, seedTechnology } from "./fixtures";
 
 const ACTION = {
   title: "The default export is gone and `init()` is async.",
-  keyPoints: ["Named exports only.", "`init()` returns a promise.", "Node 20 or later.", "Smaller bundle."],
+  keyPoints: [{ text: "Named exports only." }, { text: "`init()` returns a promise." }, { text: "Node 20 or later." }, { text: "Smaller bundle." }],
   breakingChanges: [
     { change: "The default export is gone", migration: "Import `{ create }` instead." },
     { change: "`init()` is async", migration: "Await `init()` before using the client." },

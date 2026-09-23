@@ -31,7 +31,7 @@ function contentFor(release: FixtureRelease): unknown {
   if (release.actionRequired === undefined) return null;
   return {
     title: `Fixture ${release.version} release.`,
-    keyPoints: ["A first change.", "A second change.", "A third change."],
+    keyPoints: [{ text: "A first change." }, { text: "A second change." }, { text: "A third change." }],
     breakingChanges: release.actionRequired ? [{ change: "The default export is gone", migration: "Use the named export." }] : [],
     actionRequired: release.actionRequired,
   };
