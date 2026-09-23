@@ -25,7 +25,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-23 (4): #14 Set di valutazione delle Sintesi (chiusa)
+## Sessione del 2026-09-23 (4): #14 Set di valutazione delle Sintesi (chiusa, PR #42 in `main`)
 
 271 unitari, `typecheck`, `lint` puliti. Due giri veri del set, ~50 centesimi in tutto.
 
@@ -292,12 +292,22 @@ atteso e poi confrontate a ogni versione del prompt.
 Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
 dimezzato dalla Batch API — pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
 
-## Da fare dopo: le altre fette
+## Da dove ripartire: la #15, cron giornaliero
 
-Sbloccate: **#15** (cron giornaliero), **#16** (login, sblocca #17 con la #9), **#25**, **#36**.
-Tutte `ready-for-agent`; `gh issue view N` per i "Blocked by" e i criteri.
-La #15 è la continuazione naturale della #13: porta Rilevamento e Sintesi dentro un cron di Vercel,
-ed è lì che il Rilevamento comincerà a rivalidare.
+È la prossima, concordata con l'utente, ed è la continuazione naturale della #13: porta Rilevamento e
+Sintesi dentro un cron di Vercel. `gh issue view 15` per i criteri. Tre cose già note che la
+riguardano, sparse nelle sessioni qui sopra:
+
+- **Il Rilevamento non rivalida ancora** (#13): gira solo in `scripts/sync-catalog.mts`, fuori da
+  Next. Quando passa in una rotta le basta chiamare `revalidateReleasePages`, ma `importTechnology`
+  oggi restituisce un conteggio: servirà fargli restituire le versioni inserite.
+- Le rotte dei job esistono già e sono protette da `CRON_SECRET`
+  (`/api/jobs/summaries/{submit,collect}`); il piano Hobby dà **un cron al giorno**, quindi
+  Rilevamento e Sintesi vanno pianificati in sequenza (ADR 0003, `docs/DECISIONI.md`).
+- Alla prima esecuzione vera in produzione nasceranno le **prime Sintesi vere**: oggi in produzione
+  non ce n'è nessuna. Spende davvero, quindi avvisare l'utente prima.
+
+Poi: **#16** (login, sblocca #17 con la #9), **#25**, **#36**, tutte `ready-for-agent`.
 HITL: #22 Catalogo, #26 landing page (la #4 deploy è chiusa).
 
 ## Preferenze dell'utente
@@ -306,6 +316,8 @@ HITL: #22 Catalogo, #26 landing page (la #4 deploy è chiusa).
 - Domini in italiano nei documenti; UI e codice in inglese.
 - Attento al contesto: al ~30% fermarsi, aggiornare questo handoff e ripartire in una nuova sessione.
 - Commit, push, PR e issue solo dopo conferma.
+- Nel corpo della PR va `Closes #N` **in inglese**: con "Chiude #N" l'issue resta aperta (successo
+  alla #14). Regola fissata in `CLAUDE.md`.
 
 ## Skill suggerite
 
