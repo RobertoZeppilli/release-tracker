@@ -16,8 +16,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #4 deploy, #14 Anthropic reale + set di
     valutazione, #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#12 (la #12 nella PR #39). Sbloccate: #13
-  (rivalidazione), #15 (cron giornaliero), #16 (login, sblocca #17 con la #9), #25, #36.
+- Fatte: #2–#13 (la #13 nella PR #40). Sbloccate: #15 (cron giornaliero),
+  #16 (login, sblocca #17 con la #9), #25, #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -26,7 +26,44 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-23: #12 Puntatori alle righe (chiusa, PR #39 in `main`)
+## Sessione del 2026-09-23 (2): #13 Rivalidazione delle pagine pubbliche (chiusa, PR #40 in `main`)
+
+247 unitari, 32 di integrazione, `typecheck`, `lint` e `build` puliti.
+
+### Scelta di fondo: la raccolta dice *che cosa* è cambiato, la rotta *che cosa* rivalidare
+
+`revalidatePath` gira solo in un Route Handler o in una Server Function, e `summaries` non deve
+dipendere né da Next né da `releases` (la dipendenza tra i due moduli va già nell'altro verso).
+Quindi `collectSummaryBatches` riporta i riferimenti e la rotta del job li rivalida; la mappatura
+riferimenti → percorsi resta pura e la riuserà il cron della #15.
+
+### Com'è fatto
+
+- `releases/domain/revalidation.ts`: `ReleaseRef = { slug, version }` e `publicPagesFor(refs)` → i
+  percorsi toccati, deduplicati: la pagina della Release (`releasePath`, quindi versione codificata)
+  **e** quella della Tecnologia, i cui conteggi del Cammino di upgrade leggono le Sintesi.
+- `releases/server/revalidate-pages.ts`: `revalidateReleasePages(refs)` chiama `revalidatePath` su
+  ciascun percorso e restituisce l'elenco, per il report del job. Test unitario con `next/cache`
+  mockato (`vi.hoisted` + `vi.mock`): il progetto `unit` non ha l'alias di `server-only`, perciò il
+  file **non** importa `server-only` — quell'import sta solo negli indici dei moduli.
+- `CollectReport` ha ora `changed: { slug, version }[]`: ogni Release la cui Sintesi si è *conclusa*,
+  in qualunque modo — `ready`, `failed` o rimessa in coda per credito esaurito: in tutti e tre i casi
+  la pagina si legge diversamente. Slug e versione arrivano dalla stessa query con un embed
+  PostgREST, `releases!inner(version, technologies!inner(slug))`: nessuna query in più.
+- La rotta `/api/jobs/summaries/collect` scarta `changed` e riporta `revalidated: [percorsi]`.
+
+### Attenzione per chi riprende
+
+- **Il Rilevamento non rivalida ancora.** Oggi gira solo in `scripts/sync-catalog.mts`, fuori da
+  Next (`revalidatePath` non esiste lì) e al deploy, dove la cache si azzera da sé. Quando la #15
+  porterà il Rilevamento in una rotta, le basta chiamare `revalidateReleasePages`; `importTechnology`
+  restituisce oggi un conteggio, servirà fargli restituire le versioni inserite.
+- Il collegamento non è mai stato provato dal vivo: `createSummaryBatches()` è `null` e la rotta
+  risponde **503** finché la #14 non collega Anthropic. Verificato da tipi e test, non da una
+  chiamata reale.
+- Nessuna rivalidazione nella fase di invio (`pending` → `processing`): cambia poco sulla pagina.
+
+## Sessione del 2026-09-23 (1): #12 Puntatori alle righe (chiusa, PR #39 in `main`)
 
 241 unitari, 30 di integrazione, 25 E2E, `typecheck`, `lint` e `build` puliti. Verificato in Chrome
 contro `design/mocks/release.html` a 1280px e a 390px.
@@ -117,8 +154,10 @@ La #12 ha cambiato la forma dei punti chiave (`string` → `{ text, quote? }`) e
 
 ## Da fare: scegliere la prossima fetta
 
-Sbloccate: **#13** (rivalidazione), **#15** (cron giornaliero), **#16** (login, sblocca #17 con la #9),
-**#25**, **#36**. Tutte `ready-for-agent`; `gh issue view N` per i "Blocked by" e i criteri.
+Sbloccate: **#15** (cron giornaliero), **#16** (login, sblocca #17 con la #9), **#25**, **#36**.
+Tutte `ready-for-agent`; `gh issue view N` per i "Blocked by" e i criteri.
+La #15 è la continuazione naturale della #13: porta Rilevamento e Sintesi dentro un cron di Vercel,
+ed è lì che il Rilevamento comincerà a rivalidare.
 HITL: #4 deploy, #14 Anthropic reale, #22 Catalogo, #26 landing page.
 
 ## Preferenze dell'utente
