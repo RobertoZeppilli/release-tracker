@@ -29,6 +29,12 @@ function reason(text: string): string {
 }
 
 describe("parseSummaryOutput", () => {
+  it("accepts a valid output wrapped in a markdown code block", () => {
+    const result = parseSummaryOutput(["```json", output({}), "```"].join("\n"));
+
+    expect(result.ok).toBe(true);
+  });
+
   it("accepts a valid output", () => {
     expect(parseSummaryOutput(JSON.stringify(valid))).toEqual({ ok: true, content: valid });
   });

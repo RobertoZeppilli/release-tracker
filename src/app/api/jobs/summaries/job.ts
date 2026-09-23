@@ -15,7 +15,7 @@ export async function runSummaryJob(
   if (!isAuthorizedJob(request, serverEnv.CRON_SECRET)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
-  const batches = createSummaryBatches();
+  const batches = createSummaryBatches(serverEnv.ANTHROPIC_API_KEY);
   if (batches === null) {
     return Response.json({ error: "summaries are not configured: no Message Batches adapter" }, { status: 503 });
   }

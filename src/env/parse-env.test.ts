@@ -43,6 +43,18 @@ describe("parseServerEnv", () => {
     expect(parseServerEnv({ SUPABASE_SECRET_KEY: "sb_secret_local", CRON_SECRET: "" }).CRON_SECRET).toBeUndefined();
   });
 
+  it("accepts a missing or empty Anthropic key", () => {
+    expect(
+      parseServerEnv({ SUPABASE_SECRET_KEY: "sb_secret_local", ANTHROPIC_API_KEY: "" }).ANTHROPIC_API_KEY,
+    ).toBeUndefined();
+  });
+
+  it("rejects an Anthropic key that is not an API key", () => {
+    expect(() =>
+      parseServerEnv({ SUPABASE_SECRET_KEY: "sb_secret_local", ANTHROPIC_API_KEY: "not-a-key" }),
+    ).toThrow(/ANTHROPIC_API_KEY/);
+  });
+
   it("rejects a short job secret", () => {
     expect(() => parseServerEnv({ SUPABASE_SECRET_KEY: "sb_secret_local", CRON_SECRET: "short" })).toThrow(/CRON_SECRET/);
   });
