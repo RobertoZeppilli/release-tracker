@@ -29,7 +29,8 @@ Parla con l'utente **in italiano**.
 
 ## Flusso
 
-- Un branch per issue, PR che chiude l'issue.
+- Un branch per issue, PR che chiude l'issue: nel corpo della PR scrivi `Closes #N` **in inglese**
+  (GitHub ignora "Chiude #N" e l'issue resta aperta); il resto della descrizione in italiano.
 - Commit, push, PR e creazione di issue **solo dopo conferma dell'utente**.
 - Dai consigli con una raccomandazione motivata.
 - Se il contesto supera ~30%, proponi di aggiornare `docs/HANDOFF.md` e aprire una nuova sessione.
