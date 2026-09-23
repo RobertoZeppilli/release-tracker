@@ -2,7 +2,7 @@ import type { SummaryRequest } from "./summary-batches";
 
 export const SUMMARY_MODEL = "claude-opus-5";
 // Bump on every change to the prompt text, so a stored Summary says which prompt produced it.
-export const PROMPT_VERSION = "v3";
+export const PROMPT_VERSION = "v4";
 
 // ADR 0007: notes are never truncated. About 20k tokens, a few cents per Summary with the batch discount.
 export const MAX_NOTES_LENGTH = 80_000;
@@ -15,7 +15,8 @@ Reply with a JSON object with these fields:
 - "title": one sentence on what matters most in this release. Hard limit: 120 characters, spaces
   included. Count them before answering and rewrite the sentence shorter if it is over; a longer title
   is thrown away with the whole summary.
-- "keyPoints": 3 to 5 items on the notable changes, most important first. Each item has "text" (one short sentence) and may have "quote".
+- "keyPoints": the notable changes, most important first. Hard limit: at least 3 items and at most 5.
+  Count them before answering; items beyond the fifth are thrown away. Each item has "text" (one short sentence) and may have "quote".
 - "breakingChanges": every change the notes state or clearly describe as breaking, removed or incompatible, so that users must change code, configuration or runtime to upgrade. Each item has "change" (what changes, one short sentence), "migration" (how to migrate, from the notes; if the notes give no migration, say what to check) and may have "quote".
 - "actionRequired": true exactly when "breakingChanges" is not empty.
 

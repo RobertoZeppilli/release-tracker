@@ -1,0 +1,203 @@
+{
+  "cases": [
+    {
+      "slug": "react",
+      "version": "19.0.0",
+      "technologyName": "React",
+      "notes": "notes/react@19.0.0.md",
+      "note": "45k characters, an explicit Breaking Changes section with about twenty removals",
+      "expected": {
+        "actionRequired": true,
+        "breakingChanges": [
+          { "id": "proptypes", "about": "propTypes is ignored", "match": ["proptypes"] },
+          { "id": "string-refs", "about": "string refs removed", "match": ["string ref"] },
+          { "id": "reactdom-render", "about": "ReactDOM.render and hydrate removed for createRoot", "match": ["createroot"] },
+          { "id": "finddomnode", "about": "findDOMNode removed", "match": ["finddomnode"] }
+        ],
+        "allowed": [
+          { "id": "defaultprops", "about": "defaultProps removed for function components", "match": ["defaultprops"] },
+          { "id": "legacy-context", "about": "contextTypes and getChildContext removed", "match": ["contexttypes"] },
+          { "id": "createfactory", "about": "React.createFactory removed", "match": ["createfactory"] },
+          { "id": "module-factories", "about": "module pattern factories removed", "match": ["module pattern"] },
+          { "id": "test-renderer-shallow", "about": "react-test-renderer/shallow removed", "match": ["shallow"] },
+          { "id": "test-utils", "about": "react-dom/test-utils removed but act", "match": ["test-utils"] },
+          { "id": "unmount", "about": "unmountComponentAtNode removed", "match": ["unmountcomponentatnode"] },
+          { "id": "umd", "about": "UMD builds removed", "match": ["umd"] },
+          { "id": "jsx-namespace", "about": "the global JSX namespace moved into the react package", "match": ["jsx namespace"] },
+          { "id": "ts-types", "about": "deprecated TypeScript types removed", "match": ["typescript type"] },
+          { "id": "element-ref", "about": "element.ref deprecated for element.props.ref", "match": ["element.ref"] },
+          { "id": "jsx-transform", "about": "the new JSX transform is required", "match": ["jsx transform"] },
+          { "id": "matching-versions", "about": "react and react-dom versions must match", "match": ["react-dom", "match"] },
+          { "id": "legacy-mode", "about": "legacy mode and renderToStaticNodeStream are removed", "match": ["legacy mode"] },
+          { "id": "react-is", "about": "react-is drops isConcurrentMode and isAsyncMode", "match": ["react-is"] },
+          { "id": "javascript-urls", "about": "javascript: URLs throw", "match": ["javascript:"] }
+        ]
+      }
+    },
+    {
+      "slug": "react",
+      "version": "19.2.0",
+      "technologyName": "React",
+      "notes": "notes/react@19.2.0.md",
+      "note": "minor, no breaking section, but useId changes the ids it generates",
+      "expected": {
+        "actionRequired": "either",
+        "breakingChanges": [],
+        "allowed": [
+          { "id": "useid", "about": "useId now uses an underscore instead of a colon", "match": ["useid"] },
+          { "id": "suspense-batching", "about": "suspense boundary reveals are batched", "match": ["suspense"] },
+          { "id": "reconciler-arguments", "about": "the React Reconciler changed parameter order", "match": ["reconciler"] },
+          { "id": "context-name", "about": "a Context stringifies without .Provider", "match": ["provider"] }
+        ]
+      }
+    },
+    {
+      "slug": "react",
+      "version": "19.2.7",
+      "technologyName": "React",
+      "notes": "notes/react@19.2.7.md",
+      "note": "one-line patch: nothing to invent",
+      "expected": { "actionRequired": false, "breakingChanges": [] }
+    },
+    {
+      "slug": "typescript",
+      "version": "6.0.3",
+      "technologyName": "TypeScript",
+      "notes": "notes/typescript@6.0.3.md",
+      "note": "notes that only link elsewhere: the Summary must not fill the void",
+      "expected": { "actionRequired": false, "breakingChanges": [] }
+    },
+    {
+      "slug": "vite",
+      "version": "8.3.0-beta.0",
+      "technologyName": "Vite",
+      "notes": "notes/vite@8.3.0-beta.0.md",
+      "note": "beta, a changelog of commits with internal removals",
+      "expected": {
+        "actionRequired": "either",
+        "breakingChanges": [],
+        "allowed": [
+          { "id": "hmrurl", "about": "the HmrUrl concept is gone", "match": ["hmrurl"] },
+          { "id": "esbuild-plugin", "about": "the unused esbuildPlugin is deleted", "match": ["esbuildplugin"] },
+          { "id": "plugin-container-options", "about": "PluginContainerOptions is deleted", "match": ["plugincontaineroptions"] }
+        ]
+      }
+    },
+    {
+      "slug": "vite",
+      "version": "8.2.2",
+      "technologyName": "Vite",
+      "notes": "notes/vite@8.2.2.md",
+      "note": "the notes only point at the changelog: the hardest case for invention",
+      "expected": { "actionRequired": false, "breakingChanges": [] }
+    },
+    {
+      "slug": "eslint",
+      "version": "10.11.0",
+      "technologyName": "ESLint",
+      "notes": "notes/eslint@10.11.0.md",
+      "note": "minor: new reports can fail a build that passed",
+      "expected": {
+        "actionRequired": "either",
+        "breakingChanges": [],
+        "allowed": [
+          { "id": "new-cap", "about": "new-cap only exempts built-ins referencing the global", "match": ["new-cap"] },
+          { "id": "no-unsafe-finally", "about": "no-unsafe-finally reports labeled continue", "match": ["no-unsafe-finally"] },
+          { "id": "object-shorthand", "about": "object-shorthand handles quoted properties", "match": ["object-shorthand"] }
+        ]
+      }
+    },
+    {
+      "slug": "eslint",
+      "version": "10.9.1",
+      "technologyName": "ESLint",
+      "notes": "notes/eslint@10.9.1.md",
+      "note": "patch: one fix, one doc, one chore",
+      "expected": { "actionRequired": false, "breakingChanges": [] }
+    },
+    {
+      "slug": "tailwindcss",
+      "version": "4.3.0",
+      "technologyName": "Tailwind CSS",
+      "notes": "notes/tailwindcss@4.3.0.md",
+      "note": "minor: additions and fixes, plus changes to the upgrade codemod",
+      "expected": {
+        "actionRequired": "either",
+        "breakingChanges": [],
+        "allowed": [
+          { "id": "has-canonicalization", "about": "the upgrade tool rewrites arbitrary :has() variants", "match": ["has-"] },
+          { "id": "style-attributes", "about": "the upgrade tool no longer touches inline style attributes", "match": ["style"] }
+        ]
+      }
+    },
+    {
+      "slug": "tailwindcss",
+      "version": "4.2.4",
+      "technologyName": "Tailwind CSS",
+      "notes": "notes/tailwindcss@4.2.4.md",
+      "note": "patch: a single fix",
+      "expected": { "actionRequired": false, "breakingChanges": [] }
+    },
+    {
+      "slug": "zod",
+      "version": "4.6.0",
+      "technologyName": "Zod",
+      "notes": "notes/zod@4.6.0.md",
+      "note": "30k characters, behaviour changes marked with a warning sign under Bug fixes",
+      "expected": {
+        "actionRequired": true,
+        "breakingChanges": [
+          { "id": "emoji", "about": "z.emoji() rejects component-only strings", "match": ["emoji"] },
+          { "id": "enum-options", "about": "numeric enum options drop the reverse mappings", "match": ["enum"] },
+          { "id": "error-maps", "about": "error maps run on the first read of error", "match": ["error map"] }
+        ],
+        "allowed": [
+          { "id": "metadata-getters", "about": "metadata members materialize on first read", "match": ["minlength"] },
+          { "id": "base64", "about": "the base64 patterns are the character sets now", "match": ["base64"] },
+          { "id": "email-pattern", "about": "the email pattern dropped its lookaheads", "match": ["email"] },
+          { "id": "json-schema-fold", "about": "chained checks fold instead of overwriting in JSON Schema", "match": ["json schema"] },
+          { "id": "commonjs", "about": "the getter on every CommonJS export is gone", "match": ["commonjs"] }
+        ]
+      }
+    },
+    {
+      "slug": "zod",
+      "version": "4.6.5",
+      "technologyName": "Zod",
+      "notes": "notes/zod@4.6.5.md",
+      "note": "a bare list of commits: docs, a revert and a re-revert",
+      "expected": { "actionRequired": false, "breakingChanges": [] }
+    },
+    {
+      "slug": "prisma",
+      "version": "7.10.0",
+      "technologyName": "Prisma ORM",
+      "notes": "notes/prisma@7.10.0.md",
+      "note": "11k characters, long prose, security hardening that can lock someone out",
+      "expected": {
+        "actionRequired": "either",
+        "breakingChanges": [],
+        "allowed": [
+          { "id": "studio-localhost", "about": "Prisma Studio binds to 127.0.0.1 and rejects other origins", "match": ["studio"] },
+          { "id": "finduniqueorthrow", "about": "batched findUniqueOrThrow rejects with P2025", "match": ["finduniqueorthrow"] },
+          { "id": "datasource-block", "about": "a generator-only schema is now an error", "match": ["datasource"] }
+        ]
+      }
+    },
+    {
+      "slug": "vitest",
+      "version": "5.0.1",
+      "technologyName": "Vitest",
+      "notes": "notes/vitest@5.0.1.md",
+      "note": "patch after a major: features and fixes, one deprecation warning",
+      "expected": {
+        "actionRequired": "either",
+        "breakingChanges": [],
+        "allowed": [
+          { "id": "list-exit-code", "about": "vitest list exits 1 when collection fails", "match": ["exit"] },
+          { "id": "deps-optimizer-web", "about": "deps.optimizer.web warns as deprecated", "match": ["deps.optimizer.web"] }
+        ]
+      }
+    }
+  ]
+}

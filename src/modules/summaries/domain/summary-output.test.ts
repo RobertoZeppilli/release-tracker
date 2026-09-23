@@ -52,10 +52,17 @@ describe("parseSummaryOutput", () => {
     expect(parseSummaryOutput(output({ title: "x".repeat(120) })).ok).toBe(true);
   });
 
-  it("rejects fewer than 3 or more than 5 key points", () => {
+  it("rejects fewer than 3 key points", () => {
     const point = (text: string) => ({ text });
     expect(reason(output({ keyPoints: ["one", "two"].map(point) }))).toMatch(/keyPoints/);
-    expect(reason(output({ keyPoints: ["1", "2", "3", "4", "5", "6"].map(point) }))).toMatch(/keyPoints/);
+  });
+
+  // Paid for and otherwise sound: the sixth key point goes, not the Summary.
+  it("keeps the first 5 key points when the model answers with more", () => {
+    const point = (text: string) => ({ text });
+    const parsed = parseSummaryOutput(output({ keyPoints: ["1", "2", "3", "4", "5", "6"].map(point) }));
+
+    expect(parsed.ok && parsed.content.keyPoints.map((item) => item.text)).toEqual(["1", "2", "3", "4", "5"]);
   });
 
   it("rejects a breaking change without a migration", () => {

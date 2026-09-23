@@ -15,7 +15,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "catalog:sync": "tsx --conditions=react-server scripts/sync-catalog.mts",
-    "summary:try": "tsx --conditions=react-server scripts/summarize-release.mts"
+    "summary:try": "tsx --conditions=react-server scripts/summarize-release.mts",
+    "summary:eval": "tsx --conditions=react-server scripts/evaluate-summaries.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
