@@ -34,7 +34,7 @@ dal vivo in locale contro npm e GitHub veri (gratis, nessuna chiamata AI).
 
 Il vincolo vero è **una esecuzione al giorno per cron**, con partenza entro l'ora indicata (±59 min);
 i cron per progetto sono 100. Quindi tre cron distinti invece di una rotta orchestratrice, come
-voleva ADR 0003: Rilevamento **02:00**, invio **05:00**, raccolta **11:00** UTC in `vercel.json`. Tre
+voleva ADR 0003: Rilevamento **02:00**, invio **05:00**, raccolta **11:00** UTC. Tre
 ore di distacco assorbono lo slittamento e, se l'ordine salta lo stesso, ogni fase riprende al giro
 dopo. Una Sintesi è pronta in giornata invece che 24 ore dopo. ADR 0003 e `docs/DECISIONI.md`
 corretti: dicevano "un cron al giorno".
@@ -91,6 +91,18 @@ il primo `UPDATE` dell'ETag su una Fonte è bastato a invertirle e a far fallire
 
 ### Attenzione per chi riprende
 
+- ⚠️ **In `vercel.json` c'è solo il cron del Rilevamento**: i due delle Sintesi sono tolti di
+  proposito perché fino al lancio non si spende niente (decisione dell'utente del 2026-09-24). Al
+  lancio vanno rimessi, ed è la cosa più facile da dimenticare di tutto il progetto:
+
+  ```json
+  { "path": "/api/jobs/summaries/submit", "schedule": "0 5 * * *" },
+  { "path": "/api/jobs/summaries/collect", "schedule": "0 11 * * *" }
+  ```
+
+  Intanto le Release si accumulano `pending` e al lancio il primo batch le smaltisce; attenzione che
+  `claim_pending_summaries(max_count)` ha un tetto per esecuzione, quindi un arretrato grosso si
+  svuota in più giorni. Il Rilevamento gira e non spende: il Catalogo si riempie di Release vere.
 - **`CRON_SECRET` va messo su Vercel** (Production, *Sensitive*): se la variabile esiste, Vercel manda
   da sé `Authorization: Bearer <valore>`. Senza, i tre cron partono e ricevono 401. È il primo
   controllo dopo il deploy. In `.env.local` ce n'è uno solo per il locale, diverso da quello di
@@ -375,7 +387,8 @@ dimezzato dalla Batch API — pochi centesimi a giro. **Nessun lancio senza avvi
 HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
 
 Prima però, se il deploy della #15 è andato: mettere `CRON_SECRET` in Production e guardare la prima
-esecuzione dei tre cron nei log di Vercel. Il Rilevamento è gratis, le Sintesi no.
+esecuzione del cron del Rilevamento nei log di Vercel. È l'unico pianificato: fino al lancio non si
+spende niente e i due cron delle Sintesi sono fuori da `vercel.json`.
 
 ## Preferenze dell'utente
 

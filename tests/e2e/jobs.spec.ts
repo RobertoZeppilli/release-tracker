@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-// The three daily crons of `vercel.json`. Vercel sends `Authorization: Bearer <CRON_SECRET>`, so
-// the address alone must never be enough: these endpoints write and they spend.
+// The three job endpoints. Vercel sends `Authorization: Bearer <CRON_SECRET>`, so the address alone
+// must never be enough: these endpoints write and they spend. Only the Detection is scheduled in
+// `vercel.json` today — the Summary jobs stay reachable, and refusing without the secret is exactly
+// what keeps them from spending while nobody calls them.
 const endpoints = ["/api/jobs/detection", "/api/jobs/summaries/submit", "/api/jobs/summaries/collect"];
 
 test.describe("job endpoints", () => {
