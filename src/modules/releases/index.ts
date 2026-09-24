@@ -7,6 +7,12 @@ export {
   SummaryStatusSchema,
 } from "./domain/initial-summary-status";
 export { publicPagesFor, type ReleaseRef } from "./domain/revalidation";
+export {
+  type DetectedRelease,
+  type DetectionCandidate,
+  type KnownReleases,
+  selectDetected,
+} from "./domain/select-detected";
 export { type ImportCandidate, selectInitialImport } from "./domain/select-initial-import";
 export { SignificanceSchema, type Significance } from "./domain/significance";
 export {

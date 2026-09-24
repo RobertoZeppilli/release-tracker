@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { extractChangelogSection, headingAnchor } from "../domain/changelog";
-import type { FoundNotes, NotesSource, ObservedVersion, SourceAdapters } from "../domain/source-adapters";
+import type { FoundNotes, NotesSource, SourceAdapters, VersionListing } from "../domain/source-adapters";
 
 type Fetch = typeof fetch;
 
@@ -20,10 +20,10 @@ const PER_PAGE = 100;
 // Called only from server jobs, never from the client.
 export function createSourceAdapters({ githubToken, fetch = globalThis.fetch }: SourceAdapterOptions = {}): SourceAdapters {
   return {
-    async listVersions(source) {
+    async listVersions(source, etag) {
       switch (source.kind) {
         case "npm":
-          return listNpmVersions(fetch, source.package);
+          return listNpmVersions(fetch, source.package, etag);
       }
     },
     async findNotes(source, versions) {
@@ -37,14 +37,25 @@ export function createSourceAdapters({ githubToken, fetch = globalThis.fetch }: 
   };
 }
 
-async function listNpmVersions(fetch: Fetch, name: string): Promise<ObservedVersion[]> {
+async function listNpmVersions(
+  fetch: Fetch,
+  name: string,
+  etag: string | null | undefined,
+): Promise<VersionListing | "unchanged"> {
   // A scoped name keeps its @ and encodes the slash.
   const url = `https://registry.npmjs.org/${encodeURIComponent(name).replace(/^%40/, "@")}`;
-  const { versions, time } = NpmPackageSchema.parse(await getJson(fetch, url, {}));
-  return Object.keys(versions).flatMap((version) => {
-    const published = time[version];
-    return published === undefined ? [] : [{ version, publishedAt: new Date(published) }];
-  });
+  const response = await fetch(url, { headers: etag ? { "if-none-match": etag } : {} });
+  if (response.status === 304) return "unchanged";
+  if (!response.ok) throw new Error(`GET ${url} failed: ${response.status} ${response.statusText}`);
+
+  const { versions, time } = NpmPackageSchema.parse(await response.json());
+  return {
+    etag: response.headers.get("etag"),
+    versions: Object.keys(versions).flatMap((version) => {
+      const published = time[version];
+      return published === undefined ? [] : [{ version, publishedAt: new Date(published) }];
+    }),
+  };
 }
 
 // Walks the release list, newest first, until every wanted tag is found or the list ends.

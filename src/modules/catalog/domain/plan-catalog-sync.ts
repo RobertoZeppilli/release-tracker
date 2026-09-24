@@ -1,6 +1,7 @@
 import { type CatalogEntry, type Source, sourceKey } from "./catalog-entry";
 
-export type StoredSource = Source & { id: string };
+// `etag` is the Detection's validator for the last listing this Source served (null: never fetched).
+export type StoredSource = Source & { id: string; etag: string | null };
 
 // A Technology as the database holds it: a copy of its Catalog entry plus `retired` (ADR 0005).
 export type StoredTechnology = Omit<CatalogEntry, "sources"> & {
@@ -70,7 +71,8 @@ function sameSources(sources: readonly Source[], storedSources: readonly StoredS
 }
 
 // Key order differs between a parsed file and a jsonb column, so compare sorted entries.
+// `id` and `etag` belong to the database, not to the Catalog file: they never mean a Source changed.
 function canonical(source: Source | StoredSource): string {
-  const entries = Object.entries(source).filter(([key]) => key !== "id");
+  const entries = Object.entries(source).filter(([key]) => key !== "id" && key !== "etag");
   return JSON.stringify(entries.sort(([a], [b]) => a.localeCompare(b)));
 }

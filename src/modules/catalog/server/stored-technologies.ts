@@ -1,11 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { ClassificationStrategySchema } from "@/modules/releases";
-import { SourceSchema } from "../domain/catalog-entry";
+import { SourceSchema, sourceKey } from "../domain/catalog-entry";
 import type { StoredTechnology } from "../domain/plan-catalog-sync";
 
 export const TECHNOLOGY_COLUMNS =
-  "id, slug, name, description, classification_strategy, retired, sources (id, role, kind, config)";
+  "id, slug, name, description, classification_strategy, retired, sources (id, role, kind, config, etag)";
 
 const TechnologyRowSchema = z.object({
   id: z.uuid(),
@@ -15,11 +15,19 @@ const TechnologyRowSchema = z.object({
   classification_strategy: ClassificationStrategySchema,
   retired: z.boolean(),
   sources: z.array(
-    z.object({ id: z.uuid(), role: z.string(), kind: z.string(), config: z.record(z.string(), z.unknown()) }),
+    z.object({
+      id: z.uuid(),
+      role: z.string(),
+      kind: z.string(),
+      config: z.record(z.string(), z.unknown()),
+      etag: z.string().nullable(),
+    }),
   ),
 });
 
 // The database stores a Source as role + kind + a jsonb config; the domain sees one flat object.
+// An embedded PostgREST list comes back in no particular order, and an `UPDATE` on one Source is
+// enough to change it: sorting by role and kind keeps the Technology page stable.
 export function toStoredTechnology(row: unknown): StoredTechnology {
   const technology = TechnologyRowSchema.parse(row);
   return {
@@ -29,10 +37,9 @@ export function toStoredTechnology(row: unknown): StoredTechnology {
     description: technology.description,
     classificationStrategy: technology.classification_strategy,
     retired: technology.retired,
-    sources: technology.sources.map(({ id, role, kind, config }) => ({
-      id,
-      ...SourceSchema.parse({ ...config, role, kind }),
-    })),
+    sources: technology.sources
+      .map(({ id, role, kind, config, etag }) => ({ id, etag, ...SourceSchema.parse({ ...config, role, kind }) }))
+      .sort((a, b) => (sourceKey(a) < sourceKey(b) ? -1 : 1)),
   };
 }
 

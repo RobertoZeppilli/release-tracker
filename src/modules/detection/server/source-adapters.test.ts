@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { createSourceAdapters } from "./source-adapters";
 
-function fakeFetch(responses: Record<string, unknown>) {
+function fakeFetch(responses: Record<string, unknown>, etag?: string) {
   const requested: { url: string; headers: HeadersInit | undefined }[] = [];
   const fetch: typeof globalThis.fetch = async (input, init) => {
     const url = String(input);
+    const headers = new Headers(init?.headers);
     requested.push({ url, headers: init?.headers });
-    return url in responses ? Response.json(responses[url]) : new Response("not found", { status: 404 });
+    if (etag !== undefined && headers.get("if-none-match") === etag) return new Response(null, { status: 304 });
+    if (!(url in responses)) return new Response("not found", { status: 404 });
+    return Response.json(responses[url], etag === undefined ? undefined : { headers: { etag } });
   };
   return { fetch, requested };
 }
@@ -25,16 +28,32 @@ describe("npm adapter", () => {
         time: { created: "2020-01-01T00:00:00.000Z", "5.0.0": "2026-03-12T10:00:00.000Z", "5.0.1-beta.0": "2026-03-13T10:00:00.000Z" },
       },
     });
-    const versions = await createSourceAdapters({ fetch }).listVersions({
+    const listing = await createSourceAdapters({ fetch }).listVersions({
       role: "detection",
       kind: "npm",
       package: "@vitejs/plugin-react",
     });
-    expect(versions).toEqual([
-      { version: "5.0.0", publishedAt: new Date("2026-03-12T10:00:00.000Z") },
-      { version: "5.0.1-beta.0", publishedAt: new Date("2026-03-13T10:00:00.000Z") },
-    ]);
+    expect(listing).toEqual({
+      etag: null,
+      versions: [
+        { version: "5.0.0", publishedAt: new Date("2026-03-12T10:00:00.000Z") },
+        { version: "5.0.1-beta.0", publishedAt: new Date("2026-03-13T10:00:00.000Z") },
+      ],
+    });
     expect(requested.map((request) => request.url)).toEqual(["https://registry.npmjs.org/@vitejs%2Fplugin-react"]);
+  });
+
+  // The whole point of the daily Detection: the packument is megabytes, the 304 is nothing.
+  it("asks with the stored validator and reports that nothing changed", async () => {
+    const packument = { versions: { "5.0.0": {} }, time: { "5.0.0": "2026-03-12T10:00:00.000Z" } };
+    const { fetch, requested } = fakeFetch({ "https://registry.npmjs.org/vite": packument }, '"abc"');
+    const npm = { role: "detection", kind: "npm", package: "vite" } as const;
+
+    const first = await createSourceAdapters({ fetch }).listVersions(npm, null);
+    expect(first).toEqual({ etag: '"abc"', versions: [{ version: "5.0.0", publishedAt: new Date("2026-03-12T10:00:00.000Z") }] });
+
+    expect(await createSourceAdapters({ fetch }).listVersions(npm, '"abc"')).toBe("unchanged");
+    expect(new Headers(requested[1]?.headers).get("if-none-match")).toBe('"abc"');
   });
 
   it("fails loudly when the registry does", async () => {

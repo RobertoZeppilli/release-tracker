@@ -4,4 +4,5 @@ export type {
   NotesSource,
   ObservedVersion,
   SourceAdapters,
+  VersionListing,
 } from "./domain/source-adapters";

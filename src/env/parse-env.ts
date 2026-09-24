@@ -11,6 +11,8 @@ const ServerEnvSchema = z.object({
   SUPABASE_SECRET_KEY: z.string().startsWith("sb_secret_"),
   // Bearer token of the job endpoints. Without it they refuse every request; empty counts as unset.
   CRON_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(32).optional()),
+  // Raises GitHub's limit from 60 requests an hour; the Detection reads notes only for new Releases.
+  GITHUB_TOKEN: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional()),
   // Without it the summary jobs answer 503; an app that only reads Summaries still starts.
   ANTHROPIC_API_KEY: z.preprocess(
     (value) => (value === "" ? undefined : value),

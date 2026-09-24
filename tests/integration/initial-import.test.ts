@@ -14,15 +14,18 @@ const calls: string[] = [];
 const adapters: SourceAdapters = {
   async listVersions(source) {
     calls.push(`versions ${source.package}`);
-    return [
-      { version: "8.0.0", publishedAt: new Date("2026-03-12T10:00:00Z") },
-      { version: "8.3.0", publishedAt: new Date("2026-09-10T11:25:16Z") },
-      { version: "8.3.1", publishedAt: new Date("2026-09-15T09:00:00Z") },
-      { version: "8.4.0-beta.0", publishedAt: new Date("2026-09-18T09:00:00Z") },
-      { version: "8.4.0-alpha.0", publishedAt: new Date("2026-09-17T09:00:00Z") },
-      { version: "7.3.0", publishedAt: new Date("2025-12-01T09:00:00Z") },
-      { version: "6.0.0", publishedAt: new Date("2024-11-26T09:00:00Z") },
-    ];
+    return {
+      etag: null,
+      versions: [
+        { version: "8.0.0", publishedAt: new Date("2026-03-12T10:00:00Z") },
+        { version: "8.3.0", publishedAt: new Date("2026-09-10T11:25:16Z") },
+        { version: "8.3.1", publishedAt: new Date("2026-09-15T09:00:00Z") },
+        { version: "8.4.0-beta.0", publishedAt: new Date("2026-09-18T09:00:00Z") },
+        { version: "8.4.0-alpha.0", publishedAt: new Date("2026-09-17T09:00:00Z") },
+        { version: "7.3.0", publishedAt: new Date("2025-12-01T09:00:00Z") },
+        { version: "6.0.0", publishedAt: new Date("2024-11-26T09:00:00Z") },
+      ],
+    };
   },
   async findNotes(source, versions) {
     calls.push(`notes ${source.repo}`);
