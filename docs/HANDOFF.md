@@ -381,14 +381,27 @@ atteso e poi confrontate a ogni versione del prompt.
 Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
 dimezzato dalla Batch API — pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
 
+## Prima di tutto: è girato il primo Rilevamento in produzione?
+
+Il 2026-09-24 la #15 è andata in produzione e `CRON_SECRET` è stato messo su Vercel (Production), con
+redeploy. Il cron delle 02:00 UTC non era ancora partito. **Il termometro è pubblico, non serve il
+segreto**: la pagina https://release-tracker-drab.vercel.app/technologies/vite arrivava a `8.3.0`, e
+`8.3.1` è la Release che il Rilevamento deve trovare (in locale l'ha già trovata).
+
+- **Compare `8.3.1`** → il cron funziona, la #15 è chiusa davvero. Un giro dopo l'altro il report
+  dovrebbe dire `unchanged` quasi uguale ad `asked`: è l'ETag che lavora.
+- **Non compare** → guardare i log dell'esecuzione nella sezione *Cron Jobs* del progetto su Vercel.
+  Un 401 significa che `CRON_SECRET` non è arrivato alla funzione (variabile nell'ambiente sbagliato,
+  o redeploy mancato); un 500, un segreto sotto i 32 caratteri, che fa fallire la validazione
+  dell'ambiente all'avvio e non solo i job.
+
+Fino al lancio è pianificato **solo** il cron del Rilevamento, che è gratis: le Sintesi non girano
+(vedi l'avviso qui sopra).
+
 ## Da dove ripartire: la #16, login
 
 `gh issue view 16`. Sblocca la #17 insieme alla #9. Poi **#25** e **#36**, tutte `ready-for-agent`.
 HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-
-Prima però, se il deploy della #15 è andato: mettere `CRON_SECRET` in Production e guardare la prima
-esecuzione del cron del Rilevamento nei log di Vercel. È l'unico pianificato: fino al lancio non si
-spende niente e i due cron delle Sintesi sono fuori da `vercel.json`.
 
 ## Preferenze dell'utente
 
