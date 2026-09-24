@@ -16,7 +16,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#14. Sbloccate: **#15** (cron giornaliero), #16 (login, sblocca #17 con la #9), #25, #36.
+- Fatte: #2–#15. Sbloccate: **#16** (login, sblocca #17 con la #9), #25, #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -24,6 +24,93 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-24: #15 Cron giornaliero di Rilevamento e Sintesi
+
+282 unitari, 39 di integrazione, 28 E2E, `typecheck`, `lint` e `build` puliti. Rilevamento provato
+dal vivo in locale contro npm e GitHub veri (gratis, nessuna chiamata AI).
+
+### La scoperta che ha cambiato il piano: Hobby dà 100 cron, non uno
+
+Il vincolo vero è **una esecuzione al giorno per cron**, con partenza entro l'ora indicata (±59 min);
+i cron per progetto sono 100. Quindi tre cron distinti invece di una rotta orchestratrice, come
+voleva ADR 0003: Rilevamento **02:00**, invio **05:00**, raccolta **11:00** UTC. Tre
+ore di distacco assorbono lo slittamento e, se l'ordine salta lo stesso, ogni fase riprende al giro
+dopo. Una Sintesi è pronta in giornata invece che 24 ore dopo. ADR 0003 e `docs/DECISIONI.md`
+corretti: dicevano "un cron al giorno".
+
+### Il costo del Rilevamento era il problema serio, e si vede solo misurando
+
+Un packument npm pesa da 1 a 5 MB **compressi** (vite 4,6 MB): con ~40 Tecnologie sarebbero ~80 MB
+al giorno di transfer e centinaia di MB da parsare dentro i 300 s della funzione, quasi sempre per
+scoprire che non è cambiato niente. La risposta è `If-None-Match` con il validatore salvato su
+**`sources.etag`** (migrazione `20260923183606_detection_etag.sql`): npm risponde **304 con 0 byte**.
+
+Misurato dal vivo sul build di produzione, 3 Tecnologie in locale:
+
+| | 1º giro | 2º giro |
+|---|---|---|
+| esito | `detected: [vite 8.3.1]`, 2 pagine rivalidate | `unchanged: 3` |
+| tempo | 3,4 s | **0,8 s** |
+
+`listVersions(source, etag?)` restituisce ora `VersionListing | "unchanged"`: esplicito, così nessuno
+dei due chiamanti può confondere "nessuna versione nuova" con "non ho guardato".
+
+### Che cosa è "nuovo" per il Rilevamento (la trappola da non ripetere)
+
+Una Versione è nuova se è pubblicata **dopo la più recente che già abbiamo**, non se è semplicemente
+assente dal database. L'Importazione iniziale si ferma a 12 mesi: con la regola ingenua il primo
+Rilevamento avrebbe registrato tutta la storia che l'Importazione aveva appena escluso. Per lo stesso
+motivo una Tecnologia **senza Release non viene interrogata**: è dell'Importazione iniziale, e in più
+un ETag salvato dal Rilevamento le farebbe rispondere "unchanged" lasciandola vuota per sempre.
+
+### Com'è fatto
+
+- `releases/domain/select-detected.ts` (puro, 10 test): il filtro qui sopra e la regola delle
+  Anteprime — solo la **prima** Anteprima di una major mai vista riceve una Sintesi, dentro lo stesso
+  giro e tra un giro e l'altro.
+- `initialSummaryStatus` prende ora `skip` invece di `history`: le due fasi hanno motivi diversi per
+  non riassumere, ma lo stato è lo stesso (`skipped`, "possibile ma scelto di non farla").
+- `detection/server/`: `observe-versions.ts` (ETag) e `persist-releases.ts` (Release, Note, stato
+  iniziale della Sintesi) estratti e **condivisi** con l'Importazione iniziale; `detect-releases.ts`
+  è la fase giornaliera, con una sola query per i conosciuti di tutto il Catalogo e una Tecnologia
+  che fallisce senza fermare le altre. `importTechnology` restituisce le versioni inserite, non più
+  un conteggio (serviva alla rivalidazione, come diceva l'handoff della #13).
+- La **Correzione di rilevanza** sopravvive per costruzione: `ignoreDuplicates` sull'upsert, e il
+  Rilevamento non scrive mai `significance` di una Release che esiste già.
+- Rotta `/api/jobs/detection`: stesso `isAuthorizedJob`, poi `revalidateReleasePages(detected)`.
+- `GITHUB_TOKEN` opzionale in `ServerEnvSchema` (e in `src/env/server.ts`, che elenca le variabili
+  una per una: aggiungerla solo allo schema non basta).
+
+### Un difetto latente trovato da un E2E
+
+Le Fonti della pagina della Tecnologia arrivavano da un embed PostgREST **senza ordine garantito**:
+il primo `UPDATE` dell'ETag su una Fonte è bastato a invertirle e a far fallire `technology.spec.ts`.
+`toStoredTechnology` ora le ordina per ruolo e tipo. `canonical()` di `planCatalogSync` scarta
+`etag` oltre a `id`: non viene dal file del Catalogo e non significa che una Fonte sia cambiata.
+
+### Attenzione per chi riprende
+
+- ⚠️ **In `vercel.json` c'è solo il cron del Rilevamento**: i due delle Sintesi sono tolti di
+  proposito perché fino al lancio non si spende niente (decisione dell'utente del 2026-09-24). Al
+  lancio vanno rimessi, ed è la cosa più facile da dimenticare di tutto il progetto:
+
+  ```json
+  { "path": "/api/jobs/summaries/submit", "schedule": "0 5 * * *" },
+  { "path": "/api/jobs/summaries/collect", "schedule": "0 11 * * *" }
+  ```
+
+  Intanto le Release si accumulano `pending` e al lancio il primo batch le smaltisce; attenzione che
+  `claim_pending_summaries(max_count)` ha un tetto per esecuzione, quindi un arretrato grosso si
+  svuota in più giorni. Il Rilevamento gira e non spende: il Catalogo si riempie di Release vere.
+- **`CRON_SECRET` va messo su Vercel** (Production, *Sensitive*): se la variabile esiste, Vercel manda
+  da sé `Authorization: Bearer <valore>`. Senza, i tre cron partono e ricevono 401. È il primo
+  controllo dopo il deploy. In `.env.local` ce n'è uno solo per il locale, diverso da quello di
+  produzione.
+- Alla prima esecuzione vera in produzione nascono le **prime Sintesi vere**: spende. Avvisare.
+- Nel database locale c'è ora anche `vite 8.3.1`, rilevata davvero, e gli ETag delle tre Fonti.
+- Le Note non si ripescano mai per una Release che esiste già senza Note: fuori dalla #15, ma è la
+  domanda che nascerà appena una Fonte pubblicherà le Note in ritardo.
 
 ## Sessione del 2026-09-23 (4): #14 Set di valutazione delle Sintesi (chiusa, PR #42 in `main`)
 
@@ -244,7 +331,9 @@ La #12 ha cambiato la forma dei punti chiave (`string` → `{ text, quote? }`) e
   o `supabase status` eseguire `export PATH="$PATH:$LOCALAPPDATA/Programs/DockerDesktop/resources/bin"`
   (senza, le fixture E2E falliscono con "docker: command not found").
 - **Dev server**: l'utente tiene aperto `pnpm dev` su http://localhost:3000. Usarlo per i check in Chrome e per
-  gli E2E (Playwright lo riusa); non avviare un altro `pnpm dev`, fallirebbe.
+  gli E2E (Playwright lo riusa); non avviare un altro `pnpm dev`, fallirebbe. **Verificare che sia questo
+  progetto**: il 2026-09-24 sulla 3000 c'era il dev server di un altro progetto (rispondeva Vite) e ogni E2E
+  falliva in modo incomprensibile. `curl -s localhost:3000 | head` lo dice in un secondo.
   `.env.local` contiene i valori del Supabase locale; `pnpm catalog:sync` in locale dopo `set -a; . ./.env.local`.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
@@ -292,23 +381,14 @@ atteso e poi confrontate a ogni versione del prompt.
 Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
 dimezzato dalla Batch API — pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
 
-## Da dove ripartire: la #15, cron giornaliero
+## Da dove ripartire: la #16, login
 
-È la prossima, concordata con l'utente, ed è la continuazione naturale della #13: porta Rilevamento e
-Sintesi dentro un cron di Vercel. `gh issue view 15` per i criteri. Tre cose già note che la
-riguardano, sparse nelle sessioni qui sopra:
+`gh issue view 16`. Sblocca la #17 insieme alla #9. Poi **#25** e **#36**, tutte `ready-for-agent`.
+HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
 
-- **Il Rilevamento non rivalida ancora** (#13): gira solo in `scripts/sync-catalog.mts`, fuori da
-  Next. Quando passa in una rotta le basta chiamare `revalidateReleasePages`, ma `importTechnology`
-  oggi restituisce un conteggio: servirà fargli restituire le versioni inserite.
-- Le rotte dei job esistono già e sono protette da `CRON_SECRET`
-  (`/api/jobs/summaries/{submit,collect}`); il piano Hobby dà **un cron al giorno**, quindi
-  Rilevamento e Sintesi vanno pianificati in sequenza (ADR 0003, `docs/DECISIONI.md`).
-- Alla prima esecuzione vera in produzione nasceranno le **prime Sintesi vere**: oggi in produzione
-  non ce n'è nessuna. Spende davvero, quindi avvisare l'utente prima.
-
-Poi: **#16** (login, sblocca #17 con la #9), **#25**, **#36**, tutte `ready-for-agent`.
-HITL: #22 Catalogo, #26 landing page (la #4 deploy è chiusa).
+Prima però, se il deploy della #15 è andato: mettere `CRON_SECRET` in Production e guardare la prima
+esecuzione del cron del Rilevamento nei log di Vercel. È l'unico pianificato: fino al lancio non si
+spende niente e i due cron delle Sintesi sono fuori da `vercel.json`.
 
 ## Preferenze dell'utente
 

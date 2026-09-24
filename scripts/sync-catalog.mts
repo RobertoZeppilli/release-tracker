@@ -29,8 +29,8 @@ const adapters = createSourceAdapters({ githubToken: env.GITHUB_TOKEN });
 let failed = 0;
 for (const technology of await technologiesAwaitingImport(db)) {
   try {
-    const count = await importTechnology(db, technology, adapters, new Date());
-    console.log(`import ${technology.slug}: ${count} release(s)`);
+    const versions = await importTechnology(db, technology, adapters, new Date());
+    console.log(`import ${technology.slug}: ${versions.length} release(s)`);
   } catch (error) {
     failed++;
     console.error(`import ${technology.slug} failed:`, error);

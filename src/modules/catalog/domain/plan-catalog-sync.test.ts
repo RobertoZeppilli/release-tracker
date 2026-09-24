@@ -18,7 +18,7 @@ function stored(entry: CatalogEntry, overrides: Partial<StoredTechnology> = {}):
     ...entry,
     id: `id-${entry.slug}`,
     retired: false,
-    sources: entry.sources.map((source, index) => ({ ...source, id: `${entry.slug}-source-${index}` })),
+    sources: entry.sources.map((source, index) => ({ ...source, id: `${entry.slug}-source-${index}`, etag: null })),
     ...overrides,
   };
 }
@@ -35,7 +35,7 @@ describe("planCatalogSync", () => {
   it.each<[string, Partial<StoredTechnology>]>([
     ["name", { name: "vite" }],
     ["description", { description: "Old description" }],
-    ["Source configuration", { sources: [{ role: "detection", kind: "npm", package: "vite-old", id: "s1" }] }],
+    ["Source configuration", { sources: [{ role: "detection", kind: "npm", package: "vite-old", id: "s1", etag: null }] }],
   ])("updates a Technology whose %s changed in the repository", (_, change) => {
     expect(planCatalogSync([vite], [stored(vite, change)])).toEqual([
       { type: "update", technologyId: "id-vite", entry: vite, removedSourceIds: [] },

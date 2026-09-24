@@ -34,11 +34,13 @@ Release che contano.
 | Decisione | Dettaglio | ADR |
 |---|---|---|
 | Nessuna chiamata esterna dal client | GitHub, npm e Anthropic sono chiamati solo dai job server. Gli utenti leggono dati salvati. | — |
-| **Rilevamento** e Sintesi separati | Due cron distinti. Il Rilevamento crea Release (idempotente su Tecnologia + Versione), assegna la Rilevanza, salva le Note. Non chiama l'AI. | [0003](./adr/0003-rilevamento-e-sintesi-separati.md) |
+| **Rilevamento** e Sintesi separati | Tre cron distinti. Il Rilevamento crea Release (idempotente su Tecnologia + Versione), assegna la Rilevanza, salva le Note. Non chiama l'AI. | [0003](./adr/0003-rilevamento-e-sintesi-separati.md) |
 | "Una sola volta" garantito dal database | Presa in carico atomica `pending` → `processing` con un unico `UPDATE … RETURNING`. | 0003 |
 | **Stato della sintesi** | `pending` · `processing` · `ready` · `unavailable` · `skipped` · `failed`. La Release è visibile in qualsiasi stato. | — |
 | Quali Release si riassumono | `featured`, `notable` e la prima `preview` di una major. Le `digest` no. | — |
-| Piano Vercel Hobby | Cron al massimo una volta al giorno: Rilevamento giornaliero, Sintesi pianificata dopo. Alternativa futura: `pg_cron` di Supabase. | 0003 |
+| Che cosa è "nuovo" per il Rilevamento | Una Versione pubblicata **dopo** la più recente che già abbiamo, non semplicemente assente: l'Importazione iniziale si ferma a 12 mesi, e senza questa regola il primo Rilevamento registrerebbe tutta la storia che aveva appena escluso. Una Tecnologia senza Release non viene interrogata: è dell'Importazione iniziale. | — |
+| Nessuna spesa fino al lancio | In `vercel.json` è pianificato **solo** il cron del Rilevamento, che è gratis: i due delle Sintesi sono tolti finché non si lancia. Le Release si accumulano `pending` e al lancio bastano un batch e il ripristino delle due righe. L'unica cosa che spende è Anthropic. | — |
+| Piano Vercel Hobby | 100 cron per progetto, ciascuno al massimo **una volta al giorno**, con precisione all'ora (±59 min): tre cron distinti, Rilevamento 02:00, invio 05:00, raccolta 11:00 UTC. Le tre ore di distacco coprono lo slittamento; se l'ordine salta lo stesso, il giro dopo recupera da sé. Durata massima della funzione 300 s, che è già il default. | 0003 |
 | Dove parte l'Importazione iniziale | Nello stesso job del sync del Catalogo, dopo il sync: si importa ogni Tecnologia attiva senza Release, così un import interrotto riparte al deploy successivo. Il job usa il proprio `GITHUB_TOKEN` per i limiti di GitHub. | 0005 |
 | **Importazione iniziale** limitata | Solo gli ultimi 12 mesi + l'ultima Release `featured`. Sintesi solo per l'ultima `featured` e le `notable` degli ultimi 90 giorni; il resto va nello **Storico** (`skipped`). | — |
 | Claude Opus 5 via Batch API | Invio di un batch giornaliero, raccolta dei risultati in un'esecuzione successiva. ~$0,023 per Sintesi. | [0007](./adr/0007-sintesi-con-opus-5-via-batch-api.md) |
@@ -49,7 +51,8 @@ Release che contano.
 | Formato imposto dall'API | La richiesta porta lo schema Zod della Sintesi come `output_config.format`: il modello non può rispondere in prosa o dentro un blocco markdown. Lunghezze e conteggi restano solo suggerimenti, quindi la validazione Zod resta l'ultima parola. | — |
 | Note lunghe | Mai troncate in silenzio: oltre la soglia di sicurezza → `failed` con il motivo. | 0007 |
 | Credito API esaurito | Non è un fallimento: le Release restano `pending` e si riprendono da sole all'esecuzione successiva. L'avviso all'amministratore resta alla Console di Anthropic (email di credito basso e ricarica automatica); nessun canale di avviso nostro nell'MVP. | 0007 |
-| Endpoint dei job | `GET /api/jobs/summaries/submit` e `/collect`, solo con `Authorization: Bearer <CRON_SECRET>` (l'header di Vercel Cron); senza segreto configurato rifiutano tutto. Il batch inviato si ritrova da `summaries.batch_id`. | 0007 |
+| Sorgenti interrogate con l'ETag | Il Rilevamento manda `If-None-Match` con il validatore salvato su `sources.etag` e si ferma sul 304. Un packument npm pesa da 1 a 5 MB compressi e quasi ogni giorno è identico: senza, con ~40 Tecnologie sarebbero ~80 MB al giorno e il rischio di sforare la durata della funzione. Misurato in locale: secondo giro 0,8 s invece di 3,4 s, zero byte. | — |
+| Endpoint dei job | `GET /api/jobs/detection`, `/api/jobs/summaries/submit` e `/collect`, solo con `Authorization: Bearer <CRON_SECRET>` (l'header di Vercel Cron); senza segreto configurato rifiutano tutto. Il batch inviato si ritrova da `summaries.batch_id`. | 0007 |
 
 ## Esperienza utente
 
