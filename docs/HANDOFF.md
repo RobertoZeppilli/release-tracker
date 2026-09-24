@@ -398,6 +398,25 @@ segreto**: la pagina https://release-tracker-drab.vercel.app/technologies/vite a
 Fino al lancio è pianificato **solo** il cron del Rilevamento, che è gratis: le Sintesi non girano
 (vedi l'avviso qui sopra).
 
+## Debito noto: l'output grezzo del modello non si conserva
+
+Segnalato da un commento sul thread Bluesky della tappa B (2026-09-24), verificato nel codice.
+`collect-summaries.ts:79` passa `result.text` a `parseSummaryOutput` e lo scarta: di una Sintesi
+fallita resta solo il `reason`. Anche i report in `eval/summaries/reports/` contengono il risultato
+già decodificato, non la risposta. Conseguenza: un modo di fallire nuovo e reale non è riproducibile
+in un test, e i casi limite di `summary-output.test.ts` restano quelli scritti a mano (cornice
+markdown, sesto punto chiave, CRLF nelle citazioni). Proprio i due difetti della #14 erano di quel
+tipo, trovati solo perché c'era una chiamata vera sotto gli occhi.
+
+Il rimedio costa poco e non spende: tenere il testo grezzo rende gratis il replay di un fallimento
+che oggi richiederebbe di rilanciare un batch a pagamento. Criteri, quando diventerà una issue:
+l'output grezzo conservato per ogni Sintesi fallita e per ogni caso dell'eval; un test che rigioca un
+output salvato attraverso `parseSummaryOutput` senza chiamare Anthropic; nessuna chiamata esterna in
+più. Da decidere: colonna sulla Sintesi o solo file nell'eval, e per quanto si tiene il testo (le
+Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
+
+**Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
+
 ## Da dove ripartire: la #16, login
 
 `gh issue view 16`. Sblocca la #17 insieme alla #9. Poi **#25** e **#36**, tutte `ready-for-agent`.
