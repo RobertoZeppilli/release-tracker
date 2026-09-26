@@ -16,8 +16,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#16, con la **#16 in PR #44, aperta e da unire**. Sbloccate dopo il merge: **#17**
-  (la #9 è già chiusa), #25, #36.
+- Fatte: **#2–#16** (la #16 unita con la PR #44 e viva in produzione). Sbloccate: **#17** e **#20**,
+  più #25 e #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -26,7 +26,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-26: #16 Login con GitHub e rotte protette (PR #44, da unire)
+## Sessione del 2026-09-26: #16 Login con GitHub e rotte protette (chiusa, PR #44 in `main`)
 
 287 unitari, 41 di integrazione, 34 E2E, `typecheck`, `lint` e `build` puliti. **Il vero giro OAuth
 con GitHub non è mai stato eseguito**: manca l'OAuth App (vedi sotto).
@@ -483,14 +483,14 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: unire la PR #44, poi la #17
+## Da dove ripartire: la #17, pagina `/technologies`
 
-1. **PR #44** (#16 login) è aperta e verde in locale: controllare la CI e unirla. Con il merge si
-   sbloccano la **#17** (pagina `/technologies`, che sostituisce il segnaposto) e la **#20**.
-2. Resta un solo passo manuale in sospeso: **Web Analytics da attivare** nella tab *Analytics* del
-   progetto su Vercel. Il login con GitHub è già configurato e provato in produzione.
-3. Poi **#25** e **#36**, tutte `ready-for-agent`. HITL: #22 Catalogo ~40 Tecnologie, #26 landing
-   page (serve il nome del prodotto).
+1. `gh issue view 17`. Sostituisce il **segnaposto** lasciato dalla #16, che oggi è solo un titolo
+   dietro `requireDeveloper()`. Mock: `design/mocks/technologies.html`, stati con `?state=`.
+2. Poi la **#20** (Dashboard, prima parte), anch'essa sbloccata, e **#25** e **#36**. HITL: #22
+   Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
+3. Unico passo manuale in sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto
+   su Vercel. Il login con GitHub è configurato e provato in produzione.
 
 ## Preferenze dell'utente
 
