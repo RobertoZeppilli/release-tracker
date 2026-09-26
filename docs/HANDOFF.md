@@ -16,8 +16,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#16** (la #16 unita con la PR #44 e viva in produzione). Sbloccate: **#17** e **#20**,
-  più #25 e #36.
+- Fatte: **#2–#17** (la #16 unita con la PR #44 e viva in produzione). Sbloccate: **#18**, **#19** e
+  **#20**, più #25 e #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -26,7 +26,59 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-26: #16 Login con GitHub e rotte protette (chiusa, PR #44 in `main`)
+## Sessione del 2026-09-26 (2): #17 Pagina `/technologies` con sezioni, filtro e follow ottimistico
+
+297 unitari, 41 di integrazione, 37 E2E, `typecheck`, `lint` e `build` puliti. Guardata in Chrome a
+1280px e, con Playwright, a 390px (su Windows la finestra di Chrome non scende sotto ~500px).
+
+### Scelta di fondo: le sezioni le calcola il server, il toggle vive nel client
+
+La pagina sta dietro `requireDeveloper()`, quindi è dinamica comunque: non c'è nessuna rivalidazione
+da proteggere come sulle pagine pubbliche. I follow si leggono sul **server** con
+`createRequestClient()` e le tre sezioni arrivano già giuste nell'HTML, senza sfarfallio. È anche il
+modo naturale di ottenere "una riga cambiata resta nella sua sezione fino alla visita successiva":
+le sezioni sono lo scatto del momento della visita, il toggle cambia solo sé stesso e il conteggio.
+
+Le scritture vanno **da browser a Supabase**, senza una rotta nostra: le policy `insert`/`delete` su
+`follows` esistono dalla migrazione iniziale ed è per questo che sono state scritte. Così il rifiuto
+che la #18 aggiungerà arriva dritto nella `useMutation`, dove il rollback è già pronto.
+
+### Com'è fatto
+
+- `plans/domain/picker.ts` (puro, 6 test): `splitPicker` (tre sezioni in ordine alfabetico; una
+  **ritirata compare solo se seguita**, perché una ritirata che nessuno segue non è più seguibile),
+  `matchesQuery` su nome e descrizione, `countMatches`. `FREE_FOLLOW_LIMIT` in `plans/domain`.
+- `releases/domain/latest-stable.ts` (4 test): la Versione mostrata nella riga, Anteprime escluse
+  come fa già `latest` di `groupByMajor`.
+- `plans/server/`: `readFollows` (nessun `user_id` nella query: lo impone la RLS) e
+  `listPickerTechnologies`, **una sola query** per tutto il picker. Sta in `plans` e non in `catalog`
+  perché il picker dipende dai follow, e `catalog` non deve sapere che cosa siano.
+- `plans/ui/`: `FollowsProvider` (TanStack Query, prima dipendenza nuova da mesi) con la cache già
+  piena dal server, quindi **nessuna richiesta all'arrivo**; `FollowToggle` su misura con
+  `aria-pressed`; `TechnologyPicker` client per filtro e conteggi dal vivo.
+- E2E `tests/e2e/technologies.spec.ts`: seguire, smettere di seguire, filtro con e senza
+  corrispondenze.
+
+### Attenzione per chi riprende
+
+- **I follow sopravvivono al test**: le fixture hanno ora `developer.clearFollows()` e la suite lo
+  chiama in `beforeEach`. Senza, il secondo test parte da uno stato sporco e cerca un pulsante
+  "Follow" che è già "Following". È così che è saltato fuori.
+- La **#18** aggiunge solo il trigger del database, l'`aria-disabled` a 10 su 10 e la riga `error:`
+  del rifiuto: l'interfaccia e il rollback ottimistico ci sono già.
+- Due scostamenti dal mock, decisi con l'utente e da segnare nella **#23**: la **quota nella barra in
+  alto** (`7 of 10 followed`) non c'è, perché compare identica in `dashboard.html` ed è
+  dell'intestazione condivisa (la porterà la #20); e accanto a `retired` non c'è il mese, perché la
+  data di ritiro non è nel database e `updated_at` mentirebbe.
+- Il titolo di una sezione dice `following (3 of 7)` **solo mentre il filtro è attivo**, come il mock.
+- **Limite Free a 10 confermato il 2026-09-26.** L'utente ha chiesto se non fossero troppe: sì, con
+  10 il limite non morderà quasi mai (lo stack tipico è di 5-8 Tecnologie), ma una Tecnologia seguita
+  in più non ci costa nulla, perché il Rilevamento gira su tutto il Catalogo e ogni Sintesi è pagata
+  una volta per tutti. Pro si venderà sulle Notifiche, non sulla quantità. Se un giorno si volesse
+  far mordere il limite, il numero da provare è 5, ma **prima del lancio**: dopo sarebbe una promessa
+  ritirata.
+
+## Sessione del 2026-09-26 (1): #16 Login con GitHub e rotte protette (chiusa, PR #44 in `main`)
 
 287 unitari, 41 di integrazione, 34 E2E, `typecheck`, `lint` e `build` puliti. **Il vero giro OAuth
 con GitHub non è mai stato eseguito**: manca l'OAuth App (vedi sotto).
@@ -483,12 +535,14 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: la #17, pagina `/technologies`
+## Da dove ripartire: la #18, limite e ritirate imposti dal database
 
-1. `gh issue view 17`. Sostituisce il **segnaposto** lasciato dalla #16, che oggi è solo un titolo
-   dietro `requireDeveloper()`. Mock: `design/mocks/technologies.html`, stati con `?state=`.
-2. Poi la **#20** (Dashboard, prima parte), anch'essa sbloccata, e **#25** e **#36**. HITL: #22
-   Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
+1. `gh issue view 18`. Il trigger che impone i 10 e il divieto di seguire una ritirata, poi
+   `aria-disabled` e la riga `error:` come in `technologies.html?state=full` e `?state=rejected`.
+   L'interfaccia della #17 è già pronta ad accoglierli.
+2. Poi la **#19** (Follow sulla pagina pubblica della Tecnologia, stesso toggle su una pagina
+   statica: lì la query dovrà caricarsi nel browser), la **#20** (Dashboard, prima parte), **#25** e
+   **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
 3. Unico passo manuale in sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto
    su Vercel. Il login con GitHub è configurato e provato in produzione.
 

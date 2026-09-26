@@ -1,5 +1,6 @@
 export { ClassificationStrategySchema, type ClassificationStrategy } from "./domain/classification-strategy";
 export { classify } from "./domain/classify";
+export { latestStableVersion } from "./domain/latest-stable";
 export { type GroupedReleases, groupByMajor, type ListedRelease, type MajorGroup, type MajorRow } from "./domain/group-by-major";
 export {
   initialSummaryStatus,

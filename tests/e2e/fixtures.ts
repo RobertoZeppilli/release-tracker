@@ -115,7 +115,13 @@ export async function seedTechnology(
   return { slug, name, repo, remove };
 }
 
-export type FixtureDeveloper = { id: string; email: string; password: string; remove: () => Promise<void> };
+export type FixtureDeveloper = {
+  id: string;
+  email: string;
+  password: string;
+  clearFollows: () => Promise<void>;
+  remove: () => Promise<void>;
+};
 
 // The end-to-end tests never go through GitHub: Playwright cannot drive the OAuth consent. A test
 // Developer signs in with a password through /api/test/session, the route guarded by E2E_AUTH_SECRET.
@@ -131,6 +137,11 @@ export async function seedDeveloper(): Promise<FixtureDeveloper> {
     id,
     email,
     password,
+    // Follows outlive a test: a suite that shares one Developer starts each test from none.
+    clearFollows: async () => {
+      const { error: cleared } = await db.from("follows").delete().eq("user_id", id);
+      if (cleared) throw cleared;
+    },
     remove: async () => {
       const { error: removed } = await db.auth.admin.deleteUser(id);
       if (removed) throw removed;
