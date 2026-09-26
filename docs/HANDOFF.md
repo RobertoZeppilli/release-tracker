@@ -16,7 +16,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: #2–#15. Sbloccate: **#16** (login, sblocca #17 con la #9), #25, #36.
+- Fatte: #2–#16, con la **#16 in PR #44, aperta e da unire**. Sbloccate dopo il merge: **#17**
+  (la #9 è già chiusa), #25, #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -24,6 +25,65 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-26: #16 Login con GitHub e rotte protette (PR #44, da unire)
+
+287 unitari, 41 di integrazione, 34 E2E, `typecheck`, `lint` e `build` puliti. **Il vero giro OAuth
+con GitHub non è mai stato eseguito**: manca l'OAuth App (vedi sotto).
+
+### Chi protegge che cosa: il proxy redirige, la pagina autorizza
+
+In Next 16 il middleware si chiama **Proxy** (`src/proxy.ts`): la doc dice esplicitamente che non è
+un livello di autorizzazione. Quindi il proxy fa il redirect presto e rinfresca la sessione, ma
+l'autorità è `requireDeveloper()` dentro la pagina. Il matcher sono i **due percorsi esatti**
+(`/dashboard`, `/technologies`): con un `:path*` di troppo, `/technologies/vite` finirebbe dietro al
+login, e quella è la pagina pubblica che porta il traffico.
+
+### Lo stato di accesso nella barra si legge nel browser, non sul server
+
+`AuthStatus` è un componente client. Una lettura lato server avrebbe reso dinamiche tutte le pagine
+pubbliche e annullato la rivalidazione della #13; il `build` infatti continua a prerenderizzarle
+(`/technologies/[slug]` resta SSG). Il costo è che lo stato compare un istante dopo il primo paint.
+
+### Com'è fatto
+
+- Modulo nuovo **`auth`** (aggiunto a `MODULES` in `eslint.config.mjs`): `domain/redirect.ts` con
+  `safeRedirectPath` (puro, 5 test: rifiuta URL assoluti, `//host`, backslash e caratteri di
+  controllo, così "niente open redirect" è una regola sola), `server/session.ts`, `ui/auth-status.tsx`.
+- Rotte: `/login`, `POST /auth/sign-in` (scope **`read:user user:email`**, nessun accesso ai
+  repository), `GET /auth/callback`, `POST /auth/sign-out`. I redirect interni usano l'origine della
+  richiesta, non `NEXT_PUBLIC_SITE_URL`: solo il `redirectTo` passato a Supabase usa il sito, perché
+  deve stare nella allow list.
+- `@supabase/ssr`: `src/lib/supabase-request.ts` (per richiesta, legge i cookie) e
+  `supabase-browser.ts` (sessione nel browser).
+- **Il Piano `free` non è codice nuovo**: lo crea il trigger `on_auth_user_created` della #3. Niente
+  migrazioni, solo `tests/integration/plans.test.ts` che lo dimostra.
+- `/dashboard` e `/technologies` sono **segnaposto**, li riempiono la #17 e la #20.
+
+### Attenzione per chi riprende
+
+- **Il login funziona in produzione dal 2026-09-26**: OAuth App creata, provider attivo su Supabase,
+  accesso vero completato fino alla Dashboard, con la prima riga in `plans` (Piano `free`). Il flag
+  *Allow users without an email* resta spento (motivo in `docs/DECISIONI.md`). In
+  `supabase/config.toml` il blocco `[auth.external.github]` resta `enabled = false`: in locale
+  servirebbe una **seconda** OAuth App (callback `http://127.0.0.1:54321/auth/v1/callback`), e gli
+  E2E non passano da GitHub.
+- ⚠️ **La configurazione degli URL su Supabase è il punto dove si sbaglia**, e l'errore si legge
+  dall'URL di atterraggio. Al primo tentativo l'accesso finiva su `http://localhost:3000/?code=...`:
+  il percorso `/` invece di `/auth/callback` è la firma del ripiego sul *Site URL*, perché il nostro
+  `redirectTo` non era nella allow list. In **Authentication -> URL Configuration** servono *Site
+  URL* `https://release-tracker-drab.vercel.app` e, tra i *Redirect URLs*, `.../auth/callback` (vale
+  la pena tenerci anche quello di `localhost:3000`). Se invece l'host fosse giusto e sbagliato solo
+  il percorso, il colpevole sarebbe `NEXT_PUBLIC_SITE_URL` su Vercel: essendo `NEXT_PUBLIC_` finisce
+  dentro il build, quindi cambiarla richiede un redeploy.
+- **`site_url` in `config.toml` è passato da `127.0.0.1:3000` a `localhost:3000`** (per Auth sono due
+  origini diverse): in locale serve `pnpm db:stop && pnpm db:start` perché faccia effetto.
+- **`E2E_AUTH_SECRET`**: nuova variabile, già in `.env.local` e generata in CI. Abilita
+  `POST /api/test/session`, che fa accedere un Developer di prova con una password perché Playwright
+  non può guidare il consenso di GitHub. **Non va messa su Vercel**: senza, la rotta risponde 404.
+- Nel layout radice c'è ora anche **Vercel Analytics** (`@vercel/analytics`), fuori tema rispetto
+  alla #16, portato nella stessa PR per risparmiare un deploy. Va **attivato a mano** nella tab
+  *Analytics* del progetto su Vercel, altrimenti non raccoglie niente. Gratis sul piano Hobby.
 
 ## Sessione del 2026-09-24: #15 Cron giornaliero di Rilevamento e Sintesi
 
@@ -330,11 +390,19 @@ La #12 ha cambiato la forma dei punti chiave (`string` → `{ text, quote? }`) e
   limitata a 6 GB in `~/.wslconfig`. **`docker` non è nel PATH della shell di Claude**: prima di E2E, integrazione
   o `supabase status` eseguire `export PATH="$PATH:$LOCALAPPDATA/Programs/DockerDesktop/resources/bin"`
   (senza, le fixture E2E falliscono con "docker: command not found").
-- **Dev server**: l'utente tiene aperto `pnpm dev` su http://localhost:3000. Usarlo per i check in Chrome e per
-  gli E2E (Playwright lo riusa); non avviare un altro `pnpm dev`, fallirebbe. **Verificare che sia questo
-  progetto**: il 2026-09-24 sulla 3000 c'era il dev server di un altro progetto (rispondeva Vite) e ogni E2E
-  falliva in modo incomprensibile. `curl -s localhost:3000 | head` lo dice in un secondo.
+- **Dev server: uno solo, sulla 3000.** L'utente tiene aperto `pnpm dev` lì; usarlo per i check in Chrome e
+  per gli E2E (Playwright lo riusa) e non avviarne un altro, fallirebbe ("Another next dev server is already
+  running"). **Prima di cominciare, due controlli da un secondo**: `curl -s localhost:3000 | head` dice se
+  risponde ed è questo progetto (il 2026-09-24 sulla 3000 c'era un altro progetto, rispondeva Vite), e
+  `netstat -ano | grep -E ':300[0-9].*LISTENING'` scopre i server residui. Il 2026-09-26 ce n'erano cinque:
+  un `pnpm dev` rotto sulla 3001, un `next start` del 24 settembre sulla 3002 che serviva un build vecchio
+  (rispondeva 404 alle rotte nuove e faceva sembrare rotto il codice), e tre di un altro progetto sulle
+  3005-3007. Sono stati chiusi tutti: regola dell'utente, sempre lo stesso server.
   `.env.local` contiene i valori del Supabase locale; `pnpm catalog:sync` in locale dopo `set -a; . ./.env.local`.
+- **Heredoc della shell di Claude: le sequenze con la barra rovesciata vengono mangiate** anche con
+  `<<'EOF'`. Una classe di caratteri come quella dei controlli nelle regex arriva nel file con una barra
+  in meno e il test fallisce con un errore incomprensibile. Per file con barre rovesciate usare gli
+  strumenti di modifica, non l'heredoc.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
@@ -381,22 +449,20 @@ atteso e poi confrontate a ogni versione del prompt.
 Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
 dimezzato dalla Batch API — pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
 
-## Prima di tutto: è girato il primo Rilevamento in produzione?
+## Il primo Rilevamento in produzione è girato (verificato il 2026-09-26)
 
-Il 2026-09-24 la #15 è andata in produzione e `CRON_SECRET` è stato messo su Vercel (Production), con
-redeploy. Il cron delle 02:00 UTC non era ancora partito. **Il termometro è pubblico, non serve il
-segreto**: la pagina https://release-tracker-drab.vercel.app/technologies/vite arrivava a `8.3.0`, e
-`8.3.1` è la Release che il Rilevamento deve trovare (in locale l'ha già trovata).
+La pagina pubblica https://release-tracker-drab.vercel.app/technologies/vite arriva a **8.3.1**, la
+Release che il cron delle 02:00 UTC doveva trovare: `CRON_SECRET` è arrivato alla funzione e la #15
+è chiusa davvero. Il termometro è pubblico, non serve il segreto per ricontrollarlo.
 
-- **Compare `8.3.1`** → il cron funziona, la #15 è chiusa davvero. Un giro dopo l'altro il report
-  dovrebbe dire `unchanged` quasi uguale ad `asked`: è l'ETag che lavora.
-- **Non compare** → guardare i log dell'esecuzione nella sezione *Cron Jobs* del progetto su Vercel.
-  Un 401 significa che `CRON_SECRET` non è arrivato alla funzione (variabile nell'ambiente sbagliato,
-  o redeploy mancato); un 500, un segreto sotto i 32 caratteri, che fa fallire la validazione
-  dell'ambiente all'avvio e non solo i job.
+Non è ancora stato guardato l'andamento dei giri successivi: nella sezione *Cron Jobs* del progetto
+su Vercel il report dovrebbe dire `unchanged` quasi uguale ad `asked`, che è l'ETag che lavora. Se un
+giorno tornasse un 401, `CRON_SECRET` non sta arrivando alla funzione (ambiente sbagliato o redeploy
+mancato); un 500 all'avvio significa di solito un segreto sotto i 32 caratteri, che fa fallire la
+validazione dell'ambiente e non solo i job.
 
 Fino al lancio è pianificato **solo** il cron del Rilevamento, che è gratis: le Sintesi non girano
-(vedi l'avviso qui sopra).
+(vedi l'avviso nella sessione della #15).
 
 ## Debito noto: l'output grezzo del modello non si conserva
 
@@ -417,10 +483,14 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: la #16, login
+## Da dove ripartire: unire la PR #44, poi la #17
 
-`gh issue view 16`. Sblocca la #17 insieme alla #9. Poi **#25** e **#36**, tutte `ready-for-agent`.
-HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
+1. **PR #44** (#16 login) è aperta e verde in locale: controllare la CI e unirla. Con il merge si
+   sbloccano la **#17** (pagina `/technologies`, che sostituisce il segnaposto) e la **#20**.
+2. Resta un solo passo manuale in sospeso: **Web Analytics da attivare** nella tab *Analytics* del
+   progetto su Vercel. Il login con GitHub è già configurato e provato in produzione.
+3. Poi **#25** e **#36**, tutte `ready-for-agent`. HITL: #22 Catalogo ~40 Tecnologie, #26 landing
+   page (serve il nome del prodotto).
 
 ## Preferenze dell'utente
 

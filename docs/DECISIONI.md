@@ -64,6 +64,7 @@ Release che contano.
 | Stato di accesso nella barra | Letto nel browser (`AuthStatus`), non lato server: una lettura server renderebbe dinamiche le pagine pubbliche e annullerebbe la rivalidazione della #13. |
 | Ritorno dopo il login | `?next=<percorso>` accettato solo se interno (`safeRedirectPath`): niente URL assoluti, `//host`, backslash o caratteri di controllo. Altrimenti si torna alla Dashboard. |
 | Login negli E2E | Playwright non può guidare il consenso di GitHub: `POST /api/test/session` fa accedere un Developer di prova con una password, e la rotta esiste solo se `E2E_AUTH_SECRET` è nell'ambiente (in produzione risponde 404). |
+| Sviluppatori senza email | Il flag *Allow users without an email* del provider GitHub resta **spento**: con lo scope `user:email` l'indirizzo verificato arriva anche se privato, e uno Sviluppatore senza indirizzo non potrebbe ricevere Notifiche né Digest. Meglio un accesso che fallisce subito di un account inutilizzabile. |
 | Login richiesto per | **Seguire** e la **Dashboard**. Nessun "seguire" anonimo in localStorage. |
 | Pagina `/technologies` | Solo con login. Tre sezioni: seguite, **Catalogo**, ritirate (solo se seguite). Filtro per nome e descrizione. Mock: `design/mocks/technologies.html`. |
 | Limite Free nell'interfaccia | A 10 seguite i Follow si disattivano (`aria-disabled`) con una nota. L'aggiornamento è ottimistico: se il database rifiuta, il toggle torna indietro e la riga mostra l'errore con il rimedio. |
