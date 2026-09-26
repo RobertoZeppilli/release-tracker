@@ -62,10 +62,20 @@ pubbliche e annullato la rivalidazione della #13; il `build` infatti continua a 
 
 ### Attenzione per chi riprende
 
-- **Serve una mano umana prima che il login funzioni davvero**: OAuth App su GitHub e provider
-  configurato nella dashboard Supabase (callback `https://<ref>.supabase.co/auth/v1/callback`). In
-  `supabase/config.toml` il blocco `[auth.external.github]` è `enabled = false`, per non rompere
-  `supabase start` a chi non ha un'app locale.
+- **Il login funziona in produzione dal 2026-09-26**: OAuth App creata, provider attivo su Supabase,
+  accesso vero completato fino alla Dashboard, con la prima riga in `plans` (Piano `free`). Il flag
+  *Allow users without an email* resta spento (motivo in `docs/DECISIONI.md`). In
+  `supabase/config.toml` il blocco `[auth.external.github]` resta `enabled = false`: in locale
+  servirebbe una **seconda** OAuth App (callback `http://127.0.0.1:54321/auth/v1/callback`), e gli
+  E2E non passano da GitHub.
+- ⚠️ **La configurazione degli URL su Supabase è il punto dove si sbaglia**, e l'errore si legge
+  dall'URL di atterraggio. Al primo tentativo l'accesso finiva su `http://localhost:3000/?code=...`:
+  il percorso `/` invece di `/auth/callback` è la firma del ripiego sul *Site URL*, perché il nostro
+  `redirectTo` non era nella allow list. In **Authentication -> URL Configuration** servono *Site
+  URL* `https://release-tracker-drab.vercel.app` e, tra i *Redirect URLs*, `.../auth/callback` (vale
+  la pena tenerci anche quello di `localhost:3000`). Se invece l'host fosse giusto e sbagliato solo
+  il percorso, il colpevole sarebbe `NEXT_PUBLIC_SITE_URL` su Vercel: essendo `NEXT_PUBLIC_` finisce
+  dentro il build, quindi cambiarla richiede un redeploy.
 - **`site_url` in `config.toml` è passato da `127.0.0.1:3000` a `localhost:3000`** (per Auth sono due
   origini diverse): in locale serve `pnpm db:stop && pnpm db:start` perché faccia effetto.
 - **`E2E_AUTH_SECRET`**: nuova variabile, già in `.env.local` e generata in CI. Abilita
@@ -477,8 +487,8 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 1. **PR #44** (#16 login) è aperta e verde in locale: controllare la CI e unirla. Con il merge si
    sbloccano la **#17** (pagina `/technologies`, che sostituisce il segnaposto) e la **#20**.
-2. Prima che il login funzioni per davvero servono i passi manuali elencati nella sessione del
-   2026-09-26: OAuth App di GitHub, provider su Supabase, Web Analytics da attivare su Vercel.
+2. Resta un solo passo manuale in sospeso: **Web Analytics da attivare** nella tab *Analytics* del
+   progetto su Vercel. Il login con GitHub è già configurato e provato in produzione.
 3. Poi **#25** e **#36**, tutte `ready-for-agent`. HITL: #22 Catalogo ~40 Tecnologie, #26 landing
    page (serve il nome del prodotto).
 
