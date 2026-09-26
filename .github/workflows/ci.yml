@@ -47,6 +47,8 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
             echo "SUPABASE_SECRET_KEY=$SECRET_KEY"
+            # Lets the end-to-end tests sign a test Developer in without GitHub OAuth.
+            echo "E2E_AUTH_SECRET=$(openssl rand -hex 32)"
           } >> "$GITHUB_ENV"
           rm supabase.env
       # Same variables as the Deploy database workflow, so a dependency on the app env fails here.
