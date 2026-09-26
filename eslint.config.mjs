@@ -3,7 +3,7 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import { noServerImportInClient } from "./eslint/no-server-import-in-client.mjs";
 
-const MODULES = "catalog|releases|detection|summaries|dashboard|plans";
+const MODULES = "auth|catalog|releases|detection|summaries|dashboard|plans";
 
 // ADR 0006: a module is imported only through its domain index (`@/modules/x`), its UI index
 // (`@/modules/x/ui`) or, on the server, its server index (`@/modules/x/server`).

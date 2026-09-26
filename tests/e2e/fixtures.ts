@@ -1,5 +1,7 @@
 import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { SummaryContent } from "@/modules/summaries";
@@ -111,4 +113,40 @@ export async function seedTechnology(
   }
 
   return { slug, name, repo, remove };
+}
+
+export type FixtureDeveloper = { id: string; email: string; password: string; remove: () => Promise<void> };
+
+// The end-to-end tests never go through GitHub: Playwright cannot drive the OAuth consent. A test
+// Developer signs in with a password through /api/test/session, the route guarded by E2E_AUTH_SECRET.
+export async function seedDeveloper(): Promise<FixtureDeveloper> {
+  const db = serviceClient();
+  const email = `e2e-${randomUUID().slice(0, 8)}@example.test`;
+  const password = randomUUID();
+  const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true });
+  if (error) throw error;
+  const id = data.user.id;
+
+  return {
+    id,
+    email,
+    password,
+    remove: async () => {
+      const { error: removed } = await db.auth.admin.deleteUser(id);
+      if (removed) throw removed;
+    },
+  };
+}
+
+// The app reads the secret from .env.local, which the Playwright process does not load.
+export function e2eAuthSecret(): string {
+  const fromEnv = process.env.E2E_AUTH_SECRET;
+  if (fromEnv) return fromEnv;
+  // Playwright runs from the repository root.
+  const file = readFileSync(resolve(process.cwd(), ".env.local"), "utf8");
+  for (const line of file.split("\n")) {
+    const [name, ...rest] = line.trim().split("=");
+    if (name === "E2E_AUTH_SECRET" && rest.length > 0) return rest.join("=");
+  }
+  throw new Error("E2E_AUTH_SECRET is not set: add it to .env.local (see .env.example).");
 }
