@@ -26,7 +26,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-27: #18 Limite Free e ritirate imposti dal database, con rollback
+## Sessione del 2026-09-27: #18 Limite Free e ritirate imposti dal database (chiusa, PR #48 in `main`)
 
 301 unitari, 43 di integrazione, 40 E2E, `typecheck`, `lint` e `build` puliti (le pagine pubbliche
 restano SSG). Guardata in Chrome, guidata da Playwright, a 1280px e a 390px contro
@@ -80,6 +80,9 @@ il blocco a 10 e il rifiuto vengono tutti da lì, quindi non possono più diverg
 - Il **10 è scritto in due posti**, `FREE_FOLLOW_LIMIT` e il trigger. Se un giorno si volesse far
   mordere il limite (l'ipotesi delle 5, da decidere prima del lancio) vanno cambiati insieme, e il
   trigger è quello che conta.
+- **In produzione il trigger c'è già**: la migrazione non va applicata a mano, la manda il workflow
+  `Deploy database` a ogni push su `main` (`supabase db push`, poi il sync del Catalogo). Verde il
+  2026-09-27 subito dopo il merge, come la CI.
 - Il database locale è stato **ricreato** (`pnpm db:reset` per applicare la migrazione) e poi
   riempito con `pnpm catalog:sync`: le 6 Sintesi vere caricate a mano nella #14 non ci sono più.
 
