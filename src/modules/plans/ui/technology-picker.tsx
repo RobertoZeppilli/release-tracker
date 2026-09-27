@@ -4,6 +4,7 @@ import { Info } from "lucide-react";
 import { useState } from "react";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { countMatches, matchesQuery, type PickerSections, type PickerTechnology } from "../domain/picker";
+import { FollowToggleLimitNote } from "./limit-note";
 import { FollowStatus, PickerFilter } from "./picker-header";
 import { PickerRow } from "./picker-row";
 
@@ -25,7 +26,9 @@ export function TechnologyPicker({ sections }: { sections: PickerSections }) {
       </section>
 
       <Section id="following" rows={sections.following} query={query} />
-      <Section id="catalog" rows={sections.catalog} query={query} />
+      <Section id="catalog" rows={sections.catalog} query={query}>
+        <FollowToggleLimitNote />
+      </Section>
       {sections.retired.length > 0 && (
         <Section id="retired" rows={sections.retired} query={query}>
           <Note>

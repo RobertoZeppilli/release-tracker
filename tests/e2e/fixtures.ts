@@ -9,11 +9,17 @@ import type { SummaryContent } from "@/modules/summaries";
 const LocalSupabaseSchema = z.object({ API_URL: z.url(), SECRET_KEY: z.string().min(1) });
 const IdRowSchema = z.object({ id: z.uuid() });
 
-// The app reads the same local stack; the fixtures are written with the service role.
+// The app reads the same local stack; the fixtures are written with the service role. The client is
+// kept for the whole worker: `supabase status` is a process, and several at once have been seen to
+// trip over the CLI's own telemetry file.
+let client: SupabaseClient | null = null;
+
 function serviceClient(): SupabaseClient {
+  if (client) return client;
   const output = execSync("pnpm exec supabase status -o json", { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   const { API_URL, SECRET_KEY } = LocalSupabaseSchema.parse(JSON.parse(output.slice(output.indexOf("{"))));
-  return createClient(API_URL, SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  client = createClient(API_URL, SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  return client;
 }
 
 export type FixtureRelease = {
@@ -39,7 +45,13 @@ function contentFor(release: FixtureRelease): unknown {
   };
 }
 
-export type FixtureTechnology = { slug: string; name: string; repo: string; remove: () => Promise<void> };
+export type FixtureTechnology = {
+  id: string;
+  slug: string;
+  name: string;
+  repo: string;
+  remove: () => Promise<void>;
+};
 
 // A Technology of its own for each run, so pages cached by earlier runs never interfere.
 export async function seedTechnology(
@@ -112,7 +124,52 @@ export async function seedTechnology(
     }
   }
 
-  return { slug, name, repo, remove };
+  return { id: technologyId, slug, name, repo, remove };
+}
+
+export type FixtureFillers = { ids: string[]; remove: () => Promise<void> };
+
+// Technologies with nothing in them, only there to fill the Free limit: the picker shows a row for
+// each, and a name of their own keeps them out of the way of a filter looking for another fixture.
+export async function seedFillers(count: number): Promise<FixtureFillers> {
+  const db = serviceClient();
+  const rows = Array.from({ length: count }, () => {
+    const slug = `filler-${randomUUID().slice(0, 8)}`;
+    return { slug, name: `Filler ${slug.slice(7)}`, classification_strategy: "semver" as const };
+  });
+
+  const inserted = await db.from("technologies").insert(rows).select("id");
+  if (inserted.error) throw inserted.error;
+  const ids = z.array(IdRowSchema).parse(inserted.data).map((row) => row.id);
+
+  return {
+    ids,
+    remove: async () => {
+      for (const [table, column] of [
+        ["follows", "technology_id"],
+        ["technologies", "id"],
+      ] as const) {
+        const { error } = await db.from(table).delete().in(column, ids);
+        if (error) throw error;
+      }
+    },
+  };
+}
+
+// A follow written from outside the browser: what another session of the same Developer would do.
+export async function addFollows(userId: string, technologyIds: readonly string[]): Promise<void> {
+  const rows = technologyIds.map((technology_id) => ({ user_id: userId, technology_id }));
+  const { error } = await serviceClient().from("follows").insert(rows);
+  if (error) throw error;
+}
+
+// A Technology leaves the Catalog while it is followed: the only way a retired follow can exist.
+export async function retireTechnology(technologyId: string): Promise<void> {
+  const { error } = await serviceClient()
+    .from("technologies")
+    .update({ retired: true })
+    .eq("id", technologyId);
+  if (error) throw error;
 }
 
 export type FixtureDeveloper = {

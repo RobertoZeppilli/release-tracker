@@ -16,7 +16,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#17** (la #16 unita con la PR #44 e viva in produzione). Sbloccate: **#18**, **#19** e
+- Fatte: **#2–#18** (la #16 unita con la PR #44 e viva in produzione). Sbloccate: **#19** e
   **#20**, più #25 e #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
@@ -25,6 +25,63 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Differenze note tra mock da uniformare: raccolte nella #23.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-27: #18 Limite Free e ritirate imposti dal database, con rollback
+
+301 unitari, 43 di integrazione, 40 E2E, `typecheck`, `lint` e `build` puliti (le pagine pubbliche
+restano SSG). Guardata in Chrome, guidata da Playwright, a 1280px e a 390px contro
+`technologies.html?state=full` e `?state=rejected`.
+
+### Il rifiuto attraversa il confine come un codice, non come un messaggio
+
+Il trigger `enforce_follow_rules` (migrazione `20260927062545_follow_limits.sql`) solleva due
+SQLSTATE nostri, `FRTRD` (ritirata) e `FLIMT` (limite del Free): PostgREST li porta fino al browser,
+quindi la riga sa quale regola ha infranto senza leggere il testo di un errore. `followRejectionFor`
+in `plans/domain/follow-rejection.ts` (puro, 4 test) li traduce, e tutto il resto diventa `unknown`,
+che ha comunque un rimedio ("try again") invece di fallire in silenzio.
+
+Due dettagli del trigger:
+
+- **Un advisory lock per Developer** prima del conteggio. Senza, due sessioni che inseriscono
+  insieme leggono entrambe nove e passano entrambe: proprio lo scenario "aggiunto da un'altra
+  sessione" che l'issue descrive.
+- Il limite vale **solo per il Piano `free`** (ADR 0004). Il trigger è `security definer`, quindi
+  vale anche per il service role: per avere una ritirata seguita si segue prima e si ritira dopo,
+  che è anche l'unico modo in cui il caso nasce nella realtà.
+
+### Il difetto che solo un rifiuto vero poteva far vedere
+
+`useFollows` creava **una `useMutation` per ogni riga**: l'errore restava dentro il componente che
+aveva premuto, e la riga che doveva mostrarlo non lo vedeva mai. La mutation è salita nel provider
+(`FollowsScope`), che ora costruisce un solo oggetto `Follows` e lo passa per contesto. Il conteggio,
+il blocco a 10 e il rifiuto vengono tutti da lì, quindi non possono più divergere tra componenti.
+
+### Com'è fatto il resto
+
+- `FollowToggle`: a 10 su 10 i Follow non premuti prendono `aria-disabled` e
+  `aria-describedby="limit-note"`, restando **raggiungibili col focus** (un `disabled` vero lo
+  impedirebbe). L'E2E deve usare `click({ force: true })`, perché Playwright si rifiuta di cliccare
+  un `aria-disabled`: è la prova che il blocco c'è.
+- `limit-note.tsx`: la nota compare con il blocco e sparisce con lui; dice il rimedio e **non nomina
+  il Pro** (verificato da due asserzioni negli E2E).
+- `PickerRow`: riga `error:` sotto la riga rifiutata, con l'id a cui punta l'`aria-describedby` del
+  toggle; una ritirata, dopo l'unfollow, perde il pulsante e mostra `unfollowed · can't be followed
+  again`, e alla visita successiva non compare più.
+- Fixture nuove: `seedFillers` (Tecnologie nude per riempire il limite), `addFollows` (follow scritto
+  da fuori, cioè l'altra sessione) e `retireTechnology`; in integrazione `seedCatalog` e `retire`.
+
+### Attenzione per chi riprende
+
+- Le fixture E2E lanciavano `supabase status` a **ogni** seed, e un giro è fallito con un errore
+  della CLI sul suo file di telemetria (`telemetry.json.tmp`, due processi insieme). Il client è ora
+  memoizzato per worker: un processo solo, e la suite è scesa da ~1,1 min a ~44 s.
+- Avviso di hydration sull'`input` del filtro, visibile **solo dopo un `reload`**: è Chrome che
+  ripristina il valore del campo. Viene dalla #17 e non è stato toccato qui.
+- Il **10 è scritto in due posti**, `FREE_FOLLOW_LIMIT` e il trigger. Se un giorno si volesse far
+  mordere il limite (l'ipotesi delle 5, da decidere prima del lancio) vanno cambiati insieme, e il
+  trigger è quello che conta.
+- Il database locale è stato **ricreato** (`pnpm db:reset` per applicare la migrazione) e poi
+  riempito con `pnpm catalog:sync`: le 6 Sintesi vere caricate a mano nella #14 non ci sono più.
 
 ## Sessione del 2026-09-26 (2): #17 Pagina `/technologies` con sezioni, filtro e follow ottimistico
 
@@ -535,14 +592,14 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: la #18, limite e ritirate imposti dal database
+## Da dove ripartire: la #19, Follow sulla pagina pubblica della Tecnologia
 
-1. `gh issue view 18`. Il trigger che impone i 10 e il divieto di seguire una ritirata, poi
-   `aria-disabled` e la riga `error:` come in `technologies.html?state=full` e `?state=rejected`.
-   L'interfaccia della #17 è già pronta ad accoglierli.
-2. Poi la **#19** (Follow sulla pagina pubblica della Tecnologia, stesso toggle su una pagina
-   statica: lì la query dovrà caricarsi nel browser), la **#20** (Dashboard, prima parte), **#25** e
-   **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
+1. `gh issue view 19`. Stesso toggle su una pagina **statica**: lì la cache non arriva piena dal
+   server, quindi la query dovrà caricarsi nel browser (`FollowsProvider` accetta già `follows`
+   facoltativo proprio per questo) senza rendere dinamica la pagina. Il rifiuto del database e il
+   rollback sono già nel provider e valgono anche lì.
+2. Poi la **#20** (Dashboard, prima parte), **#25** e **#36**. HITL: #22 Catalogo ~40 Tecnologie,
+   #26 landing page (serve il nome del prodotto).
 3. Unico passo manuale in sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto
    su Vercel. Il login con GitHub è configurato e provato in produzione.
 
