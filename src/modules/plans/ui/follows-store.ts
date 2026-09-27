@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createSessionClient } from "@/lib/supabase-browser";
+import { FollowRejectedError, followRejectionFor } from "../domain/follow-rejection";
 
 // Follows are the one thing a Developer writes, and RLS limits every row to `user_id = auth.uid()`:
 // the browser talks to the database directly, so a rejection (issue #18) arrives as it is.
@@ -24,5 +25,6 @@ export async function writeFollow(
   const { error } = follow
     ? await follows.insert({ user_id: developerId, technology_id: technologyId })
     : await follows.delete().eq("technology_id", technologyId);
-  if (error) throw new Error(error.message);
+  // The code carries which rule the database refused; the message is for the console, not the page.
+  if (error) throw new FollowRejectedError(followRejectionFor(error.code), error.message);
 }

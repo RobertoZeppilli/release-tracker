@@ -90,3 +90,39 @@ export async function deleteContent({ technologyId, releaseId }: Content): Promi
     if (error) throw error;
   }
 }
+
+export type Catalog = { technologyIds: string[]; remove: () => Promise<void> };
+
+// Bare Technologies, enough to reach the Free limit: no Releases, no Sources, no Summaries.
+export async function seedCatalog(count: number): Promise<Catalog> {
+  const db = serviceClient();
+  const rows = Array.from({ length: count }, () => {
+    const slug = `tech-${randomUUID()}`;
+    return { slug, name: slug, classification_strategy: "semver" as const };
+  });
+
+  const inserted = await db.from("technologies").insert(rows).select("id");
+  if (inserted.error) throw inserted.error;
+  const technologyIds = z.array(IdRowSchema).parse(inserted.data).map((row) => row.id);
+
+  return {
+    technologyIds,
+    remove: async () => {
+      for (const [table, column] of [
+        ["follows", "technology_id"],
+        ["technologies", "id"],
+      ] as const) {
+        const { error } = await db.from(table).delete().in(column, technologyIds);
+        if (error) throw error;
+      }
+    },
+  };
+}
+
+export async function retire(technologyId: string): Promise<void> {
+  const { error } = await serviceClient()
+    .from("technologies")
+    .update({ retired: true })
+    .eq("id", technologyId);
+  if (error) throw error;
+}
