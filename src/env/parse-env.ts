@@ -16,6 +16,10 @@ const ServerEnvSchema = z.object({
   // Only for the end-to-end tests: with it the app exposes /api/test/session, which signs a test
   // Developer in without GitHub. Never set in production, where the route answers 404.
   E2E_AUTH_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(32).optional()),
+  // Only for local development: with both set, the login offers a second button that signs this
+  // Developer in without GitHub. Unset in production, where the route answers 404.
+  DEV_LOGIN_EMAIL: z.preprocess((value) => (value === "" ? undefined : value), z.email().optional()),
+  DEV_LOGIN_PASSWORD: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional()),
   // Without it the summary jobs answer 503; an app that only reads Summaries still starts.
   ANTHROPIC_API_KEY: z.preprocess(
     (value) => (value === "" ? undefined : value),
