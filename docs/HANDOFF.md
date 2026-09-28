@@ -16,7 +16,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#19** (la #19 unita con la PR #49, CI verde e viva in produzione). Sbloccate: **#20**,
+- Fatte: **#2–#20** (la #20 unita con la PR #51, CI verde e viva in produzione). Sbloccate: **#21**,
   più #25 e #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
@@ -29,7 +29,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-28 (4): #20 Dashboard, prima parte (branch `dashboard-first-part`)
+## Sessione del 2026-09-28 (4): #20 Dashboard, prima parte (chiusa, PR #51 in `main`)
 
 316 unitari, 43 di integrazione, **50 E2E**, `typecheck`, `lint` e `build` puliti; le pagine
 pubbliche restano SSG. Guardata con Playwright a 1280px e a 390px contro `design/mocks/dashboard.html`.
@@ -772,9 +772,14 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
    mancano solo le sezioni a cui puntare (vedi gli scostamenti qui sopra).
 2. Poi **#25** e **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del
    prodotto).
-3. In sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel; la
-   differenza dal mock della #19 da scrivere nella **#23**. Per entrare in locale da Sviluppatore:
-   `pnpm dev:login`, poi "Continue as local developer" sul `/login`.
+3. In sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel; e nella
+   **#23** vanno ancora scritti **quattro** scostamenti dal mock, uno della #19 (il Follow sotto i
+   640px) e tre della #20 (titolo alfabetico al posto di "popular", conteggi non ancora linkati,
+   "this week" rimandato): oggi vivono solo qui e nel corpo delle PR. Per entrare in locale da
+   Sviluppatore: `pnpm dev:login`, poi "Continue as local developer" sul `/login`.
+4. Su Vercel `NEXT_PUBLIC_SITE_URL` esiste ora in **Production e in Preview** (senza, il build di
+   preview fallisce: lo schema Zod rifiuta una configurazione a metà). I preview puntano al database
+   di produzione, quindi restano il posto dove non mettere mai credenziali di comodo.
 
 ## Preferenze dell'utente
 
