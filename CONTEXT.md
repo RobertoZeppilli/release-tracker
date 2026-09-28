@@ -33,7 +33,9 @@ _Evitare_: provider, integrazione, feed.
 La scelta di uno sviluppatore di vedere nella propria dashboard le **Release** di una
 **Tecnologia** del **Catalogo**. Si possono **Seguire** solo **Tecnologie** non ritirate; una
 **Tecnologia ritirata** già seguita resta seguita finché lo sviluppatore non smette, e da quel momento
-non si può più seguire. Le **Tecnologie ritirate** seguite contano nel limite del **Piano**.
+non si può più seguire. Il comando per **Seguire** non compare mai su una **Tecnologia ritirata** che
+lo sviluppatore non segue, in nessuna schermata: offrirebbe un'azione che il database rifiuta. Le
+**Tecnologie ritirate** seguite contano nel limite del **Piano**.
 _Evitare_: iscriversi, abbonarsi, preferito.
 
 **Richiesta di tecnologia**:
