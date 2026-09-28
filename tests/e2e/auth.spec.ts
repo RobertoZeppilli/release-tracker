@@ -49,6 +49,20 @@ test.describe("a Visitor", () => {
   });
 });
 
+// Only for local development, where GitHub OAuth is off: the button exists while DEV_LOGIN_EMAIL
+// and DEV_LOGIN_PASSWORD are set, which is never in CI and never in production.
+test.describe("the local way in", () => {
+  test("signs a Developer in from the login page and takes them where they were going", async ({ page }) => {
+    await page.goto("/login?next=%2Ftechnologies");
+    const button = page.getByRole("button", { name: "Continue as local developer" });
+    test.skip((await button.count()) === 0, "DEV_LOGIN_EMAIL is not set: run pnpm dev:login");
+
+    await button.click();
+    await expect(page).toHaveURL("/technologies");
+    await expect(page.getByRole("button", { name: "sign out" })).toBeVisible();
+  });
+});
+
 test.describe("a Developer", () => {
   test("sees the signed-in navigation and can sign out", async ({ page }) => {
     await signIn(page);

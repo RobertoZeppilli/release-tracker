@@ -1,7 +1,8 @@
-import { LogIn } from "lucide-react";
+import { LogIn, TerminalSquare } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { serverEnv } from "@/env/server";
 import { safeRedirectPath } from "@/modules/auth";
 import { getDeveloper } from "@/modules/auth/server";
 
@@ -15,7 +16,11 @@ const ERRORS: Record<string, string> = {
   denied: "The sign in was cancelled. Nothing changed.",
   exchange: "That sign in link is no longer valid. Try again.",
   provider: "GitHub is unreachable right now. Try again in a moment.",
+  dev: "The local developer could not sign in. Run `pnpm dev:login` and try again.",
 };
+
+const BUTTON =
+  "inline-flex h-[34px] items-center gap-2 rounded-md border px-3 font-sans text-[14px] font-medium hover:bg-raised";
 
 type Props = { searchParams: Promise<{ next?: string; error?: string }> };
 
@@ -25,6 +30,8 @@ export default async function LoginPage({ searchParams }: Props) {
   // Already signed in: the login has nothing to ask.
   if (await getDeveloper()) redirect(target);
   const message = error ? ERRORS[error] : undefined;
+  // Both set only in local development; in production the route behind this button answers 404.
+  const localDeveloper = Boolean(serverEnv.DEV_LOGIN_EMAIL && serverEnv.DEV_LOGIN_PASSWORD);
 
   return (
     <>
@@ -42,10 +49,7 @@ export default async function LoginPage({ searchParams }: Props) {
         ) : null}
         <form action="/auth/sign-in" method="post" className="mt-6">
           <input type="hidden" name="next" value={target} />
-          <button
-            type="submit"
-            className="inline-flex h-[34px] items-center gap-2 rounded-md border border-rule-strong px-3 font-sans text-[14px] font-medium text-text hover:border-text-faint hover:bg-raised"
-          >
+          <button type="submit" className={`${BUTTON} border-rule-strong text-text hover:border-text-faint`}>
             <LogIn className="size-4" strokeWidth={2} aria-hidden />
             Continue with GitHub
           </button>
@@ -53,6 +57,18 @@ export default async function LoginPage({ searchParams }: Props) {
         <p className="mt-4 font-mono text-meta text-text-faint">
           Asks GitHub only for your public profile and email address. No access to any repository.
         </p>
+        {localDeveloper && (
+          <form action="/auth/dev-sign-in" method="post" className="mt-4">
+            <input type="hidden" name="next" value={target} />
+            <button type="submit" className={`${BUTTON} border-rule text-text-muted hover:text-text`}>
+              <TerminalSquare className="size-4" strokeWidth={2} aria-hidden />
+              Continue as local developer
+            </button>
+            <span className="mt-2 block font-mono text-meta text-text-faint">
+              Local development only: this way in does not exist in production.
+            </span>
+          </form>
+        )}
       </main>
     </>
   );
