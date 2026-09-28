@@ -24,7 +24,8 @@ _Evitare_: eliminata, disattivata, archiviata.
 **Fonte**:
 Un canale esterno da cui si osservano le **Release** di una **Tecnologia** (es. repository GitHub,
 pacchetto npm). Una **Tecnologia** ha una o più **Fonti**, ognuna con un ruolo: **rilevare** le
-nuove **Versioni** (es. npm) o **fornire le Note di rilascio** (es. GitHub Releases, `CHANGELOG.md`).
+nuove **Versioni** (npm, PyPI, GitHub Releases) o **fornire le Note di rilascio** (GitHub Releases,
+`CHANGELOG.md`).
 Una **Tecnologia** ha al massimo una **Fonte** per ruolo e tipo. Una **Fonte** tolta dal **Catalogo**
 si cancella: è configurazione, e le **Note di rilascio** che ha fornito restano.
 _Evitare_: provider, integrazione, feed.
@@ -119,6 +120,10 @@ seguono la stessa regola in tutte le Strategie.
   le successive sono _Digest_.
 - `zerover` (librerie 0.x): in 0.x rompe la minor, quindi 0.y.0 è _In evidenza_ e ogni altra 0.y.z è
   _Digest_; da 1.0.0 vale `semver`.
+- `minor-major` (la minor vale come una major): per le **Tecnologie** che pubblicano le novità nel
+  minor e non cambiano major da anni (Rust, Terraform, Playwright, Vue), ogni x.y.0 è _In evidenza_ e
+  le patch sono _Digest_. Senza, la loro ultima **Release** _In evidenza_ resterebbe per sempre la
+  x.0.0 di anni fa.
 _Evitare_: parser, regola SemVer.
 
 **Correzione di rilevanza**:
@@ -177,7 +182,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 |---|---|---|
 | Tecnologia | `Technology` | |
 | Catalogo | `Catalog` | |
-| Fonte | `Source` | ruolo: `detection` · `notes` |
+| Fonte | `Source` | ruolo: `detection` · `notes`; tipo: `npm` · `pypi` · `github-releases` · `changelog` |
 | Seguire | `follow` | |
 | Richiesta di tecnologia | `TechnologyRequest` | |
 | Release | `Release` | origine: `imported` · `detected` |
@@ -188,7 +193,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Sintesi | `Summary` | |
 | Intervento richiesto | `actionRequired` | UI: "Action required" · "Safe to upgrade" |
 | Stato della sintesi | `SummaryStatus` | `pending` · `processing` · `ready` · `unavailable` · `skipped` · `failed` |
-| Strategia di classificazione | `ClassificationStrategy` | `semver` · `node` · `typescript` · `zerover` |
+| Strategia di classificazione | `ClassificationStrategy` | `semver` · `node` · `typescript` · `zerover` · `minor-major` |
 | Correzione di rilevanza | `significanceOverride` | |
 | Tecnologia ritirata | `retired` | |
 | Rilevamento | `Detection` | |

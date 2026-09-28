@@ -1,0 +1,18 @@
+{
+  "name": "Drizzle ORM",
+  "description": "TypeScript ORM for SQL databases",
+  "classificationStrategy": "zerover",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "drizzle-orm"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "drizzle-team/drizzle-orm",
+      "tagFormat": "{version}"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Prisma",
+  "description": "ORM and database toolkit for Node.js",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "prisma"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "prisma/prisma",
+      "tagFormat": "{version}"
+    }
+  ]
+}

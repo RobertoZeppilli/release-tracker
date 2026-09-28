@@ -81,7 +81,23 @@ describe("classify with the zerover strategy", () => {
   });
 });
 
-const strategies: ClassificationStrategy[] = ["semver", "node", "typescript", "zerover"];
+// Real PHP, Rust, Kubernetes and Terraform Versions: the news rides in the minor.
+describe("classify with the minor-major strategy", () => {
+  it.each([
+    ["8.5.0", "featured"],
+    ["1.98.0", "featured"],
+    ["1.37.0", "featured"],
+    ["2.0.0", "featured"],
+    ["8.4.26", "digest"],
+    ["1.98.1", "digest"],
+    ["1.37.1", "digest"],
+    ["1.16.4", "digest"],
+  ])("%s is %s", (version, significance) => {
+    expect(classifyAlone(version, "minor-major")).toBe(significance);
+  });
+});
+
+const strategies: ClassificationStrategy[] = ["semver", "node", "typescript", "zerover", "minor-major"];
 
 describe.each(strategies)("classify Previews with the %s strategy", (strategy) => {
   it.each(["8.0.0-beta.18", "8.3.0-beta.1", "7.0.0-rc.1", "19.0.0-rc.0", "5.7.0-beta", "5.7.1-rc"])(

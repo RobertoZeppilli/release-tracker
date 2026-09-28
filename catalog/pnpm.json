@@ -1,0 +1,18 @@
+{
+  "name": "pnpm",
+  "description": "Package manager for Node.js",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "pnpm"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "pnpm/pnpm",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

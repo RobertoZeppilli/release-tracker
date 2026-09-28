@@ -1,0 +1,18 @@
+{
+  "name": "Fastify",
+  "description": "Fast web framework for Node.js",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "fastify"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "fastify/fastify",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

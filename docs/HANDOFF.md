@@ -16,7 +16,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#21**. Sbloccate: **#25** e **#36**.
+- Fatte: **#2–#21**; **#22** in attesa della PR sul branch `issue-22-catalogo-40-tecnologie`.
+  Sbloccate: **#25** e **#36**.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -27,6 +28,73 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `.tech-facts`. Non è ancora scritto nella issue.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-28 (6): #22 Catalogo a 37 Tecnologie (branch `issue-22-catalogo-40-tecnologie`)
+
+393 unitari, 43 di integrazione, 52 E2E, `typecheck`, `lint` e `build` puliti. Catalogo da 3 a **37
+Tecnologie**, importate davvero contro il database locale: **1893 Release**, zero import falliti.
+
+### Che cosa contiene il Catalogo e che cosa no
+
+- 32 npm e 5 rilevate da **GitHub Releases** (Node.js, Deno, Bun, Rust, Terraform).
+- Deciso con l'utente di **non** aggiungere PyPI: le Versioni PyPI seguono PEP 440, le Anteprime si
+  scrivono `2.3.0rc1` e il nostro parser SemVer le scarta, quindi il mondo Python avrebbe la sezione
+  Anteprime vuota per sempre. Diventa una issue sua, con PEP 440 dentro.
+- Escluse, verificate una per una: **Go** e **Python** (solo tag, nessuna Release su GitHub, e il tag
+  non porta la data), **Django** (note in `.txt` sotto `docs/releases/`), **TanStack Query** (i tag
+  sono date), **PostgreSQL** (`17.2` non è SemVer), **PHP** e **Kubernetes** (Release senza contenuto,
+  solo un rimando al ChangeLog: una Sintesi da lì sarebbe vuota o inventata).
+
+### Le due cose nuove nel dominio
+
+- Strategia **`minor-major`** (in `CONTEXT.md`): per chi mette le novità nella minor e non cambia
+  major da anni, ogni x.y.0 è _In evidenza_. La usano Rust, Terraform, **Playwright e Vue**: con
+  `semver` la loro ultima Release _In evidenza_ sarebbe per sempre la x.0.0 di anni fa.
+- **GitHub Releases come Rilevamento**: `SourceSchema` è ora l'unione di due unioni per ruolo, perché
+  lo stesso `kind` serve entrambi. `detection/domain/tag-format.ts` legge la Versione dal tag; il
+  formato da solo non basta (`vsix-22.2.0` sta in `v{version}`), decide `parseVersion`. La lista è
+  paginata e **limitata a 3 pagine**: Node ha più di mille Release e il validatore sta sulla prima.
+
+### I due difetti che solo il Catalogo vero ha fatto vedere
+
+- ⚠️ **PostgREST tronca a 1000 righe senza dirlo.** Con 1893 Release il Rilevamento leggeva le prime
+  mille e trattava le Tecnologie rimaste fuori come "in attesa di Importazione", cioè **smetteva di
+  rilevarle per sempre**. Ora `src/lib/supabase-rows.ts` (`selectAllRows`) legge per pagine finché
+  non ne torna una corta, e lo usano `detect-releases` e `list-releases`. Vive fuori da
+  `src/lib/supabase.ts` apposta: quello importa `@/env` e i job non devono dipenderne.
+- Tre Release vere hanno **Note oltre il limite di 80.000 caratteri** e la Sintesi fallisce:
+  `next 16.3.0` (108.842), `biome 2.0.0` (99.660), `turborepo 2.11.0` (88.867). Sono `failed` nel
+  database locale. Da decidere in una issue: troncare, spezzare o accettare.
+
+### Fonti con i tag mescolati
+
+`prisma` e `expressjs/express` usano **sia** `v8.0.0-rc.13` **sia** `7.10.0` nello stesso repository,
+e un `tagFormat` solo non li prende entrambi. Prisma è passata a `{version}`, che copre tutte le
+stabili e lascia fuori solo le rc di v8. Express resta `v{version}` e perde solo `4.22.0`. Le altre
+Release importanti senza Note sono davvero assenti da GitHub, verificato tag per tag: `angular 21.0.0`,
+`express 4.22.0`, `trpc 11.13.0`, `zod 4.0.0`.
+
+### Costo e spesa (niente è stato speso)
+
+**128 Sintesi in coda, circa $2,94 una tantum**, se e quando l'Importazione girerà in produzione.
+Deciso con l'utente: in questa sessione **solo locale**, la spesa la lancia l'utente.
+
+### Attenzione per chi riprende
+
+- ⚠️ **`pnpm test:integration` con il Catalogo nel database locale manda in un finto batch tutte le
+  Sintesi `pending`, non solo le sue**: restano `processing` con `batch_id` `msgbatch_fake_…` e
+  nessuno le raccoglierà mai. Non si spende niente, ma i dati locali diventano falsi. Si rimette a
+  posto con `update summaries set status='pending', batch_id=null, model=null, prompt_version=null
+  where status='processing' and batch_id like 'msgbatch_fake_%';`. L'isolamento vero va fatto in una
+  issue sua, perché tocca `claim_pending_summaries` e quindi il percorso della spesa.
+- Lo stesso difetto di isolamento era in `tests/integration/detection.test.ts`, ed è **corretto qui**:
+  le finte Fonti rispondono solo per le proprie, altrimenti mettevano la Versione del test su Storybook.
+- **Cambiare la Strategia di una Tecnologia non riclassifica le Release già registrate**: in locale
+  Playwright e Vue sono state cancellate e reimportate a mano. In produzione servirebbe lo stesso.
+- Importazione locale: `GITHUB_TOKEN=$(gh auth token) pnpm exec tsx --env-file=.env.local
+  --conditions=react-server scripts/sync-catalog.mts`. Circa tre minuti per 34 Tecnologie.
+- Il primo giro completo di E2E dopo l'Importazione ha dato 3 rossi che al secondo giro non si sono
+  ripetuti (52 su 52): compilazione a freddo con più dati, non una regressione.
 
 ## Sessione del 2026-09-28 (5): #21 Dashboard, seconda parte (Latest, Previews, Weekly Digest)
 

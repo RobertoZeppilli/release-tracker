@@ -1,0 +1,19 @@
+{
+  "name": "Node.js",
+  "description": "JavaScript runtime built on V8",
+  "classificationStrategy": "node",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "github-releases",
+      "repo": "nodejs/node",
+      "tagFormat": "v{version}"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "nodejs/node",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

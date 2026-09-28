@@ -1,0 +1,18 @@
+{
+  "name": "Next.js",
+  "description": "React framework for the web",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "next"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "vercel/next.js",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

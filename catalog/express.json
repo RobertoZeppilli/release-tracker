@@ -1,0 +1,18 @@
+{
+  "name": "Express",
+  "description": "Web framework for Node.js",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "express"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "expressjs/express",
+      "tagFormat": "v{version}"
+    }
+  ]
+}
