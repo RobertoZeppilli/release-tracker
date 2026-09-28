@@ -835,10 +835,15 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 4. Su Vercel `NEXT_PUBLIC_SITE_URL` esiste ora in **Production e in Preview** (senza, il build di
    preview fallisce: lo schema Zod rifiuta una configurazione a metà). I preview puntano al
    database di produzione, quindi restano il posto dove non mettere mai credenziali di comodo.
-5. Piano editoriale: chiusa la #21, la **tappa D** (issue #16-#21) è completa e vanno preparati il
-   thread Bluesky e l'articolo dev.to "Enforce your free-plan limit in the database, not in the UI"
-   con la skill `post-update`. In coda c'è anche l'articolo della tappa C ("Exactly-once AI jobs"),
-   rimandato in attesa di qualche giro di cron in produzione da citare.
+5. Piano editoriale: la **tappa D** è stata pubblicata il 2026-09-28 (thread Bluesky di 10 post) e
+   l'articolo dev.to "Enforce your free-plan limit in the database, not in the UI" è **in bozza**,
+   da rileggere e pubblicare a mano dalla dashboard di dev.to, caricando lì gli screenshot. In coda
+   resta l'articolo della tappa C ("Exactly-once AI jobs"), in attesa di qualche giro di cron in
+   produzione da citare.
+6. ⚠️ Le **due Sintesi finte** che la #20 aveva messo nel database locale sono state **cancellate**
+   il 2026-09-28: erano contenuto inventato attaccato a Release vere, e stavano per finire in uno
+   screenshot pubblico. Se servono verdetti pieni in locale, si caricano a mano output veri dai
+   report in `eval/summaries/reports/`, non testi scritti al momento.
 
 ## Preferenze dell'utente
 
