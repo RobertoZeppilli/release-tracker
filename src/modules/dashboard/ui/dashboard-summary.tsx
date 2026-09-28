@@ -3,8 +3,8 @@ import { SeverityLabel } from "@/modules/releases/ui";
 import type { DashboardCounts, DashboardVerdict } from "../domain/build-dashboard";
 import { pageVerdict } from "./dashboard-copy";
 
-// Only `featured` has a section on this page: the other three numbers are real, but their sections
-// arrive with the Weekly Digest slice, and a link to an anchor that does not exist is a dead end.
+// Every number is a link to its own section, and only to a section that exists: a count of zero
+// has no section to point at, so it stays plain text instead of becoming a dead anchor.
 export function DashboardSummary({ verdict, counts }: { verdict: DashboardVerdict; counts: DashboardCounts }) {
   const { tone, label, claim } = pageVerdict(verdict);
 
@@ -15,17 +15,16 @@ export function DashboardSummary({ verdict, counts }: { verdict: DashboardVerdic
       </p>
       <p className="mt-3 font-mono text-diagnostic text-text-muted tabular-nums">
         Last 30 days across <Count value={counts.technologies} /> {counts.technologies === 1 ? "technology" : "technologies"}:{" "}
-        <Link href="#spotlight" className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current">
-          <Count value={counts.featured} /> featured
-        </Link>
+        <CountLink value={counts.featured} href="#spotlight" label="featured" exists />
         {verdict.needsAction > 0 && (
           <>
             {" ("}
             <Count value={verdict.needsAction} /> {verdict.needsAction === 1 ? "needs" : "need"} action{")"}
           </>
         )}
-        , <Count value={counts.notable} /> notable, <Count value={counts.previews} /> previews,{" "}
-        <Count value={counts.digest} /> digest.
+        , <CountLink value={counts.notable} href="#latest" label="notable" />,{" "}
+        <CountLink value={counts.previews} href="#previews" label="previews" />,{" "}
+        <CountLink value={counts.digest} href="#digest" label="digest" />.
       </p>
     </section>
   );
@@ -33,4 +32,21 @@ export function DashboardSummary({ verdict, counts }: { verdict: DashboardVerdic
 
 function Count({ value }: { value: number }) {
   return <span className="text-text">{value}</span>;
+}
+
+// Spotlight is there even with nothing featured, because it lists every followed Technology; the
+// other three sections only exist when they have rows.
+function CountLink({ value, href, label, exists = value > 0 }: { value: number; href: string; label: string; exists?: boolean }) {
+  if (!exists)
+    return (
+      <>
+        <Count value={value} /> {label}
+      </>
+    );
+
+  return (
+    <Link href={href} className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current">
+      <Count value={value} /> {label}
+    </Link>
+  );
 }

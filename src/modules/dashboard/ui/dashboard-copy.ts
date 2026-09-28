@@ -23,3 +23,13 @@ export function rowVerdict({ summary, summaryStatus }: DashboardRelease): Verdic
   }
   return { tone: "muted", label: "note:", claim: "no summary · read the release notes" };
 }
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// "Dec 2 to 8", and "Nov 25 to Dec 1" when the week changes month: the second month is named only
+// when it differs, because repeating it is noise on a line already dense with numbers.
+export function weekRange(start: Date, end: Date): string {
+  const month = (date: Date) => MONTHS[date.getUTCMonth()];
+  const to = month(start) === month(end) ? `${end.getUTCDate()}` : `${month(end)} ${end.getUTCDate()}`;
+  return `${month(start)} ${start.getUTCDate()} to ${to}`;
+}

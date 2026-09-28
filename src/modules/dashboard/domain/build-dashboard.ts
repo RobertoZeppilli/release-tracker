@@ -1,5 +1,7 @@
 import { compareVersions, type Significance, parseVersion, type SummaryStatus } from "@/modules/releases";
 import type { SummaryContent } from "@/modules/summaries";
+import { isoWeekKey, isoWeekOf } from "./iso-week";
+import { type DashboardRow, type DigestWeek, sectionRows, weeklyDigest } from "./sections";
 
 export type FollowedTechnology = { slug: string; name: string };
 
@@ -40,7 +42,17 @@ export type DashboardCounts = {
   digest: number;
 };
 
-export type Dashboard = { verdict: DashboardVerdict; counts: DashboardCounts; spotlight: SpotlightEntry[] };
+// `thisWeek` is the ISO week of `now`: a row marks itself recent by comparing its own week with it,
+// so "this week" means the same thing in every section of the page.
+export type Dashboard = {
+  verdict: DashboardVerdict;
+  counts: DashboardCounts;
+  spotlight: SpotlightEntry[];
+  latest: DashboardRow[];
+  previews: DashboardRow[];
+  digest: DigestWeek[];
+  thisWeek: string;
+};
 
 // The Dashboard looks back 30 days, always from an injected `now` so the page is testable.
 export const WINDOW_DAYS = 30;
@@ -59,9 +71,15 @@ function standingOf(releases: readonly DashboardRelease[]): SpotlightStanding | 
   const newest = (candidates: typeof parsed) =>
     candidates.sort((a, b) => compareVersions(a.version, b.version)).at(-1) ?? null;
 
-  const major = newest(parsed.filter(isMajor));
+  // Where a Technology stands is a stable Release: a beta is newer by SemVer but nobody is on it.
+  // A Technology that has only ever published Previews shows one anyway, which beats saying that
+  // nothing was ever recorded.
+  const stable = parsed.filter(({ version }) => version.prerelease.length === 0);
+  const candidates = stable.length > 0 ? stable : parsed;
+
+  const major = newest(candidates.filter(isMajor));
   if (major) return { release: major.release, major: true };
-  const latest = newest(parsed);
+  const latest = newest(candidates);
   return latest ? { release: latest.release, major: false } : null;
 }
 
@@ -93,11 +111,8 @@ function verdictOf(spotlight: readonly SpotlightEntry[]): DashboardVerdict {
   };
 }
 
-function countsOf(
-  followed: readonly FollowedTechnology[],
-  recent: readonly DashboardRelease[],
-): DashboardCounts {
-  const of = (significance: Significance) => recent.filter((release) => release.significance === significance).length;
+function countsOf(followed: readonly FollowedTechnology[], recent: readonly DashboardRow[]): DashboardCounts {
+  const of = (significance: Significance) => recent.filter(({ release }) => release.significance === significance).length;
   return {
     technologies: followed.length,
     featured: of("featured"),
@@ -113,8 +128,11 @@ export function buildDashboard(
   now: Date,
 ): Dashboard {
   const start = windowStart(now);
-  const slugs = new Set(followed.map((technology) => technology.slug));
-  const recent = releases.filter((release) => release.publishedAt >= start && slugs.has(release.slug));
+  const bySlug = new Map(followed.map((technology) => [technology.slug, technology]));
+  const recent = releases.flatMap((release) => {
+    const technology = bySlug.get(release.slug);
+    return technology && release.publishedAt >= start ? [{ technology, release }] : [];
+  });
 
   const spotlight = followed
     .map((technology) => {
@@ -126,5 +144,13 @@ export function buildDashboard(
     })
     .sort(byUrgencyThenDate);
 
-  return { verdict: verdictOf(spotlight), counts: countsOf(followed, recent), spotlight };
+  return {
+    verdict: verdictOf(spotlight),
+    counts: countsOf(followed, recent),
+    spotlight,
+    latest: sectionRows(recent, "notable"),
+    previews: sectionRows(recent, "preview"),
+    digest: weeklyDigest(recent),
+    thisWeek: isoWeekKey(isoWeekOf(now)),
+  };
 }
