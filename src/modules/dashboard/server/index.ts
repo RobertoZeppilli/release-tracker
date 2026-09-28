@@ -1,3 +1,3 @@
 import "server-only";
 
-export {};
+export { type DashboardData, readDashboard } from "./read-dashboard";

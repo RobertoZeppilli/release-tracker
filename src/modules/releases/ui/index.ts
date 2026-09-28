@@ -1,3 +1,7 @@
+export { isoDate, plural } from "./release-rows";
+export { SeverityLabel } from "./severity-label";
+export { SignificanceLabel } from "./significance-glyph";
+export type { Tone } from "./upgrade-path-copy";
 export { type ExternalSource, ReleaseHeader } from "./release-header";
 export { ReleaseList } from "./release-list";
 export { ReleaseNotesSource } from "./release-notes-source";

@@ -11,13 +11,21 @@ const SHAPES: Record<Significance, ReactNode> = {
   ),
 };
 
-export function SignificanceLabel({ significance }: { significance: Significance }) {
+// `labelHidden` keeps the word for assistive technology and shows the shape alone: on a section
+// where every row carries the same Significance, repeating the word on each line is noise.
+export function SignificanceLabel({
+  significance,
+  labelHidden = false,
+}: {
+  significance: Significance;
+  labelHidden?: boolean;
+}) {
   return (
     <span className="inline-flex items-center gap-[6px] font-mono text-label text-text-muted">
       <svg viewBox="0 0 12 12" className="size-3 flex-none" aria-hidden>
         {SHAPES[significance]}
       </svg>
-      {significance}
+      <span className={labelHidden ? "sr-only" : undefined}>{significance}</span>
     </span>
   );
 }

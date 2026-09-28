@@ -29,6 +29,98 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
+## Sessione del 2026-09-28 (4): #20 Dashboard, prima parte (branch `dashboard-first-part`)
+
+316 unitari, 43 di integrazione, **50 E2E**, `typecheck`, `lint` e `build` puliti; le pagine
+pubbliche restano SSG. Guardata con Playwright a 1280px e a 390px contro `design/mocks/dashboard.html`.
+
+### Il dominio decide, la pagina mostra
+
+`buildDashboard(followed, releases, now)` (`dashboard/domain`, puro, 9 test) restituisce
+`{ verdict, counts, spotlight }`. Le regole che valeva la pena fissare nei test:
+
+- La finestra di 30 giorni si conta da `now` **iniettato**, estremi compresi.
+- Una voce di Spotlight per **ogni** Tecnologia seguita: le `featured` della finestra, impilate dalla
+  più recente, oppure una riga compatta.
+- L'ordine è prima chi chiede intervento, poi chi è sicuro, poi le righe compatte, e dentro ogni
+  gruppo la più recente. È l'ordine in cui vale la pena guardarle, non l'alfabeto.
+- Una `featured` **senza Sintesi pronta compare lo stesso**, ma non conta né come sicura né come
+  intervento: chiamarla sicura sarebbe una promessa che la Sintesi non ha ancora fatto.
+
+### Il buco che solo i dati veri hanno mostrato
+
+La riga compatta doveva dire "latest major", ma TypeScript ha 7 Release e **nessuna major
+registrata** (l'Importazione si ferma a 12 mesi), e la pagina diceva "no releases recorded yet" di
+una Tecnologia che di Release ne ha sette. Ora `standing` è `{ release, major }`: la major se c'è,
+altrimenti la Release più recente, e la riga dice "latest release" invece di spacciarla per una
+major. Si vedeva solo aprendo la pagina con il Catalogo locale, non nei test scritti a tavolino.
+
+### Com'è fatto il resto
+
+- `dashboard/server/read-dashboard.ts`: **una query sola** dai `follows`, letta con il client dello
+  Sviluppatore (nessun `user_id`: lo impone la RLS). Tornano **tutte** le Release, non solo la
+  finestra, perché la riga compatta ha bisogno della major vecchia e il Weekly Digest della #21 le
+  vuole tutte comunque.
+- `dashboard/ui`: `DashboardSummary` (verdetto e conteggi), `Spotlight`, `EmptyDashboard`,
+  `SectionTitle`. `dashboard-copy.ts` è puro e testato come `upgrade-path-copy`: `pageVerdict` e
+  `rowVerdict` sono le uniche parole che il dominio non dice.
+- **La quota nella barra in alto** (`3 of 10 followed`) arriva a `SiteHeader` **come elemento**, non
+  come componente, come il Follow della #19: l'intestazione non impara che cosa sia un Piano e le
+  pagine pubbliche non le passano niente. Per questo la pagina avvolge **header e main** nello stesso
+  `FollowsProvider`: la barra e il corpo leggono lo stesso conteggio vivo e non possono divergere.
+  Portata anche su `/technologies`, dove il mock la mette.
+- Lo stato vuoto riusa `PickerRow` e `FollowToggleLimitNote` di `plans/ui`: il Follow si comporta
+  **esattamente** come su `/technologies` perché è lo stesso componente, non una copia.
+
+### Scostamenti dal mock, da aggiungere alla #23
+
+- Il mock intitola la sezione dello stato vuoto **"popular in the catalog"**, ma nel Catalogo non
+  c'è nessun segnale di popolarità. Deciso con l'utente il 2026-09-28: le prime 8 in **ordine
+  alfabetico** e titolo `in the catalog (8)`. Inventare una popolarità sarebbe stata una regola di
+  dominio nuova, da fissare prima in `CONTEXT.md`. Se un giorno arriva un segnale vero, cambia solo
+  l'ordine.
+- Nella riga dei conteggi **solo `featured` è un link**: le sezioni `latest`, `previews` e `digest`
+  arrivano con la #21, e un'ancora che non porta da nessuna parte è un difetto di accessibilità. I
+  numeri però sono già veri.
+- Il segno **"this week"** sulle date non c'è: è esplicitamente della #21.
+
+### Attenzione per chi riprende
+
+- `SignificanceLabel` ha ora `labelHidden`: nello Spotlight ogni riga è `featured`, e ripetere la
+  parola a ogni riga era rumore. Il glifo resta, la parola resta per chi usa uno screen reader.
+- L'E2E della #16 cercava l'email sulla Dashboard segnaposto. **L'email non compare più in nessuna
+  schermata**: il test ora prova l'accesso dai comandi da collegato (sign out e quota).
+- `FixtureRelease` accetta `publishedAt`: senza, le fixture nascono a gennaio 2026 e **cadono fuori
+  dalla finestra** dei 30 giorni, quindi nessuna prova della Dashboard avrebbe visto uno Spotlight.
+- Nel database **locale** ci sono dati messi a mano per guardare la pagina: `significance_override`
+  a `featured` su `react 19.3.0` e `vite 8.3.0`, due Sintesi `ready` finte (una con intervento, una
+  sicura) e i follow delle tre Tecnologie. `pnpm db:reset` li toglie tutti.
+- ⚠️ **Un E2E che fallisce nello smontaggio lascia la sua Tecnologia nel Catalogo locale**, e da lì
+  compare su `/technologies` come `Fixture <hex>`, dove sembra un errore del Catalogo e non lo è.
+  È successo qui. Si trovano con `slug=like.e2e-*` sulle `technologies` e si tolgono a mano (prima
+  Sintesi, Note e Release, poi follow e Fonti, infine la Tecnologia), oppure con `pnpm db:reset`.
+
+## Sessione del 2026-09-28 (3): il login in produzione atterrava sulla radice (nessun codice toccato)
+
+Sintomo: dopo il consenso di GitHub si finiva su `https://release-tracker-drab.vercel.app/?code=...`
+invece che su `/auth/callback`, quindi nessuno scambiava il codice e la sessione non nasceva.
+
+- Causa: su Vercel `NEXT_PUBLIC_SITE_URL` valeva `https://release-tracker.vercel.app`, cioè il
+  dominio **dell'altro progetto** (manca `-drab`). Supabase scarta un `redirectTo` fuori dalla allow
+  list e ripiega sul *Site URL*, che invece era giusto: da qui l'host corretto con il percorso `/`.
+- **La diagnosi in un colpo, senza passare da GitHub**: `curl -i -X POST -d "next=/dashboard"` su
+  `/auth/sign-in` e leggere il `Location`, che porta il `redirect_to` per intero. Essendo
+  `NEXT_PUBLIC_` inlinata nel build, quel valore dice che cosa sta girando davvero in produzione,
+  non che cosa c'è scritto nel pannello.
+- Rimedio: valore corretto su Vercel (Production) **e redeploy senza cache di build**. La sola
+  variabile non cambia niente, ed è il passo che sembra superfluo e invece è tutto: subito dopo il
+  salvataggio il `redirect_to` era ancora quello vecchio.
+- Verificato il 2026-09-28: `redirect_to` su `release-tracker-drab`, `/auth/callback` senza `code`
+  che risponde 307 verso `/login?error=denied`, e l'accesso vero arriva alla Dashboard.
+- Regola per la prossima volta: **host giusto e percorso `/`** significa sempre ripiego sul *Site
+  URL*, e le cause sono due, `redirectTo` fuori dalla allow list oppure `NEXT_PUBLIC_SITE_URL`
+  sbagliata. Il `Location` dice quale delle due, prima di aprire qualsiasi pannello.
+
 ## Sessione del 2026-09-28 (2): un accesso locale sulla pagina di login (PR #50 in `main`)
 
 Fuori dalle issue, deciso in sessione. In locale il provider GitHub è spento
@@ -263,7 +355,8 @@ pubbliche e annullato la rivalidazione della #13; il `build` infatti continua a 
   URL* `https://release-tracker-drab.vercel.app` e, tra i *Redirect URLs*, `.../auth/callback` (vale
   la pena tenerci anche quello di `localhost:3000`). Se invece l'host fosse giusto e sbagliato solo
   il percorso, il colpevole sarebbe `NEXT_PUBLIC_SITE_URL` su Vercel: essendo `NEXT_PUBLIC_` finisce
-  dentro il build, quindi cambiarla richiede un redeploy.
+  dentro il build, quindi cambiarla richiede un redeploy. **È successo davvero il 2026-09-28**:
+  vedi la sessione (3).
 - **`site_url` in `config.toml` è passato da `127.0.0.1:3000` a `localhost:3000`** (per Auth sono due
   origini diverse): in locale serve `pnpm db:stop && pnpm db:start` perché faccia effetto.
 - **`E2E_AUTH_SECRET`**: nuova variabile, già in `.env.local` e generata in CI. Abilita
@@ -671,12 +764,12 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: la #20, Dashboard (prima parte)
+## Da dove ripartire: la #21, Dashboard (seconda parte)
 
-1. `gh issue view 20`. È la pagina che porta la **quota nella barra in alto** (`7 of 10 followed`),
-   lasciata fuori dalla #17 perché è dell'intestazione condivisa: `FollowStatus` in
-   `plans/ui/picker-header.tsx` è già il conteggio dal vivo da cui partire. Mock:
-   `design/mocks/dashboard.html`.
+1. `gh issue view 21`: Latest, Previews, Weekly Digest per settimana ISO in UTC, "this week" e lo
+   stato di filtri e sezioni aperte nell'URL. Il terreno è pronto: `readDashboard` porta già **tutte**
+   le Release, e i conteggi di `notable`, `previews` e `digest` sono già calcolati e mostrati, gli
+   mancano solo le sezioni a cui puntare (vedi gli scostamenti qui sopra).
 2. Poi **#25** e **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del
    prodotto).
 3. In sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel; la

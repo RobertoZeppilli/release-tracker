@@ -28,6 +28,8 @@ export type FixtureRelease = {
   origin: "imported" | "detected";
   status: "pending" | "processing" | "ready" | "unavailable" | "skipped" | "failed";
   notes: string | null;
+  // The Dashboard looks back 30 days, so its tests need a Release dated near the run.
+  publishedAt?: Date;
   // Only for a `ready` Summary: the verdict the Upgrade Path counts, with a generic content around it.
   actionRequired?: boolean;
   // Only for a `ready` Summary: stored as is, even if it does not validate.
@@ -85,7 +87,7 @@ export async function seedTechnology(
         version: release.version,
         significance: release.significance,
         origin: release.origin,
-        published_at: new Date(Date.UTC(2026, 0, 10 + index)).toISOString(),
+        published_at: (release.publishedAt ?? new Date(Date.UTC(2026, 0, 10 + index))).toISOString(),
       })
       .select("id")
       .single();

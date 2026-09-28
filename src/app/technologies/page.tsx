@@ -4,7 +4,7 @@ import { createRequestClient } from "@/lib/supabase-request";
 import { requireDeveloper } from "@/modules/auth/server";
 import { splitPicker } from "@/modules/plans";
 import { listPickerTechnologies, readFollows } from "@/modules/plans/server";
-import { FollowsProvider, TechnologyPicker } from "@/modules/plans/ui";
+import { FollowQuota, FollowsProvider, TechnologyPicker } from "@/modules/plans/ui";
 
 export const metadata: Metadata = { title: "Technologies", robots: { index: false } };
 
@@ -17,14 +17,12 @@ export default async function TechnologiesPage() {
   const sections = splitPicker(technologies, follows);
 
   return (
-    <>
-      <SiteHeader nav="technologies" />
+    <FollowsProvider developerId={developer.id} follows={follows}>
+      <SiteHeader nav="technologies" quota={<FollowQuota />} />
       <main id="content" className="mx-auto max-w-content px-4 pt-6 pb-8 sm:px-5">
         <h1 className="sr-only">Technologies</h1>
-        <FollowsProvider developerId={developer.id} follows={follows}>
-          <TechnologyPicker sections={sections} />
-        </FollowsProvider>
+        <TechnologyPicker sections={sections} />
       </main>
-    </>
+    </FollowsProvider>
   );
 }
