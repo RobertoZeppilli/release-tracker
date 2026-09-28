@@ -16,9 +16,10 @@ function daysAgo(days: number): Date {
 let developer: FixtureDeveloper;
 let breaking: FixtureTechnology;
 let safe: FixtureTechnology;
+let busy: FixtureTechnology;
 
 test.beforeAll(async () => {
-  [developer, breaking, safe] = await Promise.all([
+  [developer, breaking, safe, busy] = await Promise.all([
     seedDeveloper(),
     seedTechnology([
       { version: "4.0.0", significance: "featured", origin: "detected", status: "ready", notes: "Notes.", actionRequired: true, publishedAt: daysAgo(3) },
@@ -26,13 +27,21 @@ test.beforeAll(async () => {
     seedTechnology([
       { version: "2.1.0", significance: "featured", origin: "detected", status: "ready", notes: "Notes.", actionRequired: false, publishedAt: daysAgo(5) },
     ]),
+    // One Release per section, and two digest Releases three weeks apart so the Digest has two
+    // weeks to fold and open.
+    seedTechnology([
+      { version: "3.1.0", significance: "notable", origin: "detected", status: "ready", notes: "Notes.", actionRequired: false, publishedAt: daysAgo(2) },
+      { version: "3.2.0-beta.1", significance: "preview", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(4) },
+      { version: "3.0.9", significance: "digest", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(1) },
+      { version: "3.0.8", significance: "digest", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(21) },
+    ]),
   ]);
 });
 
 test.afterAll(async () => {
   // A follow left by the last test still references the Technology, so it goes first.
   await developer.clearFollows();
-  await Promise.all([developer.remove(), breaking.remove(), safe.remove()]);
+  await Promise.all([developer.remove(), breaking.remove(), safe.remove(), busy.remove()]);
 });
 
 test.beforeEach(async () => {
@@ -96,4 +105,44 @@ test("offers the Catalog when the Developer follows nothing, and follows from th
   await page.getByRole("button", { name: "Open dashboard" }).click();
   await expect(page.getByText("you follow no technologies yet")).toBeHidden();
   await expect(page.getByRole("heading", { name: /spotlight \(1\)/ })).toBeVisible();
+});
+
+test("fills Latest, Previews and the Weekly Digest with the window", async ({ page }) => {
+  await addFollows(developer.id, [busy.id]);
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await expect(page.getByRole("heading", { name: "latest (1)" })).toBeVisible();
+  await expect(page.locator("#latest").getByRole("link", { name: "3.1.0" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "previews (1)" })).toBeVisible();
+  await expect(page.locator("#previews").getByRole("link", { name: "3.2.0-beta.1" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "weekly digest (2)" })).toBeVisible();
+  await expect(page.getByText("1 digest release")).toHaveCount(2);
+});
+
+test("keeps an open week of the Digest in the URL, through a reload and in a shared link", async ({ page }) => {
+  await addFollows(developer.id, [busy.id]);
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  const week = page.locator("#digest details").first();
+  const line = page.getByRole("link", { name: "3.0.9" });
+  await expect(line).toBeHidden();
+
+  await week.locator("summary").click();
+  await expect(line).toBeVisible();
+  await expect(page).toHaveURL(/\?week=\d{4}-W\d{2}$/);
+
+  const shared = page.url();
+  await page.reload();
+  await expect(page.getByRole("link", { name: "3.0.9" })).toBeVisible();
+
+  await page.goto("/dashboard");
+  await expect(page.getByRole("link", { name: "3.0.9" })).toBeHidden();
+  await page.goto(shared);
+  await expect(page.getByRole("link", { name: "3.0.9" })).toBeVisible();
+
+  // Closing the last open week takes the parameter out instead of leaving it empty.
+  await page.locator("#digest details").first().locator("summary").click();
+  await expect(page).toHaveURL(/\/dashboard$/);
 });

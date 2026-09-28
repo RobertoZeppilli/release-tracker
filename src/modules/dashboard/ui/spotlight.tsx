@@ -1,9 +1,7 @@
-import Link from "next/link";
-import { releasePath } from "@/modules/releases";
-import { isoDate, SeverityLabel, SignificanceLabel } from "@/modules/releases/ui";
+import { SignificanceLabel } from "@/modules/releases/ui";
 import { InlineCode } from "@/modules/summaries/ui";
 import type { DashboardRelease, SpotlightEntry, SpotlightStanding } from "../domain/build-dashboard";
-import { rowVerdict } from "./dashboard-copy";
+import { PublishedAt, ReleaseVersion, RowVerdict, SummaryTitle, TechnologyName } from "./row-parts";
 import { SectionTitle } from "./section-title";
 
 // One row per followed Technology: the name keeps its own column, and the Releases stack beside it,
@@ -11,57 +9,16 @@ import { SectionTitle } from "./section-title";
 const ROW = "grid grid-cols-[14ch_minmax(0,1fr)] items-baseline gap-x-4 border-b border-rule py-3 max-[880px]:grid-cols-1 max-[880px]:gap-y-2";
 const CELL = "grid grid-cols-[17ch_11ch_minmax(0,1fr)] items-baseline gap-x-4 max-[880px]:grid-cols-[minmax(0,1fr)_auto]";
 
-function TechnologyName({ slug, name, muted }: { slug: string; name: string; muted?: boolean }) {
-  return (
-    <Link
-      href={`/technologies/${slug}`}
-      className={`text-body no-underline hover:text-text ${muted ? "font-medium text-text-muted" : "font-semibold text-text"}`}
-    >
-      {name}
-    </Link>
-  );
-}
-
-function ReleaseVersion({ release }: { release: DashboardRelease }) {
-  return (
-    <span className="inline-flex min-w-0 items-center gap-[6px]">
-      <SignificanceLabel significance={release.significance} labelHidden />
-      <Link
-        href={releasePath(release.slug, release.version)}
-        className="font-mono text-body text-text no-underline [overflow-wrap:anywhere] hover:underline"
-      >
-        {release.version}
-      </Link>
-    </span>
-  );
-}
-
-function PublishedAt({ release }: { release: DashboardRelease }) {
-  return (
-    <time dateTime={isoDate(release.publishedAt)} className="font-mono text-label text-text-faint max-[880px]:justify-self-end">
-      {isoDate(release.publishedAt)}
-    </time>
-  );
-}
-
-function FeaturedCell({ release }: { release: DashboardRelease }) {
-  const verdict = rowVerdict(release);
+function FeaturedCell({ release, thisWeek }: { release: DashboardRelease; thisWeek: string }) {
   const breaking = release.summary?.breakingChanges ?? [];
 
   return (
     <div className={CELL}>
       <ReleaseVersion release={release} />
-      <PublishedAt release={release} />
+      <PublishedAt release={release} thisWeek={thisWeek} />
       <div className="min-w-0 max-[880px]:col-span-full">
-        {release.summary && (
-          <p className="max-w-measure text-body font-medium">
-            <InlineCode text={release.summary.title} />
-          </p>
-        )}
-        <p className="mt-[2px] font-mono text-diagnostic">
-          <SeverityLabel tone={verdict.tone} label={verdict.label} pending={verdict.pending} />{" "}
-          <span className={verdict.tone === "muted" ? "text-text-muted" : undefined}>{verdict.claim}</span>
-        </p>
+        <SummaryTitle release={release} />
+        <RowVerdict release={release} />
         {breaking.length > 0 && (
           <ul aria-label={`Breaking changes in ${release.slug} ${release.version}`} className="mt-3 text-label">
             {breaking.map((change, index) => (
@@ -91,7 +48,7 @@ function CompactCell({ standing }: { standing: SpotlightStanding }) {
   );
 }
 
-export function Spotlight({ entries }: { entries: readonly SpotlightEntry[] }) {
+export function Spotlight({ entries, thisWeek }: { entries: readonly SpotlightEntry[]; thisWeek: string }) {
   return (
     <section id="spotlight" aria-labelledby="spotlight-title" className="mt-7 scroll-mt-4">
       <SectionTitle
@@ -111,7 +68,7 @@ export function Spotlight({ entries }: { entries: readonly SpotlightEntry[] }) {
             {entry.featured.length > 0 ? (
               <div className="grid gap-y-3">
                 {entry.featured.map((release) => (
-                  <FeaturedCell key={release.version} release={release} />
+                  <FeaturedCell key={release.version} release={release} thisWeek={thisWeek} />
                 ))}
               </div>
             ) : entry.standing ? (

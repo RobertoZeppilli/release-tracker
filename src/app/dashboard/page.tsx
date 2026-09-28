@@ -2,19 +2,30 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { createRequestClient } from "@/lib/supabase-request";
 import { requireDeveloper } from "@/modules/auth/server";
-import { buildDashboard } from "@/modules/dashboard";
+import { buildDashboard, type Dashboard } from "@/modules/dashboard";
 import { readDashboard } from "@/modules/dashboard/server";
-import { DashboardSummary, EmptyDashboard, Spotlight } from "@/modules/dashboard/ui";
+import {
+  DashboardSummary,
+  EmptyDashboard,
+  readOpenWeeks,
+  ReleaseSection,
+  Spotlight,
+  WEEK_PARAM,
+  WeeklyDigest,
+} from "@/modules/dashboard/ui";
 import { listPickerTechnologies, readFollows } from "@/modules/plans/server";
 import { FollowQuota, FollowsProvider } from "@/modules/plans/ui";
 
 export const metadata: Metadata = { title: "Dashboard", robots: { index: false } };
 
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
 // Behind the login, so dynamic anyway: the window is read on the server and the page arrives whole.
 // The header lives inside the provider because the quota in the top bar is the same live count the
 // page shows, and the two must never disagree.
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: Props) {
   const developer = await requireDeveloper("/dashboard");
+  const openWeeks = readOpenWeeks((await searchParams)[WEEK_PARAM]);
   const db = await createRequestClient();
   const [{ followed, releases }, follows] = await Promise.all([readDashboard(db), readFollows(db)]);
   const dashboard = buildDashboard(followed, releases, new Date());
@@ -24,17 +35,34 @@ export default async function DashboardPage() {
       <SiteHeader nav="dashboard" quota={<FollowQuota />} />
       <main id="content" className="mx-auto max-w-content px-4 pt-6 pb-8 sm:px-5">
         <h1 className="sr-only">Dashboard</h1>
-        {followed.length === 0 ? <EmptyState db={db} /> : <FollowedStack dashboard={dashboard} />}
+        {followed.length === 0 ? <EmptyState db={db} /> : <FollowedStack dashboard={dashboard} openWeeks={openWeeks} />}
       </main>
     </FollowsProvider>
   );
 }
 
-function FollowedStack({ dashboard }: { dashboard: ReturnType<typeof buildDashboard> }) {
+function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWeeks: string[] }) {
   return (
     <>
       <DashboardSummary verdict={dashboard.verdict} counts={dashboard.counts} />
-      <Spotlight entries={dashboard.spotlight} />
+      <Spotlight entries={dashboard.spotlight} thisWeek={dashboard.thisWeek} />
+      <ReleaseSection
+        id="latest"
+        title="latest"
+        significance="notable"
+        fact="newest first"
+        rows={dashboard.latest}
+        thisWeek={dashboard.thisWeek}
+      />
+      <ReleaseSection
+        id="previews"
+        title="previews"
+        significance="preview"
+        fact="betas and release candidates"
+        rows={dashboard.previews}
+        thisWeek={dashboard.thisWeek}
+      />
+      <WeeklyDigest weeks={dashboard.digest} open={openWeeks} />
     </>
   );
 }

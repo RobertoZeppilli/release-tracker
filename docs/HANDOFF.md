@@ -16,8 +16,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#20** (la #20 unita con la PR #51, CI verde e viva in produzione). Sbloccate: **#21**,
-  più #25 e #36.
+- Fatte: **#2–#21**. Sbloccate: **#25** e **#36**.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -28,6 +27,62 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `.tech-facts`. Non è ancora scritto nella issue.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-28 (5): #21 Dashboard, seconda parte (Latest, Previews, Weekly Digest)
+
+345 unitari, 43 di integrazione, **52 E2E**, `typecheck`, `lint` e `build` puliti; le pagine
+pubbliche restano SSG. Guardata con Playwright a 1280px e a 390px contro `design/mocks/dashboard.html`.
+
+### Le settimane ISO sono un modulo a parte, perché sbagliano da sole
+
+`dashboard/domain/iso-week.ts` (puro, 10 test): `isoWeekOf`, `isoWeekKey`, `parseIsoWeekKey`,
+`isoWeekRange`. Tutto in UTC e tutto derivato dal **giovedì** della settimana, che è la regola ISO:
+per questo il 1 gennaio 2021 sta nella settimana 53 del 2020 e il 30 dicembre 2024 sta nella
+settimana 1 del 2025. I due confini d'anno sono due test, non un commento.
+
+`dashboard/domain/sections.ts`: `sectionRows(rows, significance)` (Latest e Previews sono la stessa
+sezione con una Rilevanza diversa) e `weeklyDigest(rows)`. Le righe sono `{ technology, release }`,
+perché in queste sezioni ogni riga deve dire di chi è. A parità di giorno l'ordine è per
+Versione: senza, due Release dello stesso giorno si scambiavano di posto tra una visita e l'altra.
+
+`buildDashboard` ora restituisce anche `latest`, `previews`, `digest` e `thisWeek`, che è la chiave
+della settimana ISO corrente: ogni riga si marca "this week" confrontando la propria settimana con
+quella, così la parola significa la stessa cosa in tutte le sezioni.
+
+### Lo stato nell'URL: il server apre, il browser ricorda
+
+`?week=2026-W39,2026-W38`. La pagina è già dinamica, quindi le settimane aperte le legge il
+**server** dai `searchParams` e l'HTML arriva già aperto: un link condiviso funziona al primo
+colpo, senza sfarfallio. Il clic invece scrive nell'URL con `history.replaceState` (come i puntatori
+della #12), quindi aprire una settimana non riempie il tasto indietro. Chiudere l'ultima settimana
+**toglie il parametro** invece di lasciarlo vuoto.
+
+`readOpenWeeks` scarta tutto ciò che non è una chiave di settimana: l'URL si può scrivere a mano,
+e una settimana inventata non deve aprire niente. `week-param.ts` è puro e testato.
+
+### Il difetto che solo una fixture nuova ha fatto vedere
+
+La riga compatta dello Spotlight chiamava "latest release" una **Anteprima**: `standingOf` prendeva
+la Versione più alta per SemVer, e una beta è più alta della stabile che la precede. Ora i
+candidati sono le stabili, e una Anteprima compare solo se la Tecnologia non ha mai pubblicato
+altro. Veniva dalla #20 e nessun test a tavolino lo toccava.
+
+### Attenzione per chi riprende
+
+- Una sezione **senza righe non viene resa** (niente "latest (0)"): il mock non ha quello stato e la
+  riga dei conteggi dice già zero. Per lo stesso motivo nella riga dei conteggi un numero a zero
+  resta testo semplice invece di diventare un'ancora morta; `featured` fa eccezione e resta sempre
+  un link, perché lo Spotlight c'è anche senza niente in evidenza.
+- **Tailwind 4, di nuovo la stessa trappola della #19**: `pl-[...] max-[640px]:pl-0` lasciava le
+  righe del Digest rientrate a 390px. La spinta ora si aggiunge da `sm` in su. Vale per ogni coppia
+  di utility della stessa famiglia.
+- Nel database **locale** sono state inserite a mano sette Release finte per guardare le sezioni
+  piene, e poi **tolte**: erano un pericolo vero, perché il Rilevamento considera nuova solo una
+  Versione pubblicata dopo la più recente che ha, e una finta più recente gli avrebbe nascosto le
+  vere. Restano solo i dati veri e i due `significance_override` della #20.
+- Nuovo scostamento dal mock per la **#23**: per una Anteprima saltata il mock scrive "only the
+  first v4 preview is summarized - read 4.0.0-beta.1", noi scriviamo "no summary - read the release
+  notes". Dire quale sia la prima Anteprima della major richiede di ritrovarla, e inventarla no.
 
 ## Sessione del 2026-09-28 (4): #20 Dashboard, prima parte (chiusa, PR #51 in `main`)
 
@@ -764,22 +819,26 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: la #21, Dashboard (seconda parte)
+## Da dove ripartire: la #25 e la #36
 
-1. `gh issue view 21`: Latest, Previews, Weekly Digest per settimana ISO in UTC, "this week" e lo
-   stato di filtri e sezioni aperte nell'URL. Il terreno è pronto: `readDashboard` porta già **tutte**
-   le Release, e i conteggi di `notable`, `previews` e `digest` sono già calcolati e mostrati, gli
-   mancano solo le sezioni a cui puntare (vedi gli scostamenti qui sopra).
-2. Poi **#25** e **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del
-   prodotto).
+1. La Dashboard è finita: #20 e #21 sono entrambe fatte. Le prossime sbloccate sono **#25** e
+   **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
+2. **Il filtro di `/technologies` non è nell'URL**, e la user story 49 del PRD lo vuole. Deciso il
+   2026-09-28 di non infilarlo nella #21 (la Dashboard non ha filtri in nessuno stato del mock) ma
+   di aprirgli una issue sua. **Non ancora aperta.**
 3. In sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel; e nella
-   **#23** vanno ancora scritti **quattro** scostamenti dal mock, uno della #19 (il Follow sotto i
-   640px) e tre della #20 (titolo alfabetico al posto di "popular", conteggi non ancora linkati,
-   "this week" rimandato): oggi vivono solo qui e nel corpo delle PR. Per entrare in locale da
-   Sviluppatore: `pnpm dev:login`, poi "Continue as local developer" sul `/login`.
+   **#23** vanno ancora scritti **cinque** scostamenti dal mock, uno della #19 (il Follow sotto i
+   640px), tre della #20 (titolo alfabetico al posto di "popular", conteggi non ancora linkati che
+   ora però lo sono, "this week" rimandato e ora fatto) e uno della #21 (la nota dell'Anteprima
+   saltata): oggi vivono solo qui e nel corpo delle PR. Per entrare in locale da Sviluppatore:
+   `pnpm dev:login`, poi "Continue as local developer" sul `/login`.
 4. Su Vercel `NEXT_PUBLIC_SITE_URL` esiste ora in **Production e in Preview** (senza, il build di
-   preview fallisce: lo schema Zod rifiuta una configurazione a metà). I preview puntano al database
-   di produzione, quindi restano il posto dove non mettere mai credenziali di comodo.
+   preview fallisce: lo schema Zod rifiuta una configurazione a metà). I preview puntano al
+   database di produzione, quindi restano il posto dove non mettere mai credenziali di comodo.
+5. Piano editoriale: chiusa la #21, la **tappa D** (issue #16-#21) è completa e vanno preparati il
+   thread Bluesky e l'articolo dev.to "Enforce your free-plan limit in the database, not in the UI"
+   con la skill `post-update`. In coda c'è anche l'articolo della tappa C ("Exactly-once AI jobs"),
+   rimandato in attesa di qualche giro di cron in produzione da citare.
 
 ## Preferenze dell'utente
 

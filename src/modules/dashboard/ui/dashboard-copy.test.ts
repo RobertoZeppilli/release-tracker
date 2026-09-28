@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DashboardRelease } from "../domain/build-dashboard";
-import { pageVerdict, rowVerdict } from "./dashboard-copy";
+import { pageVerdict, rowVerdict, weekRange } from "./dashboard-copy";
 
 describe("pageVerdict", () => {
   it("says nothing needs action when no featured Release asks for work", () => {
@@ -70,5 +70,19 @@ describe("rowVerdict", () => {
       label: "note:",
       claim: "no summary · read the release notes",
     });
+  });
+});
+
+describe("weekRange", () => {
+  it("names the month once when the week stays inside it", () => {
+    expect(weekRange(new Date("2024-12-02T00:00:00Z"), new Date("2024-12-08T00:00:00Z"))).toBe("Dec 2 to 8");
+  });
+
+  it("names both months when the week crosses one, in UTC", () => {
+    expect(weekRange(new Date("2024-11-25T00:00:00Z"), new Date("2024-12-01T00:00:00Z"))).toBe("Nov 25 to Dec 1");
+  });
+
+  it("names both months when the week crosses the year", () => {
+    expect(weekRange(new Date("2024-12-30T00:00:00Z"), new Date("2025-01-05T00:00:00Z"))).toBe("Dec 30 to Jan 5");
   });
 });
