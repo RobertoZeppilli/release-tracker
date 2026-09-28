@@ -29,7 +29,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-28 (2): un accesso locale sulla pagina di login (PR #50, non unita)
+## Sessione del 2026-09-28 (2): un accesso locale sulla pagina di login (PR #50 in `main`)
 
 Fuori dalle issue, deciso in sessione. In locale il provider GitHub è spento
 (`config.toml`: `[auth.external.github] enabled = false`), quindi non c'era modo di essere uno
@@ -48,6 +48,14 @@ abituarsi a scrivere `allow pasting` è il danno vero.
 - Provato sul **build di produzione**, non solo a ragionamento: con le due variabili vuote il
   pulsante non c'è e la rotta risponde **404**; con le variabili, pulsante e 303. Un E2E in
   `auth.spec.ts` fa il giro vero e **si salta da solo** quando le variabili mancano, cioè in CI.
+- **Verificato in produzione dopo il merge** (2026-09-28): niente pulsante sul `/login` e
+  `POST /auth/dev-sign-in` **404**. Che il deploy contenga davvero la fetta si legge dall'HTML del
+  `/login`, che porta la classe rifattorizzata della #50: senza quel controllo un 404 direbbe solo
+  "rotta assente", non "guardia che funziona".
+- L'utente ha creato le due variabili su Vercel nell'ambiente **Development** (il modulo di Vercel
+  obbliga a sceglierne uno). Non è un problema: Development non entra nei deployment di Production
+  né di Preview, serve solo a `vercel env pull` e `vercel dev`, e la verifica qui sopra lo conferma.
+  **Su Preview sarebbero pericolose**, perché i preview puntano al database di produzione.
 
 Se un domani servisse il vero giro OAuth in locale, la strada resta quella dell'handoff della #16:
 una **seconda** OAuth App con callback `http://127.0.0.1:54321/auth/v1/callback`.
@@ -671,9 +679,9 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
    `design/mocks/dashboard.html`.
 2. Poi **#25** e **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del
    prodotto).
-3. In sospeso: **PR #50** (accesso locale sul login) aperta e non unita; **Web Analytics da
-   attivare** nella tab *Analytics* del progetto su Vercel; la differenza dal mock della #19 da
-   scrivere nella **#23**.
+3. In sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel; la
+   differenza dal mock della #19 da scrivere nella **#23**. Per entrare in locale da Sviluppatore:
+   `pnpm dev:login`, poi "Continue as local developer" sul `/login`.
 
 ## Preferenze dell'utente
 
