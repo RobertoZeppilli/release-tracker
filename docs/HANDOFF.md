@@ -16,8 +16,9 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#21**; **#22** in attesa della PR sul branch `issue-22-catalogo-40-tecnologie`.
-  Sbloccate: **#25** e **#36**.
+- Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28). Sbloccate: **#25** e **#36**.
+  Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
+  delle Sintesi prendono anche le Sintesi che non sono loro).
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -29,7 +30,29 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-09-28 (6): #22 Catalogo a 37 Tecnologie (branch `issue-22-catalogo-40-tecnologie`)
+## Primo batch di Sintesi vero (2026-09-28, dopo il merge della #22)
+
+Il primo invio vero alla Batch API, deciso e lanciato dall'utente. **125 Sintesi inviate in un solo
+batch** (`msgbatch_0159Vxf39GAEADUx3dQKrzFj`), **3 fallite prima dell'invio** perché le Note
+superano gli 80.000 caratteri (issue #54, non costano niente), **nessuna rimasta in coda**.
+
+- Il `CRON_SECRET` di produzione **non era più recuperabile**: su Vercel è *Sensitive* e si legge solo
+  alla creazione. È stato rigenerato, rimesso su Production e seguito da un **redeploy**, senza il
+  quale la funzione continua a usare la fotografia delle variabili con cui è nata. Va conservato
+  fuori dal repository: quello in `.env.local` è un altro, buono solo per il locale.
+- Prova gratis prima di spendere: un `GET` su `/api/jobs/summaries/collect` senza batch in corso
+  risponde 200 e non tocca niente. È il modo di sapere che il segreto arriva alla funzione prima di
+  chiamare `/submit`, che invece spende.
+- In PowerShell `curl` è un alias di `Invoke-WebRequest` e legge `-s` come `-SessionVariable`: serve
+  **`curl.exe`**, oppure `Invoke-RestMethod`.
+- I due cron delle Sintesi restano **fuori** da `vercel.json`: un giro a mano resta un giro solo, e
+  il lavoro quotidiano comincerà il giorno che quelle due righe tornano, con una PR sua.
+
+Da fare alla raccolta: lanciare `/api/jobs/summaries/collect`, contare quante Sintesi diventano
+`ready` e quante `failed` per validazione, leggere il costo vero sulla Console di Anthropic e
+metterlo in `docs/DECISIONI.md` accanto alla stima di $2,94.
+
+## Sessione del 2026-09-28 (6): #22 Catalogo a 37 Tecnologie (PR #53 in `main`)
 
 393 unitari, 43 di integrazione, 52 E2E, `typecheck`, `lint` e `build` puliti. Catalogo da 3 a **37
 Tecnologie**, importate davvero contro il database locale: **1893 Release**, zero import falliti.
@@ -76,8 +99,10 @@ Release importanti senza Note sono davvero assenti da GitHub, verificato tag per
 
 ### Costo e spesa (niente è stato speso)
 
-**128 Sintesi in coda, circa $2,94 una tantum**, se e quando l'Importazione girerà in produzione.
-Deciso con l'utente: in questa sessione **solo locale**, la spesa la lancia l'utente.
+**128 Sintesi in coda, circa $2,94 una tantum.** Dopo il merge il deploy ha fatto l'Importazione in
+produzione (34 Tecnologie, nessun fallimento) e le Sintesi sono **In attesa**: non partono da sole,
+perché in `vercel.json` l'unico cron è il Rilevamento e i job delle Sintesi si chiamano a mano con
+`CRON_SECRET`. La spesa resta una decisione dell'utente, non un effetto del deploy.
 
 ### Attenzione per chi riprende
 
