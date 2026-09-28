@@ -29,6 +29,27 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
+## Sessione del 2026-09-28 (3): il login in produzione atterrava sulla radice (nessun codice toccato)
+
+Sintomo: dopo il consenso di GitHub si finiva su `https://release-tracker-drab.vercel.app/?code=...`
+invece che su `/auth/callback`, quindi nessuno scambiava il codice e la sessione non nasceva.
+
+- Causa: su Vercel `NEXT_PUBLIC_SITE_URL` valeva `https://release-tracker.vercel.app`, cioè il
+  dominio **dell'altro progetto** (manca `-drab`). Supabase scarta un `redirectTo` fuori dalla allow
+  list e ripiega sul *Site URL*, che invece era giusto: da qui l'host corretto con il percorso `/`.
+- **La diagnosi in un colpo, senza passare da GitHub**: `curl -i -X POST -d "next=/dashboard"` su
+  `/auth/sign-in` e leggere il `Location`, che porta il `redirect_to` per intero. Essendo
+  `NEXT_PUBLIC_` inlinata nel build, quel valore dice che cosa sta girando davvero in produzione,
+  non che cosa c'è scritto nel pannello.
+- Rimedio: valore corretto su Vercel (Production) **e redeploy senza cache di build**. La sola
+  variabile non cambia niente, ed è il passo che sembra superfluo e invece è tutto: subito dopo il
+  salvataggio il `redirect_to` era ancora quello vecchio.
+- Verificato il 2026-09-28: `redirect_to` su `release-tracker-drab`, `/auth/callback` senza `code`
+  che risponde 307 verso `/login?error=denied`, e l'accesso vero arriva alla Dashboard.
+- Regola per la prossima volta: **host giusto e percorso `/`** significa sempre ripiego sul *Site
+  URL*, e le cause sono due, `redirectTo` fuori dalla allow list oppure `NEXT_PUBLIC_SITE_URL`
+  sbagliata. Il `Location` dice quale delle due, prima di aprire qualsiasi pannello.
+
 ## Sessione del 2026-09-28 (2): un accesso locale sulla pagina di login (PR #50 in `main`)
 
 Fuori dalle issue, deciso in sessione. In locale il provider GitHub è spento
@@ -263,7 +284,8 @@ pubbliche e annullato la rivalidazione della #13; il `build` infatti continua a 
   URL* `https://release-tracker-drab.vercel.app` e, tra i *Redirect URLs*, `.../auth/callback` (vale
   la pena tenerci anche quello di `localhost:3000`). Se invece l'host fosse giusto e sbagliato solo
   il percorso, il colpevole sarebbe `NEXT_PUBLIC_SITE_URL` su Vercel: essendo `NEXT_PUBLIC_` finisce
-  dentro il build, quindi cambiarla richiede un redeploy.
+  dentro il build, quindi cambiarla richiede un redeploy. **È successo davvero il 2026-09-28**:
+  vedi la sessione (3).
 - **`site_url` in `config.toml` è passato da `127.0.0.1:3000` a `localhost:3000`** (per Auth sono due
   origini diverse): in locale serve `pnpm db:stop && pnpm db:start` perché faccia effetto.
 - **`E2E_AUTH_SECRET`**: nuova variabile, già in `.env.local` e generata in CI. Abilita
