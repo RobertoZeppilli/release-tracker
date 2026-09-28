@@ -16,8 +16,14 @@ function fakeFetch(responses: Record<string, unknown>, etag?: string) {
 
 const github = { role: "notes", kind: "github-releases", repo: "vitejs/vite", tagFormat: "v{version}" } as const;
 
-function githubRelease(tag: string, body: string | null, draft = false) {
-  return { tag_name: tag, body, draft, html_url: `https://github.com/vitejs/vite/releases/tag/${tag}` };
+function githubRelease(tag: string, body: string | null, draft = false, publishedAt: string | null = "2026-03-12T10:00:00Z") {
+  return {
+    tag_name: tag,
+    body,
+    draft,
+    published_at: publishedAt,
+    html_url: `https://github.com/vitejs/vite/releases/tag/${tag}`,
+  };
 }
 
 describe("npm adapter", () => {
@@ -97,6 +103,59 @@ describe("GitHub Releases adapter", () => {
     const notes = await createSourceAdapters({ fetch }).findNotes(github, ["7.0.0"]);
     expect(notes.get("7.0.0")?.body).toBe("### Breaking Changes");
     expect(requested).toHaveLength(2);
+  });
+});
+
+// Bun, Node and PHP publish no package: their Releases are the list, and the tag is the Version.
+describe("GitHub Releases as a detection Source", () => {
+  const bun = { role: "detection", kind: "github-releases", repo: "oven-sh/bun", tagFormat: "bun-v{version}" } as const;
+  const page = (n: number) => `https://api.github.com/repos/oven-sh/bun/releases?per_page=100&page=${n}`;
+
+  it("reads the Version out of the tag and skips whatever is not one", async () => {
+    const { fetch } = fakeFetch({
+      [page(1)]: [
+        githubRelease("bun-v1.4.2", "### Features"),
+        githubRelease("bun-v1.4.1", null),
+        githubRelease("bun-v1.4.0-canary.3", "x"),
+        githubRelease("bun-types-v1.4.0", "x"),
+        githubRelease("bun-v1.3.9", "x", true),
+        githubRelease("bun-v1.3.8", "x", false, null),
+      ],
+    });
+    const listing = await createSourceAdapters({ fetch, githubToken: "token" }).listVersions(bun);
+    expect(listing).toEqual({
+      etag: null,
+      versions: [
+        // Notes are the other Source's job: a Release with none is still a Release.
+        { version: "1.4.2", publishedAt: new Date("2026-03-12T10:00:00Z") },
+        { version: "1.4.1", publishedAt: new Date("2026-03-12T10:00:00Z") },
+        { version: "1.4.0-canary.3", publishedAt: new Date("2026-03-12T10:00:00Z") },
+      ],
+    });
+  });
+
+  it("asks the first page with the stored validator and reports that nothing changed", async () => {
+    const { fetch, requested } = fakeFetch({ [page(1)]: [githubRelease("bun-v1.4.2", "x")] }, '"abc"');
+    expect(await createSourceAdapters({ fetch }).listVersions(bun, null)).toEqual({
+      etag: '"abc"',
+      versions: [{ version: "1.4.2", publishedAt: new Date("2026-03-12T10:00:00Z") }],
+    });
+    expect(await createSourceAdapters({ fetch }).listVersions(bun, '"abc"')).toBe("unchanged");
+    expect(new Headers(requested[1]?.headers).get("if-none-match")).toBe('"abc"');
+  });
+
+  // Node has more than a thousand Releases: without the bound, one Technology would walk them all.
+  it("stops after three pages however long the history is", async () => {
+    const fullPage = Array.from({ length: 100 }, (_, i) => githubRelease(`bun-v1.0.${i}`, "x"));
+    const { fetch, requested } = fakeFetch({ [page(1)]: fullPage, [page(2)]: fullPage, [page(3)]: fullPage, [page(4)]: fullPage });
+    const listing = await createSourceAdapters({ fetch }).listVersions(bun);
+    expect(listing).not.toBe("unchanged");
+    expect(requested).toHaveLength(3);
+  });
+
+  it("fails loudly when the repository does", async () => {
+    const { fetch } = fakeFetch({});
+    await expect(createSourceAdapters({ fetch }).listVersions(bun)).rejects.toThrow(/404/);
   });
 });
 

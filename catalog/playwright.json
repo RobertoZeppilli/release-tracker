@@ -1,0 +1,18 @@
+{
+  "name": "Playwright",
+  "description": "End-to-end browser testing",
+  "classificationStrategy": "minor-major",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "playwright"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "microsoft/playwright",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

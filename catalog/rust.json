@@ -1,0 +1,19 @@
+{
+  "name": "Rust",
+  "description": "Systems programming language",
+  "classificationStrategy": "minor-major",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "github-releases",
+      "repo": "rust-lang/rust",
+      "tagFormat": "{version}"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "rust-lang/rust",
+      "tagFormat": "{version}"
+    }
+  ]
+}

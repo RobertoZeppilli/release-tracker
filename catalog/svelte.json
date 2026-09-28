@@ -1,0 +1,18 @@
+{
+  "name": "Svelte",
+  "description": "Compiler-first UI framework",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "svelte"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "sveltejs/svelte",
+      "tagFormat": "svelte@{version}"
+    }
+  ]
+}

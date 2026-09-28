@@ -1,0 +1,19 @@
+{
+  "name": "Deno",
+  "description": "Secure runtime for JavaScript and TypeScript",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "github-releases",
+      "repo": "denoland/deno",
+      "tagFormat": "v{version}"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "denoland/deno",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

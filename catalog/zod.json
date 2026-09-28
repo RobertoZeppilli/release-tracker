@@ -1,0 +1,18 @@
+{
+  "name": "Zod",
+  "description": "TypeScript-first schema validation",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "zod"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "colinhacks/zod",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

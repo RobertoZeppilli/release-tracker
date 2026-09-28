@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { selectAllRows } from "@/lib/supabase-rows";
 import { SummaryVerdictSchema } from "@/modules/summaries";
 import { SummaryStatusSchema } from "../domain/initial-summary-status";
 import { SignificanceSchema } from "../domain/significance";
@@ -15,11 +16,14 @@ const ReleaseRowSchema = z.object({
 
 // A Significance Override always wins over the Classification Strategy.
 export async function listReleases(db: SupabaseClient, technologyId: string): Promise<SummarizedRelease[]> {
-  const { data, error } = await db
-    .from("releases")
-    .select("version, significance, significance_override, published_at, summaries (status, content)")
-    .eq("technology_id", technologyId);
-  if (error) throw error;
+  const data = await selectAllRows((from, to) =>
+    db
+      .from("releases")
+      .select("version, significance, significance_override, published_at, summaries (status, content)")
+      .eq("technology_id", technologyId)
+      .order("published_at")
+      .range(from, to),
+  );
   return z
     .array(ReleaseRowSchema)
     .parse(data)

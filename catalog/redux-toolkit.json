@@ -1,0 +1,18 @@
+{
+  "name": "Redux Toolkit",
+  "description": "Standard toolset for Redux",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "npm",
+      "package": "@reduxjs/toolkit"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "reduxjs/redux-toolkit",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

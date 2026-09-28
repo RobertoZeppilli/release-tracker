@@ -12,8 +12,19 @@ const RepoPathSchema = z
   .regex(/^[\w.-]+(\/[\w.-]+)*$/, "expected a path inside the repository")
   .refine((path) => !path.split("/").includes(".."), { error: "must not leave the repository" });
 
-export const SourceSchema = z.discriminatedUnion("kind", [
+// A Technology not published on a registry is detected from its GitHub Releases, where the tag is
+// the only place the Version appears: `tagFormat` is how it is read back out.
+const DetectionSourceSchema = z.discriminatedUnion("kind", [
   z.strictObject({ role: z.literal("detection"), kind: z.literal("npm"), package: z.string().min(1) }),
+  z.strictObject({
+    role: z.literal("detection"),
+    kind: z.literal("github-releases"),
+    repo: RepoSchema,
+    tagFormat: TagFormatSchema,
+  }),
+]);
+
+const NotesSourceSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     role: z.literal("notes"),
     kind: z.literal("github-releases"),
@@ -22,6 +33,10 @@ export const SourceSchema = z.discriminatedUnion("kind", [
   }),
   z.strictObject({ role: z.literal("notes"), kind: z.literal("changelog"), repo: RepoSchema, path: RepoPathSchema }),
 ]);
+
+// Split by role first, because the same kind serves both: GitHub Releases carry the Versions and
+// the Release Notes together.
+export const SourceSchema = z.union([DetectionSourceSchema, NotesSourceSchema]);
 
 // The GitHub repository a Technology lives in, if any of its Sources names one.
 export function githubRepo(sources: readonly Source[]): string | null {

@@ -13,7 +13,7 @@ const now = new Date("2026-09-22T12:00:00Z");
 const calls: string[] = [];
 const adapters: SourceAdapters = {
   async listVersions(source) {
-    calls.push(`versions ${source.package}`);
+    calls.push(`versions ${source.kind === "npm" ? source.package : source.repo}`);
     return {
       etag: null,
       versions: [

@@ -1,0 +1,19 @@
+{
+  "name": "Terraform",
+  "description": "Infrastructure as code",
+  "classificationStrategy": "minor-major",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "github-releases",
+      "repo": "hashicorp/terraform",
+      "tagFormat": "v{version}"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "hashicorp/terraform",
+      "tagFormat": "v{version}"
+    }
+  ]
+}

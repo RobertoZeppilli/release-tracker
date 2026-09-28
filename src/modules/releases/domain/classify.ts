@@ -23,6 +23,8 @@ export function classify(
       return classifyTypeScript(parsed, observed);
     case "zerover":
       return classifyZerover(parsed);
+    case "minor-major":
+      return classifyMinorMajor(parsed);
   }
 }
 
@@ -50,6 +52,12 @@ function classifyTypeScript(version: Stable, observed: readonly string[]): Signi
     );
   });
   return earlierStable ? "digest" : "featured";
+}
+
+// PHP, Rust and Kubernetes ship their features in the minor and almost never change major, so a
+// minor there is the news a major is elsewhere.
+function classifyMinorMajor({ patch }: Stable): Significance {
+  return patch === 0 ? "featured" : "digest";
 }
 
 // In 0.x the minor is the breaking part, as npm's ^0.y ranges assume.

@@ -1,0 +1,19 @@
+{
+  "name": "Bun",
+  "description": "JavaScript runtime and toolkit",
+  "classificationStrategy": "semver",
+  "sources": [
+    {
+      "role": "detection",
+      "kind": "github-releases",
+      "repo": "oven-sh/bun",
+      "tagFormat": "bun-v{version}"
+    },
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "oven-sh/bun",
+      "tagFormat": "bun-v{version}"
+    }
+  ]
+}

@@ -37,6 +37,27 @@ describe("parseCatalog", () => {
     );
   });
 
+  // Bun is not published on a registry: the same repository both reports the Versions and holds the
+  // notes, which is two Sources, not one.
+  it("takes GitHub Releases in both roles for the same repository", () => {
+    const bun = {
+      ...vite,
+      sources: [
+        { role: "detection", kind: "github-releases", repo: "oven-sh/bun", tagFormat: "bun-v{version}" },
+        { role: "notes", kind: "github-releases", repo: "oven-sh/bun", tagFormat: "bun-v{version}" },
+      ],
+    };
+    expect(parseCatalog([file("catalog/bun.json", bun)])[0].sources).toEqual(bun.sources);
+  });
+
+  it("rejects a detection Source whose tag format has no Version in it", () => {
+    const broken = {
+      ...vite,
+      sources: [{ role: "detection", kind: "github-releases", repo: "oven-sh/bun", tagFormat: "bun-v" }],
+    };
+    expect(() => parseCatalog([file("catalog/bun.json", broken)])).toThrow(/tagFormat: must contain \{version\}/);
+  });
+
   it("rejects two Sources with the same role and kind", () => {
     const twice = { ...vite, sources: [...vite.sources, vite.sources[0]] };
     expect(() => parseCatalog([file("catalog/vite.json", twice)])).toThrow(/sources\.2: duplicate detection\/npm/);

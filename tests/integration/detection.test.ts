@@ -12,10 +12,15 @@ import { serviceClient } from "./supabase";
 const published: ObservedVersion[] = [];
 const asked: string[] = [];
 let etag: string | null = null;
+// The Detection walks every Technology in the database, and a developer's database holds the whole
+// Catalog: a fake that answered for all of them would put this test's Versions on Storybook too.
+const mine = new Set<string>();
 
 const adapters: SourceAdapters = {
   async listVersions(source, sent) {
-    asked.push(`versions ${source.package} ${sent ?? "-"}`);
+    const name = source.kind === "npm" ? source.package : source.repo;
+    if (!mine.has(name)) return { etag: null, versions: [] };
+    asked.push(`versions ${name} ${sent ?? "-"}`);
     if (etag !== null && sent === etag) return "unchanged";
     return { etag, versions: published.map((version) => ({ ...version })) };
   },
@@ -99,6 +104,7 @@ async function cleanUp(technologyId: string) {
 
 beforeAll(async () => {
   const slug = randomUUID();
+  mine.add(slug).add(`retired-${slug}`);
   technology = await seedTechnology("detect", [
     { role: "detection", kind: "npm", config: { package: slug } },
     { role: "notes", kind: "github-releases", config: { repo: `test/${slug}`, tagFormat: "v{version}" } },

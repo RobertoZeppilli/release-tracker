@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { StoredTechnology } from "@/modules/catalog";
 import { listActiveTechnologies } from "@/modules/catalog/server";
+import { selectAllRows } from "@/lib/supabase-rows";
 import { classify, type KnownReleases, type ReleaseRef, selectDetected } from "@/modules/releases";
 import type { SourceAdapters } from "../domain/source-adapters";
 import { observeVersions } from "./observe-versions";
@@ -69,11 +70,13 @@ async function detectTechnology(
   return { versions, unchanged };
 }
 
-// One query for the whole Catalog: a Technology absent from the result has no Releases at all and
-// belongs to the Initial Import, not to the Detection.
+// One reading of the whole Catalog, by page: a Technology absent from the result has no Releases at
+// all and belongs to the Initial Import, not to the Detection. Truncating here would be silent and
+// far worse than an error, because a Technology left out of the page stops being detected at all.
 async function readKnownReleases(db: SupabaseClient): Promise<Map<string, KnownReleases>> {
-  const { data, error } = await db.from("releases").select("technology_id, version, published_at");
-  if (error) throw error;
+  const data = await selectAllRows((from, to) =>
+    db.from("releases").select("technology_id, version, published_at").order("id").range(from, to),
+  );
 
   const known = new Map<string, { versions: string[]; latestPublishedAt: Date }>();
   for (const row of KnownRowSchema.parse(data)) {
