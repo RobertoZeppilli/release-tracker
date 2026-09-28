@@ -11,6 +11,10 @@ const BLOCKED = "border-rule text-text-faint cursor-not-allowed";
 
 export const LIMIT_NOTE_ID = "limit-note";
 
+// The look of an unpressed Follow, for the one place that cannot be a button: a Visitor is offered a
+// link to the login, and it has to be the same control they will find once they are back.
+export const FOLLOW_LINK_CLASS = `${BASE} ${OFF} no-underline`;
+
 // The Follow Toggle is one button in two states, not two buttons: `aria-pressed` carries the state
 // and the label says what a press does next. At the limit the button stays focusable and keeps its
 // label, with `aria-disabled` and the note that says why: a Developer can still read it and reach it

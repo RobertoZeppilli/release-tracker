@@ -12,7 +12,17 @@ function sourceLabel(source: Source): string {
   }
 }
 
-export function TechnologyHeader({ technology, latest }: { technology: StoredTechnology; latest: string | null }) {
+// `follow` arrives as an element, not as a component: the Follow belongs to the `plans` module, and
+// the Catalog has no reason to know what following is.
+export function TechnologyHeader({
+  technology,
+  latest,
+  follow,
+}: {
+  technology: StoredTechnology;
+  latest: string | null;
+  follow?: React.ReactNode;
+}) {
   const labels = [...new Set(technology.sources.map(sourceLabel))];
   return (
     <>
@@ -28,6 +38,7 @@ export function TechnologyHeader({ technology, latest }: { technology: StoredTec
             <li key={label}>{label}</li>
           ))}
         </ul>
+        {follow}
       </div>
       {technology.retired && <RetiredNote name={technology.name} latest={latest} />}
     </>

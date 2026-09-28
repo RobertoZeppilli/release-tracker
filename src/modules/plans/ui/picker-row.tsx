@@ -1,10 +1,8 @@
 "use client";
 
-import { CircleX } from "lucide-react";
 import Link from "next/link";
-import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
-import type { FollowRejection } from "../domain/follow-rejection";
 import type { PickerTechnology } from "../domain/picker";
+import { FollowRejectionNote } from "./follow-rejection-note";
 import { FollowToggle } from "./follow-toggle";
 import { useFollows } from "./follows-provider";
 
@@ -56,24 +54,12 @@ export function PickerRow({ technology, hidden }: { technology: PickerTechnology
         )}
       </span>
       {rejection && (
-        <p
+        <FollowRejectionNote
           id={errorId}
-          className="col-start-2 col-end-[-1] mt-2 font-mono text-label leading-[1.6] text-breaking max-[640px]:col-start-1 max-[640px]:row-start-3"
-        >
-          <CircleX aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-          error: {message(rejection)}
-        </p>
+          rejection={rejection}
+          className="col-start-2 col-end-[-1] mt-2 max-[640px]:col-start-1 max-[640px]:row-start-3"
+        />
       )}
     </li>
   );
-}
-
-function message(rejection: FollowRejection): string {
-  if (rejection === "limit") {
-    return `not followed · you already follow ${FREE_FOLLOW_LIMIT} (one was added in another session) · unfollow one to follow another`;
-  }
-  if (rejection === "retired") {
-    return "not followed · it has left the catalog · a retired technology can't be followed again";
-  }
-  return "not saved · the change didn't reach the database · try again";
 }
