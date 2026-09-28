@@ -16,15 +16,83 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#18** (la #16 unita con la PR #44 e viva in produzione). Sbloccate: **#19** e
-  **#20**, più #25 e #36.
+- Fatte: **#2–#19** (la #19 unita con la PR #49, CI verde e viva in produzione). Sbloccate: **#20**,
+  più #25 e #36.
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
-- Differenze note tra mock da uniformare: raccolte nella #23.
+- Differenze note tra mock da uniformare: raccolte nella #23. **Da aggiungerci** (2026-09-28): sotto
+  i 640px il mock mette il Follow della pagina della Tecnologia su una riga tutta sua, da noi finisce
+  in fondo alla riga delle Fonti, perché il `latest` è un `<p>` a parte invece di stare dentro
+  `.tech-facts`. Non è ancora scritto nella issue.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-28 (2): un accesso locale sulla pagina di login (PR #50, non unita)
+
+Fuori dalle issue, deciso in sessione. In locale il provider GitHub è spento
+(`config.toml`: `[auth.external.github] enabled = false`), quindi non c'era modo di essere uno
+Sviluppatore in sviluppo. La prima idea, incollare una `fetch` nella console del browser, è stata
+scartata dall'utente ed è giusto così: è la forma esatta del self-XSS contro cui Chrome avvisa, e
+abituarsi a scrivere `allow pasting` è il danno vero.
+
+- `POST /auth/dev-sign-in` accede con le credenziali lette **dall'ambiente del server**: il form
+  manda solo `next`, quindi la password non raggiunge mai il browser né l'HTML.
+- Esiste **solo se `DEV_LOGIN_EMAIL` e `DEV_LOGIN_PASSWORD` ci sono entrambe**, come
+  `/api/test/session` con la sua. Vuote in `.env.example`, presenti solo in `.env.local`, **mai su
+  Vercel**. Il pulsante sul `/login` compare nello stesso caso e dice di sé che in produzione non
+  esiste.
+- `pnpm dev:login` crea o reimposta il Developer locale (`dev@local.test`) e **si rifiuta di girare**
+  se `NEXT_PUBLIC_SUPABASE_URL` non è `127.0.0.1` o `localhost`. Dopo un `pnpm db:reset` va rilanciato.
+- Provato sul **build di produzione**, non solo a ragionamento: con le due variabili vuote il
+  pulsante non c'è e la rotta risponde **404**; con le variabili, pulsante e 303. Un E2E in
+  `auth.spec.ts` fa il giro vero e **si salta da solo** quando le variabili mancano, cioè in CI.
+
+Se un domani servisse il vero giro OAuth in locale, la strada resta quella dell'handoff della #16:
+una **seconda** OAuth App con callback `http://127.0.0.1:54321/auth/v1/callback`.
+
+## Sessione del 2026-09-28 (1): #19 Follow sulla pagina pubblica della Tecnologia (chiusa, PR #49 in `main`)
+
+301 unitari, 43 di integrazione, **45 E2E**, `typecheck`, `lint` e `build` puliti. Guardata con
+Playwright a 1280px e a 390px contro `design/mocks/technology.html`. La pagina resta **SSG/ISR** nel
+`build`: era il punto della fetta.
+
+### Chi guarda si legge nel browser, e ora una volta sola
+
+`auth/ui/use-session.ts` è il pezzo nuovo: restituisce `unknown | visitor | developer` con l'id dello
+Sviluppatore. `AuthStatus` faceva già quella lettura dentro di sé e ora la prende da lì, così la
+barra e il Follow non possono raccontare due cose diverse sulla stessa pagina.
+
+`TechnologyFollow` (`plans/ui`) ha tre stati: **unknown** mostra un segnaposto alto 34px (un "Follow"
+mostrato prima di sapere chi guarda sarebbe sbagliato per chi già segue); **Visitatore** un link a
+`loginPath(pathname)` con l'aspetto identico al pulsante che troverà al ritorno; **Sviluppatore** il
+`FollowsProvider` **senza cache precaricata**, quindi la query carica i follow nel browser, e dentro
+lo stesso `FollowToggle` del picker. Limite, `aria-disabled`, nota e rollback vengono dal provider e
+non sono riscritti qui.
+
+Il Follow arriva a `TechnologyHeader` **come elemento, non come componente**: `catalog` non deve
+sapere che cosa sia un Follow.
+
+### Che cosa prova che nella cache non c'è niente di personale
+
+Un E2E scarica l'HTML servito **da loggato** e verifica che non contenga né `Unfollow` né
+`Following`. È il criterio dell'issue provato, non dedotto. In produzione il Follow del Visitatore
+punta a `/login?next=%2Ftechnologies%2Fvite`, verificato il 2026-09-28 con un browser vero (nell'HTML
+non si vede, ed è proprio il punto).
+
+### Attenzione per chi riprende
+
+- **Tailwind 4 ordina le utility per utility, non per come sono scritte.** `ml-auto max-[640px]:ml-0`
+  lasciava il pulsante a destra anche a 390px: `ml-auto` vince ovunque compaia. La spinta ora si
+  **aggiunge** da `sm` in su (`sm:ml-auto`) invece di essere annullata sotto. Vale per ogni coppia di
+  utility della stessa famiglia, non solo per i margini.
+- Ritirate: il comando compare **solo a chi già segue**, e dopo lo unfollow resta la frase
+  `unfollowed · can't be followed again` finché non si ricarica. La regola è in `CONTEXT.md` sotto
+  *Seguire*, valida per ogni schermata.
+- La frase dell'errore di rifiuto viveva dentro `picker-row.tsx`: ora è `FollowRejectionNote`, una
+  sola per le due pagine. `FollowToggleLimitNote` accetta un `technologyId`: su una pagina con un
+  Toggle solo, la nota non compare se quella Tecnologia è già seguita.
 
 ## Sessione del 2026-09-27: #18 Limite Free e ritirate imposti dal database (chiusa, PR #48 in `main`)
 
@@ -595,16 +663,17 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: la #19, Follow sulla pagina pubblica della Tecnologia
+## Da dove ripartire: la #20, Dashboard (prima parte)
 
-1. `gh issue view 19`. Stesso toggle su una pagina **statica**: lì la cache non arriva piena dal
-   server, quindi la query dovrà caricarsi nel browser (`FollowsProvider` accetta già `follows`
-   facoltativo proprio per questo) senza rendere dinamica la pagina. Il rifiuto del database e il
-   rollback sono già nel provider e valgono anche lì.
-2. Poi la **#20** (Dashboard, prima parte), **#25** e **#36**. HITL: #22 Catalogo ~40 Tecnologie,
-   #26 landing page (serve il nome del prodotto).
-3. Unico passo manuale in sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto
-   su Vercel. Il login con GitHub è configurato e provato in produzione.
+1. `gh issue view 20`. È la pagina che porta la **quota nella barra in alto** (`7 of 10 followed`),
+   lasciata fuori dalla #17 perché è dell'intestazione condivisa: `FollowStatus` in
+   `plans/ui/picker-header.tsx` è già il conteggio dal vivo da cui partire. Mock:
+   `design/mocks/dashboard.html`.
+2. Poi **#25** e **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del
+   prodotto).
+3. In sospeso: **PR #50** (accesso locale sul login) aperta e non unita; **Web Analytics da
+   attivare** nella tab *Analytics* del progetto su Vercel; la differenza dal mock della #19 da
+   scrivere nella **#23**.
 
 ## Preferenze dell'utente
 
