@@ -14,9 +14,19 @@ export type NavItem = (typeof NAV)[number]["label"];
 
 // `path` is the breadcrumb after the wordmark; the last item is the current page. On a signed-in
 // page `nav` replaces the breadcrumb with the two destinations, as in DESIGN.md.
-export function SiteHeader({ path, nav }: { path?: readonly PathItem[]; nav?: NavItem }) {
-  if (nav) return <HeaderShell>{<SignedInNav current={nav} />}</HeaderShell>;
-  return <HeaderShell>{path ? <Breadcrumb path={path} /> : null}</HeaderShell>;
+// `quota` arrives as an element, not as a component: the header shows what a signed-in page hands
+// it and never learns what a Plan is, so the public pages simply pass nothing.
+export function SiteHeader({
+  path,
+  nav,
+  quota,
+}: {
+  path?: readonly PathItem[];
+  nav?: NavItem;
+  quota?: React.ReactNode;
+}) {
+  if (nav) return <HeaderShell quota={quota}>{<SignedInNav current={nav} />}</HeaderShell>;
+  return <HeaderShell quota={quota}>{path ? <Breadcrumb path={path} /> : null}</HeaderShell>;
 }
 
 function SignedInNav({ current }: { current: NavItem }) {
@@ -39,7 +49,7 @@ function SignedInNav({ current }: { current: NavItem }) {
   );
 }
 
-function HeaderShell({ children }: { children: React.ReactNode }) {
+function HeaderShell({ children, quota }: { children: React.ReactNode; quota?: React.ReactNode }) {
   return (
     <>
       <a
@@ -50,11 +60,12 @@ function HeaderShell({ children }: { children: React.ReactNode }) {
       </a>
       <header className="border-b border-rule">
         <div className="mx-auto flex h-[56px] max-w-content items-center gap-5 px-4 sm:px-5">
-          <Link href="/" className="font-mono text-[14px] no-underline [font-variant-ligatures:none]">
+          <Link href="/" className="shrink-0 font-mono text-[14px] whitespace-nowrap no-underline [font-variant-ligatures:none]">
             release-tracker
           </Link>
           {children}
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex shrink-0 items-center gap-4 whitespace-nowrap">
+            {quota}
             <AuthStatus />
             <ThemeToggle />
           </div>

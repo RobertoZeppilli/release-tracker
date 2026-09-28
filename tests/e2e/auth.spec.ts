@@ -28,7 +28,9 @@ test.describe("a Visitor", () => {
     await signIn(page);
     await page.goto("/login?next=%2Fdashboard");
     await expect(page).toHaveURL("/dashboard");
-    await expect(page.getByTestId("developer-email")).toHaveText(developer.email);
+    // The Dashboard shows no email: what says the Developer is in are the signed-in controls.
+    await expect(page.getByRole("button", { name: "sign out" })).toBeVisible();
+    await expect(page.getByLabel("Followed technologies")).toBeVisible();
   });
 
   test("is sent to the login from the technologies page", async ({ page }) => {
