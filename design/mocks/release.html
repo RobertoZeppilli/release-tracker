@@ -128,12 +128,21 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .gut { display: grid; grid-template-columns: 5ch 1fr; }
 .gut > span:first-child { color: var(--text-faint); text-align: right; padding-right: 1.5ch; user-select: none; font-variant-ligatures: none; white-space: nowrap; }
 .gut > span:last-child { min-width: 0; }
-.quote { background: var(--sunken); border-radius: 4px 4px 0 0; padding-top: 6px; margin-top: 2px; }
-.quote > span:last-child { color: var(--text-muted); padding-right: var(--space-3); white-space: pre-wrap; }
-.carets { background: var(--sunken); border-radius: 0 0 4px 4px; padding-bottom: 4px; margin-bottom: 2px; line-height: 1; }
+.well { background: var(--sunken); border-radius: 4px; margin: 2px 0; padding: 6px 0; }
+.quote > span:last-child { color: var(--text-muted); padding-right: var(--space-3); white-space: pre-wrap; overflow-wrap: anywhere; }
+.carets { line-height: 1; }
 .carets > span:last-child { white-space: pre-wrap; padding-right: var(--space-3); }
 .carets .pad { visibility: hidden; }
 .carets .car { color: var(--breaking); }
+/* The caret row is `^` once per cited character, so it reads right only while the quote stays on one
+   line: wrapped, the carets sit under the wrong words and their unbreakable run widens the page.
+   Each well says the narrowest viewport where its own quote still fits; below that the caret row goes
+   and the cited stretch takes the coral underline, which stays right however the quote wraps. */
+.well[data-fits="none"] .carets { display: none; }
+.well[data-fits="none"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; }
+@media (max-width: 1023px) { .well[data-fits="1024"] .carets { display: none; } .well[data-fits="1024"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
+@media (max-width: 899px) { .well[data-fits="900"] .carets { display: none; } .well[data-fits="900"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
+@media (max-width: 767px) { .well[data-fits="768"] .carets { display: none; } .well[data-fits="768"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
 .diag-what { font-family: var(--sans); font-size: 16px; line-height: 1.6; color: var(--text); padding: var(--space-2) 0; max-width: 68ch; }
 .help-line > span:last-child { font-family: var(--sans); font-size: 16px; }
 .help-line .label-help { font-family: var(--mono); font-size: 14px; }
@@ -194,7 +203,6 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
   .gut { grid-template-columns: 4.5ch 1fr; }
   .gut > span:first-child { padding-right: 1ch; }
   .carets { display: none; }
-  .quote { border-radius: 4px; padding-bottom: 6px; margin-bottom: 2px; }
   .quote .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; }
   .source-lines li { grid-template-columns: 4.5ch 1fr; }
   .source-lines li::before { padding-right: 1.2ch; }
@@ -291,8 +299,10 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
         <h3 class="diag-head" id="b1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <code>resolve.conditions</code> no longer include the defaults</span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L12" data-cite="12-13" data-sev="breaking">release-notes:12-13</a></span></div>
-          <div class="gut quote"><span>12</span><span>The default value of <span class="q-span">resolve.conditions has changed</span>; custom values replace the defaults.</span></div>
-          <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The default value of </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          <div class="well" data-fits="900">
+            <div class="gut quote"><span>12</span><span>The default value of <span class="q-span">resolve.conditions has changed</span>; custom values replace the defaults.</span></div>
+            <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The default value of </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          </div>
           <div class="gut"><span>|</span><span class="diag-what">If you set <code>resolve.conditions</code> or <code>ssr.resolve.conditions</code>, Vite stops adding its default conditions, so packages may resolve to a different entry.</span></div>
           <div class="gut help-line"><span>=</span><span><span class="label-help"><svg class="glyph" aria-hidden="true"><use href="#g-help"/></svg>help:</span> spread the exported defaults into your list.</span></div>
           <div class="gut"><span></span><span><pre class="fix"><span class="del">- conditions: ['custom']</span>
@@ -304,8 +314,10 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
         <h3 class="diag-head" id="b2"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><code>json.stringify</code> now defaults to <code>'auto'</code></span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L16" data-cite="16-17" data-sev="breaking">release-notes:16-17</a></span></div>
-          <div class="gut quote"><span>16</span><span>json.stringify: <span class="q-span">'auto' is now the default</span> and only stringifies large JSON files.</span></div>
-          <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">json.stringify: </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          <div class="well" data-fits="900">
+            <div class="gut quote"><span>16</span><span>json.stringify: <span class="q-span">'auto' is now the default</span> and only stringifies large JSON files.</span></div>
+            <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">json.stringify: </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          </div>
           <div class="gut"><span>|</span><span class="diag-what">Large JSON imports are emitted as <code>JSON.parse(...)</code> strings, so named exports from those files are no longer available.</span></div>
           <div class="gut help-line"><span>=</span><span><span class="label-help"><svg class="glyph" aria-hidden="true"><use href="#g-help"/></svg>help:</span> set <code>json.stringify: false</code> to keep the previous behaviour.</span></div>
         </div>
@@ -315,8 +327,10 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
         <h3 class="diag-head" id="b3"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L20" data-cite="20-21" data-sev="breaking">release-notes:20-21</a></span></div>
-          <div class="gut quote"><span>20</span><span>The <span class="q-span">modern API is now used by default for Sass</span>. The legacy API is still available.</span></div>
-          <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          <div class="well" data-fits="900">
+            <div class="gut quote"><span>20</span><span>The <span class="q-span">modern API is now used by default for Sass</span>. The legacy API is still available.</span></div>
+            <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          </div>
           <div class="gut"><span>|</span><span class="diag-what">Options written for the legacy Sass API, such as custom <code>importer</code> functions, are ignored or fail.</span></div>
           <div class="gut help-line"><span>=</span><span><span class="label-help"><svg class="glyph" aria-hidden="true"><use href="#g-help"/></svg>help:</span> migrate the options, or set <code>css.preprocessorOptions.sass.api: 'legacy'</code> for now.</span></div>
         </div>
@@ -326,8 +340,10 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
         <h3 class="diag-head" id="b4"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L24" data-cite="24-25" data-sev="breaking">release-notes:24-25</a></span></div>
-          <div class="gut quote"><span>24</span><span>In library mode the CSS file is now <span class="q-span">named from package.json "name"</span> instead of style.css.</span></div>
-          <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">In library mode the CSS file is now </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          <div class="well" data-fits="900">
+            <div class="gut quote"><span>24</span><span>In library mode the CSS file is now <span class="q-span">named from package.json "name"</span> instead of style.css.</span></div>
+            <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">In library mode the CSS file is now </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
+          </div>
           <div class="gut"><span>|</span><span class="diag-what">Imports of <code>your-lib/dist/style.css</code> break for consumers of your library.</span></div>
           <div class="gut help-line"><span>=</span><span><span class="label-help"><svg class="glyph" aria-hidden="true"><use href="#g-help"/></svg>help:</span> set <code>build.lib.cssFileName: 'style'</code> to keep the old file name.</span></div>
         </div>
