@@ -28,3 +28,23 @@ test("an unknown Technology is a 404", async ({ page }) => {
   const response = await page.goto("/technologies/not-in-the-catalog");
   expect(response?.status()).toBe(404);
 });
+
+// The header is a wrapping row, and the facts are one group inside it, as in `technology.html`:
+// narrow enough, that group wraps whole and the Follow keeps a line of its own instead of trailing
+// the Sources.
+test("under 640px the Follow sits below the header facts, not beside the Sources", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/technologies/vite");
+
+  const sources = page.getByRole("list", { name: "Sources" });
+  const follow = page.getByRole("link", { name: "Follow Vite" });
+  await expect(follow).toBeVisible();
+
+  const facts = await sources.boundingBox();
+  const button = await follow.boundingBox();
+  expect(facts).not.toBeNull();
+  expect(button).not.toBeNull();
+  if (!facts || !button) return;
+  expect(button.y, "the Follow starts below the Sources").toBeGreaterThanOrEqual(facts.y + facts.height);
+  expect(button.x, "the Follow starts at the left edge of the column").toBeLessThan(facts.x + 4);
+});

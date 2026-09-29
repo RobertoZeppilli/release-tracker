@@ -6,6 +6,8 @@ import type { FollowRejection } from "../domain/follow-rejection";
 
 // What the database refused, said once for every page that can be refused: what did not happen, why,
 // and the way out. The Toggle points at it with `aria-describedby`, so the id comes from the caller.
+// `diagnostic` is the one measure for an error line (DESIGN.md, `field-error`): it is the same on
+// the Upgrade Path form, and it lifts the error off the 13px facts of the row it sits under.
 export function FollowRejectionNote({
   id,
   rejection,
@@ -16,7 +18,7 @@ export function FollowRejectionNote({
   className: string;
 }) {
   return (
-    <p id={id} className={`font-mono text-label leading-[1.6] text-breaking ${className}`}>
+    <p id={id} className={`font-mono text-diagnostic text-breaking ${className}`}>
       <CircleX aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
       error: {message(rejection)}
     </p>

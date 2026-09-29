@@ -13,7 +13,7 @@
   --raised: #161a20;
   --sunken: #0b0d10;
   --rule: #262b33;
-  --rule-strong: #353b45;
+  --rule-strong: #676d77;
   --text: #e7e9ec;
   --text-muted: #9aa3ad;
   --text-faint: #7b848f;
@@ -38,7 +38,7 @@
   --raised: #ffffff;
   --sunken: #eeeeea;
   --rule: #dcdcd6;
-  --rule-strong: #c6c6bf;
+  --rule-strong: #82827b;
   --text: #16181c;
   --text-muted: #525a63;
   --text-faint: #636b74;
@@ -99,7 +99,8 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .sev-action { color: var(--action); }
 .sev-ok { color: var(--ok); }
 .sev-breaking { color: var(--breaking); }
-.verdict-count { margin: var(--space-3) 0 0; font: 400 15px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+/* The counts row is 14px/1.7, the same as .counts on dashboard.html: 15px is not in the scale. */
+.verdict-count { margin: var(--space-3) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); display: flex; gap: var(--space-4); flex-wrap: wrap; }
 .verdict-count strong { color: var(--text); font-weight: 400; }
 .verdict-count a { text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
 

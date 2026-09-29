@@ -14,9 +14,24 @@ const IdRowSchema = z.object({ id: z.uuid() });
 // trip over the CLI's own telemetry file.
 let client: SupabaseClient | null = null;
 
+// A worker starts over whenever Playwright changes its options, so the CLI is asked again and again
+// across one run. On Windows it answers EPERM under that pressure, which has nothing to do with the
+// test that happened to ask: waiting a moment and asking again is the whole remedy. The wait is
+// synchronous because every caller of `serviceClient` expects an answer, not a promise.
+function supabaseStatus(attempts = 3): string {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return execSync("pnpm exec supabase status -o json", { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    } catch (error) {
+      if (attempt >= attempts) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, attempt * 500);
+    }
+  }
+}
+
 function serviceClient(): SupabaseClient {
   if (client) return client;
-  const output = execSync("pnpm exec supabase status -o json", { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  const output = supabaseStatus();
   const { API_URL, SECRET_KEY } = LocalSupabaseSchema.parse(JSON.parse(output.slice(output.indexOf("{"))));
   client = createClient(API_URL, SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
   return client;

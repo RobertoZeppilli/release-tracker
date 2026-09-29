@@ -6,7 +6,7 @@ colors:
   raised: "#161a20"
   sunken: "#0b0d10"
   rule: "#262b33"
-  rule-strong: "#353b45"
+  rule-strong: "#676d77"
   text: "#e7e9ec"
   text-muted: "#9aa3ad"
   text-faint: "#7b848f"
@@ -22,7 +22,7 @@ colors:
   light-raised: "#ffffff"
   light-sunken: "#eeeeea"
   light-rule: "#dcdcd6"
-  light-rule-strong: "#c6c6bf"
+  light-rule-strong: "#82827b"
   light-text: "#16181c"
   light-text-muted: "#525a63"
   light-text-faint: "#636b74"
@@ -155,6 +155,7 @@ components:
     width: "11ch"
   field-error:
     textColor: "{colors.breaking}"
+    typography: "{typography.diagnostic}"
   stat-row:
     padding: "8px 0"
   stat-bar:
@@ -207,7 +208,7 @@ components:
     typography: "{typography.label}"
   row-error:
     textColor: "{colors.breaking}"
-    typography: "{typography.label}"
+    typography: "{typography.diagnostic}"
   row-note:
     textColor: "{colors.text-muted}"
     typography: "{typography.label}"
@@ -250,7 +251,7 @@ The neutrals are cool graphite. The four diagnostic inks are the only hues, and 
 - **Terminal Ground** (`ground`): the page background.
 - **Raised Plane** (`raised`): the single raised surface. Used for the folded release-notes source view and button hover.
 - **Sunken Well** (`sunken`): quote and caret rows, fix diffs and inline code.
-- **Rule / Rule Strong** (`rule`, `rule-strong`): 1px dividers, key-point separators and panel borders. `rule-strong` is used for button borders and link underlines.
+- **Rule / Rule Strong** (`rule`, `rule-strong`): 1px dividers, key-point separators and panel borders. `rule-strong` is used for button borders, field borders, link underlines and the `digest` segment of the stat bar. Because a border is the only thing that identifies a button or a field, `rule-strong` clears 3:1 against all three planes in both themes (WCAG 2.2 SC 1.4.11). `rule` carries no such duty: it only divides.
 - **Text / Muted / Faint** (`text`, `text-muted`, `text-faint`): primary copy, then secondary copy and source lines, then gutters, line numbers, provenance and footer.
 
 ### Named Rules
@@ -283,6 +284,8 @@ The neutrals are cool graphite. The four diagnostic inks are the only hues, and 
 ### Named Rules
 **The One-Line Verdict Rule.** The verdict keeps its token scale on every surface. The copy is shortened to fit, and the scale never shrinks. At the 1040px container the whole verdict (glyph, label and claim) must fit on one line, so a range verdict reads `warning: 1 needs action`, not `warning: 1 release needs action`. The claim after the label is set inline-block, so when narrow screens force a wrap, it drops to the next line as a unit and never splits mid-phrase.
 
+**The One Error Measure Rule.** Every error line is Diagnostic (Mono 14px/1.7) in `breaking`, whatever it sits under: the form message on the Upgrade Path, the refused follow under a picker row, the refused follow on a Technology page. An error is a diagnostic, and under a row of 13px facts the extra pixel is what makes it stand out instead of blending in.
+
 **The Two Registers Rule.** Anything a compiler would print (labels, codes, pointers, versions, counts, line numbers, dates) is set in Fragment Mono. Sentences a person reads are set in Hanken Grotesk. Don't mix them within one role.
 
 ## Layout
@@ -299,7 +302,7 @@ Diagnostic rows use a gutter grid: a 5ch right-aligned faint gutter holds `-->`,
 
 **Responsive (640px and below):** the breadcrumb path and source meta are hidden. Key-point labels and diagnostic headings stack to one column. Gutters narrow to 4.5ch. **Caret rows are hidden.** The quoted span gets a 2px `breaking` underline (offset 4px) inside the quote row instead. Fix diffs scroll horizontally.
 
-**Responsive, technology page.** At 880px and below, release rows reflow to significance, version and a right-aligned date on the first line, with the title, verdict and breaking list across the full width below, and stat words may wrap. At 640px and below the stat row keeps major, `|` and bar on one line, and the words drop to a full-width second line. Digest rows drop the version range: the summary shows only the count, with `no action needed` on its own line. The expanded digest list loses its 11ch indent. The range verdict wraps the claim below the label as one unit.
+**Responsive, technology page.** At 880px and below, release rows reflow to significance, version and a right-aligned date on the first line, with the title, verdict and breaking list across the full width below, and stat words may wrap. At 640px and below the header facts (the latest version and the sources) wrap as one group, so the Follow keeps a line of its own instead of trailing the sources, and the stat row keeps major, `|` and bar on one line while the words drop to a full-width second line. Digest rows drop the version range: the summary shows only the count, with `no action needed` on its own line. The expanded digest list loses its 11ch indent. The range verdict wraps the claim below the label as one unit.
 
 **Responsive, Dashboard (640px and below):** the top-bar nav is hidden and the quota reads `N followed`. Stack rows reflow to technology, version and a right-aligned date on the first line, with the content full width below (compact rows too). A section title's significance legend wraps to its own line under the title and rule. Week summaries hide the date range and put `no action needed` on its own line. The expanded week list becomes one column with no indent. Catalog picker rows put the facts under the name, with the Follow button spanning both lines.
 
@@ -331,7 +334,7 @@ Corners are gently squared: 6px for buttons, the source panel and fix diffs, and
 - **Quota link:** before the actions, a Mono 13px muted link `N of 10 followed` with the number in `text`, turning `text` on hover. On mobile it shortens to `N followed`.
 
 ### Verdict Line (signature)
-A glyph plus severity label in the severity ink (`warning:` amber / `ok:` green), then the plain verdict in `text`, at Verdict scale. Below it is a Mono 15px muted count row, with numbers in `text` (`4 breaking changes`, `4 key points`). The breaking count links to the diagnostics.
+A glyph plus severity label in the severity ink (`warning:` amber / `ok:` green), then the plain verdict in `text`, at Verdict scale. Below it is a Mono 14px/1.7 muted count row, with numbers in `text` (`4 breaking changes`, `4 key points`). The breaking count links to the diagnostics.
 
 **Page verdict (Dashboard).** The same line summarises all followed Technologies: `warning: N need action` or `ok: nothing needs action`. The count row below is a Mono 14px/1.7 muted sentence whose numbers are in `text` and whose counts (`3 featured`, `4 notable`, `2 previews`, `23 digest`) link to their sections. The counts carry no severity ink; the action count sits in plain words (`(2 need action)`).
 
@@ -411,7 +414,7 @@ Under the ISO date, a Mono 12px `text-muted` `this week` stacks in the date cell
 Digest releases fold per ISO week into `<details>` rows between rules, closed by default. The summary is a grid (14ch, content, chevron): the digest dot + `week 49` in `text`, then Mono 13px muted `9 digest releases · Dec 2 to 8 · no action needed`, then the chevron (same rotation and curve as the Digest Row). When open, lines run newest first in a 28ch auto-fill grid: the Technology name in `text-muted`, the version link in `text` and a faint `MM-DD` date.
 
 ### Empty State (Dashboard)
-With no follows, the verdict slot holds a Status-scale muted line: info glyph + `note: you follow no technologies yet`. Below it are a muted Grotesk intro paragraph (72ch) and a Mono 14px muted live count (`aria-live="polite"`) `N of 10 followed`, with the number in `text`. Once N is above 0 the claim reads `you follow N technologies` and an `Open dashboard` button appears beside the count. A catalog picker follows under a section title: rows of Technology name (Grotesk 600 16px), Mono 13px faint facts (`latest 19.0.0 · library for web and native UIs`, version in `text-muted`) and a Follow toggle, ending with a `-->` help pointer to the full catalog.
+With no follows, the verdict slot holds a Status-scale muted line: info glyph + `note: you follow no technologies yet`. Below it are a muted Grotesk intro paragraph (72ch) and a Mono 14px muted live count (`aria-live="polite"`) `N of 10 followed`, with the number in `text`. Once N is above 0 the claim reads `you follow N technologies` and an `Open dashboard` button appears beside the count. A catalog picker follows under a section title, the same rows as the Technologies page (16ch name column, the name linking to its Technology page): the Technology name (Grotesk 600 16px), Mono 13px faint facts (`latest 19.0.0 · library for web and native UIs`, version in `text-muted`) and a Follow toggle, ending with a `-->` help pointer to the full catalog.
 
 ### Follow Status and Filter (Technologies)
 The page opens with no verdict: a Status-scale line in `text-muted`, the info glyph + `note:` + `you follow 7 of 10 technologies`, with the count in `text` and the claim inline-block in a polite live region. At 640px and below the claim reads `7 of 10 followed`. A muted Grotesk intro (72ch) follows.
@@ -428,7 +431,7 @@ The Dashboard catalog picker row, as a full page list: the Technology name (Grot
 At 10 of 10, a note line sits under the catalog title, where the next Follow would happen: the info glyph + Mono 14px/1.7 muted `note: 10 of 10 followed · unfollow one to follow another`, with the count in `text`. It has no ink. Every disabled toggle is described by it.
 
 ### Row Error Line
-When the server rejects a follow that was shown optimistically, the toggle reverts and an error line appears under that row, spanning the facts and toggle columns (full width on mobile), 8px below: the x-circle glyph + `error: not followed · you already follow 10 (one was added in another session) · unfollow one to follow another`, all in Mono 13px/1.6 `breaking`. The toggle is described by it. It clears on the next click in that row.
+When the server rejects a follow that was shown optimistically, the toggle reverts and an error line appears under that row, spanning the facts and toggle columns (full width on mobile), 8px below: the x-circle glyph + `error: not followed · you already follow 10 (one was added in another session) · unfollow one to follow another`, all in Mono 14px/1.7 `breaking`. The toggle is described by it. It clears on the next click in that row.
 
 ### Retired Group (Technologies)
 The closing `retired` section starts with a note line: the info glyph + Mono 14px muted `note:`, then Grotesk 16px/1.6 muted prose explaining that retired Technologies get no new releases, still count toward the 10, and can't be followed again once unfollowed. There are no rules around it; the row list's own top rule follows. Retired rows keep the picker grid, with facts that read `last 5.0.1 · React app setup · retired 2024-10`. Unfollowing replaces the toggle with a Mono 13px muted status (`role="status"`), `unfollowed · can't be followed again`, which doesn't wrap on desktop.

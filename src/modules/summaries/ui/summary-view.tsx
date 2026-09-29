@@ -34,7 +34,8 @@ export function SummaryView({ summary, notes = [] }: { summary: StoredSummary; n
         )}{" "}
         <span>{content.actionRequired ? "action required" : "safe to upgrade"}</span>
       </p>
-      <p className="mt-3 flex flex-wrap gap-4 font-mono text-[15px] text-text-muted">
+      {/* The counts row is `diagnostic`, the same as the Dashboard's: 15px was never in the scale. */}
+      <p className="mt-3 flex flex-wrap gap-4 font-mono text-diagnostic text-text-muted">
         {breaking > 0 ? (
           <a href="#breaking" className="border-b border-rule-strong no-underline">
             <strong className="font-normal text-text">{breaking}</strong> {plural(breaking, "breaking change")}

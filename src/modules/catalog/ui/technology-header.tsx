@@ -28,16 +28,20 @@ export function TechnologyHeader({
     <>
       <div className="flex flex-wrap items-center gap-4">
         <h1 className="font-sans text-headline font-semibold">{technology.name}</h1>
-        {latest && (
-          <p className="font-mono text-label text-text-muted">
-            latest <strong className="font-normal text-text">{latest}</strong>
-          </p>
-        )}
-        <ul className="flex flex-wrap gap-4 font-mono text-label text-text-muted" aria-label="Sources">
-          {labels.map((label) => (
-            <li key={label}>{label}</li>
-          ))}
-        </ul>
+        {/* One group for the facts, as in the mock: they wrap together, so the Follow keeps a line of
+            its own under 640px instead of trailing the Sources. */}
+        <div className="flex flex-wrap items-center gap-4 font-mono text-label text-text-muted">
+          {latest && (
+            <p>
+              latest <strong className="font-normal text-text">{latest}</strong>
+            </p>
+          )}
+          <ul className="flex flex-wrap gap-4" aria-label="Sources">
+            {labels.map((label) => (
+              <li key={label}>{label}</li>
+            ))}
+          </ul>
+        </div>
         {follow}
       </div>
       {technology.retired && <RetiredNote name={technology.name} latest={latest} />}
