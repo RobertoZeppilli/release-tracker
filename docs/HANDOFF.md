@@ -13,12 +13,22 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-29).** Niente è in corso, l'albero è pulito e `main` è allineato a
-`origin/main`. La prossima sessione prende **#54** e **#56**, decise dall'utente come le più urgenti, e
-poi la **#23**. Sono due decisioni di dominio prima che due implementazioni: per la #54 come trattare le
-Note oltre gli 80.000 caratteri, per la #56 se il limite del titolo sale a 140. Il materiale della #56 è
-già in mano, vedi "I risultati del batch, salvati". Restano dopo: **#25** e **#24**. La **#57** aspetta
-una decisione dell'utente, non del codice.
+**Da dove ripartire (2026-09-29, sera).** Niente è in corso, l'albero è pulito e `main` è allineato a
+`origin/main`. La prossima sessione prende la **#23** (differenze fra i mock e l'implementazione), poi
+**#25** e **#24**. La **#57** aspetta una decisione dell'utente, non del codice.
+
+⚠️ **Il credito Anthropic dell'utente è basso e non può ricaricarlo per ora: non spendere niente senza
+chiedere.** Due passi a mano restano fermi per questo, descritti in "Sessione del 2026-09-29 (2)":
+l'SQL della #56 (reimportazione di 4 Sintesi, **costo zero**) e quello della #54 seguito da un submit
+(**circa 25 centesimi**). Da ricordare per stare tranquilli: **un merge da solo non spende mai**,
+perché i due cron delle Sintesi restano fuori da `vercel.json` e il submit si chiama a mano.
+
+**Tema aperto, chiesto dall'utente**: uniformare il database locale e quello di produzione, in modo
+che il locale rispecchi la produzione. Il nodo emerso nella #56 è che i `release_id` sono UUID
+generati per ambiente, quindi i due database non condividono nessuna chiave delle Release: o si fa un
+dump vero e proprio, o si rendono le Release identificabili in modo stabile fra ambienti (Tecnologia +
+Versione, che è già una chiave unica in `releases_technology_id_version_key`). Sono due strade molto
+diverse per costo e conseguenze, e nessuna delle due è ancora stata scelta.
 
 La `ANTHROPIC_API_KEY` è stata aggiornata su Vercel il 2026-09-29 e la produzione **è stata
 ridistribuita** subito dopo, col push di questo documento: le funzioni hanno la chiave nuova. Da
@@ -28,8 +38,8 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28) e la **#55** (PR #58, unita il
-  2026-09-29). Sbloccate: **#25** e **#36**.
+- Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
+  (PR #59) e la **#54** (PR #60), tutte e tre unite il 2026-09-29. Sbloccate: **#25** e **#36**.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -45,6 +55,86 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
   `.tech-facts`. Non è ancora scritto nella issue.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-29 (2): #56 e #54, i due limiti della Sintesi
+
+395 unitari, 44 di integrazione, `typecheck`, `lint` e `build` puliti. Due limiti spostati, tutti e
+due misurati sul primo batch vero e sul Catalogo a 37 Tecnologie invece che a occhio.
+
+### #56: il titolo arriva a 140 caratteri (PR #59)
+
+Lo schema in `summary-content.ts` accetta 140, **il prompt continua a chiedere 120 e non è stato
+toccato**. È la distanza a fare il lavoro: il modello punta ancora a 120 e i pochi caratteri che
+sfora (al massimo 6, su 4 Sintesi su 126) finiscono nel margine invece di buttare una Sintesi pagata.
+Alzare anche la richiesta del prompt avrebbe solo spostato il problema a 141, e avrebbe costretto a
+bumpare `PROMPT_VERSION` da `v4`, perdendo il confronto con il set di valutazione.
+
+- Niente potatura del titolo: un titolo mozzato è peggio di uno un po' lungo. Il titolo vive in un
+  solo posto, l'`<h2>` di `summary-view.tsx:52`, con `max-width: measure` e `text-wrap: balance`:
+  va semplicemente a capo. Le liste leggono `SummaryVerdictSchema`, che il titolo non ce l'ha.
+- Mock verificato al nuovo massimo, backtick resi come `<code>` come fa `InlineCode`: 2 righe a
+  1280px, 4 righe a 390px, nessun overflow. Chrome non scende sotto ~500px di finestra: per vedere i
+  390px veri serve un iframe largo 390 dentro una pagina servita su http (il `file://` la
+  navigazione lo rifiuta).
+- Deciso di **non** fissare una regola sul formato del titolo (nominare la Tecnologia, niente punto
+  finale): né il prompt né il mock la chiedono, e il titolo d'esempio del mock è proprio nello stile
+  di quello di turborepo che sembrava sbagliato. Semmai è una issue sua, con un giro di prompt e un
+  eval.
+
+### #54: le Note arrivano a 150.000 caratteri (PR #60)
+
+`MAX_NOTES_LENGTH` da 80.000 a **150.000**, con la regola scritta nell'**ADR 0007**: la soglia misura
+quanto siamo disposti a spendere per una singola Sintesi, non quanto il modello riesce a leggere.
+Sono circa 40k token e meno di 10 centesimi con lo sconto batch, molto dentro la finestra di Opus 5.
+Gli 80.000 non stavano né in `CONTEXT.md` né in un ADR: solo in un commento, come difesa dal costo.
+
+La distribuzione vera, 1814 Release con Note in locale: **4 oltre gli 80k**, 7 fra 60k e 80k, 21 fra
+40k e 60k, p95 23.106, **p99 53.592**, massimo 108.842. La soglia sta molto sopra il 99° percentile e
+lascia il 38% di margine sulla Release più lunga.
+
+Oltre la soglia si **fallisce ancora**, non si tronca: il pezzo non letto potrebbe contenere proprio
+il breaking change. Spezzare le Note in più richieste è stato scartato: costa uguale o di più, molto
+codice per 4 Release su 1814, e lascia il modello a decidere su una vista parziale.
+
+### I passi a mano che restano, fermi in attesa di credito
+
+⚠️ Nessuno dei due è stato eseguito: il credito dell'utente è basso. **Un merge da solo non spende.**
+
+1. **#56, costo zero.** `local/msgbatch_0159Vxf39GAEADUx3dQKrzFj-reimport.sql`, generato da
+   `pnpm summary:reimport <risultati.json> <release-id>...`. Lo script legge i risultati salvati del
+   batch, li rivalida con lo stesso `parseSummaryOutput` delle pagine e scrive gli `UPDATE`: **non
+   tocca nessun database**, così applicarli resta un gesto deliberato.
+2. **#54, circa 25 centesimi.** L'SQL qui sotto, poi un submit a mano. Si guarda da solo due volte:
+   prende solo i fallimenti causati dal vecchio limite, e solo se le Note ora ci stanno davvero.
+
+```sql
+update summaries s
+set status = 'pending', failure_reason = null, batch_id = null, updated_at = now()
+from release_notes n
+where n.release_id = s.release_id
+  and s.status = 'failed'
+  and s.failure_reason like 'release notes are % over the 80000 limit'
+  and length(n.body) <= 150000;
+```
+
+### Attenzione per chi riprende
+
+- ⚠️ **L'SQL della #56 vale solo per la produzione.** I `release_id` sono UUID generati per ambiente:
+  in locale quei quattro non esistono e l'`UPDATE` passa **in silenzio senza toccare una riga**,
+  perché è guardato da `status = 'failed'`. Controllare che l'SQL Editor riporti `UPDATE 1` per
+  ciascuno dei quattro. È lo stesso motivo per cui l'utente ha chiesto di uniformare i due database.
+- ⚠️ **In locale le tre Release della #54 sono già `pending`**: l'SQL di rimessa in coda è stato
+  provato lì (`UPDATE 3`, e ha lasciato stare `astro 6.0.0`, che è la quarta oltre gli 80k ma è
+  `skipped`). Non costano niente da ferme, ma **un submit locale lanciato per altri motivi le
+  includerebbe e spenderebbe**. Sono state lasciate `pending` perché con la nuova soglia è lo stato
+  vero: rimetterle `failed` avrebbe richiesto di scrivere un motivo non più valido.
+- ⚠️ **Cambiare una regola di validazione rompe i test che si aspettano un rifiuto.** Alzato il
+  limite del titolo, `tests/integration/summaries.test.ts` costruiva ancora un titolo di 121
+  caratteri aspettandosi `failed`, e il CI è andato rosso dopo che la PR era già aperta. Il database
+  locale è di solito già acceso: **eseguire `pnpm test:integration` prima di aprire la PR**, non solo
+  unitari, `typecheck`, `lint` e `build`.
+- La pagina di una Release `failed` non è muta: `summary-status-block.tsx:46` mostra già
+  `error: summary unavailable` con le Note complete sotto.
 
 ## Primo batch di Sintesi vero (2026-09-28, dopo il merge della #22)
 
@@ -82,10 +172,10 @@ resta niente da raccogliere e il batch non serve più.
 - ⚠️ **Le 4 `failed` sono fallite solo per il titolo troppo lungo**: 121, 124, 125 e 126 caratteri
   contro il limite di 120 in `summary-content.ts`. Erano corrette in tutto il resto. È il prezzo
   previsto del fatto che `output_config.format` garantisce la forma del JSON e non il `maxLength`
-  delle stringhe, cosa che `docs/DECISIONI.md` diceva già: il 3% di scarto è la sua misura. Ipotesi da
-  decidere nella **issue #56**: alzare il limite a 140 (i quattro titoli sono buoni, prima
-  va verificato sul mock che la riga regga) e **reimportare quelle 4 dal file dei risultati invece di
-  rinviarle**, perché rinviarle costerebbe altri 12 centesimi.
+  delle stringhe, cosa che `docs/DECISIONI.md` diceva già: il 3% di scarto è la sua misura.
+  Risolto dalla **#56**: il limite dello schema sale a 140, il mock regge, e le 4 si **reimportano
+  dal file dei risultati invece di rinviarle**, perché rinviarle costerebbe altri 12 centesimi.
+  Vedi la sessione del 2026-09-29 (2).
 
 ### I risultati del batch, salvati (2026-09-29)
 
@@ -136,7 +226,8 @@ Tecnologie**, importate davvero contro il database locale: **1893 Release**, zer
   `src/lib/supabase.ts` apposta: quello importa `@/env` e i job non devono dipenderne.
 - Tre Release vere hanno **Note oltre il limite di 80.000 caratteri** e la Sintesi fallisce:
   `next 16.3.0` (108.842), `biome 2.0.0` (99.660), `turborepo 2.11.0` (88.867). Sono `failed` nel
-  database locale. Da decidere in una issue: troncare, spezzare o accettare.
+  database locale. Deciso nella #54: la soglia sale a 150.000 e le tre ci stanno. Vedi la sessione
+  del 2026-09-29 (2).
 
 ### Fonti con i tag mescolati
 
