@@ -23,6 +23,12 @@ describe("prepareSummaryRequest", () => {
     expect(PROMPT_VERSION).toMatch(/^v\d+$/);
   });
 
+  // Issue #54: the longest Release of the Catalogue, `next 16.3.0`. It was refused at the old limit
+  // of 80,000, and it is one of the featured Releases the product exists for.
+  it("accepts the longest release notes of the Catalogue, 108,842 characters", () => {
+    expect(prepareSummaryRequest({ ...release, notes: "x".repeat(108_842) }).ok).toBe(true);
+  });
+
   it("accepts notes at the threshold", () => {
     expect(prepareSummaryRequest({ ...release, notes: "x".repeat(MAX_NOTES_LENGTH) }).ok).toBe(true);
   });
