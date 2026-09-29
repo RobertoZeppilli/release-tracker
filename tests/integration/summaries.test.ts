@@ -158,7 +158,7 @@ describe("summaries pipeline", () => {
 
   it("fails an invalid output with its reason", async () => {
     const releaseId = await seedPending("3.0.0");
-    const batches = fakeSummaryBatches(() => succeeded({ ...content, title: "x".repeat(121) }));
+    const batches = fakeSummaryBatches(() => succeeded({ ...content, title: "x".repeat(141) }));
 
     await submit(batches);
     await collect(batches);
