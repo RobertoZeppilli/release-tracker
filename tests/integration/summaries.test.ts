@@ -4,7 +4,7 @@ import { z } from "zod";
 import { publicPagesFor } from "@/modules/releases";
 import { CreditExhaustedError, MAX_NOTES_LENGTH, PROMPT_VERSION, SUMMARY_MODEL } from "@/modules/summaries";
 import { collectSummaryBatches, submitPendingSummaries } from "@/modules/summaries/server";
-import { fakeSummaryBatches, succeeded } from "./fake-summary-batches";
+import { type FakeSummaryBatches, fakeSummaryBatches, succeeded } from "./fake-summary-batches";
 import { serviceClient } from "./supabase";
 
 const content = {
@@ -32,20 +32,41 @@ const SummaryRowSchema = z.object({
 let technologyId: string;
 let slug: string;
 
-beforeEach(async () => {
-  slug = `summaries-${randomUUID()}`;
+// Both jobs reach every Summary in the database, and a developer's database holds the whole Catalog:
+// unfenced, one run of these tests would send every real pending Summary to a fake batch that nobody
+// will ever collect (issue #55). Each call here stays inside the Technology the test seeded.
+function submit(batches: FakeSummaryBatches, options: { maxCount?: number } = {}) {
+  return submitPendingSummaries(serviceClient(), batches, { ...options, technologyIds: [technologyId] });
+}
+
+function collect(batches: FakeSummaryBatches) {
+  return collectSummaryBatches(serviceClient(), batches, { technologyIds: [technologyId] });
+}
+
+// Every Technology this test created, so the cleanup takes the outsiders of the fence test too.
+let created: string[] = [];
+
+async function seedTechnology(technologySlug: string): Promise<string> {
   const inserted = await serviceClient()
     .from("technologies")
-    .insert({ slug, name: "Summary test", classification_strategy: "semver" })
+    .insert({ slug: technologySlug, name: "Summary test", classification_strategy: "semver" })
     .select("id")
     .single();
   if (inserted.error) throw inserted.error;
-  technologyId = z.object({ id: z.uuid() }).parse(inserted.data).id;
+  const id = z.object({ id: z.uuid() }).parse(inserted.data).id;
+  created.push(id);
+  return id;
+}
+
+beforeEach(async () => {
+  created = [];
+  slug = `summaries-${randomUUID()}`;
+  technologyId = await seedTechnology(slug);
 });
 
 afterEach(async () => {
   const db = serviceClient();
-  const releases = await db.from("releases").select("id").eq("technology_id", technologyId);
+  const releases = await db.from("releases").select("id").in("technology_id", created);
   if (releases.error) throw releases.error;
   const ids = z.array(z.object({ id: z.uuid() })).parse(releases.data).map((row) => row.id);
   for (const table of ["summaries", "release_notes"] as const) {
@@ -53,17 +74,21 @@ afterEach(async () => {
     if (error) throw error;
   }
   for (const [table, column] of [["releases", "technology_id"], ["technologies", "id"]] as const) {
-    const { error } = await db.from(table).delete().eq(column, technologyId);
+    const { error } = await db.from(table).delete().in(column, created);
     if (error) throw error;
   }
 });
 
 // A featured Release with notes and a pending Summary.
-async function seedPending(version: string, notes = "### Breaking Changes\n\n* drop Node 18"): Promise<string> {
+async function seedPending(
+  version: string,
+  notes = "### Breaking Changes\n\n* drop Node 18",
+  technology = technologyId,
+): Promise<string> {
   const db = serviceClient();
   const release = await db
     .from("releases")
-    .insert({ technology_id: technologyId, version, significance: "featured", origin: "detected", published_at: new Date().toISOString() })
+    .insert({ technology_id: technology, version, significance: "featured", origin: "detected", published_at: new Date().toISOString() })
     .select("id")
     .single();
   if (release.error) throw release.error;
@@ -76,6 +101,15 @@ async function seedPending(version: string, notes = "### Breaking Changes\n\n* d
     if (error) throw error;
   }
   return releaseId;
+}
+
+// A Summary left in flight by another run: the batch is not one this test's fake knows.
+async function setProcessing(releaseId: string, batchId: string): Promise<void> {
+  const { error } = await serviceClient()
+    .from("summaries")
+    .update({ status: "processing", batch_id: batchId })
+    .eq("release_id", releaseId);
+  if (error) throw error;
 }
 
 async function readSummary(releaseId: string) {
@@ -93,7 +127,7 @@ describe("summaries pipeline", () => {
     const seeded = await Promise.all(Array.from({ length: 20 }, (_, index) => seedPending(`1.${index}.0`)));
     const batches = fakeSummaryBatches(() => succeeded(content));
 
-    await Promise.all([1, 2, 3].map(() => submitPendingSummaries(serviceClient(), batches)));
+    await Promise.all([1, 2, 3].map(() => submit(batches)));
 
     const sent = batches.sent.flat().map((request) => request.releaseId).filter((id) => seeded.includes(id));
     expect(sent.toSorted()).toEqual(seeded.toSorted());
@@ -103,16 +137,16 @@ describe("summaries pipeline", () => {
     const releaseId = await seedPending("2.0.0");
     const batches = fakeSummaryBatches(() => succeeded(content));
 
-    const submitted = await submitPendingSummaries(serviceClient(), batches);
+    const submitted = await submit(batches);
     expect(submitted.submitted).toContain(releaseId);
     expect(await readSummary(releaseId)).toMatchObject({ status: "processing", batch_id: submitted.batchId });
 
     batches.processing = true;
-    expect((await collectSummaryBatches(serviceClient(), batches)).stillProcessing).toContain(releaseId);
+    expect((await collect(batches)).stillProcessing).toContain(releaseId);
     expect((await readSummary(releaseId)).status).toBe("processing");
 
     batches.processing = false;
-    expect((await collectSummaryBatches(serviceClient(), batches)).ready).toContain(releaseId);
+    expect((await collect(batches)).ready).toContain(releaseId);
     expect(await readSummary(releaseId)).toMatchObject({
       status: "ready",
       content,
@@ -126,8 +160,8 @@ describe("summaries pipeline", () => {
     const releaseId = await seedPending("3.0.0");
     const batches = fakeSummaryBatches(() => succeeded({ ...content, title: "x".repeat(121) }));
 
-    await submitPendingSummaries(serviceClient(), batches);
-    await collectSummaryBatches(serviceClient(), batches);
+    await submit(batches);
+    await collect(batches);
 
     const summary = await readSummary(releaseId);
     expect(summary).toMatchObject({ status: "failed", content: null });
@@ -139,8 +173,8 @@ describe("summaries pipeline", () => {
     const releaseId = await seedPending(`3.1.0-${type}`);
     const batches = fakeSummaryBatches(() => ({ type, message: "invalid_request_error" }));
 
-    await submitPendingSummaries(serviceClient(), batches);
-    await collectSummaryBatches(serviceClient(), batches);
+    await submit(batches);
+    await collect(batches);
 
     expect(await readSummary(releaseId)).toMatchObject({
       status: "failed",
@@ -152,7 +186,7 @@ describe("summaries pipeline", () => {
     const releaseId = await seedPending("4.0.0", "x".repeat(MAX_NOTES_LENGTH + 1));
     const batches = fakeSummaryBatches(() => succeeded(content));
 
-    const report = await submitPendingSummaries(serviceClient(), batches);
+    const report = await submit(batches);
 
     expect(report.failed).toContain(releaseId);
     expect(batches.sent.flat().map((request) => request.releaseId)).not.toContain(releaseId);
@@ -166,7 +200,7 @@ describe("summaries pipeline", () => {
       throw new CreditExhaustedError();
     };
 
-    const report = await submitPendingSummaries(serviceClient(), batches);
+    const report = await submit(batches);
 
     expect(report).toMatchObject({ batchId: null, submitted: [], pending: [releaseId] });
     expect(await readSummary(releaseId)).toMatchObject({
@@ -182,8 +216,8 @@ describe("summaries pipeline", () => {
     const releaseId = await seedPending("6.1.0");
     const batches = fakeSummaryBatches(() => ({ type: "credit_exhausted", message: "credit balance is too low" }));
 
-    await submitPendingSummaries(serviceClient(), batches);
-    const report = await collectSummaryBatches(serviceClient(), batches);
+    await submit(batches);
+    const report = await collect(batches);
 
     expect(report.pending).toContain(releaseId);
     expect(report.failed).not.toContain(releaseId);
@@ -203,10 +237,10 @@ describe("summaries pipeline", () => {
       throw new CreditExhaustedError();
     };
 
-    await submitPendingSummaries(serviceClient(), batches);
+    await submit(batches);
     batches.submit = send;
-    expect((await submitPendingSummaries(serviceClient(), batches)).submitted).toContain(releaseId);
-    expect((await collectSummaryBatches(serviceClient(), batches)).ready).toContain(releaseId);
+    expect((await submit(batches)).submitted).toContain(releaseId);
+    expect((await collect(batches)).ready).toContain(releaseId);
 
     expect(await readSummary(releaseId)).toMatchObject({ status: "ready", content, failure_reason: null });
   });
@@ -215,13 +249,13 @@ describe("summaries pipeline", () => {
     const releaseId = await seedPending("7.0.0");
     const batches = fakeSummaryBatches(() => succeeded(content));
 
-    await submitPendingSummaries(serviceClient(), batches);
+    await submit(batches);
     batches.processing = true;
-    const processing = await collectSummaryBatches(serviceClient(), batches);
+    const processing = await collect(batches);
     expect(processing.changed).not.toContainEqual({ slug, version: "7.0.0" });
 
     batches.processing = false;
-    const report = await collectSummaryBatches(serviceClient(), batches);
+    const report = await collect(batches);
 
     expect(report.ready).toContain(releaseId);
     expect(report.changed).toContainEqual({ slug, version: "7.0.0" });
@@ -234,9 +268,9 @@ describe("summaries pipeline", () => {
     await seedPending("7.1.0");
     const batches = fakeSummaryBatches(() => ({ type: "credit_exhausted", message: "credit balance is too low" }));
 
-    await submitPendingSummaries(serviceClient(), batches);
+    await submit(batches);
 
-    expect((await collectSummaryBatches(serviceClient(), batches)).changed).toContainEqual({ slug, version: "7.1.0" });
+    expect((await collect(batches)).changed).toContainEqual({ slug, version: "7.1.0" });
   });
 
   it("puts the Summaries back in the queue when the batch cannot be sent", async () => {
@@ -246,7 +280,25 @@ describe("summaries pipeline", () => {
       throw new Error("network down");
     };
 
-    await expect(submitPendingSummaries(serviceClient(), batches)).rejects.toThrow("network down");
+    await expect(submit(batches)).rejects.toThrow("network down");
     expect(await readSummary(releaseId)).toMatchObject({ status: "pending", batch_id: null });
+  });
+
+  // The fence of issue #55: unfenced, both jobs would reach the Summaries of the whole Catalog.
+  it("leaves the Summaries of another Technology alone", async () => {
+    const outsider = await seedTechnology(`summaries-outsider-${randomUUID()}`);
+    const queued = await seedPending("8.0.0", undefined, outsider);
+    const inFlight = await seedPending("8.1.0", undefined, outsider);
+    await setProcessing(inFlight, "msgbatch_elsewhere");
+    const mine = await seedPending("8.2.0");
+    const batches = fakeSummaryBatches(() => succeeded(content));
+
+    const submitted = await submit(batches);
+    const collected = await collect(batches);
+
+    expect(submitted.submitted).toEqual([mine]);
+    expect(collected.ready).toEqual([mine]);
+    expect(await readSummary(queued)).toMatchObject({ status: "pending", batch_id: null, model: null });
+    expect(await readSummary(inFlight)).toMatchObject({ status: "processing", batch_id: "msgbatch_elsewhere" });
   });
 });

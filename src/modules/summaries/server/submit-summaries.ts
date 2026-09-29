@@ -3,6 +3,7 @@ import { z } from "zod";
 import { CreditExhaustedError, type SummaryBatches, type SummaryRequest } from "../domain/summary-batches";
 import { PROMPT_VERSION, prepareSummaryRequest, SUMMARY_MODEL } from "../domain/summary-prompt";
 import { chunks } from "./chunks";
+import type { SummaryScope } from "./summary-scope";
 
 const ClaimedSchema = z.array(z.object({ release_id: z.uuid() }));
 
@@ -23,9 +24,12 @@ export type SubmitReport = { batchId: string | null; submitted: string[]; failed
 export async function submitPendingSummaries(
   db: SupabaseClient,
   batches: SummaryBatches,
-  { maxCount = 1000 }: { maxCount?: number } = {},
+  { maxCount = 1000, technologyIds }: { maxCount?: number } & SummaryScope = {},
 ): Promise<SubmitReport> {
-  const claimed = await db.rpc("claim_pending_summaries", { max_count: maxCount });
+  const claimed = await db.rpc("claim_pending_summaries", {
+    max_count: maxCount,
+    technology_ids: technologyIds ?? null,
+  });
   if (claimed.error) throw claimed.error;
   const ids = ClaimedSchema.parse(claimed.data).map((row) => row.release_id);
   if (ids.length === 0) return { batchId: null, submitted: [], failed: [], pending: [] };
