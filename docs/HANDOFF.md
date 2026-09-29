@@ -17,6 +17,7 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28). Sbloccate: **#25** e **#36**.
+  Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro).
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
@@ -32,9 +33,11 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Primo batch di Sintesi vero (2026-09-28, dopo il merge della #22)
 
-Il primo invio vero alla Batch API, deciso e lanciato dall'utente. **125 Sintesi inviate in un solo
-batch** (`msgbatch_0159Vxf39GAEADUx3dQKrzFj`), **3 fallite prima dell'invio** perché le Note
-superano gli 80.000 caratteri (issue #54, non costano niente), **nessuna rimasta in coda**.
+Il primo invio vero alla Batch API, deciso e lanciato dall'utente, **raccolto il 2026-09-29**.
+**126 Sintesi inviate in un solo batch** (`msgbatch_0159Vxf39GAEADUx3dQKrzFj`, non 125 come diceva
+prima questo documento), **3 fallite prima dell'invio** perché le Note superano gli 80.000 caratteri
+(issue #54, non costano niente), **nessuna rimasta in coda**. Il batch è finito in 17 minuti con
+**126 richieste su 126 riuscite e zero errori** dal lato dell'API.
 
 - Il `CRON_SECRET` di produzione **non era più recuperabile**: su Vercel è *Sensitive* e si legge solo
   alla creazione. È stato rigenerato, rimesso su Production e seguito da un **redeploy**, senza il
@@ -48,9 +51,28 @@ superano gli 80.000 caratteri (issue #54, non costano niente), **nessuna rimasta
 - I due cron delle Sintesi restano **fuori** da `vercel.json`: un giro a mano resta un giro solo, e
   il lavoro quotidiano comincerà il giorno che quelle due righe tornano, con una PR sua.
 
-Da fare alla raccolta: lanciare `/api/jobs/summaries/collect`, contare quante Sintesi diventano
-`ready` e quante `failed` per validazione, leggere il costo vero sulla Console di Anthropic e
-metterlo in `docs/DECISIONI.md` accanto alla stima di $2,94.
+### La raccolta (2026-09-29): 122 `ready`, 4 `failed`, spesa $4,16
+
+`/api/jobs/summaries/collect` ha reso **122 `ready` e 4 `failed`**, con `stillProcessing` e `pending`
+vuoti e 164 pagine marcate da rivalidare. In produzione le Sintesi si vedono. La spesa è chiusa: non
+resta niente da raccogliere e il batch non serve più.
+
+- **Costo vero: $4,16** per le 126, cioè $0,033 di media e $0,0245 di mediana. Ricavato dai token dei
+  risultati (1.034.180 in input, 125.965 in output) a $5/$25 per milione con lo sconto Batch del 50%,
+  non dalla Console. Sommato ai 4 batch del set di valutazione del 23/09 fa **$4,80 in tutto**, che è
+  la cifra vista sulla bolletta (circa €4,40). Numeri riportati in `docs/DECISIONI.md`.
+- **La stima di $2,94 era bassa di un terzo** perché il costo per Sintesi veniva misurato sul set di
+  valutazione, 14 Release scelte a mano con Note più corte del Catalogo vero. La mediana vera è quasi
+  identica alla stima: sbagliava sulla coda. Le 10 Sintesi più care sono il 21% della spesa.
+- ⚠️ **Le 4 `failed` sono fallite solo per il titolo troppo lungo**: 121, 124, 125 e 126 caratteri
+  contro il limite di 120 in `summary-content.ts`. Erano corrette in tutto il resto. È il prezzo
+  previsto del fatto che `output_config.format` garantisce la forma del JSON e non il `maxLength`
+  delle stringhe, cosa che `docs/DECISIONI.md` diceva già: il 3% di scarto è la sua misura. Ipotesi da
+  decidere in una issue non ancora aperta: alzare il limite a 140 (i quattro titoli sono buoni, prima
+  va verificato sul mock che la riga regga) e **reimportare quelle 4 dal file dei risultati invece di
+  rinviarle**, perché rinviarle costerebbe altri 12 centesimi.
+- I 126 risultati del batch sono salvati in una scratchpad di sessione, che **non sopravvive**: se
+  servono ancora, vanno ripresi dall'API finché il batch li tiene, oppure messi in un posto vero.
 
 ## Sessione del 2026-09-28 (6): #22 Catalogo a 37 Tecnologie (PR #53 in `main`)
 
@@ -103,6 +125,10 @@ Release importanti senza Note sono davvero assenti da GitHub, verificato tag per
 produzione (34 Tecnologie, nessun fallimento) e le Sintesi sono **In attesa**: non partono da sole,
 perché in `vercel.json` l'unico cron è il Rilevamento e i job delle Sintesi si chiamano a mano con
 `CRON_SECRET`. La spesa resta una decisione dell'utente, non un effetto del deploy.
+
+> Superato: l'utente ha poi deciso di spendere. Quelle Sintesi sono state inviate il 28/09 e
+> raccolte il 29/09, e sono costate $4,16 invece dei $2,94 stimati qui. Vedi la sezione
+> "Primo batch di Sintesi vero" in cima al documento.
 
 ### Attenzione per chi riprende
 
