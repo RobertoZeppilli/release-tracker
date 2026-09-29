@@ -4,8 +4,11 @@ export const SUMMARY_MODEL = "claude-opus-5";
 // Bump on every change to the prompt text, so a stored Summary says which prompt produced it.
 export const PROMPT_VERSION = "v4";
 
-// ADR 0007: notes are never truncated. About 20k tokens, a few cents per Summary with the batch discount.
-export const MAX_NOTES_LENGTH = 80_000;
+// ADR 0007: notes are never truncated, so the limit is what the longest Release we accept costs,
+// not what the model can read. 150,000 characters are about 40k tokens and under 10 cents with the
+// batch discount, well inside the window. Measured on the Catalogue of 37 Technologies: the 99th
+// percentile of the notes is 53,592 characters and the longest Release of all is 108,842 (issue #54).
+export const MAX_NOTES_LENGTH = 150_000;
 
 const SYSTEM = `You summarize the release notes of a software release for developers deciding whether to upgrade.
 
