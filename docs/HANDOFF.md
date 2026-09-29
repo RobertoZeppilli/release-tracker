@@ -13,16 +13,17 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-29).** `main` è allineato a `origin/main`. In corso: la **#55** sul branch
-`fix/55-summary-claim-fence`, finita e verificata, in attesa di commit e PR. Il lavoro pronto dopo:
-**#56** (titolo troppo lungo, e c'è da decidere se rientri nella regola "Sintesi pagata, non buttata";
-⚠️ prima va verificato se i risultati del batch sono ancora recuperabili, perché la scratchpad dove
-stavano non c'è più), **#25** e **#24**. La **#57** aspetta una decisione dell'utente, non del codice.
+**Da dove ripartire (2026-09-29).** Niente è in corso, l'albero è pulito e `main` è allineato a
+`origin/main`. Il lavoro pronto da prendere: **#56** (titolo troppo lungo, e c'è da decidere se rientri
+nella regola "Sintesi pagata, non buttata"; ⚠️ prima va verificato se i risultati del batch sono ancora
+recuperabili, perché la scratchpad dove stavano non c'è più), **#25** e **#24**. La **#57** aspetta una
+decisione dell'utente, non del codice.
 
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
-- Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28). Sbloccate: **#25** e **#36**.
+- Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28) e la **#55** (PR #58, unita il
+  2026-09-29). Sbloccate: **#25** e **#36**.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -140,6 +141,17 @@ perché in `vercel.json` l'unico cron è il Rilevamento e i job delle Sintesi si
 
 ### Attenzione per chi riprende
 
+- ⚠️ **Il `SUPABASE_ACCESS_TOKEN` del workflow `Deploy database` è stato rigenerato il 2026-09-29**:
+  il vecchio dava `Unauthorized` su `supabase link`, e per un giorno nessuna migrazione è arrivata in
+  produzione (l'ultimo giro riuscito era del 28/09 alle 19:19). Se il workflow torna a fallire lì, è
+  di nuovo quello. Il nuovo è uno **scoped token** limitato al progetto, con **Project Settings**,
+  **API Keys** e **API Key Secrets** in sola lettura: tanto `supabase db push` usa
+  `SUPABASE_DB_PASSWORD` e si collega al database diretto, saltando i permessi del token.
+- Dopo il merge della #55 la migrazione del recinto **è passata in produzione** (`db push` del run
+  36573254145) e il `catalog:sync` ha detto `0 operation(s)`, cioè il Catalogo era già allineato.
+  Lo stato delle Sintesi in produzione **non è stato riletto**: nessuno lo ha toccato, ma se serve la
+  certezza sono due query nell'SQL Editor (la firma di `claim_pending_summaries` e i conteggi per
+  `status`). Da qui non si arriva: `.env.local` punta al Supabase locale.
 - L'isolamento dei test di integrazione è a posto in tutti e due i posti dove mancava: le finte Fonti
   di `detection.test.ts` rispondono solo per le proprie Tecnologie, e i job delle Sintesi hanno il
   recinto per Tecnologia della #55. Non serve più rimettere a mano nessuna Sintesi dopo
