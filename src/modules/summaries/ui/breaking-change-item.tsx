@@ -1,4 +1,5 @@
 import { OctagonAlert, Wrench } from "lucide-react";
+import { type CaretWidth, caretWidth } from "../domain/caret-row";
 import { type Citation, citationSpans } from "../domain/citations";
 import type { BreakingChange } from "../domain/summary-content";
 import { CitePointer } from "./cite-pointer";
@@ -9,31 +10,41 @@ const gutter = "grid grid-cols-[5ch_1fr] max-[640px]:grid-cols-[4ch_1fr]";
 // Ligatures off, so the `-->` pointer stays the three characters it is written as.
 const gutterLabel = "pr-[1.5ch] text-right text-text-faint [font-variant-ligatures:none] select-none max-[640px]:pr-[1ch]";
 
-// DESIGN.md: the quote row and its caret row form one `sunken` well. Below 640px the caret row is
-// hidden and the cited stretch carries a coral underline inside the quote row instead.
+// DESIGN.md: the quote row and its caret row form one `sunken` well. The caret row is shown only
+// while the quote is certain to stay on one line (see `caretWidth`); below that width the cited
+// stretch carries a coral underline inside the quote row instead, which stays right however it wraps.
+const CARET: Record<CaretWidth | "never", { caret: string; cited: string }> = {
+  641: { caret: "max-[640px]:hidden", cited: "max-[640px]:cited-quote" },
+  768: { caret: "max-[767px]:hidden", cited: "max-[767px]:cited-quote" },
+  900: { caret: "max-[899px]:hidden", cited: "max-[899px]:cited-quote" },
+  1024: { caret: "max-[1023px]:hidden", cited: "max-[1023px]:cited-quote" },
+  never: { caret: "hidden", cited: "cited-quote" },
+};
+
 function QuoteWell({ line, text, start, end }: { line: number; text: string; start: number; end: number }) {
+  const { caret, cited } = CARET[caretWidth(text.length) ?? "never"];
   return (
-    <>
-      <div className={`${gutter} mt-[2px] rounded-t-inline bg-sunken pt-[6px] max-[640px]:mb-[2px] max-[640px]:rounded-inline max-[640px]:pb-[6px]`}>
+    <div className="my-[2px] rounded-inline bg-sunken py-[6px]">
+      <div className={gutter}>
         <span aria-hidden className={gutterLabel}>
           {line}
         </span>
-        <span className="pr-3 whitespace-pre-wrap text-text-muted">
+        {/* A quote can carry a URL or an identifier longer than the column: it breaks rather than
+            widening the page. Where the caret row is shown the quote is short enough not to wrap. */}
+        <span className="pr-3 whitespace-pre-wrap [overflow-wrap:anywhere] text-text-muted">
           {text.slice(0, start)}
-          <span className="max-[640px]:underline max-[640px]:decoration-breaking max-[640px]:decoration-2 max-[640px]:underline-offset-4">
-            {text.slice(start, end)}
-          </span>
+          <span className={cited}>{text.slice(start, end)}</span>
           {text.slice(end)}
         </span>
       </div>
-      <div aria-hidden className={`${gutter} mb-[2px] rounded-b-inline bg-sunken pb-1 leading-none max-[640px]:hidden`}>
+      <div aria-hidden className={`${gutter} leading-none ${caret}`}>
         <span className={gutterLabel}>|</span>
         <span className="pr-3 whitespace-pre-wrap">
           <span className="invisible">{text.slice(0, start)}</span>
           <span className="text-breaking">{"^".repeat(end - start)}</span>
         </span>
       </div>
-    </>
+    </div>
   );
 }
 

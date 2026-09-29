@@ -153,7 +153,19 @@
     background: var(--sunken);
     padding: 1px 5px;
     border-radius: 4px;
+    /* An identifier out of the release notes can be wider than the column it sits in: it breaks
+       rather than widening the page (issue #62). */
+    overflow-wrap: anywhere;
   }
+}
+
+/* DESIGN.md: where the caret row cannot be shown, the cited stretch carries this underline inside the
+   quote row instead. A utility, so the page can name the width it takes over at. */
+@utility cited-quote {
+  text-decoration-line: underline;
+  text-decoration-color: var(--breaking);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 /* The one motion moment (DESIGN.md): the caret underline draws beneath a cited span in the notes. */

@@ -300,13 +300,21 @@ Diagnostic rows use a gutter grid: a 5ch right-aligned faint gutter holds `-->`,
 
 **Technologies page.** The Status-scale follow status opens the page 32px below the header, the muted intro sits 12px below it, and the filter sentence 24px below that. The `following`, `catalog` and `retired` sections follow, 48px apart. Picker rows use a three-column grid (16ch name, facts, auto toggle), with a 16px column gap, 12px vertical padding, centred alignment and a 1px `rule` between rows (the first row also gets a top rule). Note lines inside a section (the limit note, the retired note) sit between the section title and the rows, 12px above the rows, capped at 900px.
 
-**Responsive (640px and below):** the breadcrumb path and source meta are hidden. Key-point labels and diagnostic headings stack to one column. Gutters narrow to 4.5ch. **Caret rows are hidden.** The quoted span gets a 2px `breaking` underline (offset 4px) inside the quote row instead. Fix diffs scroll horizontally.
+**Responsive (640px and below):** the breadcrumb path and source meta are hidden. Key-point labels and diagnostic headings stack to one column. Gutters narrow to 4.5ch. **Caret rows are hidden.** The quoted span gets a 2px `breaking` underline (offset 4px) inside the quote row instead. Fix diffs scroll horizontally. Quotes and inline code break inside a word rather than widening the page.
 
 **Responsive, technology page.** At 880px and below, release rows reflow to significance, version and a right-aligned date on the first line, with the title, verdict and breaking list across the full width below, and stat words may wrap. At 640px and below the header facts (the latest version and the sources) wrap as one group, so the Follow keeps a line of its own instead of trailing the sources, and the stat row keeps major, `|` and bar on one line while the words drop to a full-width second line. Digest rows drop the version range: the summary shows only the count, with `no action needed` on its own line. The expanded digest list loses its 11ch indent. The range verdict wraps the claim below the label as one unit.
 
 **Responsive, Dashboard (640px and below):** the top-bar nav is hidden and the quota reads `N followed`. Stack rows reflow to technology, version and a right-aligned date on the first line, with the content full width below (compact rows too). A section title's significance legend wraps to its own line under the title and rule. Week summaries hide the date range and put `no action needed` on its own line. The expanded week list becomes one column with no indent. Catalog picker rows put the facts under the name, with the Follow button spanning both lines.
 
 **Responsive, Technologies (640px and below):** the nav is hidden and the quota reads `N followed`. The follow status shortens to `note: N of 10 followed` (the same one-line discipline as the verdict). The filter label and the match count share the first line, with the count right-aligned, and the input drops to a full-width second line. Picker rows become two columns: the name on the first line, the facts wrapping under it, and the toggle (or the `unfollowed` note, right-aligned and capped at 16ch) spanning both lines on the right. A row error drops to a full-width third line.
+
+### The caret row and its replacement
+
+The caret row is `^` repeated once per cited character, so it only reads right while the quote stays on one line. Once the quote wraps, the carets sit under the wrong words, and being one run with no place to break they widen the whole page: the release notes are real text, and a cited line of 167 characters made a 1503px row inside a 900px column (issue #62).
+
+So the caret row is shown **only where its own quote is certain to fit on one line**, and the coral underline inside the quote row takes over everywhere else, saying the same thing and staying right however the quote wraps. A quote fits on one line when its length in characters is no more than the diagnostic column allows at that width: 64 at 641px, 79 at 768px, 95 at 900px, 100 at 1024px and above, where the column reaches its 900px cap. A quote longer than 100 characters never gets a caret row. The lengths are computed in `caretWidth`, not guessed in CSS, and the page names the width its caret row survives down to.
+
+The mock shows the switch at 900px, the width its four quotes need. Below 640px caret rows are gone whatever the length, as they always were.
 
 ## Elevation & Depth
 
@@ -317,7 +325,7 @@ The system is flat with no shadows. Depth comes from three tonal layers: `sunken
 
 ## Shapes
 
-Corners are gently squared: 6px for buttons, the source panel and fix diffs, and 4px for inline code and quote/caret wells. A quote row and its caret row form a single well, rounded 4px top and 4px bottom. The focus outline is 2px `focus`, offset 3px, with a 3px radius. Pointer links use a dashed 1px underline that turns solid on hover; on a `-->` help pointer only the label carries it. The `-->` pointer and caret row are typographic shapes, not drawn graphics.
+Corners are gently squared: 6px for buttons, the source panel and fix diffs, and 4px for inline code and quote/caret wells. A quote row and its caret row sit in one well, rounded 4px, with 6px of padding above and below. The focus outline is 2px `focus`, offset 3px, with a 3px radius. Pointer links use a dashed 1px underline that turns solid on hover; on a `-->` help pointer only the label carries it. The `-->` pointer and caret row are typographic shapes, not drawn graphics.
 
 ## Components
 
@@ -346,7 +354,7 @@ Rows in order:
 1. Heading: coral octagon glyph with `breaking[n]:` (Mono 16px), then the Grotesk 18px title.
 2. `-->` gutter + cite pointer with a line range (`release-notes:12-13`), in cyan Mono 13px with a dashed underline.
 3. Quote row: the line number in the gutter, the muted Mono quote on `sunken`.
-4. Caret row: `|` gutter, a hidden pad matching the quote text before the span, then coral `^^^` under the cited span. It is aria-hidden.
+4. Caret row: `|` gutter, a hidden pad matching the quote text before the span, then coral `^^^` under the cited span. It is aria-hidden. **It is shown only while the quote stays on one line**: see "The caret row and its replacement".
 5. `|` gutter + Grotesk explanation of what changes.
 6. `=` gutter + cyan `help:` label with the wrench glyph, then the Grotesk migration text.
 7. Optional fix diff: a `sunken` block with a 1px rule border, 6px radius and Mono 13.5px text. `-` lines are coral, `+` lines are green.
@@ -448,7 +456,7 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Do** pair every severity ink with its glyph and label word (see The Severity Pairing Rule).
 - **Do** cite every key point and breaking change with a `release-notes:N` or `N-M` pointer that highlights exactly those lines in the source view.
 - **Do** set grammar, numbers and line references in Fragment Mono with tabular numerals, and explanations in Hanken Grotesk.
-- **Do** replace caret rows with an in-quote 2px `breaking` underline at 640px and below.
+- **Do** replace a caret row with an in-quote 2px `breaking` underline wherever the quote would wrap, not only at 640px and below.
 - **Do** keep the caret-draw as the single motion moment, with an immediate fallback under reduced motion.
 - **Do** define both themes for every colour role. Dark is the default.
 - **Do** mark release significance with the neutral SVG shape glyphs (see The Neutral Significance Rule).

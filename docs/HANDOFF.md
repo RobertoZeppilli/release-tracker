@@ -13,14 +13,18 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-29, notte).** Niente è in corso, l'albero è pulito e `main` è allineato a
-`origin/main`. La **#23** è chiusa (PR #61, unita il 2026-09-29).
+**Da dove ripartire (2026-09-29, notte).** La **#62** è fatta: vedi la sessione (5) qui sotto.
+La **#23** è chiusa (PR #61, unita il 2026-09-29).
 
-Una sessione che lavora da sola prende la **#62** (overflow orizzontale della pagina della Release,
-`ready-for-agent`): è un difetto misurato, con la strada del rimedio già scritta nella issue. Poi la
-**#25** (404 ed errore generico) e la **#24** (SEO). Le tre `ready-for-human` aspettano l'utente:
-la **#63** (navigazione) va decisa **prima** della **#47** (revisione del design), che ora la ha fra
-i "Blocked by"; la **#64** si scioglie dentro la #47; la **#57** è un verdetto sulla qualità.
+Una sessione che lavora da sola prende la **#25** (404 ed errore generico), poi la **#24** (SEO).
+Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) va decisa **prima** della **#47**
+(revisione del design), che ora la ha fra i "Blocked by"; la **#64** si scioglie dentro la #47;
+la **#57** è un verdetto sulla qualità; la **#65** (uniformare i database) è ferma per scelta
+dell'utente fino al secondo giro a pagamento.
+
+L'ordine concordato con l'utente il 2026-09-29: **#62**, poi la decisione sulla **#63** e la sua
+implementazione, la **#25** quando serve (non è bloccata da niente), poi la **#47** con la #64 dentro,
+poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il SEO passa anche sulla landing.
 
 **Dopo la #47, prima di dire che l'app è pronta**: un giro a mano nel browser su tutta l'app,
 funzione per funzione, per capire se la percezione d'uso regge. La stella polare, detta dall'utente,
@@ -34,12 +38,11 @@ l'SQL della #56 (reimportazione di 4 Sintesi, **costo zero**) e quello della #54
 (**circa 25 centesimi**). Da ricordare per stare tranquilli: **un merge da solo non spende mai**,
 perché i due cron delle Sintesi restano fuori da `vercel.json` e il submit si chiama a mano.
 
-**Tema aperto, chiesto dall'utente**: uniformare il database locale e quello di produzione, in modo
-che il locale rispecchi la produzione. Il nodo emerso nella #56 è che i `release_id` sono UUID
-generati per ambiente, quindi i due database non condividono nessuna chiave delle Release: o si fa un
-dump vero e proprio, o si rendono le Release identificabili in modo stabile fra ambienti (Tecnologia +
-Versione, che è già una chiave unica in `releases_technology_id_version_key`). Sono due strade molto
-diverse per costo e conseguenze, e nessuna delle due è ancora stata scelta.
+**Tema aperto, chiesto dall'utente**: uniformare il database locale e quello di produzione. È
+diventato la **#65** il 2026-09-29, con le due strade scritte (dump vero, oppure Release
+identificabili in modo stabile fra ambienti con Tecnologia + Versione, già unica in
+`releases_technology_id_version_key`). Nessuna delle due è scelta, e l'utente l'ha messa **nel secondo
+giro a pagamento**: non è lavoro da prendere adesso.
 
 La `ANTHROPIC_API_KEY` è stata aggiornata su Vercel il 2026-09-29 e la produzione **è stata
 ridistribuita** subito dopo, col push di questo documento: le funzioni hanno la chiave nuova. Da
@@ -63,6 +66,66 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-29 (5): #62, l'overflow della pagina della Release
+
+La #62 è chiusa. Il rimedio è quello che la issue indicava, arrivato però a una regola più precisa di
+"nascondere i caret sotto i 640px".
+
+### La riga dei caret vale quanto la citazione sta su una riga
+
+La riga dei caret è `^` una volta per carattere citato: **regge solo finché la citazione sta su una
+riga sola**. Appena va a capo i caret finiscono sotto le parole sbagliate, e essendo una sequenza
+senza nessun punto dove spezzarsi allargano tutta la pagina. Non è una questione di larghezza della
+finestra: è la lunghezza della citazione, riga per riga.
+
+Quindi `src/modules/summaries/domain/caret-row.ts` calcola, da quanti caratteri ha la citazione, **la
+finestra più stretta in cui quella citazione ci sta ancora su una riga**: 64 caratteri a 641px, 79 a
+768px, 95 a 900px, 100 a 1024px e oltre (dove la colonna ha già toccato il suo tetto di 900px). Oltre
+i 100 caratteri la riga dei caret non compare mai. Sotto quella soglia la sottolineatura corallo
+dentro la riga citata prende il suo posto, come `DESIGN.md` già faceva sotto i 640px: dice la stessa
+cosa e resta allineata comunque la citazione vada a capo.
+
+Il calcolo sta nel dominio ed è testato (`caret-row.test.ts`); la pagina ne ricava soltanto una coppia
+di classi Tailwind letterali, perché il JIT non vede le classi costruite a runtime. La sottolineatura
+è diventata `@utility cited-quote` in `globals.css`, così si può scrivere `max-[899px]:cited-quote`.
+
+### Le due righe sono ora un solo pozzo
+
+`QuoteWell` aveva due `div` con mezzo raggio ciascuno e lo sfondo ripetuto: nascondere quello dei
+caret voleva dire correggere anche il raggio e i margini dell'altro, a ogni soglia. Ora c'è **un
+contenitore solo** con sfondo, raggio e padding, e le due righe dentro. Nascondere la riga dei caret
+non tocca più niente altro. Il bordo inferiore passa da 4px a 6px di padding: è la stessa misura del
+superiore, ed è quello che il mock faceva già sotto i 640px.
+
+### L'altra causa, sotto i 640px
+
+`code` in `globals.css` prende `overflow-wrap: anywhere`, e la riga citata pure: un identificatore o
+un URL più larghi della colonna vanno a capo dentro la parola invece di allargare la pagina. È la
+causa che restava dove i caret erano già nascosti.
+
+### La guardia
+
+`tests/e2e/overflow.spec.ts` misura `scrollWidth` contro `clientWidth` su home, login, Tecnologia,
+Release (Note chiuse e aperte), Dashboard e Tecnologie, a 1440, 1280, 768 e 390px, e **nomina gli
+elementi foglia che sporgono**: sapere che una pagina straborda non basta per ripararla. Le fixture
+sono ostili di proposito: una citazione che nessuna larghezza tiene, un identificatore più largo di un
+telefono, un URL nudo. Lo spec controlla anche che la riga dei caret resti dov'è giusta e che il
+pannello delle Note continui a scorrere per conto suo.
+
+### Attenzione per chi riprende
+
+- ⚠️ **Le classi Tailwind vanno scritte per intero.** `max-[${w}px]:hidden` non viene generata: il
+  file usa una tabella di classi letterali, una riga per soglia. Se si aggiunge una soglia in
+  `CARET_WIDTHS` va aggiunta anche lì, e nel mock.
+- ⚠️ **Il mock è stato aggiornato** (`design/mocks/release.html`): un solo pozzo per le due righe e
+  `data-fits` su ciascuno. Le sue quattro citazioni stanno fra 80 e 88 caratteri, quindi il mock
+  mostra il passaggio a 900px. Senza questo aggiornamento la sessione dopo rimetterebbe le due righe
+  separate.
+- ⚠️ **Fixture delle Sintesi: `keyPoints` ne vuole almeno 3** (`SummaryContentSchema`). Con meno, la
+  Sintesi non valida e la pagina non mostra niente, senza dire perché: due test sono falliti così.
+- Le misure (0.6em di avanzamento di Fragment Mono, colonna 1040/900px, gutter 5ch) stanno nei
+  commenti di `caret-row.ts`. Se il tipo o la colonna cambiano, le soglie vanno rifatte.
 
 ## Sessione del 2026-09-29 (4): quattro segnalazioni dell'utente, misurate prima di scriverle
 
