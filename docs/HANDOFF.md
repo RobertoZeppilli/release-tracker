@@ -14,9 +14,19 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 ## Stato
 
 **Da dove ripartire (2026-09-29, notte).** Niente è in corso, l'albero è pulito e `main` è allineato a
-`origin/main`. La **#23** è chiusa (PR #61, unita il 2026-09-29): la prossima sessione prende la
-**#25** (pagine 404 ed errore generico, `ready-for-agent`, sbloccata), poi la **#24**. La **#57**
-aspetta una decisione dell'utente, non del codice.
+`origin/main`. La **#23** è chiusa (PR #61, unita il 2026-09-29).
+
+Una sessione che lavora da sola prende la **#62** (overflow orizzontale della pagina della Release,
+`ready-for-agent`): è un difetto misurato, con la strada del rimedio già scritta nella issue. Poi la
+**#25** (404 ed errore generico) e la **#24** (SEO). Le tre `ready-for-human` aspettano l'utente:
+la **#63** (navigazione) va decisa **prima** della **#47** (revisione del design), che ora la ha fra
+i "Blocked by"; la **#64** si scioglie dentro la #47; la **#57** è un verdetto sulla qualità.
+
+**Dopo la #47, prima di dire che l'app è pronta**: un giro a mano nel browser su tutta l'app,
+funzione per funzione, per capire se la percezione d'uso regge. La stella polare, detta dall'utente,
+è la **facilità d'uso**: è uno strumento che rischia di risultare dispersivo (versioni ovunque,
+sezioni, Cammino di upgrade, Catalogo), e la revisione deve ridurre quella dispersione, non solo
+rifinire l'aspetto. Quello che ne esce diventa issue sue.
 
 ⚠️ **Il credito Anthropic dell'utente è basso e non può ricaricarlo per ora: non spendere niente senza
 chiedere.** Due passi a mano restano fermi per questo, descritti in "Sessione del 2026-09-29 (2)":
@@ -53,6 +63,79 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-29 (4): quattro segnalazioni dell'utente, misurate prima di scriverle
+
+Nessun codice cambiato. Le quattro segnalazioni sono diventate **#62**, **#63** e **#64**, dopo averle
+verificate una per una. Due non erano quello che sembravano, e la verifica ha allargato il quadro.
+
+### La lezione che vale più delle tre issue
+
+**Misurare la produzione prima di scrivere la issue** ha cambiato tutte e tre le issue rispetto a come
+sarebbero state scritte dalla sola segnalazione. L'overflow sembrava una pagina, sono metà delle
+pagine di Release; la navigazione sembrava un breadcrumb, è l'assenza di qualunque navigazione sotto
+i 640px. **In locale non si vedeva niente di tutto questo**, perché il database locale non ha le
+Sintesi vere: è la stessa differenza fra i due ambienti che l'utente ha chiesto di sanare.
+
+Le due passate sono state fatte con uno script `.mjs` buttato via a fine giro, lanciato **dalla
+radice del repo** (fuori di lì `@playwright/test` non si risolve). La prima confronta `scrollWidth` e
+`clientWidth` di `document.documentElement` a più larghezze e raccoglie gli elementi foglia il cui
+`right` supera la finestra; la seconda inventaria gli `a[href^="/"]` distinguendo quelli visibili.
+Valgono la pena di essere rifatte ogni volta che si tocca il layout.
+
+### #62, overflow della pagina della Release (`ready-for-agent`)
+
+Passata su tutte le Tecnologie del Catalogo, quattro larghezze: **74 controlli su 304** in overflow,
+e sono **sempre e solo pagine di Release**. Home, login e pagine delle Tecnologie non strabordano mai.
+A 1440px una pagina, a 1280px diciassette, a 768px e a 390px ventuno. Peggiore: `jest/30.0.0`,
++1734px a 768px.
+
+Due cause distinte, ed è per questo che la issue non chiede "accorciare i caret":
+
+- **Sopra i 640px, la riga dei caret** (`breaking-change-item.tsx:33`, `"^".repeat(end - start)`):
+  su `react/19.0.0` arriva a 167 caratteri, uno `span` largo 1503px. Il guasto è strutturale: il testo
+  citato va a capo sugli spazi, la sequenza di `^` non ha nessun punto dove andare a capo, e sotto una
+  citazione andata a capo i caret non sarebbero comunque più allineati. **La riga dei caret funziona
+  solo se la citazione sta su una riga sola.**
+- **Sotto i 640px**, dove i caret sono già nascosti, resta un overflow diverso: `<code>` lunghi e URL
+  Markdown interi, fuori da qualunque contenitore che scorra.
+
+Il rimedio è già dentro il sistema: sotto i 640px `DESIGN.md` sostituisce i caret con una
+sottolineatura corallo dentro la riga citata, che dice la stessa cosa e resta sempre allineata.
+La issue chiede anche una **guardia negli E2E**, come la #23 ha fatto con axe: l'overflow nasce dai
+dati veri e tornerà da solo appena arriveranno note di rilascio nuove.
+
+### #63, navigazione (`ready-for-human`, blocca la #47)
+
+Il buco grosso non era quello segnalato: in `site-header.tsx` **`SignedInNav` e `Breadcrumb` sono
+tutti e due `max-sm:hidden`**, quindi **sotto i 640px non esiste nessuna navigazione**. Su telefono,
+da una pagina di Release l'unico link è il wordmark. È un vicolo cieco, non una scelta di densità.
+
+Il breadcrumb `technologies` non è cliccabile perché è passato come stringa, mentre lo slug nella
+pagina della Release è un `{label, href}`. **Il nodo non è tecnico**: `/technologies` sta dietro il
+login, quindi per un visitatore quel link porta all'accesso (`requireDeveloper` lo riporta poi
+indietro). Va deciso se è quello che vogliamo.
+
+La home `/` è ancora il campionario dei token della #2 e non ha nessun link interno: **non è un
+problema di navigazione**, la sostituisce la #26.
+
+### #64, la riga seguita non si sposta (`ready-for-human`, dentro la #47)
+
+**Non è un difetto: è una scelta deliberata**, e anche il mock approvato `technologies.html` si
+comporta così. Il motivo, dall'handoff della sessione che costruì la pagina: "le sezioni sono lo
+scatto del momento della visita, il toggle cambia solo sé stesso e il conteggio", per non far muovere
+la lista sotto il puntatore mentre si clicca. La issue riporta la ragione originale e le tre strade
+(lasciare, spostare, spostare tenendo il focus), così quando la si riapre non si riparte da zero.
+**Attenzione: rovesciarla richiede di aggiornare anche il mock**, altrimenti la sessione dopo la
+rimette com'era.
+
+### Attenzione per chi riprende
+
+- ⚠️ **Prima di chiamare difetto una cosa, cercare se è una decisione.** Due segnalazioni su quattro
+  erano scelte approvate e scritte (il Follow che non sposta la riga, i caret come parte dichiarata
+  del sistema). Si cercano in `docs/DECISIONI.md`, negli ADR, nei mock e in questo handoff.
+- ⚠️ **Un difetto guidato dai dati non si vede in locale.** Il database locale non ha le Sintesi vere:
+  per l'aspetto delle pagine di Release la fonte è la produzione.
 
 ## Sessione del 2026-09-29 (3): #23, i mock uniformati e l'audit WCAG 2.2 AA
 
