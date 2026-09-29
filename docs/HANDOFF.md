@@ -14,10 +14,16 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 ## Stato
 
 **Da dove ripartire (2026-09-29).** Niente è in corso, l'albero è pulito e `main` è allineato a
-`origin/main`. Il lavoro pronto da prendere: **#56** (titolo troppo lungo, e c'è da decidere se rientri
-nella regola "Sintesi pagata, non buttata"; ⚠️ prima va verificato se i risultati del batch sono ancora
-recuperabili, perché la scratchpad dove stavano non c'è più), **#25** e **#24**. La **#57** aspetta una
-decisione dell'utente, non del codice.
+`origin/main`. La prossima sessione prende **#54** e **#56**, decise dall'utente come le più urgenti, e
+poi la **#23**. Sono due decisioni di dominio prima che due implementazioni: per la #54 come trattare le
+Note oltre gli 80.000 caratteri, per la #56 se il limite del titolo sale a 140. Il materiale della #56 è
+già in mano, vedi "I risultati del batch, salvati". Restano dopo: **#25** e **#24**. La **#57** aspetta
+una decisione dell'utente, non del codice.
+
+⚠️ **In sospeso, da fare fuori dal codice:** la `ANTHROPIC_API_KEY` è stata aggiornata su Vercel il
+2026-09-29, ma **serve un redeploy della produzione** perché le funzioni usino la chiave nuova: una
+funzione porta con sé la fotografia delle variabili con cui è nata. Finché non si ridistribuisce, i job
+delle Sintesi vanno con la chiave vecchia, che è scaduta.
 
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
@@ -80,8 +86,20 @@ resta niente da raccogliere e il batch non serve più.
   decidere nella **issue #56**: alzare il limite a 140 (i quattro titoli sono buoni, prima
   va verificato sul mock che la riga regga) e **reimportare quelle 4 dal file dei risultati invece di
   rinviarle**, perché rinviarle costerebbe altri 12 centesimi.
-- I 126 risultati del batch sono salvati in una scratchpad di sessione, che **non sopravvive**: se
-  servono ancora, vanno ripresi dall'API finché il batch li tiene, oppure messi in un posto vero.
+
+### I risultati del batch, salvati (2026-09-29)
+
+Tutti e **126 i risultati sono in `local/msgbatch_0159Vxf39GAEADUx3dQKrzFj.json`** (520 KB, chiave =
+`release_id`), salvati prima della scadenza. `/local/` è in `.gitignore`: è la cartella dei dati locali
+che non stanno nel repository. Da lì la #56 reimporta le 4 Sintesi senza rinviarle e senza spendere.
+
+- ⚠️ **L'`expires_at` di un batch è 24 ore dalla creazione**, non i 29 giorni di conservazione dei
+  risultati che dice la documentazione: questo batch, creato il 28/09 alle 19:16 UTC, scadeva il 29/09
+  alla stessa ora. Un batch che serve ancora va riletto lo stesso giorno, o salvato subito.
+- I 4 titoli fuori limite, tutti fra 121 e 126 caratteri, sono buoni: un limite di 140 li prende tutti.
+  Una cosa in più da decidere nella #56: quello di turborepo (125) **non nomina la Tecnologia e finisce
+  con un punto**, a differenza degli altri tre. Non c'entra con la lunghezza, ma se il formato del
+  titolo ha una regola, quello la viola.
 
 ## Sessione del 2026-09-28 (6): #22 Catalogo a 37 Tecnologie (PR #53 in `main`)
 
@@ -152,6 +170,14 @@ perché in `vercel.json` l'unico cron è il Rilevamento e i job delle Sintesi si
   Lo stato delle Sintesi in produzione **non è stato riletto**: nessuno lo ha toccato, ma se serve la
   certezza sono due query nell'SQL Editor (la firma di `claim_pending_summaries` e i conteggi per
   `status`). Da qui non si arriva: `.env.local` punta al Supabase locale.
+- ⚠️ **Le chiavi Anthropic devono essere legate a un workspace.** Una chiave org-level è valida ma
+  risponde `400`: *"This API key is not scoped to a workspace, so this request must include the
+  anthropic-workspace-id header"*, e il nostro codice quell'header non lo manda. Vale anche per la
+  chiave su Vercel. Il batch è leggibile solo con una chiave del workspace che l'ha creato.
+- **Gli script locali leggono `.env.local` solo se la variabile non è già nell'ambiente**: `node
+  --env-file` non sovrascrive quello che trova. Una variabile utente Windows `ANTHROPIC_API_KEY`
+  scaduta copriva il file e faceva sembrare invalida la chiave buona; è stata **rimossa il
+  2026-09-29**. Una shell aperta prima di quel momento porta ancora dietro il vecchio valore.
 - L'isolamento dei test di integrazione è a posto in tutti e due i posti dove mancava: le finte Fonti
   di `detection.test.ts` rispondono solo per le proprie Tecnologie, e i job delle Sintesi hanno il
   recinto per Tecnologia della #55. Non serve più rimettere a mano nessuna Sintesi dopo
