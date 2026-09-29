@@ -44,12 +44,23 @@ describe("parseSummaryOutput", () => {
     expect(parseSummaryOutput(JSON.stringify(safe))).toEqual({ ok: true, content: safe });
   });
 
-  it("rejects a title over 120 characters", () => {
-    expect(reason(output({ title: "x".repeat(121) }))).toMatch(/title/);
+  // Issue #56: the longest of the 4 titles the first real batch produced over the old limit of 120.
+  // They were sound in everything else, and the prompt still asks for 120: the margin is there so
+  // that the few characters the model goes over do not throw away a Summary that has been paid for.
+  it("accepts the longest title of the first real batch, 126 characters", () => {
+    const title =
+      "pnpm 11.27.0 isolates registry metadata caches per URL path, adds global `nodeDownloadMirrors`, and fixes a store symlink flaw";
+
+    expect(title).toHaveLength(126);
+    expect(parseSummaryOutput(output({ title })).ok).toBe(true);
   });
 
-  it("accepts a title of exactly 120 characters", () => {
-    expect(parseSummaryOutput(output({ title: "x".repeat(120) })).ok).toBe(true);
+  it("rejects a title over 140 characters", () => {
+    expect(reason(output({ title: "x".repeat(141) }))).toMatch(/title/);
+  });
+
+  it("accepts a title of exactly 140 characters", () => {
+    expect(parseSummaryOutput(output({ title: "x".repeat(140) })).ok).toBe(true);
   });
 
   it("rejects fewer than 3 key points", () => {
@@ -70,6 +81,8 @@ describe("parseSummaryOutput", () => {
     expect(reason(output({ breakingChanges: [{ change: "Node 18 is dropped" }] }))).toMatch(/migration/);
   });
 
+  // The `.refine()` is the last word and has to be: a conditional rule like this one is not
+  // expressible in the JSON Schema the request carries, so nothing on the API side enforces it.
   it("rejects an action required verdict that does not match the breaking changes", () => {
     expect(reason(output({ actionRequired: false }))).toMatch(/actionRequired/);
     expect(reason(output({ breakingChanges: [] }))).toMatch(/actionRequired/);

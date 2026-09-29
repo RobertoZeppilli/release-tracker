@@ -17,7 +17,8 @@
     "dev:login": "tsx --env-file=.env.local scripts/dev-login.mts",
     "catalog:sync": "tsx --conditions=react-server scripts/sync-catalog.mts",
     "summary:try": "tsx --conditions=react-server scripts/summarize-release.mts",
-    "summary:eval": "tsx --conditions=react-server scripts/evaluate-summaries.mts"
+    "summary:eval": "tsx --conditions=react-server scripts/evaluate-summaries.mts",
+    "summary:reimport": "tsx --conditions=react-server scripts/reimport-summaries.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
