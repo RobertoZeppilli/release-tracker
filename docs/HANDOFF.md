@@ -13,9 +13,10 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-29, sera).** Niente è in corso, l'albero è pulito e `main` è allineato a
-`origin/main`. La prossima sessione prende la **#23** (differenze fra i mock e l'implementazione), poi
-**#25** e **#24**. La **#57** aspetta una decisione dell'utente, non del codice.
+**Da dove ripartire (2026-09-29, notte).** Niente è in corso, l'albero è pulito e `main` è allineato a
+`origin/main`. La **#23** è chiusa (PR #61, unita il 2026-09-29): la prossima sessione prende la
+**#25** (pagine 404 ed errore generico, `ready-for-agent`, sbloccata), poi la **#24**. La **#57**
+aspetta una decisione dell'utente, non del codice.
 
 ⚠️ **Il credito Anthropic dell'utente è basso e non può ricaricarlo per ora: non spendere niente senza
 chiedere.** Due passi a mano restano fermi per questo, descritti in "Sessione del 2026-09-29 (2)":
@@ -39,7 +40,8 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
-  (PR #59) e la **#54** (PR #60), tutte e tre unite il 2026-09-29. Sbloccate: **#25** e **#36**.
+  (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29.
+  Sbloccate: **#25** e **#36**.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -49,12 +51,78 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
-- Differenze note tra mock da uniformare: raccolte nella #23. **Da aggiungerci** (2026-09-28): sotto
-  i 640px il mock mette il Follow della pagina della Tecnologia su una riga tutta sua, da noi finisce
-  in fondo alla riga delle Fonti, perché il `latest` è un `<p>` a parte invece di stare dentro
-  `.tech-facts`. Non è ancora scritto nella issue.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-29 (3): #23, i mock uniformati e l'audit WCAG 2.2 AA
+
+409 unitari, 44 di integrazione, **79 end-to-end**, `typecheck`, `lint` e `build` puliti. PR #61.
+
+### Le cinque differenze, ciascuna risolta in un posto solo
+
+La quinta non era nella issue: è stata aggiunta come commento prima di lavorarci.
+
+1. **Righe del picker.** Non c'era niente da fare nel codice: `PickerRow` era già unico, a 16ch col
+   nome come link, per il Catalogo e per la Dashboard vuota. A essere rimasto indietro era il mock
+   `dashboard.html`, allineato ora. **Lezione: prima di uniformare, guardare da che parte sta già la
+   verità.** Due delle quattro differenze vivevano solo nei mock.
+2. **Errore di riga.** `FollowRejectionNote` passa da `label` (13px) a `diagnostic` (14px), la misura
+   che il form del Cammino di upgrade usava già. In `DESIGN.md` `field-error` definiva **solo il
+   colore**, ed è questo che ha lasciato divergere le due misure: ora c'è la **One Error Measure
+   Rule** e `typography: diagnostic` su `field-error` e `row-error`.
+3. **Riga dei conteggi.** Via il `text-[15px]` arbitrario da `summary-view.tsx`: i 15px non erano
+   nella scala. Restano altri `text-[14px]` arbitrari in giro, dove serve 14px senza l'interlinea 1.7
+   di `diagnostic` (pulsanti, breadcrumb): non sono stati toccati, erano fuori dalla issue.
+4. **Segmento dell'anteprima.** `.b-preview` era CSS morto in `technology.html`: mai nel markup, mai
+   nella legenda. Le anteprime stanno oltre il `to`, quindi fuori dall'intervallo che la barra misura,
+   e l'ombra inset contraddiceva la regola delle superfici piatte. Cancellato.
+5. **Follow sotto i 640px.** `latest` e le Fonti ora sono un gruppo solo in `technology-header.tsx`,
+   come `.tech-facts` nel mock, quindi vanno a capo insieme e il Follow tiene una riga sua. Il test
+   `technology.spec.ts` "under 640px…" è stato provato a rovescio: fallisce senza la correzione.
+
+### L'audit, e dove ciascuna cosa è verificata
+
+- `tests/e2e/a11y.spec.ts`: axe (`@axe-core/playwright`) con i tag `wcag2a … wcag22aa` su **dieci
+  stati di pagina per tema**: home, login, picker con un follow rifiutato, picker coi toggle, pagina
+  della Tecnologia e Cammino di upgrade, versione non valida, Release con Sintesi pronta (anche con
+  le Note aperte), Release in attesa, Dashboard vuota e Dashboard con qualcosa da fare.
+  **Nessuna violazione, in nessuno dei due temi.** Il tema si sceglie scrivendo `localStorage.theme`
+  con `addInitScript`, cioè la stessa strada di un Developer che torna.
+- `tests/e2e/keyboard.spec.ts`: skip link, lettura della Release fino alle Note che cita, Cammino di
+  upgrade compilato e inviato, Seguire dal picker e dalla pagina della Tecnologia, Dashboard. Ogni
+  fermata controlla che l'outline ci sia davvero. `tabTo` fallisce se l'elemento non arriva: è così
+  che si accorge di un elemento fuori dall'ordine di tabulazione.
+- `src/app/theme-contrast.test.ts` (unitario, 14 test): legge i token da `globals.css` nei due temi e
+  calcola i rapporti. **Serve perché axe misura solo il testo che una pagina rende davvero**: un
+  bordo, un glifo e uno stato che nessun test attraversa gli restano invisibili.
+
+### `rule-strong`: l'unico rilievo, e perché era reale
+
+Stava a **1,68:1** sullo scuro e **1,59:1** sul chiaro, contro il **3:1** del criterio 1.4.11. Non è
+decorativo: è il bordo di ogni pulsante e di ogni campo (il solo segno che identifica il controllo),
+la sottolineatura dei link e il segmento `digest` della barra, che porta un conteggio.
+
+- Scuro `#353b45` → **`#676d77`**, chiaro `#c6c6bf` → **`#82827b`**, in `globals.css`, in `DESIGN.md`
+  e nei quattro mock.
+- I valori sono i minimi che tengono la stessa tinta e superano 3:1 **sul piano peggiore**, con un po'
+  di margine: il piano peggiore è `raised` sullo scuro (i pulsanti ci vanno in hover) e `sunken` sul
+  chiaro (i campi ci stanno sopra). Risultato 3,35:1 e 3,33:1.
+- Restano lontanissimi da `text-faint` (1,37 e 1,40 rispetto a quello): i bordi si vedono senza
+  diventare testo. Verificato a schermo nei due temi prima del commit.
+- `rule` non è stato toccato: divide e basta, nessun dovere di contrasto. È scritto in `DESIGN.md`.
+
+### Attenzione per chi riprende
+
+- ⚠️ **`pnpm exec supabase status` risponde EPERM quando una run lo interroga abbastanza spesso**, e
+  faceva cadere a caso `auth.spec.ts` o `dashboard.spec.ts`. Succedeva già prima; i due file nuovi
+  aumentano la pressione perché `test.use` (il movimento ridotto) fa ripartire il worker, e ogni
+  worker nuovo richiede lo status. Ora `tests/e2e/fixtures.ts` riprova tre volte con attesa crescente.
+  **Se un test fallisce nel `beforeAll` senza una ragione, è quasi sempre questo, non il test.**
+- ⚠️ **`transition-none` toglie la proprietà, non la durata.** Un test sul movimento ridotto che
+  guarda `transitionDuration` fallisce anche quando tutto è a posto: guardare `transitionProperty`.
+- Il `.cited-span` esiste solo dopo che un cite pointer l'ha aperto: un test che lo cerca a freddo non
+  lo trova.
+- `/technologies` è dietro il login: non esiste uno stato "visitatore" di quella pagina da controllare.
 
 ## Sessione del 2026-09-29 (2): #56 e #54, i due limiti della Sintesi
 
