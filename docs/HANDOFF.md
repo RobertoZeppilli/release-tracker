@@ -13,14 +13,21 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
+**Da dove ripartire (2026-09-29).** Niente è in corso e l'albero è pulito, ma ci sono **due commit
+non spinti** su `main`: `5590b4a` e `4287fb8`, solo documentazione. Il lavoro pronto da prendere:
+**#55** (piccola, e finché resta lì ogni `pnpm test:integration` falsifica i dati locali), **#56**
+(titolo troppo lungo, e c'è da decidere se rientri nella regola "Sintesi pagata, non buttata"),
+**#25** e **#24**. La **#57** aspetta una decisione dell'utente, non del codice.
+
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28). Sbloccate: **#25** e **#36**.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
-  delle Sintesi prendono anche le Sintesi che non sono loro). Aperta il 2026-09-29: **#56** (titolo della
-  Sintesi oltre i 120 caratteri).
+  delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
+  Sintesi oltre i 120 caratteri) e **#57** (generare le Sintesi con Haiku 4.5 invece di Opus 5,
+  `ready-for-human`: l'eval spende e il verdetto sulla qualità è dell'utente).
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
