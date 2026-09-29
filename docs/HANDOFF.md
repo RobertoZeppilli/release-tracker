@@ -19,7 +19,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28). Sbloccate: **#25** e **#36**.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
-  delle Sintesi prendono anche le Sintesi che non sono loro).
+  delle Sintesi prendono anche le Sintesi che non sono loro). Aperta il 2026-09-29: **#56** (titolo della
+  Sintesi oltre i 120 caratteri).
   Attenzione: il numero dell'issue è sfalsato di uno rispetto al numero della fetta nel titolo
   (issue #12 = fetta "11."). Vedi i "Blocked by" (`gh issue view N`).
 - Credito API esaurito: **nessun avviso nostro**, se ne occupa la Console di Anthropic (decisione
@@ -68,7 +69,7 @@ resta niente da raccogliere e il batch non serve più.
   contro il limite di 120 in `summary-content.ts`. Erano corrette in tutto il resto. È il prezzo
   previsto del fatto che `output_config.format` garantisce la forma del JSON e non il `maxLength`
   delle stringhe, cosa che `docs/DECISIONI.md` diceva già: il 3% di scarto è la sua misura. Ipotesi da
-  decidere in una issue non ancora aperta: alzare il limite a 140 (i quattro titoli sono buoni, prima
+  decidere nella **issue #56**: alzare il limite a 140 (i quattro titoli sono buoni, prima
   va verificato sul mock che la riga regga) e **reimportare quelle 4 dal file dei risultati invece di
   rinviarle**, perché rinviarle costerebbe altri 12 centesimi.
 - I 126 risultati del batch sono salvati in una scratchpad di sessione, che **non sopravvive**: se
