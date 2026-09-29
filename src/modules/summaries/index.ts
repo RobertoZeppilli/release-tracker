@@ -1,3 +1,4 @@
+export { CARET_WIDTHS, type CaretWidth, caretWidth, fits } from "./domain/caret-row";
 export { type Citation, citationSpans, type CitedSpan, locateCitation } from "./domain/citations";
 export {
   evaluateSummary,

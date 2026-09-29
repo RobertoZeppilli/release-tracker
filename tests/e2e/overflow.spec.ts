@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { CARET_WIDTHS, fits } from "@/modules/summaries";
 import { addFollows, e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDeveloper, seedTechnology } from "./fixtures";
 
 // The guard of issue #62: no page may be wider than the window. The overflow there came from the
@@ -12,6 +13,12 @@ const LONG_QUOTE =
   "The legacy `unstable_renderSubtreeIntoContainer` entry point is gone, and every call to it has to move to createRoot before the upgrade.";
 const LONG_URL = "https://example.com/a-very-long-path/that-keeps-going/and-going/and-going/and-going/for-a-while#and-a-fragment-too";
 const SHORT_QUOTE = "The default export is gone.";
+
+// One cited line of exactly the length each width is said to hold. This is what the first fix got
+// wrong: the budget was computed from a nominal character width instead of the measured one, and
+// three production pages cited a line of exactly the length the 768px step claimed to hold.
+const boundary = (length: number) => "The boundary line ".padEnd(length, "x").slice(0, length);
+const BOUNDARY_QUOTES = CARET_WIDTHS.map((width) => boundary(fits(width)));
 
 let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
@@ -41,6 +48,24 @@ test.beforeAll(async () => {
               quote: LONG_QUOTE,
             },
           ],
+          actionRequired: true,
+        },
+      },
+      {
+        version: "4.0.0",
+        significance: "notable",
+        origin: "detected",
+        status: "ready",
+        notes: `# 4.0.0\n\n${BOUNDARY_QUOTES.join("\n\n")}`,
+        actionRequired: true,
+        summary: {
+          title: "Every cited line is exactly as long as its width is said to hold.",
+          keyPoints: [{ text: "One." }, { text: "Two." }, { text: "Three." }],
+          breakingChanges: BOUNDARY_QUOTES.map((quote, index) => ({
+            change: `The boundary of ${CARET_WIDTHS[index]}px`,
+            migration: "Nothing to do.",
+            quote,
+          })),
           actionRequired: true,
         },
       },
@@ -107,7 +132,7 @@ for (const width of WIDTHS) {
     });
 
     test("a release page stays inside the window with the notes closed and open", async ({ page }) => {
-      for (const version of ["3.0.0", "2.0.0"]) {
+      for (const version of ["3.0.0", "4.0.0", "2.0.0"]) {
         const path = `/technologies/${technology.slug}/${version}`;
         await page.goto(path);
         await expect(page.locator("#verdict")).toBeVisible();

@@ -39,6 +39,24 @@ lo sviluppatore non segue, in nessuna schermata: offrirebbe un'azione che il dat
 **Tecnologie ritirate** seguite contano nel limite del **Piano**.
 _Evitare_: iscriversi, abbonarsi, preferito.
 
+**Versione in uso**:
+La **Versione** di una **Tecnologia** che uno **Sviluppatore** dichiara di usare, salvata sul suo
+**Seguire**: una per **Tecnologia** seguita, facoltativa. È **dichiarata, non osservata**: l'app non
+la verifica mai e resta com'è finché non è lo **Sviluppatore** a cambiarla, quindi ogni schermata che
+ci costruisce sopra un conto dice anche **da quando** quella dichiarazione è ferma, altrimenti il
+conto diventa falso in silenzio. Vale la stessa validazione della **Versione** di partenza del
+**Cammino di upgrade**: ben formata e non più recente dell'ultima **Release** stabile; uguale
+all'ultima vuol dire già aggiornato. Una **Tecnologia ritirata** seguita può averla come le altre.
+Chi non la dichiara vede l'app come chi non l'ha mai avuta: è una dichiarazione in più, non un passo
+obbligato.
+Dove c'è, è la **Versione** di partenza predefinita del **Cammino di upgrade** di quella
+**Tecnologia**; `?from=` la scavalca per una singola occhiata e non cambia quella salvata. E per ogni
+**Tecnologia** seguita rende calcolabili le **Release** successive e quante richiedono un
+**Intervento richiesto**, con le stesse regole del **Cammino di upgrade**: le **Release** senza
+**Sintesi** _Pronta_ non contano né come sicure né come **Intervento richiesto**, e le _Digest_ non
+entrano nel conto. Come la **Dashboard** lo mostri è design, non dominio.
+_Evitare_: versione installata, versione attuale, stack, dipendenza.
+
 **Richiesta di tecnologia**:
 La segnalazione di una **Tecnologia** assente dal **Catalogo**, che l'amministratore approva o
 scarta. Non fa parte dell'MVP.
@@ -149,8 +167,9 @@ vista calcolata, non qualcosa che viene salvato o inviato.
 _Evitare_: newsletter, riepilogo, archivio.
 
 **Cammino di upgrade**:
-Le **Release** di una **Tecnologia** comprese tra una **Versione** di partenza indicata da chi legge e
-l'ultima **Release** stabile, con il conto di quelle che richiedono un **Intervento richiesto**.
+Le **Release** di una **Tecnologia** comprese tra una **Versione** di partenza e l'ultima **Release**
+stabile, con il conto di quelle che richiedono un **Intervento richiesto**. La **Versione** di partenza
+è quella indicata da chi legge, o la **Versione in uso** dichiarata quando c'è.
 È una vista calcolata, non salvata.
 La **Versione** di partenza deve essere ben formata e non più recente dell'ultima **Release** stabile;
 uguale all'ultima vuol dire già aggiornato. Se non è tra le **Release** registrate (lo **Storico** copre
@@ -184,6 +203,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Catalogo | `Catalog` | |
 | Fonte | `Source` | ruolo: `detection` · `notes`; tipo: `npm` · `pypi` · `github-releases` · `changelog` |
 | Seguire | `follow` | |
+| Versione in uso | `currentVersion` | colonna `follows.current_version` |
 | Richiesta di tecnologia | `TechnologyRequest` | |
 | Release | `Release` | origine: `imported` · `detected` |
 | Versione | `Version` | |
