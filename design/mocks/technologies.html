@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #353b45;
+  --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #676d77;
   --text: #e7e9ec; --text-muted: #9aa3ad; --text-faint: #7b848f;
   --breaking: #ff7b6b; --action: #f2c14e; --help: #6cc4d8; --ok: #7bd88f;
   --focus: #6cc4d8; --selection: rgba(108, 196, 216, 0.28);
@@ -21,7 +21,7 @@
   color-scheme: dark;
 }
 :root[data-theme="light"] {
-  --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #c6c6bf;
+  --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #82827b;
   --text: #16181c; --text-muted: #525a63; --text-faint: #636b74;
   --breaking: #b42a1f; --action: #8a5a00; --help: #0b6b80; --ok: #1d7a3a;
   --focus: #0b6b80; --selection: rgba(11, 107, 128, 0.18);
@@ -97,7 +97,8 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; }
 .facts { font: 400 13px/1.6 var(--mono); color: var(--text-faint); font-variant-numeric: tabular-nums; }
 .facts strong { color: var(--text-muted); font-weight: 400; }
-.row-error { grid-column: 2 / -1; margin: var(--space-2) 0 0; font: 400 13px/1.6 var(--mono); color: var(--breaking); }
+/* One measure for every error line, the same as .field-error on technology.html. */
+.row-error { grid-column: 2 / -1; margin: var(--space-2) 0 0; font: 400 14px/1.7 var(--mono); color: var(--breaking); }
 .row-note { font: 400 13px/1.6 var(--mono); color: var(--text-muted); white-space: nowrap; }
 
 /* Follow Toggle */

@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #353b45;
+  --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #676d77;
   --text: #e7e9ec; --text-muted: #9aa3ad; --text-faint: #7b848f;
   --breaking: #ff7b6b; --action: #f2c14e; --help: #6cc4d8; --ok: #7bd88f;
   --focus: #6cc4d8; --selection: rgba(108, 196, 216, 0.28);
@@ -21,7 +21,7 @@
   color-scheme: dark;
 }
 :root[data-theme="light"] {
-  --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #c6c6bf;
+  --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #82827b;
   --text: #16181c; --text-muted: #525a63; --text-faint: #636b74;
   --breaking: #b42a1f; --action: #8a5a00; --help: #0b6b80; --ok: #1d7a3a;
   --focus: #0b6b80; --selection: rgba(11, 107, 128, 0.18);
@@ -73,7 +73,7 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .range-form input[aria-invalid="true"] { border-color: var(--breaking); }
 .range-form .to { color: var(--text); }
 .field-error a { color: inherit; }
-.field-error { flex-basis: 100%; margin: 0; font: 400 14px var(--mono); color: var(--breaking); display: none; }
+.field-error { flex-basis: 100%; margin: 0; font: 400 14px/1.7 var(--mono); color: var(--breaking); display: none; }
 
 /* Range verdict */
 .verdict { margin-top: var(--space-6); }
@@ -99,7 +99,6 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .bar .b-notable { background: var(--text-muted); }
 .stat .pipe { color: var(--text-faint); }
 .bar .b-digest { background: var(--rule-strong); }
-.bar .b-preview { background: transparent; box-shadow: inset 0 0 0 1px var(--text-faint); }
 .stat .words { color: var(--text-muted); white-space: nowrap; }
 .stat .words .n-action { color: var(--action); white-space: nowrap; }
 .legend { margin: var(--space-2) 0 0; display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 12px var(--mono); color: var(--text-faint); }
