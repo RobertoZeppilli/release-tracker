@@ -20,10 +20,10 @@ Note oltre gli 80.000 caratteri, per la #56 se il limite del titolo sale a 140. 
 già in mano, vedi "I risultati del batch, salvati". Restano dopo: **#25** e **#24**. La **#57** aspetta
 una decisione dell'utente, non del codice.
 
-⚠️ **In sospeso, da fare fuori dal codice:** la `ANTHROPIC_API_KEY` è stata aggiornata su Vercel il
-2026-09-29, ma **serve un redeploy della produzione** perché le funzioni usino la chiave nuova: una
-funzione porta con sé la fotografia delle variabili con cui è nata. Finché non si ridistribuisce, i job
-delle Sintesi vanno con la chiave vecchia, che è scaduta.
+La `ANTHROPIC_API_KEY` è stata aggiornata su Vercel il 2026-09-29 e la produzione **è stata
+ridistribuita** subito dopo, col push di questo documento: le funzioni hanno la chiave nuova. Da
+ricordare per la prossima volta: una funzione porta con sé la fotografia delle variabili con cui è
+nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
 
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
