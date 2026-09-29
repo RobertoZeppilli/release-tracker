@@ -13,11 +13,11 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-29).** Niente è in corso e l'albero è pulito, ma ci sono **due commit
-non spinti** su `main`: `5590b4a` e `4287fb8`, solo documentazione. Il lavoro pronto da prendere:
-**#55** (piccola, e finché resta lì ogni `pnpm test:integration` falsifica i dati locali), **#56**
-(titolo troppo lungo, e c'è da decidere se rientri nella regola "Sintesi pagata, non buttata"),
-**#25** e **#24**. La **#57** aspetta una decisione dell'utente, non del codice.
+**Da dove ripartire (2026-09-29).** `main` è allineato a `origin/main`. In corso: la **#55** sul branch
+`fix/55-summary-claim-fence`, finita e verificata, in attesa di commit e PR. Il lavoro pronto dopo:
+**#56** (titolo troppo lungo, e c'è da decidere se rientri nella regola "Sintesi pagata, non buttata";
+⚠️ prima va verificato se i risultati del batch sono ancora recuperabili, perché la scratchpad dove
+stavano non c'è più), **#25** e **#24**. La **#57** aspetta una decisione dell'utente, non del codice.
 
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
@@ -140,14 +140,10 @@ perché in `vercel.json` l'unico cron è il Rilevamento e i job delle Sintesi si
 
 ### Attenzione per chi riprende
 
-- ⚠️ **`pnpm test:integration` con il Catalogo nel database locale manda in un finto batch tutte le
-  Sintesi `pending`, non solo le sue**: restano `processing` con `batch_id` `msgbatch_fake_…` e
-  nessuno le raccoglierà mai. Non si spende niente, ma i dati locali diventano falsi. Si rimette a
-  posto con `update summaries set status='pending', batch_id=null, model=null, prompt_version=null
-  where status='processing' and batch_id like 'msgbatch_fake_%';`. L'isolamento vero va fatto in una
-  issue sua, perché tocca `claim_pending_summaries` e quindi il percorso della spesa.
-- Lo stesso difetto di isolamento era in `tests/integration/detection.test.ts`, ed è **corretto qui**:
-  le finte Fonti rispondono solo per le proprie, altrimenti mettevano la Versione del test su Storybook.
+- L'isolamento dei test di integrazione è a posto in tutti e due i posti dove mancava: le finte Fonti
+  di `detection.test.ts` rispondono solo per le proprie Tecnologie, e i job delle Sintesi hanno il
+  recinto per Tecnologia della #55. Non serve più rimettere a mano nessuna Sintesi dopo
+  `pnpm test:integration`.
 - **Cambiare la Strategia di una Tecnologia non riclassifica le Release già registrate**: in locale
   Playwright e Vue sono state cancellate e reimportate a mano. In produzione servirebbe lo stesso.
 - Importazione locale: `GITHUB_TOKEN=$(gh auth token) pnpm exec tsx --env-file=.env.local

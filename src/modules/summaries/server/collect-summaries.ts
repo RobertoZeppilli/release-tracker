@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { SummaryBatches, SummaryResult } from "../domain/summary-batches";
 import { parseSummaryOutput } from "../domain/summary-output";
+import type { SummaryScope } from "./summary-scope";
 
 const SubmittedSchema = z.array(
   z.object({
@@ -26,12 +27,18 @@ export type CollectReport = {
 };
 
 // Phase two of ADR 0007: read the results of every batch sent by an earlier run and validate them.
-export async function collectSummaryBatches(db: SupabaseClient, batches: SummaryBatches): Promise<CollectReport> {
-  const { data, error } = await db
+export async function collectSummaryBatches(
+  db: SupabaseClient,
+  batches: SummaryBatches,
+  { technologyIds }: SummaryScope = {},
+): Promise<CollectReport> {
+  const query = db
     .from("summaries")
     .select("release_id, batch_id, releases!inner(version, technologies!inner(slug))")
     .eq("status", "processing")
     .not("batch_id", "is", null);
+  if (technologyIds) query.in("releases.technology_id", technologyIds);
+  const { data, error } = await query;
   if (error) throw error;
 
   const byBatch = new Map<string, string[]>();
