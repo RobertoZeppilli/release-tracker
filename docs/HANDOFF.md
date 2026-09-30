@@ -13,24 +13,41 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-29, notte fonda).** La **#62** è chiusa e **verificata in produzione**:
-`0 controlli su 13.496` (PR #66 e #67). La **#23** è chiusa (PR #61).
+**Da dove ripartire (2026-09-30, sera).** La **#68** (la **Versione in uso**) è chiusa e unita con la
+PR #74; la migrazione è **applicata in produzione**, il workflow *Deploy database* è passato. Restano
+da provare a mano sull'app vera. La **#62** era chiusa e verificata in produzione (`0 controlli su
+13.496`, PR #66 e #67), la **#23** con la PR #61.
 
-Una sessione che lavora da sola prende la **#68** (la **Versione in uso**, `ready-for-agent`): è la
-cosa che cambia di più l'app fra quelle aperte, e va fatta **prima della #47**, che ora la ha fra i
-"Blocked by". Poi la **#25** (404 ed errore generico), la **#36** (segnaposto `{major}.{minor}` nel
-formato dei tag per le Anteprime di TypeScript), la **#72** (il filtro di `/technologies` nell'URL) e
-la **#24** (SEO).
+Una sessione che lavora da sola prende le tre piccole, in quest'ordine e senza aspettare nessuno:
+la **#25** (404 ed errore generico), la **#36** (segnaposto `{major}.{minor}` nel formato dei tag per
+le Anteprime di TypeScript) e la **#72** (il filtro di `/technologies` nell'URL). Poi la **#24**
+(SEO), che però conviene dopo la landing.
 
-Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) va decisa **prima** della **#47**;
-la **#64** si scioglie dentro la #47; la **#57** è un verdetto sulla qualità; la **#65** (uniformare i
-database) e la **#69** (import di `package.json`) sono ferme per scelta dell'utente, la prima al
-secondo giro a pagamento, la seconda dopo il lancio.
+Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) è **la prossima decisione** e va
+presa **prima** della **#47**, che dalla #68 in poi non ha altri "Blocked by"; la **#64** si scioglie
+dentro la #47; la **#57** è un verdetto sulla qualità; la **#65** (uniformare i database) e la **#69**
+(import di `package.json`) sono ferme per scelta dell'utente, la prima al secondo giro a pagamento, la
+seconda dopo il lancio.
 
-L'ordine concordato con l'utente il 2026-09-29: **#62** (fatta), poi la **#68**, la decisione sulla
-**#63** e la sua implementazione, la **#25** e la **#36** quando servono (non sono bloccate da
-niente), poi la **#47** con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la
-**#24**, così il SEO passa anche sulla landing.
+L'ordine concordato con l'utente: **#62** e **#68** (fatte), poi la decisione sulla **#63** e la sua
+implementazione, la **#25**, la **#36** e la **#72** quando servono (non sono bloccate da niente), poi
+la **#47** con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il
+SEO passa anche sulla landing.
+
+**Stima data all'utente il 2026-09-30**: da 8 a 14 sessioni dopo la #68. Il numero alto e quello basso
+si decidono quasi tutti in due punti, quanto apre la #47 e quante issue genera il giro a mano dopo di
+lei. Le due incertezze che possono allungare oltre quella forchetta non sono lavoro di codice: il nome
+del prodotto e il credito Anthropic. Consiglio dato e non ancora accolto: **spostare la #57 prima del
+lancio**, perché non è solo un verdetto sulla qualità, decide la voce di spesa principale a regime.
+
+**Il nome del prodotto.** Discusso il 2026-09-30 senza concludere. L'utente vuole una parola sola
+legata al tracciamento delle Release. Quattro candidati messi sul tavolo: **Caret** (il `^` di
+`^6.0.3`), **Drift** (la distanza dall'ultima stabile), **Bumped**, **Cadence**. **Caret è stato
+scartato dopo la verifica**: `caret.io` è un editor Markdown commerciale, `caret` è un pacchetto R
+fra i più scaricati di sempre, e ci sono altri due editor e due acronimi CARET; fra i domini solo
+`caret.dev` non risponde, e non risponde non vuol dire libero. **Drift** ha un problema simile e non
+verificato, `drift.com` è un'azienda nota. Da fare: decidere se verificare Drift e Bumped con lo
+stesso metodo, o rifare una lista pensata per essere libera invece che bella.
 
 ### Code da non perdere
 
@@ -72,12 +89,24 @@ ridistribuita** subito dopo, col push di questo documento: le funzioni hanno la 
 ricordare per la prossima volta: una funzione porta con sé la fotografia delle variabili con cui è
 nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
 
+Il **`GITHUB_TOKEN` c'è** dal 2026-09-30, in `.env.local` e su Vercel. Senza, GitHub concede 60
+richieste all'ora e `pnpm catalog:sync` non arriva in fondo all'alfabeto: le Tecnologie in testa si
+mangiano il budget e `vite` resta senza Release, che fa fallire `technology.spec` in modo del tutto
+scollegato dal lavoro in corso. In locale è un token classico senza nessuno scope e senza scadenza; su
+Vercel è un fine-grained con `Public Repositories (read-only)` e l'utente lo ha marcato **Sensitive**.
+Conseguenza pratica da ricordare: il valore su Vercel **non si rilegge**, né dalla dashboard né con
+`vercel env pull`, si può solo sostituire. Quindi che ci sia si controlla dal comportamento e non
+guardando la variabile. **Da verificare**: che arrivi davvero alla funzione. Il rilevamento gira una
+volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte, oppure si chiama
+`/api/jobs/detection` a mano, che **non spende** perché tocca solo GitHub e npm.
+
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
-  (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29.
-  Sbloccate: **#25** e **#36**.
+  (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
+  e #67) e la **#68** (PR #74) il 2026-09-30.
+  Sbloccate: **#25**, **#36** e, con la #68, la **#47**, che aspetta solo la decisione sulla #63.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -89,6 +118,76 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-09-30: la Versione in uso costruita, e quattro cose imparate
+
+La **#68** fatta e unita (PR #74). Quattro lezioni, tre di progetto e una di ambiente.
+
+### Che cosa è stato costruito
+
+`follows.current_version` e `follows.current_version_declared_at`, con un trigger che valida come la
+Versione di partenza del Cammino di upgrade e tre SQLSTATE propri (`FVMAL`, `FVNEW`, `FVNST`). Sulla
+pagina Tecnologia il controllo sotto il Seguire, che è anche la partenza predefinita del Cammino;
+`?from=` scavalca senza salvare. Sulla Dashboard due righe in più, assenti per chi non dichiara.
+
+- ⚠️ **La data di una dichiarazione la scrive il database, non il client.** Un client che potesse
+  scriverla potrebbe far sembrare fresca una dichiarazione vecchia, e ogni conto costruito sopra
+  diventerebbe falso in silenzio. Il trigger la tocca solo quando la Versione cambia davvero:
+  ridichiarare la stessa lascia la data dov'era, perché niente si è mosso.
+- ⚠️ **Il `grant update` va dato per colonna, non per tabella.** Un permesso di update sull'intera
+  riga lascerebbe spostare `technology_id`, e quello scavalcherebbe `enforce_follow_rules`, che
+  guarda solo l'insert. `grant update (current_version)` chiude la strada.
+- ⚠️ **Un vincolo `check` non basta se un trigger gli passa davanti.** Il primo tentativo lasciava la
+  forma della Versione al `check`, che il trigger non raggiungeva mai: confrontare una Versione che
+  non è una Versione falliva prima, sul cast a `integer[]`, con `22P02`, uno SQLSTATE che parla di
+  testo e non dice nulla della regola violata. La forma si controlla dentro il trigger, e il `check`
+  resta come seconda cintura per le scritture col service role.
+- Il confronto in SQL usa solo il core della Versione come `integer[]`, perché Postgres confronta gli
+  array elemento per elemento. Perdere la prerelease non costa niente **per questa domanda**: a core
+  uguale una prerelease sta sotto la sua Release, quindi non è mai la più recente delle due.
+
+### ⚠️ `releases` non può importare `plans`, e la direzione si controlla prima di scrivere
+
+`plans` importa già `releases` (`latestStableVersion` in `list-picker-technologies`), quindi far
+leggere al Cammino di upgrade la Versione in uso da `plans` avrebbe creato un ciclo fra moduli. La via
+d'uscita è un contesto che **`releases` possiede**: `UpgradeStartProvider` dice che qualcuno ha
+dichiarato una partenza e da quando, e il Cammino non sa che a portarla è un Seguire. È `plans` a
+riempirlo. Prima di appoggiare un modulo a un altro conviene sempre un `grep -rn "@/modules"` sui due:
+il ciclo si vede in un colpo.
+
+### ⚠️ Un provider che compare quando arriva la sessione rimonta tutta la pagina
+
+`useSession` risponde **dopo** il primo paint. Il primo tentativo faceva restituire allo scope un
+Fragment finché la sessione era `unknown` e un `FollowsProvider` dopo: due tipi di elemento diversi
+nella stessa posizione, quindi React smonta e ricostruisce tutto quello che c'è sotto. Sulla pagina
+Tecnologia "tutto quello che c'è sotto" è il corpo della pagina, e ogni `<details>` aperto si
+richiudeva, a ogni refresh del token. Ora `FollowsProvider` accetta un `developerId` nullo e la forma
+dell'albero non cambia mai, cambia solo per chi è. **Regola**: quando lo stato che decide un provider
+arriva in asincrono, il provider c'è sempre e sono i suoi prop a cambiare.
+
+### ⚠️ `waitUntil: "networkidle"` non arriva mai, in produzione
+
+Il test nuovo passava in locale contro `pnpm dev` e **falliva in CI tutti e tre i tentativi**: non
+instabilità, deterministico. `networkidle` chiede 500 ms di rete ferma, e una pagina con la sessione
+attiva non sta mai ferma così tanto, fra analytics e refresh del token. Le attese ora sono su
+condizioni vere, che è anche quello che `networkidle` stava sostituendo: il Toggle è un `button` solo
+quando il browser sa che sta guardando uno Sviluppatore, e il campo contiene la dichiarazione solo
+quando i follow sono arrivati.
+
+- ⚠️ **Un test E2E nuovo si prova come lo prova la CI**, cioè contro la build di produzione:
+  `pnpm build` e poi `CI=1 pnpm exec playwright test <spec>`. Con `CI=1` Playwright avvia
+  `pnpm start` invece di `pnpm dev` e non riusa il server esistente, quindi serve la porta 3000
+  libera. `networkidle` resta in `technology-follow.spec`, dove passa: non è stato toccato.
+
+### Ambiente
+
+**Docker Desktop si è piantato** a metà sessione, con l'engine giù e i processi ancora in piedi. Non
+sta in `C:\Program Files`: l'eseguibile è in
+`C:\Users\rober\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe`, e si riavvia con
+`Start-Process`. Attenzione a come si aspetta che torni: `docker info` esce con **codice 0** anche
+quando il demone non c'è, stampando l'errore, quindi un `until docker info >/dev/null` finisce subito
+e mente. Va controllato che l'output non sia vuoto:
+`until [ -n "$(docker info --format '{{.ServerVersion}}' 2>/dev/null)" ]`.
 
 ## Sessione del 2026-09-29 (6): il budget dei caret misurato, e la Versione in uso
 
