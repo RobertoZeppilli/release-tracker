@@ -18,7 +18,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 Una sessione che lavora da sola prende la **#68** (la **Versione in uso**, `ready-for-agent`): è la
 cosa che cambia di più l'app fra quelle aperte, e va fatta **prima della #47**, che ora la ha fra i
-"Blocked by". Poi la **#25** (404 ed errore generico) e la **#24** (SEO).
+"Blocked by". Poi la **#25** (404 ed errore generico), la **#36** (segnaposto `{major}.{minor}` nel
+formato dei tag per le Anteprime di TypeScript) e la **#24** (SEO).
 
 Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) va decisa **prima** della **#47**;
 la **#64** si scioglie dentro la #47; la **#57** è un verdetto sulla qualità; la **#65** (uniformare i
@@ -26,9 +27,25 @@ database) e la **#69** (import di `package.json`) sono ferme per scelta dell'ute
 secondo giro a pagamento, la seconda dopo il lancio.
 
 L'ordine concordato con l'utente il 2026-09-29: **#62** (fatta), poi la **#68**, la decisione sulla
-**#63** e la sua implementazione, la **#25** quando serve (non è bloccata da niente), poi la **#47**
-con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il SEO passa
-anche sulla landing.
+**#63** e la sua implementazione, la **#25** e la **#36** quando servono (non sono bloccate da
+niente), poi la **#47** con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la
+**#24**, così il SEO passa anche sulla landing.
+
+### Code da non perdere
+
+Tre cose vive che fino al 2026-09-30 stavano **solo** in fondo a questo documento, sotto un titolo
+vecchio che sembrava l'indicazione buona. Non sono issue, e due delle tre sono dell'utente.
+
+- **Il filtro di `/technologies` non è nell'URL**, e la **user story 49 del PRD** lo vuole. Il
+  2026-09-28 si è deciso di non infilarlo nella #21 (la Dashboard non ha filtri in nessuno stato del
+  mock) ma di aprirgli una issue sua: **non è mai stata aperta**. È l'unico pezzo di PRD scoperto da
+  qualunque issue, quindi è il candidato più probabile a essere dimenticato fino al lancio.
+- **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel. È un gesto dell'utente,
+  non nostro.
+- **Piano editoriale**: l'articolo dev.to della tappa D ("Enforce your free-plan limit in the
+  database, not in the UI") è **in bozza**, da rileggere e pubblicare a mano dalla dashboard di
+  dev.to caricando lì gli screenshot. In coda resta quello della tappa C ("Exactly-once AI jobs"),
+  in attesa di qualche giro di cron in produzione da citare.
 
 **Dopo la #47, prima di dire che l'app è pronta**: un giro a mano nel browser su tutta l'app,
 funzione per funzione, per capire se la percezione d'uso regge. La stella polare, detta dall'utente,
@@ -1353,27 +1370,25 @@ Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
-## Da dove ripartire: la #25 e la #36
+## Com'era il 2026-09-28: stato superato, tenuto per le note che valgono ancora
 
-1. La Dashboard è finita: #20 e #21 sono entrambe fatte. Le prossime sbloccate sono **#25** e
-   **#36**. HITL: #22 Catalogo ~40 Tecnologie, #26 landing page (serve il nome del prodotto).
-2. **Il filtro di `/technologies` non è nell'URL**, e la user story 49 del PRD lo vuole. Deciso il
-   2026-09-28 di non infilarlo nella #21 (la Dashboard non ha filtri in nessuno stato del mock) ma
-   di aprirgli una issue sua. **Non ancora aperta.**
-3. In sospeso: **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel; e nella
-   **#23** vanno ancora scritti **cinque** scostamenti dal mock, uno della #19 (il Follow sotto i
-   640px), tre della #20 (titolo alfabetico al posto di "popular", conteggi non ancora linkati che
-   ora però lo sono, "this week" rimandato e ora fatto) e uno della #21 (la nota dell'Anteprima
-   saltata): oggi vivono solo qui e nel corpo delle PR. Per entrare in locale da Sviluppatore:
-   `pnpm dev:login`, poi "Continue as local developer" sul `/login`.
+⚠️ **Questo non è il punto di partenza.** Quello sta in "Da dove ripartire", in cima. Fino al
+2026-09-30 questa sezione si chiamava "Da dove ripartire: la #25 e la #36" e una sessione nuova poteva
+leggerla come l'indicazione buona. Le code ancora vive che c'erano dentro sono state portate in cima,
+in "Code da non perdere".
+
+1. La Dashboard è finita: #20 e #21 sono entrambe fatte. **Superato**: l'ordine di lavoro vero è in
+   cima, e la #25 e la #36 sono ancora aperte.
+2. Il filtro di `/technologies` fuori dall'URL: **portato in cima**, è ancora vero.
+3. **Web Analytics**: portato in cima, è ancora da attivare. I **cinque scostamenti dal mock** sono
+   invece **fatti**: la #23 li ha risolti tutti e cinque (PR #61, sessione del 2026-09-29 (3)).
+   Per entrare in locale da Sviluppatore: `pnpm dev:login`, poi "Continue as local developer"
+   sul `/login`.
 4. Su Vercel `NEXT_PUBLIC_SITE_URL` esiste ora in **Production e in Preview** (senza, il build di
    preview fallisce: lo schema Zod rifiuta una configurazione a metà). I preview puntano al
    database di produzione, quindi restano il posto dove non mettere mai credenziali di comodo.
-5. Piano editoriale: la **tappa D** è stata pubblicata il 2026-09-28 (thread Bluesky di 10 post) e
-   l'articolo dev.to "Enforce your free-plan limit in the database, not in the UI" è **in bozza**,
-   da rileggere e pubblicare a mano dalla dashboard di dev.to, caricando lì gli screenshot. In coda
-   resta l'articolo della tappa C ("Exactly-once AI jobs"), in attesa di qualche giro di cron in
-   produzione da citare.
+5. Piano editoriale: la **tappa D** è stata pubblicata il 2026-09-28 (thread Bluesky di 10 post).
+   Il resto è **portato in cima**: la bozza dev.to e l'articolo della tappa C sono ancora da fare.
 6. ⚠️ Le **due Sintesi finte** che la #20 aveva messo nel database locale sono state **cancellate**
    il 2026-09-28: erano contenuto inventato attaccato a Release vere, e stavano per finire in uno
    screenshot pubblico. Se servono verdetti pieni in locale, si caricano a mano output veri dai
