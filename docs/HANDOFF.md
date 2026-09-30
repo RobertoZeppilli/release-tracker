@@ -19,7 +19,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 Una sessione che lavora da sola prende la **#68** (la **Versione in uso**, `ready-for-agent`): è la
 cosa che cambia di più l'app fra quelle aperte, e va fatta **prima della #47**, che ora la ha fra i
 "Blocked by". Poi la **#25** (404 ed errore generico), la **#36** (segnaposto `{major}.{minor}` nel
-formato dei tag per le Anteprime di TypeScript) e la **#24** (SEO).
+formato dei tag per le Anteprime di TypeScript), la **#72** (il filtro di `/technologies` nell'URL) e
+la **#24** (SEO).
 
 Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) va decisa **prima** della **#47**;
 la **#64** si scioglie dentro la #47; la **#57** è un verdetto sulla qualità; la **#65** (uniformare i
@@ -34,12 +35,13 @@ niente), poi la **#47** con la #64 dentro, poi la **#26** (serve il nome del pro
 ### Code da non perdere
 
 Tre cose vive che fino al 2026-09-30 stavano **solo** in fondo a questo documento, sotto un titolo
-vecchio che sembrava l'indicazione buona. Non sono issue, e due delle tre sono dell'utente.
+vecchio che sembrava l'indicazione buona. La prima è diventata una issue; le altre due restano
+dell'utente e di nessun altro.
 
-- **Il filtro di `/technologies` non è nell'URL**, e la **user story 49 del PRD** lo vuole. Il
-  2026-09-28 si è deciso di non infilarlo nella #21 (la Dashboard non ha filtri in nessuno stato del
-  mock) ma di aprirgli una issue sua: **non è mai stata aperta**. È l'unico pezzo di PRD scoperto da
-  qualunque issue, quindi è il candidato più probabile a essere dimenticato fino al lancio.
+- ~~Il filtro di `/technologies` fuori dall'URL~~: è diventato la **#72** il 2026-09-30
+  (`ready-for-agent`). Era l'unico pezzo di PRD che nessuna issue copriva. La issue dice anche che
+  cosa "filtri e tab" copre davvero: solo quel filtro, perché le sezioni di `/technologies` e della
+  Dashboard non sono tab e il Cammino di upgrade è già nell'URL con `?from=`.
 - **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel. È un gesto dell'utente,
   non nostro.
 - **Piano editoriale**: l'articolo dev.to della tappa D ("Enforce your free-plan limit in the
