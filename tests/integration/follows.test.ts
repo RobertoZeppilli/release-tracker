@@ -18,6 +18,10 @@ const PERMISSION_DENIED = "42501";
 // The two rules the trigger of `follow_limits` imposes, as PostgREST forwards them.
 const LIMIT_REACHED = "FLIMT";
 const RETIRED = "FRTRD";
+// The three rules the trigger of `current_version` imposes.
+const MALFORMED = "FVMAL";
+const NOT_OLDER = "FVNEW";
+const NO_STABLE = "FVNST";
 const FREE_LIMIT = 10;
 
 const FollowRowsSchema = z.array(z.object({ user_id: z.uuid() }));
@@ -145,5 +149,107 @@ describe("the follow rules the database imposes", () => {
       .insert({ user_id: dave.id, technology_id: retired });
     expect(error?.code).toBe(RETIRED);
     await deleteDeveloper(dave);
+  });
+});
+
+// The Version in use is validated by the database, like every other rule about a follow (issue #68):
+// well formed, and not newer than the latest stable Release. The day of the declaration is written
+// there too, because a client that could set it could make a stale declaration look fresh.
+describe("the Version in use", () => {
+  let erin: Developer;
+  let bare: Catalog;
+
+  const DeclarationSchema = z.object({
+    current_version: z.string().nullable(),
+    current_version_declared_at: z.string().nullable(),
+  });
+
+  beforeAll(async () => {
+    [erin, bare] = await Promise.all([createDeveloper(), seedCatalog(1)]);
+    const { error } = await erin.client
+      .from("follows")
+      .insert({ user_id: erin.id, technology_id: content.technologyId });
+    if (error) throw error;
+  });
+
+  afterAll(async () => {
+    await deleteDeveloper(erin);
+    await bare.remove();
+  });
+
+  async function declare(version: string | null, technologyId = content.technologyId) {
+    return erin.client
+      .from("follows")
+      .update({ current_version: version })
+      .eq("technology_id", technologyId)
+      .select("current_version, current_version_declared_at")
+      .single();
+  }
+
+  function declaration(data: unknown) {
+    return DeclarationSchema.parse(data);
+  }
+
+  it("starts undeclared", async () => {
+    const { data } = await declare(null);
+    expect(declaration(data)).toEqual({ current_version: null, current_version_declared_at: null });
+  });
+
+  it("is saved with the day the database wrote it, and keeps it when nothing moved", async () => {
+    const { data, error } = await declare("1.0.0");
+    expect(error).toBeNull();
+    const first = declaration(data);
+    expect(first.current_version).toBe("1.0.0");
+    expect(first.current_version_declared_at).not.toBeNull();
+
+    const again = declaration((await declare("1.0.0")).data);
+    expect(again.current_version_declared_at).toBe(first.current_version_declared_at);
+
+    // A different Version is a new declaration, so it stands from now on.
+    const moved = declaration((await declare("0.9.0")).data);
+    expect(moved.current_version).toBe("0.9.0");
+    expect(moved.current_version_declared_at).not.toBe(first.current_version_declared_at);
+  });
+
+  it("can be taken away, and takes its day with it", async () => {
+    expect((await declare("1.0.0")).error).toBeNull();
+    expect(declaration((await declare(null)).data)).toEqual({
+      current_version: null,
+      current_version_declared_at: null,
+    });
+  });
+
+  it("refuses a Version newer than the latest stable Release", async () => {
+    expect((await declare("2.0.0")).error?.code).toBe(NOT_OLDER);
+  });
+
+  it("refuses a Version that is not a Version", async () => {
+    expect((await declare("1.x")).error?.code).toBe(MALFORMED);
+  });
+
+  it("refuses a Technology with no stable Release to measure from", async () => {
+    const [technologyId] = bare.technologyIds;
+    const { error: followed } = await erin.client
+      .from("follows")
+      .insert({ user_id: erin.id, technology_id: technologyId });
+    expect(followed).toBeNull();
+    expect((await declare("1.0.0", technologyId)).error?.code).toBe(NO_STABLE);
+  });
+
+  it("cannot be written on another Developer's follow", async () => {
+    expect((await declare("1.0.0")).error).toBeNull();
+    await bob.client.from("follows").update({ current_version: "0.1.0" }).eq("user_id", erin.id);
+
+    const { data } = await declare("1.0.0");
+    expect(declaration(data).current_version).toBe("1.0.0");
+  });
+
+  it("is the only column of a follow a Developer may update", async () => {
+    const [technologyId] = bare.technologyIds;
+    const { error } = await erin.client
+      .from("follows")
+      .update({ technology_id: technologyId })
+      .eq("technology_id", content.technologyId);
+    expect(error?.code).toBe(PERMISSION_DENIED);
   });
 });

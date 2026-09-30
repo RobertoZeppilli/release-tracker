@@ -14,7 +14,7 @@ export default async function TechnologiesPage() {
   const developer = await requireDeveloper("/technologies");
   const db = await createRequestClient();
   const [technologies, follows] = await Promise.all([listPickerTechnologies(db), readFollows(db)]);
-  const sections = splitPicker(technologies, follows);
+  const sections = splitPicker(technologies, follows.map(({ technologyId }) => technologyId));
 
   return (
     <FollowsProvider developerId={developer.id} follows={follows}>

@@ -399,7 +399,14 @@ Consecutive digest releases fold into one `<details>` row between rules: the dig
 ### Upgrade Path Form
 One Mono 14px muted sentence: `Upgrade from [input] to 6.0.3 [Check]`. The input is a 38px `sunken` field, 11ch wide, set in Mono 16px `text`, with a 1px `rule-strong` border and 6px radius. The border turns `text-faint` on hover and `breaking` when `aria-invalid`. The target version is in `text`. It suggests known versions through a datalist.
 
+**Declared start.** When the upgrade path starts from a declared Version in use rather than a typed one, the field arrives prefilled and a full-width muted note sits below it, linked by `aria-describedby`: the info glyph + `note:` label, then `starting from 6.0.0, the version you declared in use on 2026-09-12.` in Mono 14px `text-muted`. The date is not decoration: the counts under it are built on a declaration nothing ever checks, so the line that introduces them says how old it is.
+
 **Invalid version.** A full-width error line below the form, linked by `aria-describedby`: the x-circle glyph + `error: 5.9.0 is not a Vite version. Did you mean 5.4.0 or 5.4.11? The path below is still from 5.2.0.` Everything is in Mono 14px `breaking`. The suggested versions are links that inherit the ink and keep the underline. The page keeps showing the last valid path.
+
+### Version in Use
+The control a Developer who follows the Technology gets, on a line of its own under the header facts (12px above, full width of the header group, 12px gaps): the Mono 14px `text-muted` label `Version in use`, the same field and button as the Upgrade Path Form, and a `Clear` button that appears only once something is declared. Nothing declared reads `not declared` in `text-faint` beside the button; something declared puts a full-width Mono 14px `text-muted` note under the line, with the info glyph and a `note:` label: `declared on 2026-09-12, and the upgrade path below starts from it.` A refusal replaces that note with the form's own error line, in `breaking`, with the field `aria-invalid`.
+
+It is never inked: a declaration is a fact the Developer entered, not a verdict. It appears only for a followed Technology, a retired one included, and never for a Visitor.
 
 ### Retired Note
 When a technology is retired, a muted note sits between a top and a bottom 1px `rule` (12px vertical padding, 24px above): the info glyph + Mono 14px `note:` label in `text-muted`, then Grotesk prose in `text-muted`. It is a note, not an error: no ink. Follow and upcoming previews are hidden.
@@ -414,6 +421,13 @@ The Section title (`spotlight (7)`) and its hairline rule, followed by a signifi
 Dashboard sections list releases one per row: the Technology name (Grotesk 600 16px, linking to its Technology page), the version cell (12px significance glyph + Mono 16px `text` version link, 6px gap), the date cell and the content column. The content repeats the Release Row: summary title, Mono 13px row verdict, breaking list and `-->` help pointer for action rows. Neutral verdicts stay in `text-muted`.
 
 In Spotlight each followed Technology appears exactly once: action rows first, then ok rows, then **compact rows** for Technologies without a featured release in the window. A compact row keeps the grid but tightens to 8px vertical padding, sets the name at 500 in `text-muted` (`text` on hover), and puts one Mono 13px muted line in the content column: `latest major · none featured in 30 days`.
+
+### In Use Line
+Where the Version in use shows up on the Dashboard, in two places, both Mono 13px `text-muted` and both naming the day of the declaration:
+1. Under the counts line, one sentence for the whole page (Mono 14px, tabular numbers, 8px below): `In use on 3 of 7: 16 releases behind · 3 need action · oldest declared 2026-09-12.` The oldest declaration is the one named, because a total is only as fresh as the stalest thing under it.
+2. In Spotlight, one line at the end of a Technology's entry (8px above): `in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action`, or `· already on 6.0.3` when there is nothing after it. Releases with no ready summary count apart, as `· 2 to check`.
+
+Both lines are absent for a Developer who declared nothing, and the page then reads exactly as it did before there was anything to declare. Neither carries ink, and neither adds a link: the Technology name of the row already leads to its upgrade path.
 
 ### This Week Mark
 Under the ISO date, a Mono 12px `text-muted` `this week` stacks in the date cell for releases in the current ISO week (UTC). It is neutral: no glyph, no ink, no badge.

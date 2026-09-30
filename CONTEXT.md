@@ -203,7 +203,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Catalogo | `Catalog` | |
 | Fonte | `Source` | ruolo: `detection` · `notes`; tipo: `npm` · `pypi` · `github-releases` · `changelog` |
 | Seguire | `follow` | |
-| Versione in uso | `currentVersion` | colonna `follows.current_version` |
+| Versione in uso | `currentVersion` | colonne `follows.current_version` e `follows.current_version_declared_at` |
 | Richiesta di tecnologia | `TechnologyRequest` | |
 | Release | `Release` | origine: `imported` · `detected` |
 | Versione | `Version` | |

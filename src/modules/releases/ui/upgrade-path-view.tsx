@@ -7,7 +7,8 @@ import { computeUpgradePath, type SummarizedRelease, type UpgradePath } from "..
 import { Group, plural, ReleaseRow, Row, rowKey } from "./release-rows";
 import { ReleaseVerdict } from "./release-verdict";
 import { type FormMessage, UpgradeForm } from "./upgrade-form";
-import { invalidMessage } from "./upgrade-path-copy";
+import { declaredStartNote, invalidMessage } from "./upgrade-path-copy";
+import { type UpgradeStart, useUpgradeStart } from "./upgrade-start";
 import { UpgradeVerdict } from "./upgrade-verdict";
 
 type Props = {
@@ -20,8 +21,16 @@ type Props = {
   children: ReactNode;
 };
 
-function formMessage(path: UpgradePath<SummarizedRelease>, name: string, base: string): FormMessage | null {
+function formMessage(
+  path: UpgradePath<SummarizedRelease>,
+  name: string,
+  base: string,
+  declared: UpgradeStart | null,
+): FormMessage | null {
   if (path.type === "invalid") return { tone: "breaking", label: "error:", body: invalidMessage(path.reason, path.from, path.latest) };
+  // The counts below are built on a declaration nobody checked, so the line that introduces them
+  // says since when it has been standing (CONTEXT.md, Versione in uso).
+  if (declared) return { tone: "muted", label: "note:", body: declaredStartNote(declared.version, declared.declaredAt) };
   if (path.recorded) return null;
   const links = path.suggestions.map((version, index) => (
     <Fragment key={version}>
@@ -46,7 +55,10 @@ function formMessage(path: UpgradePath<SummarizedRelease>, name: string, base: s
 export function UpgradePathView({ slug, name, latest, retired, releases, children }: Props) {
   const base = `/technologies/${slug}`;
   const typed = useSearchParams().get("from");
-  const path = typed === null ? null : computeUpgradePath(releases, typed);
+  // `?from=` is a single look and wins over the declared start, without touching what is saved.
+  const declared = useUpgradeStart();
+  const start = typed ?? declared?.version ?? null;
+  const path = start === null ? null : computeUpgradePath(releases, start);
   const versions = releases.filter(({ version }) => !version.includes("-")).map(({ version }) => version);
 
   return (
@@ -55,8 +67,8 @@ export function UpgradePathView({ slug, name, latest, retired, releases, childre
         action={base}
         latest={latest}
         versions={versions}
-        value={typed ?? ""}
-        message={path && formMessage(path, name, base)}
+        value={start ?? ""}
+        message={path && formMessage(path, name, base, typed === null ? declared : null)}
       />
       {path?.type === "path" ? (
         <>

@@ -1,4 +1,5 @@
 import type { InvalidFrom, PathCounts } from "../domain/upgrade-path";
+import { isoDate } from "./release-rows";
 
 export type Tone = "action" | "ok" | "muted" | "breaking";
 
@@ -41,6 +42,12 @@ export function majorWords(counts: PathCounts): { kinds: string; action: string 
     action: counts.actionRequired > 0 ? count(counts.actionRequired, "needs action", "need action") : null,
     missing: counts.missing > 0 ? `${counts.missing} not summarized` : null,
   };
+}
+
+// A declaration the app never verifies: the note names the day it was made, so the numbers under it
+// can be read for what they are worth.
+export function declaredStartNote(version: string, declaredAt: Date): string {
+  return `starting from ${version}, the version you declared in use on ${isoDate(declaredAt)}.`;
 }
 
 export function invalidMessage(reason: InvalidFrom, from: string, latest: string | null): string {

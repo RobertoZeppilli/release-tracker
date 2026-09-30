@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { createPublicClient } from "@/lib/supabase";
 import { getTechnology } from "@/modules/catalog/server";
 import { TechnologyHeader } from "@/modules/catalog/ui";
-import { TechnologyFollow } from "@/modules/plans/ui";
+import { TechnologyFollow, TechnologyScope } from "@/modules/plans/ui";
 import { groupByMajor } from "@/modules/releases";
 import { listReleases } from "@/modules/releases/server";
 import { ReleaseList, UpgradeForm, UpgradePathView } from "@/modules/releases/ui";
@@ -41,40 +41,45 @@ export default async function TechnologyPage({ params }: Props) {
     <>
       <SiteHeader path={["technologies", technology.slug]} />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
-        <TechnologyHeader
-          technology={technology}
-          latest={grouped.latest}
-          follow={
-            <TechnologyFollow
-              technologyId={technology.id}
-              name={technology.name}
-              retired={technology.retired}
-            />
-          }
-        />
-        {grouped.latest ? (
-          // `?from` is read on the client; until then the page shows the form and the plain list.
-          <Suspense
-            fallback={
-              <>
-                <UpgradeForm action={base} latest={grouped.latest} versions={[]} value="" message={null} />
-                {list}
-              </>
+        {/* One scope for the whole page: the Follow in the header and the Upgrade Path below it read
+            the same follows, so a declared Version in use can start the path. */}
+        <TechnologyScope technologyId={technology.id}>
+          <TechnologyHeader
+            technology={technology}
+            latest={grouped.latest}
+            follow={
+              <TechnologyFollow
+                technologyId={technology.id}
+                name={technology.name}
+                retired={technology.retired}
+                latest={grouped.latest}
+              />
             }
-          >
-            <UpgradePathView
-              slug={technology.slug}
-              name={technology.name}
-              latest={grouped.latest}
-              retired={technology.retired}
-              releases={releases}
+          />
+          {grouped.latest ? (
+            // `?from` is read on the client; until then the page shows the form and the plain list.
+            <Suspense
+              fallback={
+                <>
+                  <UpgradeForm action={base} latest={grouped.latest} versions={[]} value="" message={null} />
+                  {list}
+                </>
+              }
             >
-              {list}
-            </UpgradePathView>
-          </Suspense>
-        ) : (
-          list
-        )}
+              <UpgradePathView
+                slug={technology.slug}
+                name={technology.name}
+                latest={grouped.latest}
+                retired={technology.retired}
+                releases={releases}
+              >
+                {list}
+              </UpgradePathView>
+            </Suspense>
+          ) : (
+            list
+          )}
+        </TechnologyScope>
       </main>
     </>
   );

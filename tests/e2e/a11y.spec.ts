@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import {
   addFollows,
+  declareCurrentVersion,
   e2eAuthSecret,
   type FixtureDeveloper,
   type FixtureFillers,
@@ -154,6 +155,21 @@ for (const theme of THEMES) {
       await scan(page, theme);
     });
 
+    test("a technology page with a declared Version in use, and a refused one", async ({ page }) => {
+      await signIn(page);
+      await developer.clearFollows();
+      await addFollows(developer.id, [technology.id]);
+      await declareCurrentVersion(developer.id, technology.id, "1.9.0");
+      await page.goto(`/technologies/${technology.slug}`);
+      await expect(page.locator("#current-version-note")).toContainText("declared on");
+      await scan(page, theme);
+
+      await page.getByLabel("Version in use", { exact: true }).fill("9.9.9");
+      await page.getByRole("button", { name: "Save", exact: true }).click();
+      await expect(page.locator("#current-version-note")).toContainText("error:");
+      await scan(page, theme);
+    });
+
     test("a release page with a ready summary", async ({ page }) => {
       await page.goto(`/technologies/${technology.slug}/2.0.0`);
       await expect(page.locator("#verdict")).toBeVisible();
@@ -185,6 +201,16 @@ for (const theme of THEMES) {
       await addFollows(developer.id, [technology.id]);
       await page.goto("/dashboard");
       await expect(page.locator("#page-verdict")).toContainText("needs action");
+      await scan(page, theme);
+    });
+
+    test("the dashboard with a Version in use", async ({ page }) => {
+      await signIn(page);
+      await developer.clearFollows();
+      await addFollows(developer.id, [technology.id]);
+      await declareCurrentVersion(developer.id, technology.id, "1.8.9");
+      await page.goto("/dashboard");
+      await expect(page.getByText(/^In use on 1 of 1: /)).toBeVisible();
       await scan(page, theme);
     });
   });

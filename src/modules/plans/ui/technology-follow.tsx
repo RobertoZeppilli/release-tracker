@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { loginPath } from "@/modules/auth";
 import { useSession } from "@/modules/auth/ui";
+import { CurrentVersionField } from "./current-version-field";
 import { FollowRejectionNote } from "./follow-rejection-note";
 import { FOLLOW_LINK_CLASS, FollowToggle } from "./follow-toggle";
-import { FollowsProvider, useFollows } from "./follows-provider";
+import { useFollows } from "./follows-provider";
 import { FollowToggleLimitNote } from "./limit-note";
 
 const ERROR_ID = "follow-error";
@@ -17,19 +18,20 @@ const ERROR_ID = "follow-error";
 const PLACE = "sm:ml-auto";
 const NOTE = "mt-2 basis-full";
 
-// The public Technology page is cached (ISR), so nothing personal can arrive from the server: who is
-// looking is read here, in the browser. A Visitor is offered the login with this page as the way
-// back; a Developer gets the picker's own Toggle, limit and refusal included, because both come from
-// the same provider. Nothing shows until the session is known, rather than a Follow that might be
-// wrong.
+// A Visitor is offered the login with this page as the way back; a Developer gets the picker's own
+// Toggle, limit and refusal included, because both come from the same provider, which the page's
+// `TechnologyScope` holds. Nothing shows until the session is known, rather than a Follow that might
+// be wrong.
 export function TechnologyFollow({
   technologyId,
   name,
   retired,
+  latest,
 }: {
   technologyId: string;
   name: string;
   retired: boolean;
+  latest: string | null;
 }) {
   const session = useSession();
   const pathname = usePathname();
@@ -47,11 +49,7 @@ export function TechnologyFollow({
     );
   }
 
-  return (
-    <FollowsProvider developerId={session.developerId}>
-      <FollowControl technologyId={technologyId} name={name} retired={retired} />
-    </FollowsProvider>
-  );
+  return <FollowControl technologyId={technologyId} name={name} retired={retired} latest={latest} />;
 }
 
 // The provider has no follows from the server here: the query loads them, and until it answers the
@@ -60,10 +58,12 @@ function FollowControl({
   technologyId,
   name,
   retired,
+  latest,
 }: {
   technologyId: string;
   name: string;
   retired: boolean;
+  latest: string | null;
 }) {
   const follows = useFollows();
   const following = follows.isFollowing(technologyId);
@@ -91,6 +91,8 @@ function FollowControl({
       </span>
       <FollowToggleLimitNote technologyId={technologyId} className={NOTE} />
       {rejection && <FollowRejectionNote id={ERROR_ID} rejection={rejection} className={NOTE} />}
+      {/* A retired Technology that is still followed declares a Version in use like any other. */}
+      {following && <CurrentVersionField technologyId={technologyId} name={name} latest={latest} className={NOTE} />}
     </>
   );
 }

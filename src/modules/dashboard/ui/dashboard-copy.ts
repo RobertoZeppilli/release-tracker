@@ -1,5 +1,5 @@
-import { plural, type Tone } from "@/modules/releases/ui";
-import type { DashboardRelease, DashboardVerdict } from "../domain/build-dashboard";
+import { isoDate, plural, type Tone } from "@/modules/releases/ui";
+import type { BehindStanding, DashboardRelease, DashboardVerdict, InUseTotals } from "../domain/build-dashboard";
 
 export type Verdict = { tone: Tone; label: string; claim: string; pending?: true };
 
@@ -32,4 +32,32 @@ export function weekRange(start: Date, end: Date): string {
   const month = (date: Date) => MONTHS[date.getUTCMonth()];
   const to = month(start) === month(end) ? `${end.getUTCDate()}` : `${month(end)} ${end.getUTCDate()}`;
   return `${month(start)} ${start.getUTCDate()} to ${to}`;
+}
+
+// The two lines built on the Version in use. Both name the day the declaration was made, because it
+// is the one fact that tells a reader whether the count in front of it still means anything: the app
+// never checks a declaration, so a count on top of it is exactly as old as the declaration is.
+function needWord(count: number): string {
+  return `${count} ${count === 1 ? "needs" : "need"} action`;
+}
+
+export function inUseTotalsLine(totals: InUseTotals, technologies: number): string {
+  const parts = [
+    totals.behind === 0 ? "all up to date" : `${plural(totals.behind, "release")} behind`,
+    ...(totals.needsAction > 0 ? [needWord(totals.needsAction)] : []),
+    `oldest declared ${isoDate(totals.since)}`,
+  ];
+  return `In use on ${totals.declared} of ${technologies}: ${parts.join(" · ")}.`;
+}
+
+export function behindLine(standing: BehindStanding): string {
+  const parts =
+    standing.counts.total === 0
+      ? [`already on ${standing.to}`]
+      : [
+          `${plural(standing.counts.total, "release")} behind ${standing.to}`,
+          ...(standing.counts.actionRequired > 0 ? [needWord(standing.counts.actionRequired)] : []),
+          ...(standing.counts.missing > 0 ? [`${standing.counts.missing} to check`] : []),
+        ];
+  return `in use ${standing.version} since ${isoDate(standing.declaredAt)} · ${parts.join(" · ")}`;
 }

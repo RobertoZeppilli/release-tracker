@@ -44,7 +44,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWeeks: string[] }) {
   return (
     <>
-      <DashboardSummary verdict={dashboard.verdict} counts={dashboard.counts} />
+      <DashboardSummary verdict={dashboard.verdict} counts={dashboard.counts} inUse={dashboard.inUse} />
       <Spotlight entries={dashboard.spotlight} thisWeek={dashboard.thisWeek} />
       <ReleaseSection
         id="latest"

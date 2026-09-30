@@ -72,6 +72,13 @@ export function computeUpgradePath<T extends PathRelease>(releases: readonly T[]
   };
 }
 
+// The Version in use is validated exactly as the start of an Upgrade Path (CONTEXT.md), so the two
+// can never drift apart: same releases, same function, only the reason is kept.
+export function upgradeStartRejection(releases: readonly PathRelease[], typed: string): InvalidFrom | null {
+  const path = computeUpgradePath(releases, typed);
+  return path.type === "invalid" ? path.reason : null;
+}
+
 function countPath(releases: readonly PathRelease[]): PathCounts {
   const summarized = releases.filter(({ significance }) => significance !== "digest");
   const count = (keep: (release: PathRelease) => boolean) => summarized.filter(keep).length;

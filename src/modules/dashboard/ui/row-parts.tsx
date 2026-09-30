@@ -2,9 +2,9 @@ import Link from "next/link";
 import { releasePath } from "@/modules/releases";
 import { isoDate, SeverityLabel, SignificanceLabel } from "@/modules/releases/ui";
 import { InlineCode } from "@/modules/summaries/ui";
-import type { DashboardRelease } from "../domain/build-dashboard";
+import type { BehindStanding, DashboardRelease } from "../domain/build-dashboard";
 import { isoWeekKey, isoWeekOf } from "../domain/iso-week";
-import { rowVerdict } from "./dashboard-copy";
+import { behindLine, rowVerdict } from "./dashboard-copy";
 
 // The pieces every row of the Dashboard is made of, shared by Spotlight, Latest and Previews so
 // the same Release reads the same way wherever it appears.
@@ -64,4 +64,11 @@ export function SummaryTitle({ release }: { release: DashboardRelease }) {
       <InlineCode text={release.summary.title} />
     </p>
   );
+}
+
+// Where a followed Technology stands against its Version in use. It is neutral, like the compact
+// line it sits under: the distance is a fact, and the row above already carries whatever ink the
+// Releases earned. The Technology name is the link to the path, so the line adds no second one.
+export function BehindLine({ standing }: { standing: BehindStanding }) {
+  return <p className="font-mono text-diagnostic text-text-muted">{behindLine(standing)}</p>;
 }

@@ -4,8 +4,14 @@ import { SeverityLabel } from "./severity-label";
 
 export type FormMessage = { tone: "breaking" | "muted"; label: string; body: ReactNode };
 
-const BUTTON =
-  "inline-flex h-[34px] cursor-pointer items-center rounded-md border border-rule-strong bg-transparent px-3 font-sans text-diagnostic font-medium text-text hover:border-text-faint hover:bg-raised";
+// The field and the button of a version control, exported because the Technology page has a second
+// one beside this form (the Version in use) and the two have to be the same control, not two that
+// look nearly alike.
+export const VERSION_BUTTON_CLASS =
+  "inline-flex h-[34px] cursor-pointer items-center rounded-md border border-rule-strong bg-transparent px-3 font-sans text-diagnostic font-medium text-text hover:border-text-faint hover:bg-raised disabled:cursor-not-allowed disabled:border-rule disabled:text-text-faint";
+
+export const VERSION_INPUT_CLASS =
+  "h-[38px] w-[14ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text placeholder:text-text-faint hover:border-text-faint aria-invalid:border-breaking";
 
 // A plain GET form: `?from=<version>` lands in the URL, so the path can be shared and reloaded.
 export function UpgradeForm({
@@ -35,7 +41,7 @@ export function UpgradeForm({
         placeholder={latest}
         aria-invalid={message?.tone === "breaking" ? true : undefined}
         aria-describedby={message ? "from-message" : undefined}
-        className="h-[38px] w-[14ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text placeholder:text-text-faint hover:border-text-faint aria-invalid:border-breaking"
+        className={VERSION_INPUT_CLASS}
       />
       <datalist id="versions">
         {versions.map((version) => (
@@ -44,7 +50,7 @@ export function UpgradeForm({
       </datalist>
       <span>to</span>
       <span className="text-text">{latest}</span>
-      <button type="submit" className={BUTTON}>
+      <button type="submit" className={VERSION_BUTTON_CLASS}>
         Check
       </button>
       {message && (
