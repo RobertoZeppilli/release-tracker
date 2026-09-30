@@ -13,18 +13,22 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-29, notte).** La **#62** è fatta: vedi la sessione (5) qui sotto.
-La **#23** è chiusa (PR #61, unita il 2026-09-29).
+**Da dove ripartire (2026-09-29, notte fonda).** La **#62** è chiusa e **verificata in produzione**:
+`0 controlli su 13.496` (PR #66 e #67). La **#23** è chiusa (PR #61).
 
-Una sessione che lavora da sola prende la **#25** (404 ed errore generico), poi la **#24** (SEO).
-Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) va decisa **prima** della **#47**
-(revisione del design), che ora la ha fra i "Blocked by"; la **#64** si scioglie dentro la #47;
-la **#57** è un verdetto sulla qualità; la **#65** (uniformare i database) è ferma per scelta
-dell'utente fino al secondo giro a pagamento.
+Una sessione che lavora da sola prende la **#68** (la **Versione in uso**, `ready-for-agent`): è la
+cosa che cambia di più l'app fra quelle aperte, e va fatta **prima della #47**, che ora la ha fra i
+"Blocked by". Poi la **#25** (404 ed errore generico) e la **#24** (SEO).
 
-L'ordine concordato con l'utente il 2026-09-29: **#62**, poi la decisione sulla **#63** e la sua
-implementazione, la **#25** quando serve (non è bloccata da niente), poi la **#47** con la #64 dentro,
-poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il SEO passa anche sulla landing.
+Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) va decisa **prima** della **#47**;
+la **#64** si scioglie dentro la #47; la **#57** è un verdetto sulla qualità; la **#65** (uniformare i
+database) e la **#69** (import di `package.json`) sono ferme per scelta dell'utente, la prima al
+secondo giro a pagamento, la seconda dopo il lancio.
+
+L'ordine concordato con l'utente il 2026-09-29: **#62** (fatta), poi la **#68**, la decisione sulla
+**#63** e la sua implementazione, la **#25** quando serve (non è bloccata da niente), poi la **#47**
+con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il SEO passa
+anche sulla landing.
 
 **Dopo la #47, prima di dire che l'app è pronta**: un giro a mano nel browser su tutta l'app,
 funzione per funzione, per capire se la percezione d'uso regge. La stella polare, detta dall'utente,
@@ -67,6 +71,69 @@ nata, quindi cambiare una variabile su Vercel non basta, serve un redeploy.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
+## Sessione del 2026-09-29 (6): il budget dei caret misurato, e la Versione in uso
+
+Due cose, nella PR #67. E una lezione che vale per tutte e due.
+
+### `0 su 13.496`: la #62 verificata sui dati veri
+
+La passata sulla produzione dopo la PR #66 non ha dato zero: **6 controlli su 13.496**, tutti a 768px,
+su `angular/22.0.0`, `deno/2.0.0` ed `express/5.0.0`. Le tre citavano una riga di **esattamente 79
+caratteri**, cioè esattamente il limite che lo scaglione a 768px dichiarava di reggere.
+
+Il motivo: `caret-row.ts` calcolava il budget da un avanzamento **nominale** di 0.6em. **Fragment Mono
+avanza 9px a 14px**, quindi ogni scaglione prometteva da cinque a sette caratteri più del vero. La
+formula invece era giusta: le larghezze che produce coincidono **al pixel** con quelle misurate nel
+browser. Sbagliava solo la costante.
+
+Ora l'avanzamento è quello misurato e ogni scaglione tiene indietro un carattere. I budget sono
+**58 / 72 / 87 / 92** (erano 64 / 79 / 95 / 100). Dopo il merge la passata ha dato **0 su 13.496**.
+
+- ⚠️ **Una costante tipografica si misura, non si assume.** 0.6em è il valore che "si sa" dei font
+  monospaziati; Fragment Mono non lo rispetta, e l'errore era invisibile perché portava a soglie
+  *quasi* giuste. Il test unitario ora fissa i budget misurati: se il tipo o la colonna cambiano,
+  fallisce lui invece della produzione.
+- ⚠️ **La guardia va provata al contrario.** La fixture E2E cita una riga lunga esattamente quanto il
+  budget di ogni scaglione, e rimettendo la costante sbagliata **fallisce a 768px**, la stessa
+  larghezza a cui falliva la produzione. Una guardia che non si è mai vista fallire non è una guardia.
+- Lo script della passata è buttato via ogni volta, ma la forma è sempre la stessa: crawl di
+  `a[href^="/technologies/<slug>/"]` da ogni pagina di Tecnologia (le 37 danno **1.687** pagine di
+  Release), poi `scrollWidth` contro `clientWidth` a quattro larghezze, Note chiuse e aperte, con gli
+  elementi foglia che sporgono nominati. **Dalla radice del repo**, o `@playwright/test` non si
+  risolve. **Serve la produzione**: i preview di Vercel rispondono 302.
+
+### La Versione in uso (#68), e l'import dopo il lancio (#69)
+
+Domanda dell'utente: in base a cosa diciamo `action required`? La risposta era scomoda. **È un
+giudizio sulla Release, uguale per tutti**: l'app non sa dove sta chi legge. La Versione di partenza
+del **Cammino di upgrade** si scrive a mano e si perde a ogni visita, e `follows` non ha nessuna
+colonna per la versione.
+
+La regola è fissata in `CONTEXT.md` **prima di scrivere codice**: un **Seguire** può portare una
+**Versione in uso** (`currentVersion`, colonna `follows.current_version`), **dichiarata, mai osservata
+e mai verificata**. Nome confermato dall'utente. Il vincolo che la tiene onesta sta nella regola, non
+in un mock: **una dichiarazione ferma invecchia in silenzio**, quindi ogni conto che ci si appoggia
+dice da quando lo è.
+
+Scartati: "Versione installata" (l'app non installa niente) e "Versione attuale" (suona osservata).
+
+L'import di `package.json` resta **fuori dall'MVP**, e la #69 ne porta le domande aperte: monorepo,
+`dependencies` contro `devDependencies`, manifest contro lockfile (il manifest dice `^18.2.0`, non la
+versione installata), che fare delle dipendenze fuori dal Catalogo, e **dove passa il file** (caricato
+sul server, o letto nel browser senza mai inviarlo). La ragione vera dell'attesa è la terza: con 37
+Tecnologie un `package.json` vero verrebbe riconosciuto per circa **una riga su otto**, e l'app si
+leggerebbe come incompleta invece che curata.
+
+### Attenzione per chi riprende
+
+- ⚠️ **La #68 va prima della #47**, ed è nei suoi "Blocked by". Cambia che cosa la Dashboard deve dire
+  per prima: rivedere il design prima vuol dire rifarlo dopo.
+- ⚠️ **I test non possono importare da `@/modules/<modulo>/domain`** (ESLint `no-restricted-imports`):
+  `overflow.spec.ts` usa il budget dei caret, quindi `CARET_WIDTHS`, `caretWidth` e `fits` sono
+  esportati dall'indice del modulo.
+- ⚠️ **La tabella `CARET` in `breaking-change-item.tsx` e il mock vanno tenuti insieme.** I budget
+  nuovi hanno spostato due dei quattro pozzi del mock da `data-fits="900"` a `data-fits="1024"`.
+
 ## Sessione del 2026-09-29 (5): #62, l'overflow della pagina della Release
 
 La #62 è chiusa. Il rimedio è quello che la issue indicava, arrivato però a una regola più precisa di
@@ -80,9 +147,10 @@ senza nessun punto dove spezzarsi allargano tutta la pagina. Non è una question
 finestra: è la lunghezza della citazione, riga per riga.
 
 Quindi `src/modules/summaries/domain/caret-row.ts` calcola, da quanti caratteri ha la citazione, **la
-finestra più stretta in cui quella citazione ci sta ancora su una riga**: 64 caratteri a 641px, 79 a
-768px, 95 a 900px, 100 a 1024px e oltre (dove la colonna ha già toccato il suo tetto di 900px). Oltre
-i 100 caratteri la riga dei caret non compare mai. Sotto quella soglia la sottolineatura corallo
+finestra più stretta in cui quella citazione ci sta ancora su una riga**. ⚠️ **I numeri scritti qui
+quel giorno (64 / 79 / 95 / 100) erano sbagliati**: la sessione (6) li ha corretti in
+**58 / 72 / 87 / 92** misurando il font invece di assumerlo. Oltre il budget più alto la riga dei
+caret non compare mai. Sotto quella soglia la sottolineatura corallo
 dentro la riga citata prende il suo posto, come `DESIGN.md` già faceva sotto i 640px: dice la stessa
 cosa e resta allineata comunque la citazione vada a capo.
 
