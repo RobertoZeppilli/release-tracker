@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Significance } from "./significance";
-import { computeUpgradePath, type UpgradePath } from "./upgrade-path";
+import { computeUpgradePath, type UpgradePath, upgradeStartRejection } from "./upgrade-path";
 
 function release(version: string, significance: Significance, actionRequired: boolean | null = null) {
   return { version, significance, actionRequired, publishedAt: new Date("2026-01-01T00:00:00Z") };
@@ -156,5 +156,21 @@ describe("computeUpgradePath", () => {
       reason: "noStable",
       latest: null,
     });
+  });
+});
+
+describe("upgradeStartRejection", () => {
+  const releases = [release("1.0.0", "featured"), release("1.1.0", "notable")];
+
+  it("accepts a Version the path can start from, the latest stable included", () => {
+    expect(upgradeStartRejection(releases, "1.0.0")).toBeNull();
+    expect(upgradeStartRejection(releases, "1.1.0")).toBeNull();
+    expect(upgradeStartRejection(releases, "0.9.0")).toBeNull();
+  });
+
+  it("names the reason the path would refuse it", () => {
+    expect(upgradeStartRejection(releases, "1.x")).toBe("malformed");
+    expect(upgradeStartRejection(releases, "2.0.0")).toBe("notOlder");
+    expect(upgradeStartRejection([release("1.0.0-beta.0", "preview")], "0.9.0")).toBe("noStable");
   });
 });

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { DashboardRelease, FollowedTechnology } from "./build-dashboard";
 import { type DashboardRow, sectionRows, weeklyDigest } from "./sections";
 
-const node: FollowedTechnology = { slug: "node", name: "Node.js" };
-const vite: FollowedTechnology = { slug: "vite", name: "Vite" };
+const node: FollowedTechnology = { slug: "node", name: "Node.js", currentVersion: null };
+const vite: FollowedTechnology = { slug: "vite", name: "Vite", currentVersion: null };
 
 function row(technology: FollowedTechnology, version: string, publishedAt: string, significance: DashboardRelease["significance"] = "notable"): DashboardRow {
   const release: DashboardRelease = {

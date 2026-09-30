@@ -180,6 +180,21 @@ export async function addFollows(userId: string, technologyIds: readonly string[
   if (error) throw error;
 }
 
+// A Version in use declared from outside the browser. The trigger still runs under the service role,
+// so the day of the declaration is written the same way a Developer's own press would write it.
+export async function declareCurrentVersion(
+  userId: string,
+  technologyId: string,
+  version: string,
+): Promise<void> {
+  const { error } = await serviceClient()
+    .from("follows")
+    .update({ current_version: version })
+    .eq("user_id", userId)
+    .eq("technology_id", technologyId);
+  if (error) throw error;
+}
+
 // A Technology leaves the Catalog while it is followed: the only way a retired follow can exist.
 export async function retireTechnology(technologyId: string): Promise<void> {
   const { error } = await serviceClient()

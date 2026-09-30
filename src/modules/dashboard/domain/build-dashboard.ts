@@ -1,9 +1,26 @@
-import { compareVersions, type Significance, parseVersion, type SummaryStatus } from "@/modules/releases";
+import {
+  compareVersions,
+  computeUpgradePath,
+  type PathCounts,
+  type PathRelease,
+  parseVersion,
+  type Significance,
+  type SummaryStatus,
+} from "@/modules/releases";
 import type { SummaryContent } from "@/modules/summaries";
 import { isoWeekKey, isoWeekOf } from "./iso-week";
 import { type DashboardRow, type DigestWeek, sectionRows, weeklyDigest } from "./sections";
 
-export type FollowedTechnology = { slug: string; name: string };
+// The Version in use is declared, never observed, so it travels with the day it was declared: a
+// count built on it is only readable next to that day (CONTEXT.md, Versione in uso).
+export type CurrentVersion = { version: string; declaredAt: Date };
+
+export type FollowedTechnology = { slug: string; name: string; currentVersion: CurrentVersion | null };
+
+// How far a followed Technology is from its latest stable Release, counted from the Version in use
+// with the rules of the Upgrade Path. Null when nothing is declared, and also when the declaration
+// no longer places: a Technology with no stable Release has no distance to measure.
+export type BehindStanding = CurrentVersion & { to: string; counts: PathCounts };
 
 // `summary` is the content of a ready Summary, already validated; null while there is none.
 export type DashboardRelease = {
@@ -26,6 +43,7 @@ export type SpotlightEntry = {
   technology: FollowedTechnology;
   featured: DashboardRelease[];
   standing: SpotlightStanding | null;
+  behind: BehindStanding | null;
 };
 
 // The page verdict counts featured Releases, not Technologies: a Release without a ready Summary is
@@ -42,11 +60,17 @@ export type DashboardCounts = {
   digest: number;
 };
 
+// The declarations taken together, for the line that opens the page. `since` is the oldest of them,
+// because a total is only as fresh as the stalest declaration under it. Null when nobody declared:
+// a Developer who declares nothing reads the page exactly as before.
+export type InUseTotals = { declared: number; behind: number; needsAction: number; since: Date };
+
 // `thisWeek` is the ISO week of `now`: a row marks itself recent by comparing its own week with it,
 // so "this week" means the same thing in every section of the page.
 export type Dashboard = {
   verdict: DashboardVerdict;
   counts: DashboardCounts;
+  inUse: InUseTotals | null;
   spotlight: SpotlightEntry[];
   latest: DashboardRow[];
   previews: DashboardRow[];
@@ -81,6 +105,36 @@ function standingOf(releases: readonly DashboardRelease[]): SpotlightStanding | 
   if (major) return { release: major.release, major: true };
   const latest = newest(candidates);
   return latest ? { release: latest.release, major: false } : null;
+}
+
+// The Version in use measures the same distance the Technology page measures, with the same
+// function: Releases without a ready Summary count as neither safe nor action required, and the
+// Digests stay out of the action count (CONTEXT.md, Cammino di upgrade).
+function toPathRelease(release: DashboardRelease): PathRelease {
+  return {
+    version: release.version,
+    significance: release.significance,
+    publishedAt: release.publishedAt,
+    actionRequired: release.summary ? release.summary.actionRequired : null,
+  };
+}
+
+function behindOf(declared: CurrentVersion | null, mine: readonly DashboardRelease[]): BehindStanding | null {
+  if (!declared) return null;
+  const path = computeUpgradePath(mine.map(toPathRelease), declared.version);
+  return path.type === "path" ? { ...declared, to: path.to, counts: path.counts } : null;
+}
+
+function inUseTotals(spotlight: readonly SpotlightEntry[]): InUseTotals | null {
+  const standings = spotlight.flatMap((entry) => (entry.behind ? [entry.behind] : []));
+  if (standings.length === 0) return null;
+  const sum = (of: (standing: BehindStanding) => number) => standings.reduce((total, standing) => total + of(standing), 0);
+  return {
+    declared: standings.length,
+    behind: sum(({ counts }) => counts.total),
+    needsAction: sum(({ counts }) => counts.actionRequired),
+    since: new Date(Math.min(...standings.map(({ declaredAt }) => declaredAt.getTime()))),
+  };
 }
 
 function needsAction(entry: SpotlightEntry): boolean {
@@ -140,13 +194,19 @@ export function buildDashboard(
       const featured = mine
         .filter((release) => release.significance === "featured" && release.publishedAt >= start)
         .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
-      return { technology, featured, standing: featured.length > 0 ? null : standingOf(mine) };
+      return {
+        technology,
+        featured,
+        standing: featured.length > 0 ? null : standingOf(mine),
+        behind: behindOf(technology.currentVersion, mine),
+      };
     })
     .sort(byUrgencyThenDate);
 
   return {
     verdict: verdictOf(spotlight),
     counts: countsOf(followed, recent),
+    inUse: inUseTotals(spotlight),
     spotlight,
     latest: sectionRows(recent, "notable"),
     previews: sectionRows(recent, "preview"),

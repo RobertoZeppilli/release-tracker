@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { SeverityLabel } from "@/modules/releases/ui";
-import type { DashboardCounts, DashboardVerdict } from "../domain/build-dashboard";
-import { pageVerdict } from "./dashboard-copy";
+import type { DashboardCounts, DashboardVerdict, InUseTotals } from "../domain/build-dashboard";
+import { inUseTotalsLine, pageVerdict } from "./dashboard-copy";
 
 // Every number is a link to its own section, and only to a section that exists: a count of zero
 // has no section to point at, so it stays plain text instead of becoming a dead anchor.
-export function DashboardSummary({ verdict, counts }: { verdict: DashboardVerdict; counts: DashboardCounts }) {
+export function DashboardSummary({
+  verdict,
+  counts,
+  inUse,
+}: {
+  verdict: DashboardVerdict;
+  counts: DashboardCounts;
+  inUse: InUseTotals | null;
+}) {
   const { tone, label, claim } = pageVerdict(verdict);
 
   return (
@@ -26,6 +34,13 @@ export function DashboardSummary({ verdict, counts }: { verdict: DashboardVerdic
         <CountLink value={counts.previews} href="#previews" label="previews" />,{" "}
         <CountLink value={counts.digest} href="#digest" label="digest" />.
       </p>
+      {/* Only for whoever declared a Version in use, and it stays muted: the distance is a count, and
+          the one inked line on the page is the verdict above it. */}
+      {inUse && (
+        <p className="mt-2 font-mono text-diagnostic text-text-muted tabular-nums">
+          {inUseTotalsLine(inUse, counts.technologies)}
+        </p>
+      )}
     </section>
   );
 }

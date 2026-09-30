@@ -74,6 +74,15 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .range-form .to { color: var(--text); }
 .field-error a { color: inherit; }
 .field-error { flex-basis: 100%; margin: 0; font: 400 14px/1.7 var(--mono); color: var(--breaking); display: none; }
+.field-note { flex-basis: 100%; margin: 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); display: none; }
+.field-note .label, .in-use .label { color: var(--text-muted); }
+
+/* Version in use: the same field and button as the range form, one line under the header */
+.in-use { display: none; flex-basis: 100%; margin-top: var(--space-2); align-items: center; gap: var(--space-3); flex-wrap: wrap; font: 400 14px var(--mono); color: var(--text-muted); }
+.in-use input { width: 11ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.in-use input:hover { border-color: var(--text-faint); }
+.in-use .undeclared { color: var(--text-faint); }
+.in-use .clear { display: none; }
 
 /* Range verdict */
 .verdict { margin-top: var(--space-6); }
@@ -154,6 +163,10 @@ main[data-state="retired"] .retired-note { display: block; }
 main[data-state="retired"] .tech-head .follow { display: none; }
 main[data-state="retired"] .previews { display: none; }
 main[data-state="invalid"] .field-error { display: block; }
+main[data-state="following"] .in-use, main[data-state="in-use"] .in-use { display: flex; }
+main[data-state="in-use"] .in-use .clear { display: inline-flex; }
+main[data-state="in-use"] .in-use .declared-note, main[data-state="in-use"] .field-note { display: block; }
+main[data-state="in-use"] .in-use .undeclared { display: none; }
 
 .verdict-safe { display: none; }
 
@@ -232,8 +245,17 @@ main[data-state="invalid"] .field-error { display: block; }
     </div>
     <a class="btn follow" href="#">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      Follow
+      <span class="follow-label">Follow</span>
     </a>
+
+    <form class="in-use" action="#" method="get" id="in-use-form" aria-label="Version of Vite in use">
+      <label for="current-version">Version in use</label>
+      <input id="current-version" name="current-version" value="6.0.0" placeholder="6.0.3" autocomplete="off" spellcheck="false" aria-describedby="current-version-note">
+      <button class="btn" type="submit">Save</button>
+      <button class="btn clear" type="button">Clear</button>
+      <span class="undeclared">not declared</span>
+      <p class="field-note declared-note" id="current-version-note"><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> declared on 2026-09-12, and the upgrade path below starts from it.</p>
+    </form>
   </div>
 
   <div class="retired-note" role="note">
@@ -246,6 +268,7 @@ main[data-state="invalid"] .field-error { display: block; }
     <datalist id="versions"><option value="5.2.0"><option value="5.2.1"><option value="5.2.2"><option value="5.2.3"><option value="5.2.4"><option value="5.2.5"><option value="5.2.6"><option value="5.2.7"><option value="5.2.8"><option value="5.2.9"><option value="5.2.10"><option value="5.2.11"><option value="5.2.12"><option value="5.2.13"><option value="5.2.14"><option value="5.3.0"><option value="5.3.1"><option value="5.3.2"><option value="5.3.3"><option value="5.3.4"><option value="5.3.5"><option value="5.4.0"><option value="5.4.1"><option value="5.4.2"><option value="5.4.3"><option value="5.4.4"><option value="5.4.5"><option value="5.4.6"><option value="5.4.7"><option value="5.4.8"><option value="5.4.9"><option value="5.4.10"><option value="5.4.11"><option value="6.0.0"><option value="6.0.1"><option value="6.0.2"><option value="6.0.3"></datalist>
     <span>to</span><span class="to">6.0.3</span>
     <button class="btn" type="submit">Check</button>
+    <p class="field-note" id="from-note"><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 6.0.0, the version you declared in use on 2026-09-12.</p>
     <p class="field-error" id="from-error"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href="#">5.4.0</a> or <a href="#">5.4.11</a>? The path below is still from 5.2.0.</p>
   </form>
 
@@ -401,6 +424,8 @@ main[data-state="invalid"] .field-error { display: block; }
   <label for="state-select">page state</label>
   <select id="state-select">
     <option value="range">upgrade path from 5.2.0</option>
+    <option value="following">following, no version in use</option>
+    <option value="in-use">following, version in use declared</option>
     <option value="invalid">invalid from version</option>
     <option value="retired">retired technology</option>
   </select>
@@ -417,13 +442,22 @@ themeButton.addEventListener("click", () => {
 
 const main = document.getElementById("content");
 const fromInput = document.getElementById("from");
+const followLabel = document.querySelector(".follow-label");
+const currentVersion = document.getElementById("current-version");
+const FROM = { invalid: "5.9.0", "in-use": "6.0.0" };
 document.getElementById("state-select").addEventListener("change", (event) => {
   const state = event.target.value;
   main.dataset.state = state;
-  fromInput.value = state === "invalid" ? "5.9.0" : "5.2.0";
+  fromInput.value = FROM[state] ?? "5.2.0";
   fromInput.setAttribute("aria-invalid", String(state === "invalid"));
+  fromInput.setAttribute("aria-describedby", state === "in-use" ? "from-note" : "from-error");
+  // The control only exists for a Developer who follows the Technology.
+  followLabel.textContent = state === "following" || state === "in-use" ? "Following" : "Follow";
+  currentVersion.value = state === "in-use" ? "6.0.0" : "";
 });
-document.getElementById("range-form").addEventListener("submit", (event) => event.preventDefault());
+for (const id of ["range-form", "in-use-form"]) {
+  document.getElementById(id).addEventListener("submit", (event) => event.preventDefault());
+}
 </script>
 </body>
 </html>

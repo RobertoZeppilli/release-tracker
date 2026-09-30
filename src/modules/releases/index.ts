@@ -24,6 +24,7 @@ export {
   type PathRelease,
   type SummarizedRelease,
   type UpgradePath,
+  upgradeStartRejection,
 } from "./domain/upgrade-path";
 export { compareVersions, type ParsedVersion, parseVersion } from "./domain/version";
 export { noteLines, type ReleaseDetail, releasePath, versionFromPath } from "./domain/release-page";

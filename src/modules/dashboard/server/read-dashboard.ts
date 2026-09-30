@@ -13,6 +13,8 @@ const ReleaseRowSchema = z.object({
 });
 
 const FollowRowSchema = z.object({
+  current_version: z.string().nullable(),
+  current_version_declared_at: z.iso.datetime({ offset: true }).nullable(),
   technologies: z.object({
     slug: z.string(),
     name: z.string(),
@@ -29,15 +31,23 @@ export async function readDashboard(db: SupabaseClient): Promise<DashboardData> 
   const { data, error } = await db
     .from("follows")
     .select(
-      "technologies!inner (slug, name, releases (version, significance, significance_override, published_at, summaries (status, content)))",
+      "current_version, current_version_declared_at, technologies!inner (slug, name, releases (version, significance, significance_override, published_at, summaries (status, content)))",
     );
   if (error) throw error;
 
-  const rows = z.array(FollowRowSchema).parse(data).map((row) => row.technologies);
+  const rows = z.array(FollowRowSchema).parse(data);
   return {
-    followed: rows.map(({ slug, name }) => ({ slug, name })),
-    releases: rows.flatMap((technology) =>
-      technology.releases.map((release) => toDashboardRelease(technology.slug, release)),
+    followed: rows.map((row) => ({
+      slug: row.technologies.slug,
+      name: row.technologies.name,
+      // The database keeps the two columns together, so one being set is enough to read the pair.
+      currentVersion:
+        row.current_version && row.current_version_declared_at
+          ? { version: row.current_version, declaredAt: new Date(row.current_version_declared_at) }
+          : null,
+    })),
+    releases: rows.flatMap(({ technologies }) =>
+      technologies.releases.map((release) => toDashboardRelease(technologies.slug, release)),
     ),
   };
 }

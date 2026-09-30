@@ -4,10 +4,10 @@ import { buildDashboard, type DashboardRelease, type FollowedTechnology } from "
 
 const NOW = new Date("2024-12-06T12:00:00Z");
 
-const react: FollowedTechnology = { slug: "react", name: "React" };
-const vite: FollowedTechnology = { slug: "vite", name: "Vite" };
-const typescript: FollowedTechnology = { slug: "typescript", name: "TypeScript" };
-const tailwind: FollowedTechnology = { slug: "tailwind", name: "Tailwind CSS" };
+const react: FollowedTechnology = { slug: "react", name: "React", currentVersion: null };
+const vite: FollowedTechnology = { slug: "vite", name: "Vite", currentVersion: null };
+const typescript: FollowedTechnology = { slug: "typescript", name: "TypeScript", currentVersion: null };
+const tailwind: FollowedTechnology = { slug: "tailwind", name: "Tailwind CSS", currentVersion: null };
 
 function needsAction(): SummaryContent {
   return summary({
@@ -232,5 +232,60 @@ describe("buildDashboard", () => {
       release: expect.objectContaining({ version: "1.0.0-beta.2" }),
       major: false,
     });
+  });
+});
+
+describe("the Version in use", () => {
+  const DECLARED = new Date("2024-11-20T00:00:00Z");
+  const OLDER = new Date("2024-10-01T00:00:00Z");
+
+  function inUse(technology: FollowedTechnology, version: string, declaredAt = DECLARED): FollowedTechnology {
+    return { ...technology, currentVersion: { version, declaredAt } };
+  }
+
+  const history = (slug: string): DashboardRelease[] => [
+    release({ slug, version: "18.0.0", significance: "notable", summary: summary() }),
+    release({ slug, version: "18.1.0", significance: "notable", summary: needsAction() }),
+    release({ slug, version: "18.1.1", significance: "digest", summary: null, summaryStatus: "skipped" }),
+    release({ slug, version: "19.0.0", summary: null, summaryStatus: "pending" }),
+  ];
+
+  it("counts the distance from the declaration with the rules of the Upgrade Path", () => {
+    const dashboard = buildDashboard([inUse(react, "18.0.0")], history("react"), NOW);
+
+    expect(dashboard.spotlight[0].behind).toEqual({
+      version: "18.0.0",
+      declaredAt: DECLARED,
+      to: "19.0.0",
+      counts: { total: 3, featured: 1, notable: 1, digest: 1, actionRequired: 1, safe: 0, missing: 1 },
+    });
+  });
+
+  it("leaves the entry alone when nothing is declared", () => {
+    const dashboard = buildDashboard([react], history("react"), NOW);
+
+    expect(dashboard.spotlight[0].behind).toBeNull();
+    expect(dashboard.inUse).toBeNull();
+  });
+
+  it("has no distance to measure for a Technology with no stable Release", () => {
+    const dashboard = buildDashboard(
+      [inUse(react, "1.0.0")],
+      [release({ slug: "react", version: "1.0.0-beta.0", significance: "preview", summary: null })],
+      NOW,
+    );
+
+    expect(dashboard.spotlight[0].behind).toBeNull();
+    expect(dashboard.inUse).toBeNull();
+  });
+
+  it("adds up the declarations and keeps the oldest of them, because a total is only as fresh as that", () => {
+    const dashboard = buildDashboard(
+      [inUse(react, "18.0.0"), inUse(vite, "18.1.0", OLDER), typescript],
+      [...history("react"), ...history("vite")],
+      NOW,
+    );
+
+    expect(dashboard.inUse).toEqual({ declared: 2, behind: 5, needsAction: 1, since: OLDER });
   });
 });

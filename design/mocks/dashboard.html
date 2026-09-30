@@ -76,6 +76,10 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .counts strong { color: var(--text); font-weight: 400; }
 .counts a { text-decoration-color: var(--rule-strong); }
 .counts a:hover { color: var(--text); text-decoration-color: currentColor; }
+/* The Version in use: one more muted line under the counts, and one under a Technology's releases */
+.in-use-counts { margin-top: var(--space-2); }
+.in-use-line { margin: var(--space-2) 0 0; font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
+.row.compact .main p { margin: 0; }
 
 /* Sections */
 .section { margin-top: var(--space-7); scroll-margin-top: var(--space-5); }
@@ -235,6 +239,7 @@ main[data-state="safe"] .for-action { display: none; }
         <span class="for-safe"><span class="sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok:</span><span class="claim">nothing needs action</span></span>
       </p>
       <p class="counts">Last 30 days across <strong>7</strong> technologies: <a href="#spotlight"><strong>3</strong> featured</a><span class="for-action"> (<strong>2</strong> need action)</span>, <a href="#latest"><strong>4</strong> notable</a>, <a href="#previews"><strong>2</strong> previews</a>, <a href="#digest"><strong>23</strong> digest</a>.</p>
+      <p class="counts in-use-counts">In use on <strong>3</strong> of <strong>7</strong>: <strong>16</strong> releases behind · <strong>3</strong> need action · oldest declared <strong>2026-09-12</strong>.</p>
     </section>
 
     <section class="section" id="spotlight" aria-labelledby="spotlight-title">
@@ -272,6 +277,7 @@ main[data-state="safe"] .for-action { display: none; }
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></li>
             </ul>
             <a class="pointer for-action" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
+            <p class="in-use-line">in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action</p>
           </div>
         </li>
         <li class="row">
@@ -287,7 +293,10 @@ main[data-state="safe"] .for-action { display: none; }
           <a class="tech" href="#">Next.js</a>
           <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="#">15.0.0</a></span>
           <span class="when"><time datetime="2024-10-21">2024-10-21</time></span>
-          <p class="main">latest major · none featured in 30 days</p>
+          <div class="main">
+            <p>latest major · none featured in 30 days</p>
+            <p class="in-use-line">in use 15.0.0 since 2026-08-30 · 4 releases behind 15.0.4 · 1 needs action</p>
+          </div>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Node.js</a>

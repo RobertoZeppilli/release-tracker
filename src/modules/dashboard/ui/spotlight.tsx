@@ -1,7 +1,7 @@
 import { SignificanceLabel } from "@/modules/releases/ui";
 import { InlineCode } from "@/modules/summaries/ui";
 import type { DashboardRelease, SpotlightEntry, SpotlightStanding } from "../domain/build-dashboard";
-import { PublishedAt, ReleaseVersion, RowVerdict, SummaryTitle, TechnologyName } from "./row-parts";
+import { BehindLine, PublishedAt, ReleaseVersion, RowVerdict, SummaryTitle, TechnologyName } from "./row-parts";
 import { SectionTitle } from "./section-title";
 
 // One row per followed Technology: the name keeps its own column, and the Releases stack beside it,
@@ -48,6 +48,31 @@ function CompactCell({ standing }: { standing: SpotlightStanding }) {
   );
 }
 
+// The Version in use adds a line under the Releases, and only for whoever declared one: without a
+// declaration the entry is wrapped in nothing extra and reads exactly as it did before.
+function EntryCells({ entry, thisWeek }: { entry: SpotlightEntry; thisWeek: string }) {
+  const cells =
+    entry.featured.length > 0 ? (
+      <div className="grid gap-y-3">
+        {entry.featured.map((release) => (
+          <FeaturedCell key={release.version} release={release} thisWeek={thisWeek} />
+        ))}
+      </div>
+    ) : entry.standing ? (
+      <CompactCell standing={entry.standing} />
+    ) : (
+      <p className="font-mono text-diagnostic text-text-muted">no releases recorded yet</p>
+    );
+
+  if (!entry.behind) return cells;
+  return (
+    <div className="grid gap-y-2">
+      {cells}
+      <BehindLine standing={entry.behind} />
+    </div>
+  );
+}
+
 export function Spotlight({ entries, thisWeek }: { entries: readonly SpotlightEntry[]; thisWeek: string }) {
   return (
     <section id="spotlight" aria-labelledby="spotlight-title" className="mt-7 scroll-mt-4">
@@ -65,17 +90,7 @@ export function Spotlight({ entries, thisWeek }: { entries: readonly SpotlightEn
         {entries.map((entry) => (
           <li key={entry.technology.slug} className={ROW}>
             <TechnologyName {...entry.technology} muted={entry.featured.length === 0} />
-            {entry.featured.length > 0 ? (
-              <div className="grid gap-y-3">
-                {entry.featured.map((release) => (
-                  <FeaturedCell key={release.version} release={release} thisWeek={thisWeek} />
-                ))}
-              </div>
-            ) : entry.standing ? (
-              <CompactCell standing={entry.standing} />
-            ) : (
-              <p className="font-mono text-diagnostic text-text-muted">no releases recorded yet</p>
-            )}
+            <EntryCells entry={entry} thisWeek={thisWeek} />
           </li>
         ))}
       </ul>
