@@ -41,6 +41,21 @@ function field(page: Page) {
   return page.getByLabel("Version in use", { exact: true });
 }
 
+// The Toggle is a button only once the browser knows a Developer is looking, so waiting for it is
+// waiting for the session and the follows. `networkidle` would be the wrong wait: a signed-in page
+// keeps talking (analytics, the token refresh), so the network never falls silent for long enough.
+async function follow(page: Page): Promise<void> {
+  const toggle = page.getByRole("button", { name: `Follow ${technology.name}`, exact: true });
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+}
+
+async function declare(page: Page, version: string): Promise<void> {
+  await field(page).fill(version);
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.locator("#current-version-note")).toContainText("declared on");
+}
+
 test.describe("the Version in use", () => {
   test.beforeEach(async ({ page }) => {
     await developer.clearFollows();
@@ -48,10 +63,8 @@ test.describe("the Version in use", () => {
   });
 
   test("is declared from the Technology page and becomes the start of the Upgrade Path", async ({ page }) => {
-    await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
-    await expect(field(page)).toHaveCount(0);
-
-    await page.getByRole("button", { name: `Follow ${technology.name}`, exact: true }).click();
+    await page.goto(`/technologies/${technology.slug}`);
+    await follow(page);
     await expect(page.getByText("not declared")).toBeVisible();
 
     await field(page).fill("1.0.0");
@@ -74,26 +87,24 @@ test.describe("the Version in use", () => {
   });
 
   test("is not touched by `?from=`, which is a single look", async ({ page }) => {
-    await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
-    await page.getByRole("button", { name: `Follow ${technology.name}`, exact: true }).click();
-    await field(page).fill("1.0.0");
-    await page.getByRole("button", { name: "Save", exact: true }).click();
-    await expect(page.locator("#current-version-note")).toContainText("declared on");
+    await page.goto(`/technologies/${technology.slug}`);
+    await follow(page);
+    await declare(page, "1.0.0");
 
-    await page.goto(`/technologies/${technology.slug}?from=1.1.1`, { waitUntil: "networkidle" });
+    await page.goto(`/technologies/${technology.slug}?from=1.1.1`);
     await expect(page.getByLabel("Upgrade from")).toHaveValue("1.1.1");
     await expect(page.getByRole("heading", { name: "note: 1 to check" })).toBeVisible();
     // The saved declaration is untouched: the field still holds it, and so does the path once the
     // query string is gone.
     await expect(field(page)).toHaveValue("1.0.0");
 
-    await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
+    await page.goto(`/technologies/${technology.slug}`);
     await expect(page.getByLabel("Upgrade from")).toHaveValue("1.0.0");
   });
 
   test("is refused when it is newer than the latest stable Release, and can be taken away", async ({ page }) => {
-    await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
-    await page.getByRole("button", { name: `Follow ${technology.name}`, exact: true }).click();
+    await page.goto(`/technologies/${technology.slug}`);
+    await follow(page);
 
     await field(page).fill("3.0.0");
     await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -102,9 +113,7 @@ test.describe("the Version in use", () => {
       "error: 3.0.0 is newer than 2.0.0, the latest stable release.",
     );
 
-    await field(page).fill("1.0.0");
-    await page.getByRole("button", { name: "Save", exact: true }).click();
-    await expect(page.locator("#current-version-note")).toContainText("declared on");
+    await declare(page, "1.0.0");
 
     await page.getByRole("button", { name: "Clear", exact: true }).click();
     await expect(page.getByText("not declared")).toBeVisible();
@@ -114,11 +123,9 @@ test.describe("the Version in use", () => {
   });
 
   test("tells the Dashboard how far behind a followed Technology is, and since when", async ({ page }) => {
-    await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
-    await page.getByRole("button", { name: `Follow ${technology.name}`, exact: true }).click();
-    await field(page).fill("1.0.0");
-    await page.getByRole("button", { name: "Save", exact: true }).click();
-    await expect(page.locator("#current-version-note")).toContainText("declared on");
+    await page.goto(`/technologies/${technology.slug}`);
+    await follow(page);
+    await declare(page, "1.0.0");
 
     await page.goto("/dashboard");
     await expect(page.getByText(new RegExp(`In use on 1 of 1: 3 releases behind · 1 needs action · oldest declared ${TODAY.source}\.`))).toBeVisible();
