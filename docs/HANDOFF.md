@@ -13,23 +13,23 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-02).** La **#63** (navigazione) è chiusa e unita con la PR #75: era la
-decisione che bloccava la **#47**, quindi **la #47 non ha più niente davanti** ed è il prossimo lavoro
-grosso, con la **#64** che si scioglie dentro. Prima di lei erano andate la **#68** (Versione in uso,
-PR #74, migrazione applicata in produzione, da provare ancora a mano sull'app vera), la **#62**
-(verificata in produzione, `0 controlli su 13.496`, PR #66 e #67) e la **#23** (PR #61).
+**Da dove ripartire (2026-10-02, seconda sessione del giorno).** La **#25** (404 ed errore generico)
+è chiusa e unita con la PR #77, dopo la **#63** (navigazione, PR #75) che aveva sbloccato la **#47**:
+**la #47 non ha ancora niente davanti** ed è il prossimo lavoro grosso, con la **#64** dentro.
 
-Una sessione che lavora da sola prende le tre piccole, in quest'ordine e senza aspettare nessuno:
-la **#25** (404 ed errore generico), la **#36** (segnaposto `{major}.{minor}` nel formato dei tag per
-le Anteprime di TypeScript) e la **#72** (il filtro di `/technologies` nell'URL). Poi la **#24**
-(SEO), che però conviene dopo la landing.
+Una sessione che lavora da sola prende le due piccole rimaste, in quest'ordine e senza aspettare
+nessuno: la **#72** (il filtro di `/technologies` nell'URL) e la **#36** (segnaposto
+`{major}.{minor}` nel formato dei tag per le Anteprime di TypeScript). **La #72 è la prossima**: è
+già stata letta e misurata (tocca solo `technology-picker.tsx`, oggi `useState("")`, più la scrittura
+nell'URL in `replace` e tre test E2E; stima, un terzo di sessione). Poi la **#24** (SEO), che però
+conviene dopo la landing.
 
 Le `ready-for-human` aspettano l'utente: la **#47** è **la prossima**; la **#57** è un verdetto sulla
 qualità; la **#65** (uniformare i database) e la **#69** (import di `package.json`) sono ferme per
 scelta dell'utente, la prima al secondo giro a pagamento, la seconda dopo il lancio.
 
-L'ordine concordato con l'utente: **#62**, **#68** e **#63** (fatte), la **#25**, la **#36** e la
-**#72** quando servono (non sono bloccate da niente), poi la **#47** con la #64 dentro, poi la **#26**
+L'ordine concordato con l'utente: **#62**, **#68**, **#63** e **#25** (fatte), la **#72** e la **#36**
+quando servono (non sono bloccate da niente), poi la **#47** con la #64 dentro, poi la **#26**
 (serve il nome del prodotto) e infine la **#24**, così il SEO passa anche sulla landing.
 
 **Stima data all'utente il 2026-09-30**: da 8 a 14 sessioni dopo la #68. Il numero alto e quello basso
@@ -107,8 +107,8 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
   (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
-  e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75) il 2026-10-02.
-  Sbloccate: **#25**, **#36** e, con la #63, la **#47**, che ora non ha più niente davanti.
+  e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75) e la **#25** (PR #77) il 2026-10-02.
+  Sbloccate: **#36**, **#72** e, con la #63, la **#47**, che ora non ha più niente davanti.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -120,6 +120,83 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-10-02 (2): la 404 e la pagina di errore (#25, PR #77)
+
+Due pagine che sostituiscono una pagina intera invece di una sua parte, col sistema esistente e
+nessun mock. Il guscio condiviso è `src/components/diagnostic-page.tsx`, che porta anche il
+`HelpPointer` (il `-->` cyan tratteggiato di `DESIGN.md`, che prima non esisteva come componente).
+Nuova sezione in `DESIGN.md`: *Page States (404 and error)*.
+
+- **404**: `note: no page at this address`, glifo info muto, **senza inchiostro**. Un indirizzo che
+  non nomina niente è l'assenza di una cosa, non un guasto: colorarlo sarebbe stato contro la regola
+  che dice di non dare inchiostro alle righe di stato non di errore.
+- **Errore**: `error: this page could not be loaded`, x-circle corallo, `Try again` accanto allo
+  stesso pointer. L'unico dettaglio stampato è il digest, in Meta: `reference 2499699134`. La pagina
+  non rende mai `error.message`, quindi non c'è niente di interno da far scappare nemmeno per
+  sbaglio.
+
+Entrambe montano `SiteHeader nav`, con le due sezioni nello slot: nemmeno una pagina che non c'è è
+un vicolo cieco. L'utente ha controllato l'aspetto in produzione dopo il merge e lo ha approvato.
+
+### ⚠️ Next serve la 404 e l'errore come un guscio senza layout, disegnato sul client
+
+La scoperta che vale più delle due pagine. La risposta di queste due rotte è
+`<html id="__next_error__">` con `<head>` quasi vuoto: **niente layout, niente CSS, niente font e
+niente script del tema**. Il resto arriva dal payload RSC e viene disegnato sul client. Conseguenza
+vista a occhio: col tema chiaro entrambe uscivano **scure**, perché lo script nel `<head>` non girava
+mai e il render del root rimetteva il `data-theme="dark"` che `layout.tsx` passava come prop React.
+
+La correzione è in due pezzi che lavorano insieme, e la regola generale è la prima:
+**un attributo che React non possiede è un attributo che React non può rimettere a posto.**
+
+1. `layout.tsx` non scrive più `data-theme`; `themeInitScript` lo scrive ora in **entrambe** le
+   direzioni (prima metteva solo `light`, lasciando `dark` al markup del server).
+2. Dove lo script non arriva, lo ripara al mount `ThemeToggle`, che possiede `data-theme` ed è
+   l'unico client component presente su ogni pagina. Costa un lampo scuro sulla pagina di errore, e
+   solo lì.
+
+Il tema è ora **asserito** nei due scan axe nuovi, uno per pagina per tema: senza quell'asserzione la
+regressione passava in silenzio, perché axe guarda il contrasto di quello che trova, non di quello
+che ti aspettavi.
+
+### ⚠️ `notFound()` imposta lo status solo finché la risposta non ha iniziato a streammare
+
+Dopo che un confine Suspense ha reso il suo fallback, gli header sono già partiti: la pagina dice 404
+e l'header dice 200, e Google la chiama soft 404. Da qui la regola: `notFound()` va chiamato **prima**
+di ogni `await` che può sospendere. Le nostre pagine lo facevano già, ma non si deduce, si misura: i
+test controllano `response.status()` su indirizzo inesistente, slug sconosciuto, Versione senza
+Release e segmento che non è una versione. Tutti e quattro 404 veri.
+
+### La pagina che fallisce apposta
+
+`src/app/test/throw/page.tsx` è l'unico modo per far vedere la pagina di errore a un test. Esiste solo
+con `E2E_AUTH_SECRET` impostata, esattamente come `/api/test/session`: in produzione quell'indirizzo
+risponde con la 404 di una rotta mai scritta. Ha `dynamic = "force-dynamic"`, altrimenti il throw
+diventa un errore di build invece che una pagina di errore.
+
+Fuori di proposito: **niente `global-error.tsx`**, l'unico modo per coprire un errore *dentro* il root
+layout. Lì Next serve una pagina tutta sua, senza i nostri stili, e il nostro layout è quasi statico
+(font e Analytics): il costo sarebbe un secondo documento HTML con i token duplicati. Se un giorno il
+layout cresce, questa decisione va rivista.
+
+### ⚠️ Un secondo `pnpm start` non si lega alla 3000 e il vecchio build continua a servire
+
+Mezz'ora persa a inseguire un fantasma. Avevo il server su di un build precedente, ho ricostruito e
+lanciato `pnpm start` di nuovo: il secondo processo **non** si lega alla porta occupata, muore in
+silenzio, e il browser continua a vedere il build vecchio. Le correzioni sembravano non funzionare.
+Il controllo che non mente, prima di misurare qualunque cosa: uccidere chi tiene la 3000
+(`netstat -ano | grep ':3000 .*LISTENING'`, poi `taskkill //PID <pid> //F`) e **ripartire da lì**.
+
+### Attenzione per chi riprende
+
+- Branch `feat/25-not-found-error`, due commit (le pagine, e a parte la correzione del tema),
+  PR #77 unita. Cancellati i branch locali già uniti; ne restano quattro vecchi
+  (`dashboard-sections-and-digest`, `fix/55-summary-claim-fence`, `issue-22-catalogo-40-tecnologie`,
+  `issue-68-current-version`) da ripulire quando capita.
+- Suite E2E verde: **118 test**, 7 nuovi in `tests/e2e/errors.spec.ts` e 4 scan axe in più.
+- Docker era giù all'inizio, riavviato come al solito; `pnpm db:start` dopo.
+- La **#72** è la prossima, già letta: vedi "Da dove ripartire".
 
 ## Sessione del 2026-10-02: la navigazione decisa e costruita (#63, PR #75)
 
