@@ -13,23 +13,21 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-02, seconda sessione del giorno).** La **#25** (404 ed errore generico)
-è chiusa e unita con la PR #77, dopo la **#63** (navigazione, PR #75) che aveva sbloccato la **#47**:
-**la #47 non ha ancora niente davanti** ed è il prossimo lavoro grosso, con la **#64** dentro.
+**Da dove ripartire (2026-10-02, terza sessione del giorno).** La **#72** (il filtro di
+`/technologies` nell'URL) è chiusa e unita con la PR #79, dopo la **#25** (404 ed errore generico,
+PR #77) e la **#63** (navigazione, PR #75) che aveva sbloccato la **#47**: **la #47 non ha niente
+davanti** ed è il prossimo lavoro grosso, con la **#64** dentro, ma è `ready-for-human`.
 
-Una sessione che lavora da sola prende le due piccole rimaste, in quest'ordine e senza aspettare
-nessuno: la **#72** (il filtro di `/technologies` nell'URL) e la **#36** (segnaposto
-`{major}.{minor}` nel formato dei tag per le Anteprime di TypeScript). **La #72 è la prossima**: è
-già stata letta e misurata (tocca solo `technology-picker.tsx`, oggi `useState("")`, più la scrittura
-nell'URL in `replace` e tre test E2E; stima, un terzo di sessione). Poi la **#24** (SEO), che però
-conviene dopo la landing.
+Una sessione che lavora da sola ha una sola piccola rimasta e non aspetta nessuno: la **#36**
+(segnaposto `{major}.{minor}` nel formato dei tag per le Anteprime di TypeScript). **È la prossima.**
+Poi la **#24** (SEO), che però conviene dopo la landing.
 
 Le `ready-for-human` aspettano l'utente: la **#47** è **la prossima**; la **#57** è un verdetto sulla
 qualità; la **#65** (uniformare i database) e la **#69** (import di `package.json`) sono ferme per
 scelta dell'utente, la prima al secondo giro a pagamento, la seconda dopo il lancio.
 
-L'ordine concordato con l'utente: **#62**, **#68**, **#63** e **#25** (fatte), la **#72** e la **#36**
-quando servono (non sono bloccate da niente), poi la **#47** con la #64 dentro, poi la **#26**
+L'ordine concordato con l'utente: **#62**, **#68**, **#63**, **#25** e **#72** (fatte), la **#36**
+quando serve (non è bloccata da niente), poi la **#47** con la #64 dentro, poi la **#26**
 (serve il nome del prodotto) e infine la **#24**, così il SEO passa anche sulla landing.
 
 **Stima data all'utente il 2026-09-30**: da 8 a 14 sessioni dopo la #68. Il numero alto e quello basso
@@ -53,10 +51,10 @@ Tre cose vive che fino al 2026-09-30 stavano **solo** in fondo a questo document
 vecchio che sembrava l'indicazione buona. La prima è diventata una issue; le altre due restano
 dell'utente e di nessun altro.
 
-- ~~Il filtro di `/technologies` fuori dall'URL~~: è diventato la **#72** il 2026-09-30
-  (`ready-for-agent`). Era l'unico pezzo di PRD che nessuna issue copriva. La issue dice anche che
-  cosa "filtri e tab" copre davvero: solo quel filtro, perché le sezioni di `/technologies` e della
-  Dashboard non sono tab e il Cammino di upgrade è già nell'URL con `?from=`.
+- ~~Il filtro di `/technologies` fuori dall'URL~~: diventato la **#72** il 2026-09-30, **fatta** il
+  2026-10-02 con la PR #79. Era l'unico pezzo di PRD che nessuna issue copriva, e con lei la user
+  story 49 ("filtri e tab nell'URL") è chiusa per davvero: le sezioni di `/technologies` e della
+  Dashboard non sono tab e il Cammino di upgrade era già nell'URL con `?from=`.
 - **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel. È un gesto dell'utente,
   non nostro.
 - **Piano editoriale**: l'articolo dev.to della tappa D ("Enforce your free-plan limit in the
@@ -107,8 +105,9 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
   (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
-  e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75) e la **#25** (PR #77) il 2026-10-02.
-  Sbloccate: **#36**, **#72** e, con la #63, la **#47**, che ora non ha più niente davanti.
+  e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75), la **#25** (PR #77) e la **#72**
+  (PR #79) il 2026-10-02.
+  Sbloccate: **#36** e, con la #63, la **#47**, che ora non ha più niente davanti.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -120,6 +119,61 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-10-02 (3): il filtro di /technologies nell'URL (#72, PR #79)
+
+Un hook nuovo, `src/modules/plans/ui/filter-query.ts` (26 righe), e una riga cambiata in
+`technology-picker.tsx`: `useState("")` diventa `useFilterQuery()`. Niente cambia a schermo, quindi
+`DESIGN.md` e il mock `technologies.html` non sono stati toccati.
+
+### Perché qui lo stato resta in React, mentre la Dashboard legge dal server
+
+La Dashboard legge `?week=` dal **server** e l'HTML arriva già aperto (vedi "Lo stato nell'URL: il
+server apre, il browser ricorda"). Il filtro no, e la differenza è voluta: il conteggio accanto al
+campo è dal vivo e il campo è controllato, quindi un giro al server per ogni tasto arriverebbe in
+ritardo sul dito. Lo stato React è la fonte di quello che la pagina disegna, seminato una volta da
+`useSearchParams`, e l'URL è uno specchio. Un indirizzo filtrato aperto da zero funziona comunque al
+primo colpo: la pagina è dinamica, quindi `useSearchParams` ha il valore giusto già nell'HTML.
+
+La scrittura usa `window.history.replaceState`, lo stesso gesto delle settimane della #21 e dei
+puntatori della #12: Next lo integra nel router, e sostituire la voce invece di aggiungerne una è
+l'unico modo perché un conteggio dal vivo non riempia il tasto indietro di un carattere per volta.
+
+Due decisioni di dettaglio: con il filtro vuoto il parametro viene **rimosso** (come le settimane),
+così l'indirizzo pulito è quello non filtrato; e gli altri parametri eventualmente presenti restano
+dove sono, verificato da un test con `?stray=1`. Un parametro assurdo non ha bisogno di nessuna
+guardia, perché è solo una stringa che non corrisponde a niente e finisce nella nota onesta della
+user story 37: è il terzo dei test nuovi.
+
+### `URLSearchParams.toString()` scrive lo spazio come `+`, non come `%20`
+
+Il primo giro E2E è fallito solo per l'attesa del test, che costruiva l'URL atteso con
+`encodeURIComponent` (`Fixture%20278ec4f2`) mentre il codice lo scrive con `URLSearchParams`
+(`Fixture+278ec4f2`). Nella query sono equivalenti e il valore riletto è identico. Il test ora
+costruisce l'atteso con `new URLSearchParams`, così non fissa una delle due forme per caso.
+
+### ⚠️ Un flake preesistente in `technologies.spec.ts`, da non attribuire al lavoro in corso
+
+Il test *"a Developer follows a Technology, and the follow is still there after a reload"* è fallito
+una volta sul conteggio dopo il reload, e al giro dopo è passato. Non lo tocca niente di questo
+lavoro. **Segnalato all'utente e nessuna issue aperta**: se si rivede, apritene una invece di
+cercarlo nella modifica in corso.
+
+### Nessun altro stato di vista merita l'URL (ultimo criterio della #72)
+
+Controllati tutti i `useState` dei componenti client: sono form in corso
+(`current-version-field`), la cache dei follow, la citazione attiva, il "già seguita" di
+`technology-follow`. L'unico discutibile è l'apri/chiudi della settimana nel digest della Dashboard
+(`digest-week.tsx`), che però è un gesto di lettura e non una vista da condividere, e per le
+settimane l'URL ce l'ha già. Niente da aggiungere e nessuna issue nuova.
+
+### Attenzione per chi riprende
+
+- Verificati: `typecheck`, `lint`, `build`, 426 test unitari, e in E2E `technologies` (9, tre nuovi),
+  `a11y`, `keyboard` e `navigation` (39). Nessuna regressione sull'accessibilita' del campo (#23).
+- Il server di sviluppo non era in piedi e **Playwright lo avvia da sé** (`reuseExistingServer` in
+  locale): non serve lanciarlo a mano prima.
+- La prossima piccola da sola è la **#36**; la **#47** aspetta l'utente.
 
 ## Sessione del 2026-10-02 (2): la 404 e la pagina di errore (#25, PR #77)
 
