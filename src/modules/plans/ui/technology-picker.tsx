@@ -1,9 +1,9 @@
 "use client";
 
 import { Info } from "lucide-react";
-import { useState } from "react";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { countMatches, matchesQuery, type PickerSections, type PickerTechnology } from "../domain/picker";
+import { useFilterQuery } from "./filter-query";
 import { FollowToggleLimitNote } from "./limit-note";
 import { FollowStatus, PickerFilter } from "./picker-header";
 import { PickerRow } from "./picker-row";
@@ -11,7 +11,7 @@ import { PickerRow } from "./picker-row";
 // The sections come from the server and never move: following and unfollowing change the toggle and
 // the count, not where a row sits, so a list does not shift under the pointer mid visit.
 export function TechnologyPicker({ sections }: { sections: PickerSections }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useFilterQuery();
   const { shown, total } = countMatches(sections, query);
 
   return (

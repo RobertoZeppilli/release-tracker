@@ -190,3 +190,49 @@ test("a retired Technology can only be unfollowed, and the row says so", async (
   await page.reload();
   await expect(page.getByRole("link", { name: leaving.name, exact: true })).toHaveCount(0);
 });
+
+test("the filter lands in the URL, survives a reload and leaves the history alone", async ({ page }) => {
+  await page.goto("/technologies");
+  const filter = page.getByRole("searchbox", { name: "filter" });
+  await filter.fill(technology.name);
+  await expect(rows(page)).toHaveCount(1);
+  await expect(page).toHaveURL(`/technologies?${new URLSearchParams({ filter: technology.name })}`);
+
+  await page.reload();
+  await expect(filter).toHaveValue(technology.name);
+  await expect(rows(page)).toHaveCount(1);
+  await expect(rows(page).first()).toContainText(technology.name);
+
+  // Typing replaces the entry instead of adding one, so back leaves the page.
+  await filter.fill("");
+  await expect(page).toHaveURL("/technologies");
+  await expect(rows(page).first()).toBeVisible();
+  await page.goBack();
+  await expect(page).not.toHaveURL(/\/technologies/);
+});
+
+test("a filtered address opened from scratch shows the same view as typing", async ({ page }) => {
+  await page.goto(`/technologies?${new URLSearchParams({ filter: technology.name })}`);
+  const matches = page.locator("#matches");
+  await expect(matches).toHaveText(/^1 of \d+ match$/);
+  await expect(rows(page)).toHaveCount(1);
+  await expect(rows(page).first()).toContainText(technology.name);
+  await expect(page.getByRole("searchbox", { name: "filter" })).toHaveValue(technology.name);
+
+  // An empty parameter is the unfiltered page.
+  await page.goto("/technologies?filter=");
+  await expect(matches).toHaveText(/^\d+ technologies$/);
+  await expect(rows(page).first()).toBeVisible();
+});
+
+test("a filtered address that matches nothing says so, like typing it does", async ({ page }) => {
+  await page.goto("/technologies?filter=not-a-technology&stray=1");
+  await expect(page.locator("#matches")).toHaveText(/^0 of \d+ match$/);
+  await expect(rows(page)).toHaveCount(0);
+  const noMatch = page.locator("section", { hasText: "The catalog is curated" });
+  await expect(noMatch).toContainText("not-a-technology");
+
+  // An unrelated parameter is left where it was.
+  await page.getByRole("searchbox", { name: "filter" }).fill("");
+  await expect(page).toHaveURL("/technologies?stray=1");
+});
