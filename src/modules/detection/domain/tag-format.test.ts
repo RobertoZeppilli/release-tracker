@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tagFor, versionFromTag } from "./tag-format";
+import { notesTagFor, tagFor, versionFromTag } from "./tag-format";
 
 // Real tag formats from the Catalog.
 describe("versionFromTag", () => {
@@ -25,6 +25,31 @@ describe("versionFromTag", () => {
   });
 
   it("round-trips the tag it writes", () => {
-    expect(versionFromTag("bun-v{version}", tagFor("bun-v{version}", "1.4.2"))).toBe("1.4.2");
+    expect(versionFromTag("bun-v{version}", tagFor("bun-v{version}", "1.4.2") ?? "")).toBe("1.4.2");
+  });
+});
+
+// TypeScript spells an Anteprima without its patch: `6.0.1-rc` on npm is `v6.0-rc` on GitHub.
+const typescript = { tagFormat: "v{version}", prereleaseTagFormat: "v{major}.{minor}-{prerelease}" };
+const vite = { tagFormat: "v{version}" };
+
+describe("notesTagFor", () => {
+  it.each([
+    ["6.0.0-beta", "v6.0-beta"],
+    ["6.0.1-rc", "v6.0-rc"],
+    ["5.9.0-beta", "v5.9-beta"],
+    // A stable Release keeps the plain format, patch and all.
+    ["7.0.2", "v7.0.2"],
+    ["6.0.3", "v6.0.3"],
+  ])("writes TypeScript %s as %s", (version, tag) => {
+    expect(notesTagFor(typescript, version)).toBe(tag);
+  });
+
+  // A Source that declares no second format spells every Version the one way it knows.
+  it.each([
+    ["7.1.9", "v7.1.9"],
+    ["8.0.0-beta.1", "v8.0.0-beta.1"],
+  ])("writes Vite %s as %s, unchanged", (version, tag) => {
+    expect(notesTagFor(vite, version)).toBe(tag);
   });
 });

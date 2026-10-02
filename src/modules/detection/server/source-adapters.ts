@@ -8,7 +8,7 @@ import type {
   SourceAdapters,
   VersionListing,
 } from "../domain/source-adapters";
-import { tagFor, versionFromTag } from "../domain/tag-format";
+import { notesTagFor, versionFromTag } from "../domain/tag-format";
 
 type Fetch = typeof fetch;
 
@@ -119,7 +119,13 @@ async function findGitHubReleaseNotes(
   source: Extract<NotesSource, { kind: "github-releases" }>,
   versions: readonly string[],
 ): Promise<Map<string, FoundNotes>> {
-  const versionByTag = new Map(versions.map((version) => [tagFor(source.tagFormat, version), version]));
+  // A Version whose tag cannot be written is left out: it would be a tag nobody published.
+  const versionByTag = new Map(
+    versions.flatMap((version) => {
+      const tag = notesTagFor(source, version);
+      return tag === null ? [] : [[tag, version] as const];
+    }),
+  );
   const headers = githubHeaders(token);
 
   const found = new Map<string, FoundNotes>();

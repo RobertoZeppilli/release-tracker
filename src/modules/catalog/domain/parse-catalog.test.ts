@@ -58,6 +58,32 @@ describe("parseCatalog", () => {
     expect(() => parseCatalog([file("catalog/bun.json", broken)])).toThrow(/tagFormat: must contain \{version\}/);
   });
 
+  // TypeScript tags an Anteprima without its patch, so it declares the second spelling.
+  it("takes a notes Source that spells an Anteprima its own way", () => {
+    const typescript = {
+      ...vite,
+      sources: [
+        vite.sources[0],
+        { ...vite.sources[1], prereleaseTagFormat: "v{major}.{minor}-{prerelease}" },
+      ],
+    };
+    expect(parseCatalog([file("catalog/typescript.json", typescript)])[0].sources).toEqual(typescript.sources);
+  });
+
+  it("rejects a prerelease tag format with no Anteprima in it", () => {
+    const broken = { ...vite, sources: [vite.sources[0], { ...vite.sources[1], prereleaseTagFormat: "v{version}" }] };
+    expect(() => parseCatalog([file("catalog/typescript.json", broken)])).toThrow(
+      /catalog\/typescript\.json: sources\.1\.prereleaseTagFormat: must contain \{prerelease\}/,
+    );
+  });
+
+  it("rejects a placeholder that is not a part of a Version, naming file and field", () => {
+    const broken = { ...vite, sources: [vite.sources[0], { ...vite.sources[1], tagFormat: "v{version}-{built}" }] };
+    expect(() => parseCatalog([file("catalog/typescript.json", broken)])).toThrow(
+      /catalog\/typescript\.json: sources\.1\.tagFormat: unknown placeholder \{built\}: expected one of \{version\}, \{major\}, \{minor\}, \{patch\}, \{prerelease\}/,
+    );
+  });
+
   it("rejects two Sources with the same role and kind", () => {
     const twice = { ...vite, sources: [...vite.sources, vite.sources[0]] };
     expect(() => parseCatalog([file("catalog/vite.json", twice)])).toThrow(/sources\.2: duplicate detection\/npm/);

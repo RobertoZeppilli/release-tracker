@@ -4,6 +4,12 @@
   "classificationStrategy": "typescript",
   "sources": [
     { "role": "detection", "kind": "npm", "package": "typescript" },
-    { "role": "notes", "kind": "github-releases", "repo": "microsoft/TypeScript", "tagFormat": "v{version}" }
+    {
+      "role": "notes",
+      "kind": "github-releases",
+      "repo": "microsoft/TypeScript",
+      "tagFormat": "v{version}",
+      "prereleaseTagFormat": "v{major}.{minor}-{prerelease}"
+    }
   ]
 }
