@@ -382,6 +382,11 @@ Vocabulary: `ready` (verdict `action required` or `safe to upgrade`), `pending` 
 
 The release notes stay available below in every state except unavailable.
 
+### Page States (404 and error)
+The two pages that replace a page instead of a part of it use the same grammar at whole-page scale: the top bar with both sections in the slot (so neither page is a dead end), then a Status-scale severity line as the `h1`, then one muted Grotesk paragraph at the 72ch measure, then the ways out.
+- **404**: muted info glyph + `note: no page at this address`. It carries **no ink**: an address that names nothing is the absence of a thing, not a failure, and the paragraph says so rather than apologising. It ends in a `-->` help pointer to the catalog.
+- **Error**: coral x-circle + `error: this page could not be loaded`. The paragraph says what failed and that nothing changed, never what threw. A `Try again` button sits beside the same help pointer, and the error digest follows in Meta `text-faint` as `reference <digest>`: the only detail printed, because it is the one string that matches the failure to its server log.
+
 ### Significance Glyphs
 12px SVG shapes on a 12-unit grid, paired with a Mono 13px lowercase label word in `text-muted` and a 6px gap: featured (filled diamond), notable (1.5px outlined diamond), digest (2-unit radius dot), preview (outlined diamond with a 2/1.6 dash). They are neutral (see The Neutral Significance Rule). They mark rank, not risk.
 

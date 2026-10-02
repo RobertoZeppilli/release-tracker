@@ -116,6 +116,23 @@ for (const theme of THEMES) {
       await scan(page, theme);
     });
 
+    // Both shells below are served without the layout and rendered on the client, so the theme
+    // reaches them by a different road than everywhere else: it is asserted, not assumed.
+    test("the 404", async ({ page }) => {
+      await page.goto("/no-such-page");
+      await expect(page.getByRole("heading", { level: 1 })).toContainText("no page at this address");
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await scan(page, theme);
+    });
+
+    // Reached through the test-only page that fails on purpose; see `errors.spec.ts`.
+    test("the error page", async ({ page }) => {
+      await page.goto("/test/throw");
+      await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await scan(page, theme);
+    });
+
     test("technologies, with a follow the database refused", async ({ page }) => {
       await signIn(page);
       await developer.clearFollows();
