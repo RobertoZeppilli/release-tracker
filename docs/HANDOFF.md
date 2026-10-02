@@ -62,9 +62,13 @@ dell'utente e di nessun altro.
 - **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel. È un gesto dell'utente,
   non nostro.
 - **Piano editoriale**: l'articolo dev.to della tappa D ("Enforce your free-plan limit in the
-  database, not in the UI") è **in bozza**, da rileggere e pubblicare a mano dalla dashboard di
-  dev.to caricando lì gli screenshot. In coda resta quello della tappa C ("Exactly-once AI jobs"),
-  in attesa di qualche giro di cron in produzione da citare.
+  database, not in the UI") è **pubblicato** dal 2026-09-28 (slug `-330p`) e al 2026-10-01 ha 4
+  commenti e 1 reazione, il primo con discussione. Verificato il 2026-10-01: **3 articoli dev.to
+  pubblicati e 0 bozze, 31 post su Bluesky**. In coda resta l'articolo della tappa C
+  ("Exactly-once AI jobs"), **non scritto**, in attesa di giri di cron in produzione da citare.
+  Materiale nuovo pronto e non pubblicato (il primo batch vero, le 4 fallite per il titolo, i caret
+  misurati, le Sintesi visibili in produzione): sta nel vault, in
+  `release-tracker-comunicazione.md`, sotto "Tappa D-bis".
 
 **Dopo la #47, prima di dire che l'app è pronta**: un giro a mano nel browser su tutta l'app,
 funzione per funzione, per capire se la percezione d'uso regge. La stella polare, detta dall'utente,

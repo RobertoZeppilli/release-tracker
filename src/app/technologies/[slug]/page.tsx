@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeader, TECHNOLOGIES_CRUMB } from "@/components/site-header";
 import { createPublicClient } from "@/lib/supabase";
 import { getTechnology } from "@/modules/catalog/server";
 import { TechnologyHeader } from "@/modules/catalog/ui";
@@ -39,7 +39,7 @@ export default async function TechnologyPage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader path={["technologies", technology.slug]} />
+      <SiteHeader path={[TECHNOLOGIES_CRUMB, technology.slug]} />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
         {/* One scope for the whole page: the Follow in the header and the Upgrade Path below it read
             the same follows, so a declared Version in use can start the path. */}

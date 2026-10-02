@@ -290,7 +290,7 @@ The neutrals are cool graphite. The four diagnostic inks are the only hues, and 
 
 ## Layout
 
-The content column is 1040px max with 24px side padding (16px at 640px and below). The top bar is 56px high and separated by a 1px rule. Prose is capped at a 72ch measure, and diagnostics at 900px. Spacing uses an 8-step scale (4, 8, 12, 16, 24, 32, 48, 72px). Sections are separated by 48px, diagnostics by 32px, and the verdict sits 32px below the header.
+The content column is 1040px max with 24px side padding (16px at 640px and below). The top bar is 56px high and separated by a 1px rule; at 640px and below it is two rows, 56px plus a 40px navigation strip, with a 1px rule between them and under them. Prose is capped at a 72ch measure, and diagnostics at 900px. Spacing uses an 8-step scale (4, 8, 12, 16, 24, 32, 48, 72px). Sections are separated by 48px, diagnostics by 32px, and the verdict sits 32px below the header.
 
 Diagnostic rows use a gutter grid: a 5ch right-aligned faint gutter holds `-->`, `|`, `=` or a line number, and content sits to its right. Key points use an 8.5ch label column. The source view uses a 6ch line-number column.
 
@@ -300,13 +300,13 @@ Diagnostic rows use a gutter grid: a 5ch right-aligned faint gutter holds `-->`,
 
 **Technologies page.** The Status-scale follow status opens the page 32px below the header, the muted intro sits 12px below it, and the filter sentence 24px below that. The `following`, `catalog` and `retired` sections follow, 48px apart. Picker rows use a three-column grid (16ch name, facts, auto toggle), with a 16px column gap, 12px vertical padding, centred alignment and a 1px `rule` between rows (the first row also gets a top rule). Note lines inside a section (the limit note, the retired note) sit between the section title and the rows, 12px above the rows, capped at 900px.
 
-**Responsive (640px and below):** the breadcrumb path and source meta are hidden. Key-point labels and diagnostic headings stack to one column. Gutters narrow to 4.5ch. **Caret rows are hidden.** The quoted span gets a 2px `breaking` underline (offset 4px) inside the quote row instead. Fix diffs scroll horizontally. Quotes and inline code break inside a word rather than widening the page.
+**Responsive (640px and below):** the breadcrumb path moves to the navigation strip under the bar, whole, and the source meta is hidden. Key-point labels and diagnostic headings stack to one column. Gutters narrow to 4.5ch. **Caret rows are hidden.** The quoted span gets a 2px `breaking` underline (offset 4px) inside the quote row instead. Fix diffs scroll horizontally. Quotes and inline code break inside a word rather than widening the page.
 
 **Responsive, technology page.** At 880px and below, release rows reflow to significance, version and a right-aligned date on the first line, with the title, verdict and breaking list across the full width below, and stat words may wrap. At 640px and below the header facts (the latest version and the sources) wrap as one group, so the Follow keeps a line of its own instead of trailing the sources, and the stat row keeps major, `|` and bar on one line while the words drop to a full-width second line. Digest rows drop the version range: the summary shows only the count, with `no action needed` on its own line. The expanded digest list loses its 11ch indent. The range verdict wraps the claim below the label as one unit.
 
-**Responsive, Dashboard (640px and below):** the top-bar nav is hidden and the quota reads `N followed`. Stack rows reflow to technology, version and a right-aligned date on the first line, with the content full width below (compact rows too). A section title's significance legend wraps to its own line under the title and rule. Week summaries hide the date range and put `no action needed` on its own line. The expanded week list becomes one column with no indent. Catalog picker rows put the facts under the name, with the Follow button spanning both lines.
+**Responsive, Dashboard (640px and below):** the top-bar nav moves to the navigation strip under the bar and the quota reads `N followed`. Stack rows reflow to technology, version and a right-aligned date on the first line, with the content full width below (compact rows too). A section title's significance legend wraps to its own line under the title and rule. Week summaries hide the date range and put `no action needed` on its own line. The expanded week list becomes one column with no indent. Catalog picker rows put the facts under the name, with the Follow button spanning both lines.
 
-**Responsive, Technologies (640px and below):** the nav is hidden and the quota reads `N followed`. The follow status shortens to `note: N of 10 followed` (the same one-line discipline as the verdict). The filter label and the match count share the first line, with the count right-aligned, and the input drops to a full-width second line. Picker rows become two columns: the name on the first line, the facts wrapping under it, and the toggle (or the `unfollowed` note, right-aligned and capped at 16ch) spanning both lines on the right. A row error drops to a full-width third line.
+**Responsive, Technologies (640px and below):** the nav moves to the navigation strip under the bar and the quota reads `N followed`. The follow status shortens to `note: N of 10 followed` (the same one-line discipline as the verdict). The filter label and the match count share the first line, with the count right-aligned, and the input drops to a full-width second line. Picker rows become two columns: the name on the first line, the facts wrapping under it, and the toggle (or the `unfollowed` note, right-aligned and capped at 16ch) spanning both lines on the right. A row error drops to a full-width third line.
 
 ### The caret row and its replacement
 
@@ -338,8 +338,14 @@ Corners are gently squared: 6px for buttons, the source panel and fix diffs, and
 - **Toggle at the limit (disabled):** when 10 of 10 are followed, every unpressed toggle gets `aria-disabled="true"` (never the `disabled` attribute), so it stays focusable and is described by the limit note (`aria-describedby`). The border drops to `rule`, the text to `text-faint`, the cursor is `not-allowed` and hover changes nothing. Clicks are ignored. Pressed toggles stay live so the user can unfollow.
 
 ### Navigation
-- Top bar: the Mono 14px `release-tracker` wordmark, then either a Mono 13px muted breadcrumb (`technologies / vite / 6.0.0`, current item in `text`) or, on signed-in pages, a Mono 13px muted nav (`dashboard`, `technologies`, 16px gap, `aria-current` item in `text`), and right-aligned actions. The breadcrumb and nav are hidden on mobile.
+There is one navigation, not two: a single top bar on every page, with one slot between the wordmark and the actions. What changes from page to page is what sits in that slot, never the bar. The home page uses the same bar, with both sections in the slot and none of them current, so the app is reachable from it. There is no sidebar: the app has two signed-in destinations, and the width a sidebar would take is the width the release page spends on its quote wells.
+
+- Top bar: the Mono 14px `release-tracker` wordmark, then the slot, then right-aligned actions. The slot holds either a Mono 13px muted breadcrumb (`technologies / vite / 6.0.0`, current item in `text`) or, on signed-in pages, a Mono 13px muted nav (`dashboard`, `technologies`, 16px gap, `aria-current` item in `text`).
+- **Breadcrumb steps are links wherever they have a destination**, for everyone, and `technologies` always points at `/technologies`. The breadcrumb describes where the page sits, and `/technologies/vite/6.0.0` really does sit under `/technologies`, so the step tells the truth about the hierarchy rather than about the viewer's rights. A visitor who follows it lands on sign-in and is returned to `/technologies` afterwards. The header cannot branch on it anyway: the session arrives after the first paint, and a header that changed shape when it arrived would remount the page.
+- **At 640px and below the bar becomes two rows**: the 56px bar keeps the wordmark and the actions, and the slot drops to a 40px strip under it, separated by a 1px `rule` and aligned to the same gutter. The links are the same links, in the same scale, in the same order. There is no drawer, no toggle and no hidden state: nothing to open means nothing to discover, and the strip stays a plain list of links that the keyboard reaches in document order. It costs 40px of height on a page that already scrolls.
 - **Quota link:** before the actions, a Mono 13px muted link `N of 10 followed` with the number in `text`, turning `text` on hover. On mobile it shortens to `N followed`.
+
+**The No Dead End Rule.** From every page, every page the viewer has a right to reach is one or two links away, at every width, phone included. A navigation that disappears at a breakpoint is not a density choice, it is a dead end: before this rule the slot was hidden below 640px, and the only link out of a release page on a phone was the wordmark.
 
 ### Verdict Line (signature)
 A glyph plus severity label in the severity ink (`warning:` amber / `ok:` green), then the plain verdict in `text`, at Verdict scale. Below it is a Mono 14px/1.7 muted count row, with numbers in `text` (`4 breaking changes`, `4 key points`). The breaking count links to the diagnostics.
@@ -479,6 +485,7 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Do** write counts in words beside every bar, using the list's own vocabulary, with a legend that repeats the shape glyphs.
 - **Do** shorten verdict copy until it fits on one line at the 1040px container, and set the claim inline-block so it wraps as a unit (see The One-Line Verdict Rule).
 - **Do** disable a Follow toggle at the limit with `aria-disabled`, keep it focusable, and describe it by the `note:` line that explains the limit.
+- **Do** drop the top bar's slot to a 40px strip under the bar at 640px and below, with the same links in the same order (see The No Dead End Rule).
 
 ### Don't:
 - **Don't** use hue for anything but severity. There are no brand accents or decorative colour.
@@ -487,3 +494,5 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Don't** colour `note:` or non-error status lines. They stay `text-muted`.
 - **Don't** give significance (featured, notable, digest, preview) a severity ink, and don't let a bar carry meaning without its counts in words.
 - **Don't** shrink the verdict scale to fit longer copy.
+- **Don't** hide navigation at a breakpoint, and don't put it behind a drawer or a hamburger. Narrow screens get the same links, on a second row.
+- **Don't** make a breadcrumb step a link for some viewers and plain text for others. The step follows the hierarchy, and sign-in handles the rest.

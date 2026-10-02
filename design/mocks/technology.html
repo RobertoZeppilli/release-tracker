@@ -183,7 +183,10 @@ main[data-state="in-use"] .in-use .undeclared { display: none; }
 @media (max-width: 640px) {
   .topbar-inner, main { padding: 0 var(--space-4); }
   main { padding-top: var(--space-5); padding-bottom: 120px; }
-  .path { display: none; }
+  /* The slot drops to a 40px strip under the bar: same links, no drawer (The No Dead End Rule). */
+  .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
+  .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
+  .topbar-inner > nav { order: 3; width: 100%; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
   .tech-head .follow { margin-left: 0; }
   .stat li { grid-template-columns: 3ch 1ch 1fr; row-gap: var(--space-1); }
   .stat .words { grid-column: 1 / -1; white-space: normal; }

@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 
 // Temporary token specimen for issue #2; the landing page (#26) replaces it.
@@ -57,15 +57,8 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function TokensPage() {
   return (
     <>
-      <header className="border-b border-rule">
-        <div className="mx-auto flex h-[56px] max-w-content items-center gap-5 px-4 sm:px-5">
-          <span className="font-mono text-[14px]">release-tracker</span>
-          <div className="ml-auto">
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto flex max-w-content flex-col gap-7 px-4 py-6 sm:px-5">
+      <SiteHeader nav />
+      <main id="content" className="mx-auto flex max-w-content flex-col gap-7 px-4 py-6 sm:px-5">
         <h1 className="font-mono text-status text-text-muted">note: design tokens</h1>
 
         <section className="flex flex-col gap-4" aria-labelledby="colors">

@@ -12,8 +12,20 @@ const NAV = [
 
 export type NavItem = (typeof NAV)[number]["label"];
 
+// The first step of every public breadcrumb. `/technologies` sits behind sign-in, and the step is a
+// link all the same: the breadcrumb says where the page sits, not what the viewer may open, and
+// `requireDeveloper` brings a visitor back here once signed in. It cannot depend on the viewer
+// anyway, since the session only arrives after the first paint.
+export const TECHNOLOGIES_CRUMB = { label: "technologies", href: "/technologies" } as const;
+
+// Below 640px the slot leaves the bar and becomes a 40px strip under it, with the same links in the
+// same order: No Dead End Rule in DESIGN.md. Nothing is hidden and nothing opens, so the keyboard
+// reaches it in document order.
+const SLOT = "max-sm:order-3 max-sm:flex max-sm:h-[40px] max-sm:w-full max-sm:items-center max-sm:border-t max-sm:border-rule";
+
 // `path` is the breadcrumb after the wordmark; the last item is the current page. On a signed-in
-// page `nav` replaces the breadcrumb with the two destinations, as in DESIGN.md.
+// page `nav` replaces the breadcrumb with the two destinations, as in DESIGN.md; `nav` without a
+// section (the home page) shows the same destinations with none of them current.
 // `quota` arrives as an element, not as a component: the header shows what a signed-in page hands
 // it and never learns what a Plan is, so the public pages simply pass nothing.
 export function SiteHeader({
@@ -22,16 +34,16 @@ export function SiteHeader({
   quota,
 }: {
   path?: readonly PathItem[];
-  nav?: NavItem;
+  nav?: NavItem | true;
   quota?: React.ReactNode;
 }) {
   if (nav) return <HeaderShell quota={quota}>{<SignedInNav current={nav} />}</HeaderShell>;
   return <HeaderShell quota={quota}>{path ? <Breadcrumb path={path} /> : null}</HeaderShell>;
 }
 
-function SignedInNav({ current }: { current: NavItem }) {
+function SignedInNav({ current }: { current: NavItem | true }) {
   return (
-    <nav aria-label="Sections" className="max-sm:hidden">
+    <nav aria-label="Sections" className={SLOT}>
       <ul className="flex gap-4 font-mono text-label text-text-muted">
         {NAV.map((item) => (
           <li key={item.label}>
@@ -59,12 +71,15 @@ function HeaderShell({ children, quota }: { children: React.ReactNode; quota?: R
         Skip to content
       </a>
       <header className="border-b border-rule">
-        <div className="mx-auto flex h-[56px] max-w-content items-center gap-5 px-4 sm:px-5">
-          <Link href="/" className="shrink-0 font-mono text-[14px] whitespace-nowrap no-underline [font-variant-ligatures:none]">
+        <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-5 px-4 sm:h-[56px] sm:flex-nowrap sm:px-5">
+          <Link
+            href="/"
+            className="flex h-[56px] shrink-0 items-center font-mono text-[14px] whitespace-nowrap no-underline [font-variant-ligatures:none]"
+          >
             release-tracker
           </Link>
           {children}
-          <div className="ml-auto flex shrink-0 items-center gap-4 whitespace-nowrap">
+          <div className="ml-auto flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap">
             {quota}
             <AuthStatus />
             <ThemeToggle />
@@ -77,7 +92,7 @@ function HeaderShell({ children, quota }: { children: React.ReactNode; quota?: R
 
 function Breadcrumb({ path }: { path: readonly PathItem[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="max-sm:hidden">
+    <nav aria-label="Breadcrumb" className={SLOT}>
       <ol className="flex gap-2 font-mono text-label text-text-muted">
         {path.map((item, index) => {
           const current = index === path.length - 1;
