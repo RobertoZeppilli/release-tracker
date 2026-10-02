@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeader, TECHNOLOGIES_CRUMB } from "@/components/site-header";
 import { createPublicClient } from "@/lib/supabase";
 import { githubRepo, type StoredTechnology } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
@@ -64,7 +64,7 @@ export default async function ReleasePage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader path={["technologies", { label: technology.slug, href: `/technologies/${technology.slug}` }, release.version]} />
+      <SiteHeader path={[TECHNOLOGIES_CRUMB, { label: technology.slug, href: `/technologies/${technology.slug}` }, release.version]} />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
         <ReleaseHeader technologyName={technology.name} release={release} source={source} />
         {technology.retired && <RetiredNote name={technology.name} latest={null} />}

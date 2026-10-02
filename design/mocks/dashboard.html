@@ -168,7 +168,10 @@ main[data-state="safe"] .for-action { display: none; }
 @media (max-width: 640px) {
   .topbar-inner, main { padding: 0 var(--space-4); }
   .topbar-inner { gap: var(--space-3); }
-  .nav { display: none; }
+  /* The slot drops to a 40px strip under the bar: same links, no drawer (The No Dead End Rule). */
+  .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
+  .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
+  .topbar-inner > nav { order: 3; width: 100%; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
   .quota { margin-right: 0; }
   .quota .of { display: none; }
   main { padding-top: var(--space-5); padding-bottom: 120px; }
