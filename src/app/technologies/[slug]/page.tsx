@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 import { SiteHeader, TECHNOLOGIES_CRUMB } from "@/components/site-header";
+import { pageMetadata } from "@/lib/metadata";
 import { createPublicClient } from "@/lib/supabase";
+import { technologyMeta } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
 import { TechnologyHeader } from "@/modules/catalog/ui";
 import { TechnologyFollow, TechnologyScope } from "@/modules/plans/ui";
@@ -25,7 +27,13 @@ const loadTechnology = cache((slug: string) => getTechnology(createPublicClient(
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const technology = await loadTechnology((await params).slug);
-  return technology ? { title: `${technology.name} releases`, description: technology.description } : {};
+  if (!technology) return {};
+  return pageMetadata({
+    ...technologyMeta(technology),
+    // The canonical address carries no `?from=`: an Upgrade Path is one reading of this one page.
+    path: `/technologies/${technology.slug}`,
+    type: "website",
+  });
 }
 
 export default async function TechnologyPage({ params }: Props) {

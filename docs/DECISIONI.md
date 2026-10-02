@@ -80,6 +80,11 @@ Release che contano.
 | Filtri e tab | Nell'URL. |
 | Anteprime nella pagina della Tecnologia | Solo quelle successive all'ultima Versione stabile, in una sezione a parte; quelle già seguite dalla loro stabile non si elencano. |
 | **Cammino di upgrade** | Nell'MVP: la pagina di una Tecnologia accetta `?from=<version>` e mostra le Release fino all'ultima stabile e quante richiedono intervento. Pubblico, senza login, calcolato sulle Release salvate. |
+| Descrizione di una pagina pubblica | La Release con una Sintesi pronta usa **il titolo della Sintesi e nient'altro**: la descrizione non può affermare quello che la Sintesi non dice. Senza Sintesi è neutra, Versione e giorno di pubblicazione, più una riga sulle Note se ci sono. La Tecnologia unisce la descrizione del Catalogo a quello che la pagina contiene. |
+| URL canonico | Il percorso della rotta, senza query: `?from=` è una lettura della stessa pagina, non una pagina sua. |
+| Sitemap | Generata dal Catalogo e dalle Release, **Tecnologie ritirate comprese**, perché le loro pagine restano raggiungibili. Rigenerata con ISR e marcata stale insieme alle pagine da `revalidateReleasePages`. |
+| `robots.txt` | Esclude le pagine con login. `/technologies$` con l'ancora, altrimenti un prefisso nudo escluderebbe anche tutte le pagine delle Tecnologie sotto di lui. |
+| Home `/` | `noindex` e fuori dalla sitemap **finché è il campionario dei token** (#2): un risultato di ricerca fatto di campioni di colore è peggio di nessun risultato. La landing (#26) la riporta dentro. |
 
 ## Piani e pagamenti
 
