@@ -24,13 +24,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    // data-theme is set before paint by themeInitScript, so the server markup can differ.
-    <html
-      lang="en"
-      data-theme="dark"
-      suppressHydrationWarning
-      className={`${fragmentMono.variable} ${hankenGrotesk.variable}`}
-    >
+    // No data-theme here: themeInitScript writes it before the first paint, and an attribute React
+    // never owns is one it cannot reset when a boundary renders the root again. Until the script
+    // runs, the CSS default is the dark theme.
+    <html lang="en" suppressHydrationWarning className={`${fragmentMono.variable} ${hankenGrotesk.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
