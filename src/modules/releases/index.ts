@@ -27,4 +27,9 @@ export {
   upgradeStartRejection,
 } from "./domain/upgrade-path";
 export { compareVersions, type ParsedVersion, parseVersion } from "./domain/version";
+export {
+  fillVersionTemplate,
+  unknownVersionPlaceholders,
+  VERSION_PLACEHOLDERS,
+} from "./domain/version-template";
 export { noteLines, type ReleaseDetail, releasePath, versionFromPath } from "./domain/release-page";

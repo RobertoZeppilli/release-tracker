@@ -30,6 +30,19 @@ Una **Tecnologia** ha al massimo una **Fonte** per ruolo e tipo. Una **Fonte** t
 si cancella: è configurazione, e le **Note di rilascio** che ha fornito restano.
 _Evitare_: provider, integrazione, feed.
 
+**Formato dei tag**:
+Come una **Fonte** `github-releases` scrive una **Versione** nei suoi tag. È un testo con segnaposto
+fra graffe, e i segnaposto sono solo le parti di una **Versione**: `{version}` (la **Versione**
+intera, come la scrive la fonte), `{major}`, `{minor}`, `{patch}`, `{prerelease}`. Un nome diverso è
+rifiutato quando si legge il **Catalogo**: un segnaposto che nessuno sostituisce darebbe un tag che
+non esiste, e le **Note di rilascio** mancherebbero senza dirlo.
+Il formato di base (`tagFormat`) contiene sempre `{version}` intera, perché il **rilevamento** legge
+la **Versione** fuori dal tag e deve poterla ritrovare. Una **Fonte** che **fornisce le Note di
+rilascio** può dichiarare in più un **formato delle Anteprime** (`prereleaseTagFormat`), usato solo
+per le **Versioni** che hanno un prerelease: serve quando una **Tecnologia** scrive l'**Anteprima**
+in un altro modo, come TypeScript, che pubblica `6.0.1-rc` e la tagga `v6.0-rc`. Quel formato può
+perdere delle parti, perché nessuno ci rilegge una **Versione** dentro.
+
 **Seguire**:
 La scelta di uno sviluppatore di vedere nella propria dashboard le **Release** di una
 **Tecnologia** del **Catalogo**. Si possono **Seguire** solo **Tecnologie** non ritirate; una
@@ -202,6 +215,8 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Tecnologia | `Technology` | |
 | Catalogo | `Catalog` | |
 | Fonte | `Source` | ruolo: `detection` · `notes`; tipo: `npm` · `pypi` · `github-releases` · `changelog` |
+| Formato dei tag | `tagFormat` | segnaposto: `{version}` · `{major}` · `{minor}` · `{patch}` · `{prerelease}` |
+| Formato delle Anteprime | `prereleaseTagFormat` | solo sulle Fonti `notes`, facoltativo |
 | Seguire | `follow` | |
 | Versione in uso | `currentVersion` | colonne `follows.current_version` e `follows.current_version_declared_at` |
 | Richiesta di tecnologia | `TechnologyRequest` | |
