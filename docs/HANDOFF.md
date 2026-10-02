@@ -13,22 +13,23 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-02, terza sessione del giorno).** La **#72** (il filtro di
-`/technologies` nell'URL) è chiusa e unita con la PR #79, dopo la **#25** (404 ed errore generico,
-PR #77) e la **#63** (navigazione, PR #75) che aveva sbloccato la **#47**: **la #47 non ha niente
-davanti** ed è il prossimo lavoro grosso, con la **#64** dentro, ma è `ready-for-human`.
+**Da dove ripartire (2026-10-02, quarta sessione del giorno).** La **#72** (il filtro di
+`/technologies` nell'URL, PR #79) e la **#36** (formato dei tag delle Anteprime, PR #81) sono chiuse e
+unite, dopo la **#25** (404 ed errore generico, PR #77) e la **#63** (navigazione, PR #75).
 
-Una sessione che lavora da sola ha una sola piccola rimasta e non aspetta nessuno: la **#36**
-(segnaposto `{major}.{minor}` nel formato dei tag per le Anteprime di TypeScript). **È la prossima.**
-Poi la **#24** (SEO), che però conviene dopo la landing.
+**La sola `ready-for-agent` rimasta è la #24** (SEO delle pagine pubbliche), e non conviene prenderla
+adesso: va dopo la landing, così il SEO passa anche su quella. Quindi in pratica non resta niente da
+fare da soli, e **la #47 è la prossima** (il lavoro grosso, con la **#64** dentro, `ready-for-human`):
+non ha niente davanti da quando è stata unita la #63.
 
-Le `ready-for-human` aspettano l'utente: la **#47** è **la prossima**; la **#57** è un verdetto sulla
-qualità; la **#65** (uniformare i database) e la **#69** (import di `package.json`) sono ferme per
-scelta dell'utente, la prima al secondo giro a pagamento, la seconda dopo il lancio.
+Le altre `ready-for-human`: la **#80** (riprendere le Note di rilascio mancanti) è **nuova del
+2026-10-02** e contiene una domanda che costa, scritta sotto; la **#57** è un verdetto sulla qualità;
+la **#65** (uniformare i database) e la **#69** (import di `package.json`) sono ferme per scelta
+dell'utente, la prima al secondo giro a pagamento, la seconda dopo il lancio.
 
-L'ordine concordato con l'utente: **#62**, **#68**, **#63**, **#25** e **#72** (fatte), la **#36**
-quando serve (non è bloccata da niente), poi la **#47** con la #64 dentro, poi la **#26**
-(serve il nome del prodotto) e infine la **#24**, così il SEO passa anche sulla landing.
+L'ordine concordato con l'utente: **#62**, **#68**, **#63**, **#25**, **#72** e **#36** (fatte), poi la
+**#47** con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il SEO
+passa anche sulla landing.
 
 **Stima data all'utente il 2026-09-30**: da 8 a 14 sessioni dopo la #68. Il numero alto e quello basso
 si decidono quasi tutti in due punti, quanto apre la #47 e quante issue genera il giro a mano dopo di
@@ -105,9 +106,10 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
   (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
-  e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75), la **#25** (PR #77) e la **#72**
-  (PR #79) il 2026-10-02.
-  Sbloccate: **#36** e, con la #63, la **#47**, che ora non ha più niente davanti.
+  e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75), la **#25** (PR #77), la **#72**
+  (PR #79) e la **#36** (PR #81) il 2026-10-02.
+  Sbloccata, con la #63, la **#47**, che ora non ha più niente davanti.
+  Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -119,6 +121,79 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-10-02 (4): il formato dei tag delle Anteprime (#36, PR #81)
+
+TypeScript pubblica `6.0.0-beta` e `6.0.1-rc` su npm e su GitHub li tagga `v6.0-beta` e `v6.0-rc`,
+senza il patch. La regola nuova sta in `CONTEXT.md`, sotto **Formato dei tag**, scritta prima del
+codice: un formato è un testo con segnaposto fra graffe, e i segnaposto sono solo le parti di una
+Versione (`{version}`, `{major}`, `{minor}`, `{patch}`, `{prerelease}`).
+
+Il formato di base contiene sempre `{version}` **intera**, perché il rilevamento legge la Versione
+fuori dal tag e deve poterla ritrovare. Il formato delle Anteprime (`prereleaseTagFormat`) vive solo
+sulle Fonti `notes` e **può perdere delle parti** proprio perché nessuno ci rilegge dentro una
+Versione: `v6.0-rc` non dice il patch, e non deve. Quella asimmetria è il cuore della issue, non un
+dettaglio di implementazione.
+
+`version-template.ts` sta in **`releases`** e non in `detection`: le parti di una Versione sono roba
+di `releases`, e sia `catalog` (per lo schema) sia `detection` (per scrivere il tag) ne hanno bisogno.
+Metterlo in `detection` avrebbe costretto `catalog` a importare `detection`, che importa già `catalog`.
+
+### Nessuna migrazione: la Fonte sta in un `config jsonb`
+
+`sources.config` è jsonb e `upsertSources` fa un upsert su `(technology_id, role, kind)` **senza**
+`ignoreDuplicates`, quindi un campo nuovo nella Fonte arriva nel database col primo sync, da solo.
+Controllato prima di scrivere la migrazione che non serviva.
+
+### ⚠️ Le Note di rilascio si scrivono solo quando una Release nasce
+
+`persistReleases` inserisce le note con `ignoreDuplicates`, quindi una Release entrata **senza** note
+non le riprende mai, nemmeno quando la Fonte impara a trovarle. Conseguenza: in produzione le Anteprime
+di TypeScript già importate **restano senza Note** anche dopo il merge, e il sync del Deploy aggiorna
+solo la Fonte (`update typescript`). È la **#80**, che pone la domanda che costa invece di risolverla:
+una Sintesi `unavailable` a cui arrivano le Note deve tornare `pending`, cioè farsi generare?
+
+### ⚠️ Il rilevamento guarda solo avanti, quindi non si riprova cancellando una Release
+
+`selectDetected` prende le Versioni **pubblicate dopo** la Release più recente che abbiamo, non quelle
+semplicemente assenti (l'importazione iniziale tiene 12 mesi, e il resto è un'omissione voluta).
+Cancellare le tre Anteprime di TypeScript non le avrebbe fatte tornare, perché `7.0.2` è più recente.
+La verifica è passata dall'**importazione iniziale**: svuotate tutte le Release di TypeScript in locale
+(`summaries` e `release_notes` prima, perché le chiavi esterne **non** hanno `on delete cascade`), la
+Tecnologia torna "awaiting import" (`count === 0`) e `catalog:sync` la rifà: `update typescript` +
+`import typescript: 6 release(s)`, nient'altro toccato.
+
+Esito: `6.0.0-beta` e `6.0.1-rc` **hanno le Note**. Effetto collaterale del solo database locale:
+`5.9.3` non c'è più, perché l'importazione tiene 12 mesi e ora è fuori.
+
+### `7.0.1-rc` resta senza Note, e non è un difetto nostro
+
+Su npm c'è, su GitHub non esistono né la release né il tag `v7.0-rc` (verificato con
+`git/matching-refs/tags/v7.0`: c'è solo `v7.0.2`). Lì `unavailable` è la risposta onesta, e non va
+cercata una causa nel formato.
+
+### Nessuna spesa, e perché
+
+Le due Anteprime che ora hanno le Note sono `skipped`, non `pending`: l'importazione iniziale le lascia
+nella storia (`skip`), e `initialSummaryStatus` ne tiene conto. Una Anteprima con le note e senza
+`skip` sarebbe `pending`, quindi la prossima volta che si rifà un'importazione vale la pena guardarlo.
+
+### ⚠️ Il tool Bash dimezza i backslash negli heredoc
+
+`cat > file <<'EOF'` ha scritto `[\]\]` dove il sorgente diceva `[\]\\]`, e lo stesso in uno script
+Python passato per heredoc (i `SyntaxWarning` su `"\]"` lo hanno rivelato). Una regex con `\\` va
+scritta con Write o Edit, non con un heredoc. Un secondo inciampo della stessa famiglia:
+`cat > "$X" 2>/dev/null || true` senza input si è mangiato il resto del comando, heredoc compreso, e
+il processo è rimasto appeso a leggere stdin.
+
+### Attenzione per chi riprende
+
+- Verificati: `typecheck`, `lint`, `build`, 447 test unitari (21 nuovi), 52 di integrazione,
+  `technology.spec.ts` in E2E.
+- Uno script fuori dal progetto **non risolve** i pacchetti (`node_modules` isolato di pnpm): un
+  controllo usa e getta va messo dentro il progetto, come file che inizia per punto, e cancellato
+  subito; oppure importa solo via `@/`, che tsx risolve dal tsconfig.
+- Non resta niente di `ready-for-agent`: il prossimo lavoro è la **#47**, e aspetta l'utente.
 
 ## Sessione del 2026-10-02 (3): il filtro di /technologies nell'URL (#72, PR #79)
 
@@ -173,7 +248,7 @@ settimane l'URL ce l'ha già. Niente da aggiungere e nessuna issue nuova.
   `a11y`, `keyboard` e `navigation` (39). Nessuna regressione sull'accessibilita' del campo (#23).
 - Il server di sviluppo non era in piedi e **Playwright lo avvia da sé** (`reuseExistingServer` in
   locale): non serve lanciarlo a mano prima.
-- La prossima piccola da sola è la **#36**; la **#47** aspetta l'utente.
+- ~~La prossima piccola da sola è la #36~~: fatta nella sessione (4). La **#47** aspetta l'utente.
 
 ## Sessione del 2026-10-02 (2): la 404 e la pagina di errore (#25, PR #77)
 
@@ -1676,7 +1751,7 @@ leggerla come l'indicazione buona. Le code ancora vive che c'erano dentro sono s
 in "Code da non perdere".
 
 1. La Dashboard è finita: #20 e #21 sono entrambe fatte. **Superato**: l'ordine di lavoro vero è in
-   cima, e la #25 e la #36 sono ancora aperte.
+   cima. (La #25 e la #36, che qui risultavano aperte, sono **fatte** il 2026-10-02.)
 2. Il filtro di `/technologies` fuori dall'URL: **portato in cima**, è ancora vero.
 3. **Web Analytics**: portato in cima, è ancora da attivare. I **cinque scostamenti dal mock** sono
    invece **fatti**: la #23 li ha risolti tutti e cinque (PR #61, sessione del 2026-09-29 (3)).
