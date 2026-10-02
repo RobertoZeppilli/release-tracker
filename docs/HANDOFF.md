@@ -13,26 +13,24 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-09-30, sera).** La **#68** (la **Versione in uso**) è chiusa e unita con la
-PR #74; la migrazione è **applicata in produzione**, il workflow *Deploy database* è passato. Restano
-da provare a mano sull'app vera. La **#62** era chiusa e verificata in produzione (`0 controlli su
-13.496`, PR #66 e #67), la **#23** con la PR #61.
+**Da dove ripartire (2026-10-02).** La **#63** (navigazione) è chiusa e unita con la PR #75: era la
+decisione che bloccava la **#47**, quindi **la #47 non ha più niente davanti** ed è il prossimo lavoro
+grosso, con la **#64** che si scioglie dentro. Prima di lei erano andate la **#68** (Versione in uso,
+PR #74, migrazione applicata in produzione, da provare ancora a mano sull'app vera), la **#62**
+(verificata in produzione, `0 controlli su 13.496`, PR #66 e #67) e la **#23** (PR #61).
 
 Una sessione che lavora da sola prende le tre piccole, in quest'ordine e senza aspettare nessuno:
 la **#25** (404 ed errore generico), la **#36** (segnaposto `{major}.{minor}` nel formato dei tag per
 le Anteprime di TypeScript) e la **#72** (il filtro di `/technologies` nell'URL). Poi la **#24**
 (SEO), che però conviene dopo la landing.
 
-Le `ready-for-human` aspettano l'utente: la **#63** (navigazione) è **la prossima decisione** e va
-presa **prima** della **#47**, che dalla #68 in poi non ha altri "Blocked by"; la **#64** si scioglie
-dentro la #47; la **#57** è un verdetto sulla qualità; la **#65** (uniformare i database) e la **#69**
-(import di `package.json`) sono ferme per scelta dell'utente, la prima al secondo giro a pagamento, la
-seconda dopo il lancio.
+Le `ready-for-human` aspettano l'utente: la **#47** è **la prossima**; la **#57** è un verdetto sulla
+qualità; la **#65** (uniformare i database) e la **#69** (import di `package.json`) sono ferme per
+scelta dell'utente, la prima al secondo giro a pagamento, la seconda dopo il lancio.
 
-L'ordine concordato con l'utente: **#62** e **#68** (fatte), poi la decisione sulla **#63** e la sua
-implementazione, la **#25**, la **#36** e la **#72** quando servono (non sono bloccate da niente), poi
-la **#47** con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il
-SEO passa anche sulla landing.
+L'ordine concordato con l'utente: **#62**, **#68** e **#63** (fatte), la **#25**, la **#36** e la
+**#72** quando servono (non sono bloccate da niente), poi la **#47** con la #64 dentro, poi la **#26**
+(serve il nome del prodotto) e infine la **#24**, così il SEO passa anche sulla landing.
 
 **Stima data all'utente il 2026-09-30**: da 8 a 14 sessioni dopo la #68. Il numero alto e quello basso
 si decidono quasi tutti in due punti, quanto apre la #47 e quante issue genera il giro a mano dopo di
@@ -109,8 +107,8 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
     #26 landing page (serve il nome del prodotto).
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
   (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
-  e #67) e la **#68** (PR #74) il 2026-09-30.
-  Sbloccate: **#25**, **#36** e, con la #68, la **#47**, che aspetta solo la decisione sulla #63.
+  e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75) il 2026-10-02.
+  Sbloccate: **#25**, **#36** e, con la #63, la **#47**, che ora non ha più niente davanti.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -122,6 +120,70 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-10-02: la navigazione decisa e costruita (#63, PR #75)
+
+La #63 era `ready-for-human`: prima le quattro decisioni di forma con l'utente, poi `DESIGN.md` e i
+mock, poi il codice. In quest'ordine, perché il terzo criterio di accettazione chiedeva che i
+documenti descrivessero la navigazione scelta.
+
+### Le quattro decisioni, e il perché di ciascuna
+
+- **Barra in alto, niente sidebar.** Le destinazioni dietro il login sono due e non crescono, e la
+  larghezza che una sidebar prenderebbe è quella che la pagina della Release spende nei pozzi delle
+  citazioni: la #62 è stata una sessione intera su quell'overflow. Una sidebar andrebbe anche spenta
+  sulle pagine pubbliche, che non hanno sezioni da elencare, quindi due layout invece di uno.
+- **Una navigazione sola.** Un solo `SiteHeader` con uno slot fra wordmark e azioni: cambia il
+  contenuto dello slot, mai il componente. La home usa la stessa barra.
+- **Sotto i 640px lo slot diventa una striscia da 40px sotto la barra**, con gli stessi link nello
+  stesso ordine. Il conto che ha deciso: a 390px restano 358px, il wordmark ne prende 135 e a destra
+  ci sono quota, accesso e tema, quindi **orizzontalmente non c'è spazio** ed è per questo che lo slot
+  era finito `max-sm:hidden`. Le strade vere erano due, nascondere dietro un pannello o dare spazio
+  verticale. Verticale: niente drawer, niente stato aperto o chiuso, niente focus trap, niente
+  JavaScript, e la tastiera lo raggiunge nell'ordine del documento. Costa 40px su una pagina che già
+  si scorre.
+- **Il passo `technologies` del breadcrumb è un link per tutti**, e `requireDeveloper` riporta
+  indietro il visitatore dopo l'accesso. Non potrebbe comunque dipendere da chi guarda: la sessione
+  arriva dopo il primo paint, e un header che cambiasse forma al suo arrivo rimonterebbe la pagina
+  (la lezione della #68). Il breadcrumb dice **dove sta la pagina**, non che cosa il visitatore può
+  aprire.
+
+Fissate in `DESIGN.md`: sezione *Navigation* riscritta, la regola con nome **The No Dead End Rule**,
+le tre sezioni *Responsive* corrette (da "is hidden" a "moves to the navigation strip") e tre voci nei
+Do's and Don'ts. I quattro mock hanno la striscia nella media query dei 640px.
+
+### ⚠️ `--spacing: initial`: le classi di spaziatura fuori dagli otto passi cadono in silenzio
+
+La striscia era 40px nei mock e **21,8px nell'app**, con `max-sm:h-10` scritta e applicata.
+`globals.css` fa `--spacing: initial` e definisce solo gli otto passi del progetto (4, 8, 12, 16, 24,
+32, 48, 72), quindi `h-10` non esiste: Tailwind la emette, il browser la butta, nessuno protesta.
+Nello stesso giro è caduta una `gap-y-0` muta per la stessa ragione. **Regola**: una misura fissa fuori
+dalla scala si scrive fra parentesi quadre, `h-[40px]`, come i 56px della barra già facevano. E una
+classe di spaziatura nuova non si dà per buona finché non la si è vista sulla pagina vera: i mock non
+la provano, perché hanno un CSS loro.
+
+### ⚠️ La home era l'unico vicolo cieco totale, e nessuna issue lo diceva
+
+La pagina `/`, il campionario dei token che la #26 sostituirà, aveva un header tutto suo: wordmark in
+uno `<span>`, solo il toggle del tema, **zero link**. La #63 parlava di tre buchi e questo non era fra
+loro, l'ha visto l'utente. Ora usa `SiteHeader nav` con entrambe le sezioni e nessuna corrente, e il
+suo `main` ha finalmente l'`id="content"` che lo skip link indicava senza trovarlo. Da ricordare per
+la #26: la landing eredita questo header, non se ne scrive un altro.
+
+### Attenzione per chi riprende
+
+- Il giro di verifica che ha trovato il difetto dei 40px: `pnpm build`, poi `pnpm start`, poi uno
+  script Playwright che misura e fotografa. Le misure contano più degli screenshot, perché un errore
+  di 18px si vede solo col righello.
+- `CI=1 pnpm exec playwright test` **non riusa** il server esistente: la 3000 va liberata prima,
+  altrimenti esce con "is already used". Succede anche con i server che si sono avviati da soli
+  durante la sessione.
+- Docker era giù all'inizio e l'ho riavviato come descritto nella sessione del 2026-09-30, con il
+  controllo che non mente (`until [ -n "$(docker info --format '{{.ServerVersion}}' 2>/dev/null)" ]`).
+- Suite E2E completa verde: 107 test, `a11y.spec` nei due temi compreso. Il nuovo
+  `tests/e2e/navigation.spec.ts` ha 4 test, fra cui la risalita Release → Tecnologia → Catalogo a
+  390px.
+- Nella stessa PR, in un commit a parte, l'aggiornamento del piano editoriale in questo documento.
 
 ## Sessione del 2026-09-30: la Versione in uso costruita, e quattro cose imparate
 
