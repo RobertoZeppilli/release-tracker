@@ -13,23 +13,39 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-02, quarta sessione del giorno).** La **#72** (il filtro di
-`/technologies` nell'URL, PR #79) e la **#36** (formato dei tag delle Anteprime, PR #81) sono chiuse e
-unite, dopo la **#25** (404 ed errore generico, PR #77) e la **#63** (navigazione, PR #75).
+**Da dove ripartire (2026-10-03).** La **#24** (SEO delle pagine pubbliche, PR #82) è chiusa e unita,
+dopo la **#72** (PR #79) e la **#36** (PR #81) del giorno prima.
 
-**La sola `ready-for-agent` rimasta è la #24** (SEO delle pagine pubbliche), e non conviene prenderla
-adesso: va dopo la landing, così il SEO passa anche su quella. Quindi in pratica non resta niente da
-fare da soli, e **la #47 è la prossima** (il lavoro grosso, con la **#64** dentro, `ready-for-human`):
-non ha niente davanti da quando è stata unita la #63.
+**Non resta nessuna `ready-for-agent`.** Tutto quello che si poteva fare da soli è fatto: da qui in
+avanti ogni issue aperta è `ready-for-human`.
 
-Le altre `ready-for-human`: la **#80** (riprendere le Note di rilascio mancanti) è **nuova del
-2026-10-02** e contiene una domanda che costa, scritta sotto; la **#57** è un verdetto sulla qualità;
-la **#65** (uniformare i database) e la **#69** (import di `package.json`) sono ferme per scelta
-dell'utente, la prima al secondo giro a pagamento, la seconda dopo il lancio.
+**La prossima è la #47** (revisione del design di tutta l'app con `impeccable`), **con la #64
+dentro**, deciso con l'utente il 2026-10-03. I suoi "Blocked by" (#21, #23, #63, #68) sono tutti
+chiusi: non ha niente davanti.
 
-L'ordine concordato con l'utente: **#62**, **#68**, **#63**, **#25**, **#72** e **#36** (fatte), poi la
-**#47** con la #64 dentro, poi la **#26** (serve il nome del prodotto) e infine la **#24**, così il SEO
-passa anche sulla landing.
+**L'ordine è cambiato il 2026-10-03, e il motivo va tenuto.** L'ordine vecchio metteva la #24 per
+ultima, dopo la landing, così il SEO passava anche su quella. È stato rovesciato: la #24 è stata
+fatta subito perché era l'unica cosa autonoma rimasta, e alla landing il SEO si aggiunge dentro la
+#26, che è poco lavoro. L'ordine nuovo è **#24** (fatta) → **#47** con la #64 dentro → **#26**.
+
+L'utente ha chiesto se non fosse meglio fare la landing *prima* della revisione, così da rivedere
+tutte le pagine in una passata. Risposta data e accolta, da non rifare da zero la prossima volta:
+1. la #26 non parte senza il **nome del prodotto**, che l'utente ha rinviato, e la #47 invece può
+   partire oggi;
+2. la #47 comprende le pagine **mai disegnate** (login, 404, errore generico), che sono quelle che
+   fanno emergere i buchi di "Compiler Diagnostic"; la landing ne ha altri, suoi;
+3. la #26 chiede per criterio che il design della landing sia **approvato nel sistema Compiler
+   Diagnostic**: approvarlo contro un sistema che sta per cambiare vuol dire rifare la landing.
+Quello che **non** è vero, e che è stato riconosciuto: fare prima la #47 non evita una seconda
+passata di design. La landing avrà comunque il suo giro, perché è l'unica pagina il cui compito è
+convincere e non mostrare contenuto. La scelta era fra *assestare il sistema sulle sei schermate che
+esistono e poi disegnare una pagina nuova dentro di esso* e *inventare il sistema sulla landing e
+riportarlo indietro sull'app*.
+
+Le altre `ready-for-human`: la **#80** (riprendere le Note di rilascio mancanti) è del 2026-10-02 e
+contiene una domanda che costa, scritta sotto; la **#57** è un verdetto sulla qualità; la **#65**
+(uniformare i database) e la **#69** (import di `package.json`) sono ferme per scelta dell'utente, la
+prima al secondo giro a pagamento, la seconda dopo il lancio.
 
 **Stima data all'utente il 2026-09-30**: da 8 a 14 sessioni dopo la #68. Il numero alto e quello basso
 si decidono quasi tutti in due punti, quanto apre la #47 e quante issue genera il giro a mano dopo di
@@ -44,7 +60,9 @@ scartato dopo la verifica**: `caret.io` è un editor Markdown commerciale, `care
 fra i più scaricati di sempre, e ci sono altri due editor e due acronimi CARET; fra i domini solo
 `caret.dev` non risponde, e non risponde non vuol dire libero. **Drift** ha un problema simile e non
 verificato, `drift.com` è un'azienda nota. Da fare: decidere se verificare Drift e Bumped con lo
-stesso metodo, o rifare una lista pensata per essere libera invece che bella.
+stesso metodo, o rifare una lista pensata per essere libera invece che bella. **Il 2026-10-03
+l'utente l'ha rinviato esplicitamente** ("per il nome penseremo dopo"): non riaprirlo da soli, ma
+ricordare che è il primo criterio di accettazione della #26 e che senza di lui la landing non chiude.
 
 ### Code da non perdere
 
@@ -56,8 +74,7 @@ dell'utente e di nessun altro.
   2026-10-02 con la PR #79. Era l'unico pezzo di PRD che nessuna issue copriva, e con lei la user
   story 49 ("filtri e tab nell'URL") è chiusa per davvero: le sezioni di `/technologies` e della
   Dashboard non sono tab e il Cammino di upgrade era già nell'URL con `?from=`.
-- **Web Analytics da attivare** nella tab *Analytics* del progetto su Vercel. È un gesto dell'utente,
-  non nostro.
+- ~~Web Analytics da attivare~~: **attivo**, confermato dall'utente il 2026-10-03.
 - **Piano editoriale**: l'articolo dev.to della tappa D ("Enforce your free-plan limit in the
   database, not in the UI") è **pubblicato** dal 2026-09-28 (slug `-330p`) e al 2026-10-01 ha 4
   commenti e 1 reazione, il primo con discussione. Verificato il 2026-10-01: **3 articoli dev.to
@@ -97,9 +114,20 @@ scollegato dal lavoro in corso. In locale è un token classico senza nessuno sco
 Vercel è un fine-grained con `Public Repositories (read-only)` e l'utente lo ha marcato **Sensitive**.
 Conseguenza pratica da ricordare: il valore su Vercel **non si rilegge**, né dalla dashboard né con
 `vercel env pull`, si può solo sostituire. Quindi che ci sia si controlla dal comportamento e non
-guardando la variabile. **Da verificare**: che arrivi davvero alla funzione. Il rilevamento gira una
-volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte, oppure si chiama
-`/api/jobs/detection` a mano, che **non spende** perché tocca solo GitHub e npm.
+guardando la variabile.
+
+**Verificato il 2026-10-03: il token arriva davvero alla funzione.** Niente più da fare qui. Il
+metodo, da riusare se il dubbio torna: `vite` 8.3.2 è stata pubblicata su npm il 2026-10-01 alle
+10:17 UTC, in produzione c'è, e la sua pagina mostra le **Note di rilascio intere prese da
+`github.com/vitejs/vite`**, 39 righe. `vite` sta in fondo all'alfabeto, quindi se il budget di 60
+richieste si fosse esaurito sarebbe stata lei a restare a secco. Anche `zod` (4.6.5) e `zustand`
+(5.0.15), le ultime del Catalogo, sono allineate a npm. La prova sta nelle **Note**, non nelle
+Versioni: le Versioni vengono da npm, che non chiede nessun token, le Note da GitHub.
+
+**Il `CRON_SECRET` di produzione non è quello in `.env.local`**: la chiamata a mano a
+`/api/jobs/detection` con quello locale risponde **401**. Per chiamare i job a mano serve il CLI
+Vercel (`npm i -g vercel`, poi `vercel env pull`), che **non è installato**, oppure leggerlo dalla
+dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
 
 - PRD pubblicato (#1). Fette pubblicate come issue **#2–#26**, con Parent #1 e "Blocked by" reali.
   - Label `ready-for-agent` = AFK; `ready-for-human` = HITL: #22 Catalogo ~40 Tecnologie,
@@ -107,7 +135,7 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
 - Fatte: **#2–#22** (la #22 con la PR #53, unita il 2026-09-28), la **#55** (PR #58), la **#56**
   (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
   e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75), la **#25** (PR #77), la **#72**
-  (PR #79) e la **#36** (PR #81) il 2026-10-02.
+  (PR #79) e la **#36** (PR #81) il 2026-10-02; la **#24** (PR #82) il 2026-10-03.
   Sbloccata, con la #63, la **#47**, che ora non ha più niente davanti.
   Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
@@ -121,6 +149,87 @@ volta al giorno alle 02:00 UTC, quindi si guardano i log della passata di notte,
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-10-03: il SEO delle pagine pubbliche (#24, PR #82)
+
+### La descrizione non afferma quello che la Sintesi non dice
+
+Il criterio della issue ha deciso la forma del codice. Una Release con una Sintesi pronta è
+descritta **dal titolo della Sintesi e nient'altro**; senza Sintesi la descrizione è neutra,
+Versione e giorno di pubblicazione, più una riga sulle Note se ci sono e nessuno le ha sintetizzate.
+Nessun prefisso attorno al titolo della Sintesi, e la ragione non è estetica: il titolo sta sotto i
+140 caratteri per schema, i caratteri utili di una meta description sono circa 160, e qualunque
+prefisso si sarebbe mangiato la fine della frase.
+
+La descrizione di una Tecnologia unisce la riga del Catalogo a quello che la pagina contiene, perché
+"Frontend build tool" da solo è di 17 caratteri e non si legge come risultato di ricerca. Le 37
+descrizioni del Catalogo sono state controllate una per una: tutte presenti e tutte diverse.
+
+### `/technologies$` con l'ancora, altrimenti si chiude tutto il sito
+
+La trappola di `robots.txt`: `Disallow: /technologies` è un **prefisso**, quindi escluderebbe anche
+`/technologies/vite` e ogni altra pagina di Tecnologia, cioè esattamente quello che vogliamo
+indicizzare. Serve `/technologies$`. Il `$` non è nello standard originale, ma Google e Bing lo
+leggono entrambi, e le pagine con login portano già un `robots: { index: false }` loro.
+
+### La sitemap nasce nella build, e questo ha rotto i test prima della CI
+
+**Da ricordare, è la lezione della sessione.** `/sitemap.xml` è una rotta **prerenderizzata**. In
+locale Playwright usa `next dev`, che rigenera a ogni richiesta; in CI usa `pnpm start`, cioè la
+build, dove la sitemap è stata scritta **prima** che i fixture esistessero. Due E2E che cercavano un
+fixture dentro la sitemap passavano in locale e fallivano in CI. Il comportamento dell'app era
+giusto, il livello del test era sbagliato.
+
+Dove sta adesso: `tests/integration/sitemap.test.ts` prova `listSitemapPages`, la query vera, con una
+Tecnologia normale e una **ritirata**, letta col **client anonimo** perché è quello che rende la
+rotta. All'E2E resta che la rotta serva il Catalogo come indirizzi assoluti.
+
+**Regola pratica che ne esce**: un E2E su una rotta con `revalidate` non può vedere dati seminati
+dopo la build. Si verifica con `CI=1 pnpm test:e2e`, che usa `pnpm start`, non col solo giro locale
+su `next dev`.
+
+### Due query invece di una, e l'ordinamento per `id`
+
+`listSitemapPages` fa due query e le unisce nel dominio, invece di una con le Release annidate:
+PostgREST pagina **solo le righe esterne**, quindi una Tecnologia con molte Release tornerebbe
+troncata in silenzio. Le Release si ordinano per `id` e non per data, perché paginare su una colonna
+con pareggi può ripetere o saltare una riga, e un intero batch di importazione condivide lo stesso
+`created_at`.
+
+`publicPagesFor` aggiunge `/sitemap.xml` ai percorsi da rivalidare, ma **solo se c'è almeno una
+Release cambiata**: con la lista vuota continua a restituire niente, come prima.
+
+### Due scelte oltre la lettera della issue, approvate dall'utente
+
+1. **La home `/` è `noindex` e fuori dalla sitemap**, finché è il campionario dei token della #2. Un
+   risultato di ricerca fatto di campioni di colore è peggio di nessun risultato. **La #26 deve
+   rimettere la home nell'indice e nella sitemap**: i commenti nel codice, in `src/app/page.tsx` e
+   in `src/app/sitemap.ts`, lo dicono.
+2. La descrizione della Tecnologia allungata, come sopra.
+
+Tutt'e due sono in `docs/DECISIONI.md`, sotto "Esperienza utente", con quattro righe nuove sul SEO.
+
+### Da sapere, non difetti
+
+- La sitemap viene **prerenderizzata nella build**, quindi la build legge il database. Non è una
+  dipendenza nuova: il workflow di Deploy esegue già migrazioni e `catalog:sync` sulla stessa
+  produzione (ADR 0005).
+- Il limite di una sitemap è **50.000 URL**. In locale sono 1.946, quindi c'è spazio, ma quando il
+  Catalogo crescerà servirà `generateSitemaps` per spezzarla.
+- `technologies.spec.ts` sul toggle di unfollow e `current-version.spec.ts` sulla Versione in uso
+  hanno fallito una volta ciascuno e sono ripassati al retry: **intermittenze note**, non regressioni.
+
+### Due errori di processo, da non ripetere
+
+- **Heredoc non quotato in Bash**: `<<PY` invece di `<<'PY'` nel comando che scriveva il corpo della
+  PR, così bash ha eseguito i backtick del testo (ha lanciato `pnpm test`, `lint`, `typecheck` e
+  `build` da solo) e il corpo è uscito corrotto. Corretto con `gh pr edit --body-file`. Quando il
+  testo contiene backtick, l'heredoc va quotato e il path si scrive letterale invece di interpolarlo.
+- **Un'attesa della CI conclusa troppo presto**: il controllo guardava `gh pr checks`, e la CI non
+  era ancora registrata come check, quindi "nessun check pendente" è stato letto come "finito".
+  L'attesa va fatta su `gh run watch <id>` del run, non sull'elenco dei check.
+
+---
 
 ## Sessione del 2026-10-02 (4): il formato dei tag delle Anteprime (#36, PR #81)
 
@@ -1752,8 +1861,8 @@ in "Code da non perdere".
 
 1. La Dashboard è finita: #20 e #21 sono entrambe fatte. **Superato**: l'ordine di lavoro vero è in
    cima. (La #25 e la #36, che qui risultavano aperte, sono **fatte** il 2026-10-02.)
-2. Il filtro di `/technologies` fuori dall'URL: **portato in cima**, è ancora vero.
-3. **Web Analytics**: portato in cima, è ancora da attivare. I **cinque scostamenti dal mock** sono
+2. Il filtro di `/technologies` fuori dall'URL: diventato la **#72**, **fatta** il 2026-10-02.
+3. **Web Analytics**: **attivato** dall'utente il 2026-10-03. I **cinque scostamenti dal mock** sono
    invece **fatti**: la #23 li ha risolti tutti e cinque (PR #61, sessione del 2026-09-29 (3)).
    Per entrare in locale da Sviluppatore: `pnpm dev:login`, poi "Continue as local developer"
    sul `/login`.
