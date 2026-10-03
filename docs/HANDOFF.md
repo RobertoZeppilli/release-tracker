@@ -163,10 +163,21 @@ ricopiato qui. Punteggio di partenza: **26/40**, prima run per il bersaglio `src
 ### L'ampiezza della #47, decisa dall'utente
 
 Dentro la #47: i **due P0**, il **gruppo della #64** (P1-3, P1-4, P1-5) e i due difetti misurati
-(P2-9). Fuori, come issue nuove da aprire: **P1-6** (il Cammino di upgrade parte da un non-risultato),
-**P1-7** (markdown grezzo nella citazione), **P2-8** (nessun ritorno dalla citazione), il
-**raggruppamento del Catalogo** per genere, e il **trattino lungo nelle Sintesi pubblicate** (si
-corregge nel prompt, non nella UI). I corpi delle issue non sono ancora scritti.
+(P2-9).
+
+Fuori, **aperte il 2026-10-03** con i criteri di accettazione già scritti, tutte "Blocked by #47"
+tranne la #87, perché toccano gli stessi mock e lo stesso `DESIGN.md` che la #47 sta modificando:
+
+- **#83** il Cammino di upgrade parte da un non-risultato garantito (`ready-for-human`: il valore di
+  partenza è una scelta di prodotto).
+- **#84** markdown grezzo nel pozzo di citazione (**l'unica `ready-for-agent`**: meccanica e
+  testabile, nessuna decisione di design dentro).
+- **#85** dalla citazione non si torna al breaking change che l'ha chiamata (`ready-for-human`:
+  aggiunge un componente al sistema).
+- **#86** il Catalogo è 32 righe alfabetiche, raggrupparle per genere (`ready-for-human`: introduce
+  una proprietà di dominio, quindi va in `CONTEXT.md` o in un ADR **prima** del codice).
+- **#87** le Sintesi pubblicate contengono il trattino lungo (`ready-for-human`, **non** bloccata
+  dalla #47: la correzione è nel prompt e non nella UI, e rigenerare spende).
 
 La ragione della delimitazione: così la #47 è un'issue che si chiude, invece di diventare il
 contenitore che tiene bloccata la #26.
@@ -208,9 +219,26 @@ con glifo info muto e un paragrafo che dice dove stanno le note vere. Si attiva 
 Qui sì: nuovo stato nel selettore di `design/mocks/release.html` e voce sotto "Summary States" in
 `DESIGN.md`.
 
-**⚠️ Da decidere prima di toccarlo, e costa:** se la regola nuova valga anche per le Sintesi già
-generate. Cambiare il verdetto di una Sintesi esistente può voler dire **rigenerarla**, e il credito
-Anthropic è basso. Non prendere questa decisione da soli.
+**⚠️ La causa radice è nel prompt, trovata il 2026-10-03 e da non ricercare.**
+`src/modules/summaries/domain/summary-prompt.ts` (`PROMPT_VERSION = "v4"`) istruisce il modello così:
+
+> `"actionRequired": true exactly when "breakingChanges" is not empty.`
+> `Never infer a breaking change the notes do not mention […] If the notes mention none,`
+> `"breakingChanges" is empty and "actionRequired" is false.`
+
+Quella regola è giusta per quello che doveva impedire (inventare breaking changes), e **equipara due
+cose diverse**: "le note non dichiarano breaking changes" e "l'upgrade è sicuro". Il verdetto verde
+è la conseguenza fedele di un prompt che non ha una terza uscita.
+
+**Perciò il settimo stato si può derivare senza spendere, e questa è la strada da provare prima.**
+I dati per distinguere i due casi sono **già memorizzati**: una Sintesi `ready`, `breakingChanges`
+vuoto, e Note di rilascio che non descrivono cambiamenti (`vite` 8.0.0 ne ha una riga). Se lo stato
+si deriva alla resa, **nessuna Sintesi va rigenerata e il costo è zero**. Un cambio al prompt
+(`v5`, con un campo che dica se le note erano giudicabili) darebbe un risultato più pulito ma
+richiede di rigenerare, quindi è la seconda scelta, non la prima.
+
+**⚠️ Da decidere con l'utente, non da soli:** se accontentarsi dello stato derivato a costo zero o
+bumpare il prompt. Il credito Anthropic è basso.
 
 ### La #64 è decisa: strada 1, e il perché va tenuto
 
