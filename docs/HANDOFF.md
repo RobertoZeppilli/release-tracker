@@ -15,8 +15,9 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 **Da dove ripartire (2026-10-03, secondo giro).** La **#47 è iniziata**: la *critique* di tutta
 l'app è fatta, l'ampiezza dell'issue è delimitata e la #64 è decisa. **Non è stata scritta una riga
-di codice**, per scelta: la sessione era solo diagnosi. Si riparte dal **P0-1**, e la sessione sotto
-dice esattamente che cosa cambiare e dove.
+di codice**, per scelta: la sessione era solo diagnosi. Si riparte dal **P0-1**, con **un branch per
+il solo P0-1 e non uno per tutta la #47**: la sessione sotto dice che cosa cambiare, dove, e in quale
+ordine prendere i cinque interventi.
 
 **Non resta nessuna `ready-for-agent`.** Tutto quello che si poteva fare da soli è fatto: da qui in
 avanti ogni issue aperta è `ready-for-human`.
@@ -181,6 +182,35 @@ tranne la #87, perché toccano gli stessi mock e lo stesso `DESIGN.md` che la #4
 
 La ragione della delimitazione: così la #47 è un'issue che si chiude, invece di diventare il
 contenitore che tiene bloccata la #26.
+
+### ⚠️ Come riprendere: un branch per il P0-1, non uno per tutta la #47
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, partiamo dal P0-1 della #47
+```
+
+**Un branch e una PR per il solo P0-1**, non un branch per tutta la #47. La #47 ha dentro cinque
+interventi, e due aspettano una decisione dell'utente che non è stata presa (il settimo stato
+derivato oppure il prompt a `v5`; e, se si tocca il prompt, se rigenerare). Se finiscono tutti sullo
+stesso branch, **la #47 non si chiude per sessioni e tiene bloccata la #26**, che è l'ultima fetta
+del PRD. La PR del P0-1 non scrive `Closes #47`: la #47 si chiude solo con l'ultimo dei cinque.
+
+L'ordine consigliato, dal più autonomo al più legato a una decisione:
+
+1. **P0-1** (verdetti sulle righe della pagina Technology): nessuna decisione aperta, mock e
+   `DESIGN.md` sono già la specifica. È il pezzo con cui misurare se la dispersione cala davvero.
+2. **P2-9** (i due difetti misurati: `sign out` a 24px, la riga di sintesi dentro i 72ch): minuti,
+   e si possono infilare nella stessa PR del P0-1 se non la gonfiano.
+3. **Il gruppo della #64** (P1-3 i conteggi, P1-4 Spotlight, P1-5 la barra sul telefono): la
+   decisione c'è già, il lavoro è in tre file diversi, sta in una PR sua.
+4. **P0-2** (il settimo stato): **per ultimo**, perché è l'unico che richiede una risposta
+   dell'utente prima di scrivere codice, e perché è l'unico che può costare.
+
+Da fare comunque, prima di dire che la #47 è chiusa: `pnpm lint`, `pnpm typecheck`, `pnpm test`,
+`pnpm test:e2e`, e **il giro a mano nel browser** che l'handoff prevede da prima della revisione.
+Il criterio "nessuna regressione negli E2E né nei controlli di accessibilità della #23" è dell'issue.
 
 ### P0-1, da cui si riparte: le righe della pagina Technology sono vuote
 
