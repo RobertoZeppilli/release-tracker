@@ -9,11 +9,15 @@ beforeEach(() => {
 });
 
 describe("revalidateReleasePages", () => {
-  it("revalidates the Release page and its Technology page", () => {
+  it("revalidates the Release page, its Technology page and the sitemap", () => {
     const paths = revalidateReleasePages([{ slug: "react", version: "19.0.0" }]);
 
-    expect(revalidatePath.mock.calls).toEqual([["/technologies/react"], ["/technologies/react/19.0.0"]]);
-    expect(paths).toEqual(["/technologies/react", "/technologies/react/19.0.0"]);
+    expect(revalidatePath.mock.calls).toEqual([
+      ["/technologies/react"],
+      ["/technologies/react/19.0.0"],
+      ["/sitemap.xml"],
+    ]);
+    expect(paths).toEqual(["/technologies/react", "/technologies/react/19.0.0", "/sitemap.xml"]);
   });
 
   it("revalidates nothing when no Release changed", () => {

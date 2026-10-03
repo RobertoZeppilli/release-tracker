@@ -6,3 +6,4 @@ export {
   type StoredSource,
   type StoredTechnology,
 } from "./domain/plan-catalog-sync";
+export { technologyMeta, type TechnologyMeta } from "./domain/page-metadata";

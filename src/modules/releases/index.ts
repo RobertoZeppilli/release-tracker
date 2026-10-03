@@ -33,3 +33,5 @@ export {
   VERSION_PLACEHOLDERS,
 } from "./domain/version-template";
 export { noteLines, type ReleaseDetail, releasePath, versionFromPath } from "./domain/release-page";
+export { type SitemapPage, sitemapPages, type SitemapRelease, type SitemapTechnology } from "./domain/sitemap";
+export { releaseMeta, type ReleaseMeta } from "./domain/page-metadata";

@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 
 // Temporary token specimen for issue #2; the landing page (#26) replaces it.
+
+// Out of the index and out of the sitemap while the home page is this specimen: a thin page of
+// swatches is the worst possible first result for the site. The landing page (#26) takes both back.
+export const metadata: Metadata = { robots: { index: false } };
 
 const colors = [
   { name: "ground", swatch: "bg-ground" },

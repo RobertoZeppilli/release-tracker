@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { SiteHeader, TECHNOLOGIES_CRUMB } from "@/components/site-header";
+import { pageMetadata } from "@/lib/metadata";
 import { createPublicClient } from "@/lib/supabase";
 import { githubRepo, type StoredTechnology } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
 import { RetiredNote } from "@/modules/catalog/ui";
-import { noteLines, versionFromPath } from "@/modules/releases";
+import { noteLines, releaseMeta, releasePath, versionFromPath } from "@/modules/releases";
 import { getRelease } from "@/modules/releases/server";
 import { type ExternalSource, ReleaseHeader, ReleaseNotesSource, SummaryStatusBlock } from "@/modules/releases/ui";
 import { CitationProvider, SummaryView } from "@/modules/summaries/ui";
@@ -34,7 +35,11 @@ const loadPage = cache(async (slug: string, segment: string) => {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, version } = await params;
   const page = await loadPage(slug, version);
-  return page ? { title: `${page.technology.name} ${page.release.version} release` } : {};
+  if (!page) return {};
+  return pageMetadata({
+    ...releaseMeta(page.technology.name, page.release),
+    path: releasePath(page.technology.slug, page.release.version),
+  });
 }
 
 // Where to look when a Release has no notes: the commit history if the Technology is on GitHub.
