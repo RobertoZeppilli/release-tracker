@@ -13,15 +13,16 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-03).** La **#24** (SEO delle pagine pubbliche, PR #82) è chiusa e unita,
-dopo la **#72** (PR #79) e la **#36** (PR #81) del giorno prima.
+**Da dove ripartire (2026-10-03, secondo giro).** La **#47 è iniziata**: la *critique* di tutta
+l'app è fatta, l'ampiezza dell'issue è delimitata e la #64 è decisa. **Non è stata scritta una riga
+di codice**, per scelta: la sessione era solo diagnosi. Si riparte dal **P0-1**, e la sessione sotto
+dice esattamente che cosa cambiare e dove.
 
 **Non resta nessuna `ready-for-agent`.** Tutto quello che si poteva fare da soli è fatto: da qui in
 avanti ogni issue aperta è `ready-for-human`.
 
-**La prossima è la #47** (revisione del design di tutta l'app con `impeccable`), **con la #64
-dentro**, deciso con l'utente il 2026-10-03. I suoi "Blocked by" (#21, #23, #63, #68) sono tutti
-chiusi: non ha niente davanti.
+**La #47** (revisione del design di tutta l'app con `impeccable`) ha la **#64 dentro**, deciso con
+l'utente il 2026-10-03. I suoi "Blocked by" (#21, #23, #63, #68) sono tutti chiusi.
 
 **L'ordine è cambiato il 2026-10-03, e il motivo va tenuto.** L'ordine vecchio metteva la #24 per
 ultima, dopo la landing, così il SEO passava anche su quella. È stato rovesciato: la #24 è stata
@@ -149,6 +150,173 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-10-03 (2): la revisione del design, diagnosi (#47, nessuna PR)
+
+Sessione di sola **diagnosi**, deciso con l'utente all'inizio: `impeccable critique` su tutte e sette
+le schermate, nei due temi, a 1440px e 375px, e **nessuna modifica al codice**. Le correzioni sono
+lavoro della prossima sessione. Le decisioni prese qui sotto sono dell'utente e non vanno ridiscusse.
+
+Il rapporto intero sta in **`.impeccable/critique/2026-10-03T16-26-11Z__src-app.md`** e non va
+ricopiato qui. Punteggio di partenza: **26/40**, prima run per il bersaglio `src-app`.
+
+### L'ampiezza della #47, decisa dall'utente
+
+Dentro la #47: i **due P0**, il **gruppo della #64** (P1-3, P1-4, P1-5) e i due difetti misurati
+(P2-9). Fuori, come issue nuove da aprire: **P1-6** (il Cammino di upgrade parte da un non-risultato),
+**P1-7** (markdown grezzo nella citazione), **P2-8** (nessun ritorno dalla citazione), il
+**raggruppamento del Catalogo** per genere, e il **trattino lungo nelle Sintesi pubblicate** (si
+corregge nel prompt, non nella UI). I corpi delle issue non sono ancora scritti.
+
+La ragione della delimitazione: così la #47 è un'issue che si chiude, invece di diventare il
+contenitore che tiene bloccata la #26.
+
+### P0-1, da cui si riparte: le righe della pagina Technology sono vuote
+
+**Verificato alla riga di codice, non dedotto.** `src/modules/releases/ui/release-list.tsx:22` rende
+`<Row />` **senza** la prop `verdict`; `src/modules/releases/ui/upgrade-path-view.tsx:84` la passa.
+Quindi i verdetti di riga esistono già e si vedono **solo** dentro `?from=`. La Dashboard li mostra
+(`dashboard/ui/release-section.tsx:50`, `dashboard/ui/spotlight.tsx:21`).
+
+Il mock approvato `design/mocks/technology.html:310-317` e la voce **"Release Row"** di `DESIGN.md`
+specificano entrambi, per riga: il titolo della Summary, il verdetto
+(`warning: action required · 4 breaking changes`), l'elenco `breaking[n]:` e il puntatore
+`--> migrate to vite 6.0.0`.
+
+**Quindi mock e `DESIGN.md` non si toccano: sono loro la specifica, ed è il codice a non averla
+seguita.** Si registra che il buco c'era, non si motiva nessuno scostamento.
+
+Perché è il primo: è il massimo generatore della dispersione che la #47 deve ridurre. Il lettore
+apre N pagine Release per sapere quello che una pagina sola potrebbe dichiarare, cioè esattamente il
+comportamento che il prodotto esiste per sostituire, riprodotto dentro il prodotto. È anche la pagina
+su cui atterra il Visitor che arriva da una ricerca, che il principio 5 chiama la porta d'ingresso.
+
+### ⚠️ P0-2: un verdetto verde su una Release che la Sintesi ammette di non poter giudicare
+
+**Verificato in produzione.** `https://release-tracker-drab.vercel.app/technologies/vite/8.0.0` è una
+**major** le cui Note di rilascio sono una riga sola ("Please refer to CHANGELOG.md for details"), e
+mostra `ok: safe to upgrade` a 3.4rem sopra un suo stesso key point che dice *"No breaking changes
+are stated in these notes, so review the changelog yourself before upgrading"*.
+
+"Non ho trovato breaking changes" e "non ci sono breaking changes" sono affermazioni diverse, e il
+prodotto stampa la seconda quando intende la prima. Viola il **principio 3** di `PRODUCT.md` nel
+punto di massima fiducia.
+
+Direzione: un **settimo stato** nel vocabolario Summary States, `note: not enough notes to judge`,
+con glifo info muto e un paragrafo che dice dove stanno le note vere. Si attiva quando una Summary
+`ready` ha 0 breaking changes **e** le note non descrivono cambiamenti, e sempre per una major.
+Qui sì: nuovo stato nel selettore di `design/mocks/release.html` e voce sotto "Summary States" in
+`DESIGN.md`.
+
+**⚠️ Da decidere prima di toccarlo, e costa:** se la regola nuova valga anche per le Sintesi già
+generate. Cambiare il verdetto di una Sintesi esistente può voler dire **rigenerarla**, e il credito
+Anthropic è basso. Non prendere questa decisione da soli.
+
+### La #64 è decisa: strada 1, e il perché va tenuto
+
+**Scelta dell'utente il 2026-10-03: la riga resta dov'è, e la pagina smette di mentire su di lei.**
+
+Il difetto vero non era la riga ferma, era che la pagina dichiara **quattro conteggi e due mentono**.
+Verificato alla fonte: `src/modules/plans/ui/technology-picker.tsx` riceve `sections` dal server e
+non le ricalcola mai lato client, quindi `following (5)` e `catalog (32)` restano fermi mentre la riga
+di stato e la quota in testata salgono a `6 of 10`, e **dentro `catalog (32)` siede una riga il cui
+bottone dice `Following`**. È una contraddizione in parole, su un prodotto le cui parole sono lo
+strumento. Chi dice "sembra rotto" sta segnalando questo, non un'animazione mancante.
+
+I tre interventi:
+1. Aggiornare subito i conteggi di sezione a `following (6)` / `catalog (31)`, sullo stesso tick della
+   riga di stato.
+2. Dare alla riga rimasta ferma una propria riga di stato **senza inchiostro**, nella geometria che la
+   Row Error Line già occupa: glifo info + `note: following · moves to the following section on your
+   next visit`, Mono 14px `text-muted`, azzerata quando la riga viene ri-toggleata.
+3. Ripulire la live region: oggi la frase desktop, quella mobile e la quota stanno dentro una sola
+   regione `polite`, quindi ogni toggle **annuncia tre volte**.
+
+**Perché non la strada 2** (spostare subito): la ragione originale regge, ed è più forte su telefono
+che su desktop. A 375px una riga del picker è alta tre righe di testo, e spostarla fa scorrere quasi
+uno schermo di contenuto sotto il pollice a metà tocco; il modo in cui fallisce è un tocco sbagliato
+su un'altra Technology, che costa uno slot su dieci.
+
+**Perché non la strada 3** (spostare tenendo il segno): comprerebbe correttezza al prezzo dell'unica
+cosa che il sistema raziona deliberatamente. Servirebbero ancoraggio dello scroll, ripristino del
+focus dopo lo spostamento nel DOM e un movimento che l'occhio possa seguire, cioè **un secondo
+momento di moto**, quando `DESIGN.md` ne dichiara esattamente uno e lo mette fra i "Do".
+
+**La cosa importante da non perdere: la strada 1 non rovescia la scelta approvata, la completa.** Il
+mock resta valido nella sostanza e **non c'è nessun capovolgimento da registrare**, che era il
+criterio più scomodo della #64. Se dopo i conteggi onesti la lamentela sopravvive, il passo seguente è
+la **strada 3, non la 2**.
+
+Costo: un nuovo stato di riga (riusa la geometria della Row Error Line), due legature di conteggio,
+una pulizia di live region. `DESIGN.md`: "Row Error Line" diventa **"Row Status Line"** con due
+varianti, `note` ed `error`, più una frase sotto "Picker Sections (Technologies)" che dica che i
+conteggi si aggiornano subito mentre le righe non si spostano. Mock: `technologies.html` guadagna lo
+stato nuovo nel selettore.
+
+### Il resto di quello che sta dentro la #47
+
+- **P1-4, Spotlight.** Cinque righe `latest major · none featured in 30 days`, ognuna col diamante
+  **featured pieno** accanto a una versione che la riga stessa dichiara non featured; il conteggio
+  sopra dice `0 featured`, il titolo dice `spotlight (5)` e **conta Technologies** mentre ogni altra
+  sezione conta Releases. Tre contraddizioni in 200px, nell'istante in cui il lettore stava per
+  andarsene soddisfatto dal verdetto. Fix: riga muta quando la sezione non ha righe vere, glifo
+  featured via dalle righe compatte, `spotlight (N)` che conta Releases. Tocca `dashboard.html` e le
+  voci "Stack Status Row" e "Section Title with Legend".
+- **P1-5, la barra a tre righe sul telefono.** Misurata **153px a 375 e 390, 97px da 429 in su**:
+  la barra a due righe che `DESIGN.md` specifica (56 + 40 = 96) esiste solo sui telefoni più larghi,
+  e iPhone SE, iPhone 14 e Pixel spendono il 24% dell'altezza in cromatura. Fix: sotto i 429px la
+  quota va nella striscia da 40px accanto a `dashboard technologies`, dove è già abbreviata a
+  `N followed`. La regola No Dead End resta intatta. Tocca i paragrafi "Responsive".
+- **P2-9, i due difetti misurati.** `sign out` è **64 × 20.8 px**: fallisce WCAG 2.2 AA 2.5.8 per
+  3.2px di altezza, su ogni pagina autenticata, e come submit in una barra non ha l'esenzione dei
+  link in linea. E la riga di sintesi della Dashboard corre **142 caratteri su 992px**, contro la
+  regola dei 72ch che `DESIGN.md:293` si è data da sola.
+
+### Che cosa la revisione ha trovato sano, e non va rimesso in discussione
+
+Serve per non riaprire da zero cose già verificate:
+
+- **Contrasto: 42 coppie misurate nei due temi, nessuna sotto 4.5:1.** L'impegno WCAG di `CLAUDE.md`
+  è guadagnato, non asserito. ⚠️ Due margini stretti da ricordare: `text-faint` su `raised` in scuro
+  **4.61:1**, `ok` su `sunken` in chiaro **4.63:1**. Si rompono al primo schiarimento di `raised`.
+- Zero overflow orizzontale e zero testo tagliato a 375px su tutte le pagine raggiungibili; skip link
+  presente e primo nell'ordine di tab; **nessun `outline: none` in tutto `src/`**; nessuna pagina
+  salta un livello di intestazione.
+- Il sorgente spedito è di fatto pulito per il detector: **un solo rilievo, ed è un falso positivo**
+  (il raggio 3px è l'anello di focus, scritto in `DESIGN.md:328`).
+- Il punteggio **4 su "estetica e minimalismo"** è meritato: su sette schermate e due temi non c'è una
+  card, un badge, un'ombra, un gradiente o una tinta di marca, e ogni severità è accoppiata a glifo e
+  parola.
+- Le tre pagine che la #47 chiamava "mai disegnate" **sono disegnate**: 404 ed errore passano da
+  `DiagnosticPage` dentro il sistema, e il login **dichiara già lo scope** ("Asks GitHub only for your
+  public profile and email address. No access to any repository."). Il quarto criterio di accettazione
+  della #47 è soddisfatto nella sostanza: resta da giudicarlo, non da scriverlo.
+
+### Falsi positivi del detector, da non inseguire
+
+Il raggio 3px dell'anello di focus (documentato), la "gerarchia di tipo piatta" (è il registro
+impegnato, e sulla Dashboard confronta un `h1` che è `sr-only`, quindi misura qualcosa che nessuno
+vede), i pozzi di citazione a filo (l'allineamento carattere per carattere dei caret lo **richiede**),
+e quattro rilievi che erano **l'estensione del browser e la barra del detector stesso**
+(`dark-glow #ffba00`, `text-occlusion`, due bottoni `◉` e `×`).
+
+### Attenzione per chi riprende
+
+- ⚠️ **Lo stato `ready` della Release non si vede in locale**: tutte le Summary locali sono `pending`.
+  La schermata firma si guarda **in produzione**, che è pubblica e **non costa niente** da leggere, o
+  nei mock, che hanno il selettore di stato. Vale anche per le misure: a 375px il comportamento dei
+  caret non è mai stato esercitato, ed è lì che un overflow sarebbe più probabile.
+- ⚠️ **`/login` reindirizza quando si è autenticati**, quindi non si ispeziona nella stessa sessione
+  di browser in cui si è fatto il login locale. La sua passata di detector e il suo layout a 375px
+  **non sono misurati**.
+- `pnpm dev:login` ricrea la password di `dev@local.test`; poi si entra da `/login` col bottone
+  "Continue as local developer". L'account locale è a **5 su 10** follow: due sono stati provati e
+  rimessi a posto.
+- Il tool Bash **non regge gli apici dentro una variabile d'ambiente JSON** su una riga di comando
+  lunga: la scrittura dello snapshot è fallita al primo tentativo per quello. Si scrive il corpo con
+  un file e si passa la variabile con `export` su un comando a parte.
+- Due difetti noti e **non nostri** da non attribuire al lavoro in corso: `1 previews` (plurale non
+  concordato) e l'URL del filtro che accumula parametri estranei (`?q=...&filter=...`).
 
 ## Sessione del 2026-10-03: il SEO delle pagine pubbliche (#24, PR #82)
 
