@@ -9,13 +9,8 @@ const SUMMARY = {
 };
 
 let technology: FixtureTechnology;
-let retired: FixtureTechnology;
 
 test.beforeAll(async () => {
-  retired = await seedTechnology(
-    [{ version: "3.0.0", significance: "featured", origin: "imported", status: "skipped", notes: null }],
-    { retired: true },
-  );
   technology = await seedTechnology([
     { version: "1.0.0", significance: "notable", origin: "imported", status: "unavailable", notes: null },
     { version: "1.1.0", significance: "notable", origin: "detected", status: "pending", notes: "Adds a flag." },
@@ -25,7 +20,6 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await technology.remove();
-  await retired.remove();
 });
 
 const description = (page: Page) =>
@@ -78,14 +72,17 @@ test("robots keeps the pages behind the login out and names the sitemap", async 
   expect(body).toContain("Sitemap: http://localhost:3000/sitemap.xml");
 });
 
-test("the sitemap lists the Technology and each of its Releases", async ({ request }) => {
-  // Read after the fixture is seeded: the sitemap is regenerated at most once an hour.
-  const body = await (await request.get("/sitemap.xml")).text();
+// The sitemap route is prerendered, in CI against the production build, so it was written before
+// these fixtures existed and cannot name them. What belongs here is that the route serves the
+// Catalog as absolute addresses; that it is built from the Releases, retired Technologies included,
+// is covered by `tests/integration/sitemap.test.ts` on `listSitemapPages`.
+test("the sitemap serves the Catalog as absolute addresses", async ({ request }) => {
+  const response = await request.get("/sitemap.xml");
+  const body = await response.text();
 
-  expect(body).toContain(`<loc>http://localhost:3000/technologies/${technology.slug}</loc>`);
-  for (const version of ["1.0.0", "1.1.0", "2.0.0"]) {
-    expect(body).toContain(`<loc>http://localhost:3000/technologies/${technology.slug}/${version}</loc>`);
-  }
+  expect(response.status()).toBe(200);
+  expect(body).toContain("<loc>http://localhost:3000/technologies/vite</loc>");
+  expect(body).toMatch(/<loc>http:\/\/localhost:3000\/technologies\/vite\/\d+\.\d+\.\d+<\/loc>/);
 });
 
 test("the home page stays out of the index and the sitemap until the landing page exists", async ({ page, request }) => {
@@ -94,13 +91,6 @@ test("the home page stays out of the index and the sitemap until the landing pag
 
   const body = await (await request.get("/sitemap.xml")).text();
   expect(body).not.toContain("<loc>http://localhost:3000</loc>");
-});
-
-test("the sitemap keeps a retired Technology, whose pages stay reachable", async ({ request }) => {
-  const body = await (await request.get("/sitemap.xml")).text();
-
-  expect(body).toContain(`<loc>http://localhost:3000/technologies/${retired.slug}</loc>`);
-  expect(body).toContain(`<loc>http://localhost:3000/technologies/${retired.slug}/3.0.0</loc>`);
 });
 
 test("a Technology page says what the Catalog says and what the page holds", async ({ page }) => {
