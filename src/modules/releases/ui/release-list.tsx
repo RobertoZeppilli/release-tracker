@@ -1,4 +1,6 @@
-import type { GroupedReleases, ListedRelease } from "../domain/group-by-major";
+import type { GroupedReleases } from "../domain/group-by-major";
+import type { SummarizedRelease } from "../domain/upgrade-path";
+import { ReleaseRowContent } from "./release-row-content";
 import { Group, plural, ReleaseRow, Row, rowKey } from "./release-rows";
 
 // Upcoming Previews are hidden for a retired Technology: none will follow.
@@ -8,7 +10,7 @@ export function ReleaseList({
   retired,
 }: {
   slug: string;
-  grouped: GroupedReleases<ListedRelease>;
+  grouped: GroupedReleases<SummarizedRelease>;
   retired: boolean;
 }) {
   if (grouped.majors.length === 0 && grouped.previews.length === 0) {
@@ -19,14 +21,16 @@ export function ReleaseList({
       {grouped.majors.map((group) => (
         <Group key={group.major} id={`v${group.major}`} title={`v${group.major}`} detail={plural(group.count, "release")}>
           {group.rows.map((row) => (
-            <Row key={rowKey(row)} slug={slug} row={row} />
+            <Row key={rowKey(row)} slug={slug} row={row} verdict={(release) => <ReleaseRowContent slug={slug} release={release} />} />
           ))}
         </Group>
       ))}
       {!retired && grouped.previews.length > 0 && (
         <Group id="previews" title="previews" detail={grouped.latest ? `ahead of ${grouped.latest}` : "upcoming"}>
           {grouped.previews.map((release) => (
-            <ReleaseRow key={release.version} slug={slug} release={release} />
+            <ReleaseRow key={release.version} slug={slug} release={release}>
+              <ReleaseRowContent slug={slug} release={release} />
+            </ReleaseRow>
           ))}
         </Group>
       )}

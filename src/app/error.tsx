@@ -1,7 +1,8 @@
 "use client";
 
 import { CircleX } from "lucide-react";
-import { DiagnosticPage, HelpPointer } from "@/components/diagnostic-page";
+import { DiagnosticPage } from "@/components/diagnostic-page";
+import { HelpPointer } from "@/components/help-pointer";
 
 const BUTTON =
   "inline-flex h-[34px] cursor-pointer items-center rounded-md border border-rule-strong bg-transparent px-3 font-sans text-[14px] font-medium text-text hover:border-text-faint hover:bg-raised";
