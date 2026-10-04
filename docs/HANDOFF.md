@@ -13,14 +13,23 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-03, secondo giro).** La **#47 è iniziata**: la *critique* di tutta
-l'app è fatta, l'ampiezza dell'issue è delimitata e la #64 è decisa. **Non è stata scritta una riga
-di codice**, per scelta: la sessione era solo diagnosi. Si riparte dal **P0-1**, con **un branch per
-il solo P0-1 e non uno per tutta la #47**: la sessione sotto dice che cosa cambiare, dove, e in quale
-ordine prendere i cinque interventi.
+**Da dove ripartire (2026-10-04).** Il **P0-1 della #47 è fatto**, con la **PR #89**, aperta e non
+unita. Si riparte dal **P2-9**, il secondo dei cinque interventi: sono minuti, e la sessione del
+2026-10-04 qui sotto dice che cosa resta e in quale ordine. **La #47 resta aperta**: la PR #89 non
+scrive `Closes`, perché l'issue si chiude solo con l'ultimo dei cinque.
 
-**Non resta nessuna `ready-for-agent`.** Tutto quello che si poteva fare da soli è fatto: da qui in
-avanti ogni issue aperta è `ready-for-human`.
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, partiamo dal P2-9 della #47
+```
+
+Il metodo di lavoro è rimasto quello deciso il 2026-10-03 e ha funzionato: **un branch e una PR per
+ogni intervento**, non uno per tutta la #47.
+
+**C'è di nuovo lavoro autonomo: la #88**, `ready-for-agent`, aperta dall'utente il 2026-10-04 e **non
+bloccata da niente** (una Sintesi `ready` senza provenienza non viene rifiutata dal database). È
+l'unica issue prendibile da soli fuori dalla #47, insieme alla #84 che però è bloccata dalla #47.
 
 **La #47** (revisione del design di tutta l'app con `impeccable`) ha la **#64 dentro**, deciso con
 l'utente il 2026-10-03. I suoi "Blocked by" (#21, #23, #63, #68) sono tutti chiusi.
@@ -138,8 +147,11 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
   e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75), la **#25** (PR #77), la **#72**
   (PR #79) e la **#36** (PR #81) il 2026-10-02; la **#24** (PR #82) il 2026-10-03.
-  Sbloccata, con la #63, la **#47**, che ora non ha più niente davanti.
+  Sbloccata, con la #63, la **#47**, che ora non ha più niente davanti. Della #47 è fatto il
+  **P0-1**, con la **PR #89** del 2026-10-04, aperta e non unita.
   Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
+  Aperta dall'utente il 2026-10-04: **#88** (una Sintesi `ready` senza provenienza non viene
+  rifiutata dal database), `ready-for-agent` e libera da blocchi.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
   Aperte in quel giro: **#54** (Note oltre gli 80.000 caratteri) e **#55** (i test di integrazione
   delle Sintesi prendono anche le Sintesi che non sono loro). Aperte il 2026-09-29: **#56** (titolo della
@@ -151,6 +163,70 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   rivista nella #11, in `docs/DECISIONI.md` e ADR 0007).
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
+
+## Sessione del 2026-10-04: il P0-1 della #47, le righe della pagina Technology (PR #89)
+
+Branch `47-p0-1-release-row-content`, **PR #89 aperta e non unita**, con un riferimento alla #47 e
+**senza** `Closes`. La #47 resta aperta.
+
+### Che cosa è stato fatto, e la cosa da ricordare
+
+**Il difetto non era la prop mancante che la diagnosi aveva individuato: era il dato mancante.**
+`release-list.tsx:22` rendeva davvero `<Row />` senza `verdict`, ma passargliela non sarebbe bastato.
+`listReleases` validava della Sintesi memorizzata il **solo** `actionRequired`
+(`SummaryVerdictSchema`), quindi titolo e breaking change non arrivavano mai alla lista, **pur
+viaggiando già dentro la stessa query** (`select ... summaries (status, content)`). Ora valida
+l'intero `SummaryContentSchema` e `SummarizedRelease` porta il contenuto. **Nessuna query in più.**
+
+- `src/modules/releases/ui/release-row-content.tsx`, nuovo: titolo della Sintesi, verdetto, elenco
+  `breaking[n]:`, puntatore `--> migrate to vite 6.0.0`. Il puntatore usa lo **slug**, non il nome,
+  come fa il mock.
+- Il verdetto dichiara il conteggio: `warning: action required · 4 breaking changes`.
+- **La lista piana e il Cammino di upgrade rendono lo stesso componente.** Prima il verdetto si
+  vedeva solo dentro `?from=`, e diceva meno di quanto il mock chieda.
+- **`HelpPointer` è uscito da `diagnostic-page.tsx`** in `src/components/help-pointer.tsx`. Non è
+  riordino, e il motivo serve se ricapita: importarlo da `diagnostic-page` trascinava il
+  `SiteHeader`, e Supabase dietro di lui, dentro il grafo dei moduli della lista, e faceva fallire
+  `dashboard-copy.test.ts`, che non c'entra niente, con un errore sulle variabili d'ambiente.
+- **Mock e `DESIGN.md` non toccati**, come l'ampiezza della #47 prevedeva: erano loro la specifica.
+
+### ⚠️ Due cose dell'ambiente, da non ricercare da zero
+
+**`pnpm dev` non funziona su questa macchina.** Turbopack non riesce a creare i processi dei suoi
+loader e muore con `0xc0000142` (STATUS_DLL_INIT_FAILED) **su ogni file**, compresi quelli non
+toccati; il server residuo sulla 3000 rispondeva 500 anche sulla home prima di qualunque modifica.
+Non è un errore del codice. Il giro di lavoro che funziona è **`pnpm build` + `pnpm start`**, che non
+usano quei worker, e Playwright se lo riprende da solo (`reuseExistingServer` in locale). Un riavvio
+della macchina di solito scioglie questi casi.
+
+**Il database locale non ha nemmeno una Sintesi `ready`**: 1691 `skipped`, 130 `pending`, 85
+`unavailable`. Quindi niente verdetto vero, niente titolo, niente breaking change si vede in locale
+con i dati del Catalogo. È la #65 che si fa sentire. Il modo per guardare davvero una riga: seminare
+una Tecnologia a mano in SQL con due Sintesi `ready`, guardarla, e cancellarla. È stato fatto così.
+
+### Gli E2E e come sono stati attribuiti
+
+Aggiunto un test in `tests/e2e/technology.spec.ts` sulla lista piana, con una Tecnologia di fixture.
+Verde, insieme a `upgrade-path.spec.ts`.
+
+Sulla suite intera restano **1 o 2 test del follow** che falliscono, **cambiando da una run
+all'altra** e passando isolati. **Non sono di questa PR, ed è stato provato, non supposto**: con le
+modifiche messe da parte (`git stash`), `main` ricostruito e la stessa suite sullo stesso server,
+fallisce **lo stesso** test, `technologies.spec.ts:86`, con
+`follows_technology_id_fkey ... is still referenced`. È fragilità preesistente nella pulizia delle
+fixture. **Il metodo vale la pena di riusarlo**: prima di accusare le proprie modifiche, rieseguire
+su `main` con lo stesso server.
+
+`pnpm lint`, `pnpm typecheck` e `pnpm build` puliti. `pnpm test`: **461 su 461**, contro i 447 di
+prima, perché `dashboard-copy.test.ts` non si caricava nemmeno.
+
+### Il controllo a mano
+
+A 1440px la riga dice tutto quello che il mock chiede, e la dispersione cala per davvero: la pagina
+dichiara in una schermata quello per cui prima si aprivano N pagine. A 375px l'etichetta
+`breaking[n]:` passa **sopra** il suo testo invece di starci accanto: segue la pagina Release, che lì
+fa già così, mentre il mock non dice niente per quella larghezza. Se nel giro a mano finale sembrerà
+troppo alta, è lì che si guarda.
 
 ## Sessione del 2026-10-03 (2): la revisione del design, diagnosi (#47, nessuna PR)
 
@@ -171,8 +247,8 @@ tranne la #87, perché toccano gli stessi mock e lo stesso `DESIGN.md` che la #4
 
 - **#83** il Cammino di upgrade parte da un non-risultato garantito (`ready-for-human`: il valore di
   partenza è una scelta di prodotto).
-- **#84** markdown grezzo nel pozzo di citazione (**l'unica `ready-for-agent`**: meccanica e
-  testabile, nessuna decisione di design dentro).
+- **#84** markdown grezzo nel pozzo di citazione (**l'unica `ready-for-agent` fra queste cinque**:
+  meccanica e testabile, nessuna decisione di design dentro; resta bloccata dalla #47).
 - **#85** dalla citazione non si torna al breaking change che l'ha chiamata (`ready-for-human`:
   aggiunge un componente al sistema).
 - **#86** il Catalogo è 32 righe alfabetiche, raggrupparle per genere (`ready-for-human`: introduce
@@ -183,26 +259,21 @@ tranne la #87, perché toccano gli stessi mock e lo stesso `DESIGN.md` che la #4
 La ragione della delimitazione: così la #47 è un'issue che si chiude, invece di diventare il
 contenitore che tiene bloccata la #26.
 
-### ⚠️ Come riprendere: un branch per il P0-1, non uno per tutta la #47
+### ⚠️ Un branch per ogni intervento, non uno per tutta la #47
 
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md, partiamo dal P0-1 della #47
-```
-
-**Un branch e una PR per il solo P0-1**, non un branch per tutta la #47. La #47 ha dentro cinque
+**Regola confermata dal 2026-10-04, quando il P0-1 l'ha seguita.** La #47 ha dentro cinque
 interventi, e due aspettano una decisione dell'utente che non è stata presa (il settimo stato
 derivato oppure il prompt a `v5`; e, se si tocca il prompt, se rigenerare). Se finiscono tutti sullo
 stesso branch, **la #47 non si chiude per sessioni e tiene bloccata la #26**, che è l'ultima fetta
-del PRD. La PR del P0-1 non scrive `Closes #47`: la #47 si chiude solo con l'ultimo dei cinque.
+del PRD. Nessuna delle PR intermedie scrive `Closes #47`: la #47 si chiude solo con l'ultima dei
+cinque.
 
-L'ordine consigliato, dal più autonomo al più legato a una decisione:
+L'ordine consigliato, dal più autonomo al più legato a una decisione (**il P0-1 è fatto**, PR #89):
 
-1. **P0-1** (verdetti sulle righe della pagina Technology): nessuna decisione aperta, mock e
-   `DESIGN.md` sono già la specifica. È il pezzo con cui misurare se la dispersione cala davvero.
-2. **P2-9** (i due difetti misurati: `sign out` a 24px, la riga di sintesi dentro i 72ch): minuti,
-   e si possono infilare nella stessa PR del P0-1 se non la gonfiano.
+1. ~~**P0-1** (verdetti sulle righe della pagina Technology)~~: **fatto il 2026-10-04**, PR #89.
+2. **P2-9** (i due difetti misurati: `sign out` a 24px, la riga di sintesi dentro i 72ch): minuti.
+   Da qui si riparte. L'idea di infilarlo nella PR del P0-1 è decaduta: quella PR era già abbastanza
+   larga e il P2-9 tocca altre pagine.
 3. **Il gruppo della #64** (P1-3 i conteggi, P1-4 Spotlight, P1-5 la barra sul telefono): la
    decisione c'è già, il lavoro è in tre file diversi, sta in una PR sua.
 4. **P0-2** (il settimo stato): **per ultimo**, perché è l'unico che richiede una risposta
