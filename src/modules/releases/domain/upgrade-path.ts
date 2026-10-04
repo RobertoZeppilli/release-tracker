@@ -1,3 +1,4 @@
+import type { SummaryContent } from "@/modules/summaries";
 import { foldDigests, type ListedRelease, type MajorRow } from "./group-by-major";
 import type { SummaryStatus } from "./initial-summary-status";
 import { compareVersions, parseVersion, sortByVersion, splitByMajor } from "./version";
@@ -5,8 +6,9 @@ import { compareVersions, parseVersion, sortByVersion, splitByMajor } from "./ve
 // `actionRequired` is null while the Release has no ready Summary.
 export type PathRelease = ListedRelease & { actionRequired: boolean | null };
 
-// What the Technology page reads: the path needs the verdict, its rows show the status.
-export type SummarizedRelease = PathRelease & { summaryStatus: SummaryStatus | null };
+// What the Technology page reads: the path needs the verdict, and each row says what the Summary
+// says, so `summary` carries the whole content of a ready one and is null while there is none.
+export type SummarizedRelease = PathRelease & { summaryStatus: SummaryStatus | null; summary: SummaryContent | null };
 
 export type PathCounts = {
   total: number;

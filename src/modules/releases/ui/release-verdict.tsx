@@ -1,13 +1,19 @@
 import type { SummarizedRelease } from "../domain/upgrade-path";
+import { plural } from "./release-rows";
 import { SeverityLabel } from "./severity-label";
 
-// One line per featured or notable Release in the Upgrade Path: its verdict, or why there is none yet.
+// One line per featured or notable Release row: its verdict, or why there is none yet.
 export function ReleaseVerdict({ release }: { release: SummarizedRelease }) {
   return <p className="mt-[2px] font-mono text-label">{content(release)}</p>;
 }
 
-function content({ actionRequired, summaryStatus }: SummarizedRelease) {
-  if (actionRequired === true) return <SeverityLabel tone="action" label="warning: action required" />;
+function content({ actionRequired, summaryStatus, summary }: SummarizedRelease) {
+  // DESIGN.md, Release Row: an action row says how many breaking changes it carries, so the count
+  // is read on the row instead of on the Release page.
+  if (actionRequired === true) {
+    const count = summary ? ` · ${plural(summary.breakingChanges.length, "breaking change")}` : "";
+    return <SeverityLabel tone="action" label={`warning: action required${count}`} />;
+  }
   if (actionRequired === false) return <SeverityLabel tone="ok" label="ok: safe to upgrade" />;
   switch (summaryStatus) {
     case "pending":

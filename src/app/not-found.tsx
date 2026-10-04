@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
-import { DiagnosticPage, HelpPointer } from "@/components/diagnostic-page";
+import { DiagnosticPage } from "@/components/diagnostic-page";
+import { HelpPointer } from "@/components/help-pointer";
 
 // Reached two ways: `notFound()` from a Technology or Release page whose slug or Version is
 // unknown, and any URL that matches no route at all. Both are the absence of a thing rather than a

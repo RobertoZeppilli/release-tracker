@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { type FixtureTechnology, seedTechnology } from "./fixtures";
 
 // Needs the Catalog synced and imported into the local database (`pnpm catalog:sync`), from real Sources.
 test("a Technology page is public and shows its header", async ({ page }) => {
@@ -47,4 +48,45 @@ test("under 640px the Follow sits below the header facts, not beside the Sources
   if (!facts || !button) return;
   expect(button.y, "the Follow starts below the Sources").toBeGreaterThanOrEqual(facts.y + facts.height);
   expect(button.x, "the Follow starts at the left edge of the column").toBeLessThan(facts.x + 4);
+});
+
+// DESIGN.md, Release Row: the plain list declares what each Release means, so the reader does not
+// open N Release pages to find out. The local database has no ready Summary, hence the fixture.
+test.describe("the Release rows of the plain list", () => {
+  let technology: FixtureTechnology;
+
+  test.beforeAll(async () => {
+    technology = await seedTechnology([
+      { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Safe.", actionRequired: false },
+      { version: "2.0.0", significance: "featured", origin: "detected", status: "ready", notes: "Breaking.", actionRequired: true },
+      { version: "2.0.1", significance: "digest", origin: "detected", status: "skipped", notes: "A fix." },
+    ]);
+  });
+
+  test.afterAll(async () => {
+    await technology.remove();
+  });
+
+  test("declare the verdict, what breaks and where to migrate, with no `from` given", async ({ page }) => {
+    await page.goto(`/technologies/${technology.slug}`);
+
+    const v2 = page.getByRole("region", { name: "v2 2 releases" });
+    await expect(v2).toContainText("Fixture 2.0.0 release.");
+    await expect(v2).toContainText("warning: action required · 1 breaking change");
+    const breaking = v2.getByRole("list", { name: "Breaking changes in 2.0.0" });
+    await expect(breaking.getByRole("listitem")).toHaveCount(1);
+    await expect(breaking).toContainText("breaking[1]:");
+    await expect(breaking).toContainText("The default export is gone");
+    await expect(v2.getByRole("link", { name: `migrate to ${technology.slug} 2.0.0` })).toHaveAttribute(
+      "href",
+      `/technologies/${technology.slug}/2.0.0`,
+    );
+
+    // A safe Release says so and lists nothing: there is nothing to migrate.
+    const v1 = page.getByRole("region", { name: "v1 1 release" });
+    await expect(v1).toContainText("Fixture 1.0.0 release.");
+    await expect(v1).toContainText("ok: safe to upgrade");
+    await expect(v1.getByRole("list", { name: /^Breaking changes/ })).toHaveCount(0);
+    await expect(v1.getByRole("link", { name: /^migrate to/ })).toHaveCount(0);
+  });
 });

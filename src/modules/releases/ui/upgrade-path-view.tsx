@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { computeUpgradePath, type SummarizedRelease, type UpgradePath } from "../domain/upgrade-path";
 import { Group, plural, ReleaseRow, Row, rowKey } from "./release-rows";
-import { ReleaseVerdict } from "./release-verdict";
+import { ReleaseRowContent } from "./release-row-content";
 import { type FormMessage, UpgradeForm } from "./upgrade-form";
 import { declaredStartNote, invalidMessage } from "./upgrade-path-copy";
 import { type UpgradeStart, useUpgradeStart } from "./upgrade-start";
@@ -81,7 +81,7 @@ export function UpgradePathView({ slug, name, latest, retired, releases, childre
               detail={`${plural(group.counts.total, "release")}${path.from.startsWith(`${group.major}.`) ? ` after ${path.from}` : ""}`}
             >
               {group.rows.map((row) => (
-                <Row key={rowKey(row)} slug={slug} row={row} verdict={(release) => <ReleaseVerdict release={release} />} />
+                <Row key={rowKey(row)} slug={slug} row={row} verdict={(release) => <ReleaseRowContent slug={slug} release={release} />} />
               ))}
             </Group>
           ))}
@@ -89,7 +89,7 @@ export function UpgradePathView({ slug, name, latest, retired, releases, childre
             <Group id="previews" title="previews" detail={`ahead of ${path.to}`}>
               {path.previews.map((release) => (
                 <ReleaseRow key={release.version} slug={slug} release={release}>
-                  <ReleaseVerdict release={release} />
+                  <ReleaseRowContent slug={slug} release={release} />
                 </ReleaseRow>
               ))}
             </Group>

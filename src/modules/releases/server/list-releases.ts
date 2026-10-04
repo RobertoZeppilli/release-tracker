@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { selectAllRows } from "@/lib/supabase-rows";
-import { SummaryVerdictSchema } from "@/modules/summaries";
+import { type SummaryContent, SummaryContentSchema } from "@/modules/summaries";
 import { SummaryStatusSchema } from "../domain/initial-summary-status";
 import { SignificanceSchema } from "../domain/significance";
 import type { SummarizedRelease } from "../domain/upgrade-path";
@@ -32,13 +32,17 @@ export async function listReleases(db: SupabaseClient, technologyId: string): Pr
       significance: row.significance_override ?? row.significance,
       publishedAt: new Date(row.published_at),
       summaryStatus: row.summaries?.status ?? null,
-      actionRequired: readVerdict(row.summaries),
+      ...readSummary(row.summaries),
     }));
 }
 
 // Content that does not match the schema counts as no Summary: never as safe to upgrade.
-function readVerdict(summary: { status: string; content: unknown } | null): boolean | null {
-  if (summary?.status !== "ready") return null;
-  const verdict = SummaryVerdictSchema.safeParse(summary.content);
-  return verdict.success ? verdict.data.actionRequired : null;
+function readSummary(stored: { status: string; content: unknown } | null): {
+  actionRequired: boolean | null;
+  summary: SummaryContent | null;
+} {
+  if (stored?.status !== "ready") return { actionRequired: null, summary: null };
+  const parsed = SummaryContentSchema.safeParse(stored.content);
+  if (!parsed.success) return { actionRequired: null, summary: null };
+  return { actionRequired: parsed.data.actionRequired, summary: parsed.data };
 }
