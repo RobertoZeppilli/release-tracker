@@ -27,13 +27,18 @@ function summary(options: Partial<SummaryContent> = {}): SummaryContent {
 }
 
 function release(options: Partial<DashboardRelease> & { slug: string; version: string }): DashboardRelease {
-  return {
+  const row: DashboardRelease = {
     significance: "featured",
     publishedAt: new Date("2024-12-05T00:00:00Z"),
     summaryStatus: "ready",
     summary: summary(),
+    actionRequired: false,
+    unjudged: false,
     ...options,
   };
+  // A test that states a verdict keeps it, including `null`: the derivation is only the default.
+  const stated = "actionRequired" in options;
+  return { ...row, actionRequired: stated ? row.actionRequired : row.summary ? row.summary.actionRequired : null };
 }
 
 describe("buildDashboard", () => {
@@ -257,7 +262,7 @@ describe("the Version in use", () => {
       version: "18.0.0",
       declaredAt: DECLARED,
       to: "19.0.0",
-      counts: { total: 3, featured: 1, notable: 1, digest: 1, actionRequired: 1, safe: 0, missing: 1 },
+      counts: { total: 3, featured: 1, notable: 1, digest: 1, actionRequired: 1, safe: 0, missing: 1, unjudged: 0 },
     });
   });
 

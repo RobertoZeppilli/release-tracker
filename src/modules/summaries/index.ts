@@ -19,6 +19,7 @@ export {
   type SummaryContent,
   SummaryContentSchema,
 } from "./domain/summary-content";
+export { NOTES_HEAD_LENGTH, type NotesHead, notesHead, notesJudgeable, storedNotesHead } from "./domain/notes-judgement";
 export { type ParsedOutput, parseSummaryOutput } from "./domain/summary-output";
 export {
   MAX_NOTES_LENGTH,
@@ -28,4 +29,4 @@ export {
   SUMMARY_MODEL,
   type SummaryInput,
 } from "./domain/summary-prompt";
-export { SummaryVerdictSchema } from "./domain/summary-verdict";
+export { type Judged, judge, SummaryVerdictSchema } from "./domain/summary-verdict";

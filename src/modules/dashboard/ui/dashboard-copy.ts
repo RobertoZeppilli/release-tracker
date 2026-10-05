@@ -12,12 +12,14 @@ export function pageVerdict({ needsAction }: DashboardVerdict): Verdict {
 
 // How one row reads its own Summary. A Release is called safe only by a ready Summary that says so;
 // everything else says what is missing and where to look instead.
-export function rowVerdict({ summary, summaryStatus }: DashboardRelease): Verdict {
-  if (summary?.actionRequired === true) {
+export function rowVerdict({ actionRequired, unjudged, summary, summaryStatus }: DashboardRelease): Verdict {
+  if (actionRequired === true && summary) {
     const count = summary.breakingChanges.length;
     return { tone: "action", label: "warning:", claim: `action required · ${plural(count, "breaking change")}` };
   }
-  if (summary?.actionRequired === false) return { tone: "ok", label: "ok:", claim: "safe to upgrade" };
+  if (actionRequired === false) return { tone: "ok", label: "ok:", claim: "safe to upgrade" };
+  // There is a Summary here, and the row says so: what it has not got is a verdict.
+  if (unjudged) return { tone: "muted", label: "note:", claim: "not enough notes to judge" };
   if (summaryStatus === "pending" || summaryStatus === "processing") {
     return { tone: "muted", label: "pending:", claim: "summary queued", pending: true };
   }

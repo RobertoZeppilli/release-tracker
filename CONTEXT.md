@@ -66,8 +66,8 @@ Dove c'è, è la **Versione** di partenza predefinita del **Cammino di upgrade**
 **Tecnologia**; `?from=` la scavalca per una singola occhiata e non cambia quella salvata. E per ogni
 **Tecnologia** seguita rende calcolabili le **Release** successive e quante richiedono un
 **Intervento richiesto**, con le stesse regole del **Cammino di upgrade**: le **Release** senza
-**Sintesi** _Pronta_ non contano né come sicure né come **Intervento richiesto**, e le _Digest_ non
-entrano nel conto. Come la **Dashboard** lo mostri è design, non dominio.
+**Sintesi** _Pronta_ e quelle le cui note non sono **Note giudicabili** non contano né come sicure
+né come **Intervento richiesto**, e le _Digest_ non entrano nel conto. Come la **Dashboard** lo mostri è design, non dominio.
 _Evitare_: versione installata, versione attuale, stack, dipendenza.
 
 **Richiesta di tecnologia**:
@@ -114,8 +114,22 @@ Il giudizio esplicito di una **Sintesi** su se aggiornare alla **Release** richi
 codice di chi la usa. Si basa solo su ciò che dicono le **Note di rilascio**: se non citano
 breaking changes, non se ne deducono. È _sì_ esattamente quando la **Sintesi** elenca almeno una
 breaking change, e ogni breaking change dice come migrare: un output che non rispetta questo
-legame è una **Sintesi** _Fallita_.
+legame è una **Sintesi** _Fallita_. Un _no_ vale solo se le **Note di rilascio** erano
+**Note giudicabili**: senza quelle, l'**Intervento richiesto** non si pronuncia.
 _Evitare_: breaking flag, safe to upgrade.
+
+**Note giudicabili**:
+**Note di rilascio** che descrivono dei cambiamenti, e quindi su cui un giudizio è possibile. Non lo
+sono le note il cui contenuto rimanda soltanto altrove: un link al changelog o al confronto fra due
+tag, un hash di commit, un titolo con la sola **Versione**, un rinvio a un annuncio. Note che
+dichiarano di non avere cambiamenti ("no changes", "no user facing changes") **sono** giudicabili:
+dicono qualcosa, e il loro _no_ all'**Intervento richiesto** vale.
+Su note non giudicabili una **Sintesi** _Pronta_ non afferma né che l'upgrade è sicuro né che
+richiede intervento: la **Release** si legge come una senza **Sintesi** _Pronta_, cioè da
+controllare, e il prodotto dice dove stanno le note vere. "Non ho trovato breaking changes" e "non
+ci sono breaking changes" sono affermazioni diverse e il prodotto non stampa la seconda al posto
+della prima. In dubbio tace: una nota che descrive qualcosa resta giudicabile.
+_Evitare_: note vuote, note povere, low quality notes.
 
 **Stato della sintesi**:
 A che punto è la **Sintesi** di una **Release**: _In attesa_, _In corso_, _Pronta_,
@@ -187,8 +201,9 @@ stabile, con il conto di quelle che richiedono un **Intervento richiesto**. La *
 La **Versione** di partenza deve essere ben formata e non più recente dell'ultima **Release** stabile;
 uguale all'ultima vuol dire già aggiornato. Se non è tra le **Release** registrate (lo **Storico** copre
 solo gli ultimi 12 mesi), il Cammino si calcola comunque con le **Release** successive, con una nota e
-le **Versioni** registrate più vicine. Le **Release** senza **Sintesi** _Pronta_ non contano né come
-sicure né come **Intervento richiesto**: il Cammino dice quante sono. Le _Digest_ non si riassumono e
+le **Versioni** registrate più vicine. Le **Release** senza **Sintesi** _Pronta_ e quelle le cui note
+non sono **Note giudicabili** non contano né come sicure né come **Intervento richiesto**: il Cammino
+dice quante sono. Le _Digest_ non si riassumono e
 non entrano in questo conto.
 _Evitare_: migration path, diff di versioni, upgrade guide.
 
@@ -227,6 +242,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Note di rilascio | `ReleaseNotes` | |
 | Sintesi | `Summary` | |
 | Intervento richiesto | `actionRequired` | UI: "Action required" · "Safe to upgrade" |
+| Note giudicabili | `notesJudgeable` | UI: "not enough notes to judge" |
 | Stato della sintesi | `SummaryStatus` | `pending` · `processing` · `ready` · `unavailable` · `skipped` · `failed` |
 | Strategia di classificazione | `ClassificationStrategy` | `semver` · `node` · `typescript` · `zerover` · `minor-major` |
 | Correzione di rilevanza | `significanceOverride` | |

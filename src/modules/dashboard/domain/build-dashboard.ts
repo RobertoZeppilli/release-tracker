@@ -7,7 +7,7 @@ import {
   type Significance,
   type SummaryStatus,
 } from "@/modules/releases";
-import type { SummaryContent } from "@/modules/summaries";
+import type { Judged, SummaryContent } from "@/modules/summaries";
 import { isoWeekKey, isoWeekOf } from "./iso-week";
 import { type DashboardRow, type DigestWeek, sectionRows, weeklyDigest } from "./sections";
 
@@ -22,8 +22,10 @@ export type FollowedTechnology = { slug: string; name: string; currentVersion: C
 // no longer places: a Technology with no stable Release has no distance to measure.
 export type BehindStanding = CurrentVersion & { to: string; counts: PathCounts };
 
-// `summary` is the content of a ready Summary, already validated; null while there is none.
-export type DashboardRelease = {
+// `summary` is the content of a ready Summary, already validated; null while there is none. The
+// verdict comes with it instead of being read off the content, because a ready Summary does not
+// always carry one: see `Judged` (CONTEXT.md, Note giudicabili).
+export type DashboardRelease = Judged & {
   slug: string;
   version: string;
   significance: Significance;
@@ -115,7 +117,8 @@ function toPathRelease(release: DashboardRelease): PathRelease {
     version: release.version,
     significance: release.significance,
     publishedAt: release.publishedAt,
-    actionRequired: release.summary ? release.summary.actionRequired : null,
+    actionRequired: release.actionRequired,
+    unjudged: release.unjudged,
   };
 }
 
@@ -138,7 +141,7 @@ function inUseTotals(spotlight: readonly SpotlightEntry[]): InUseTotals | null {
 }
 
 function needsAction(entry: SpotlightEntry): boolean {
-  return entry.featured.some((release) => release.summary?.actionRequired === true);
+  return entry.featured.some((release) => release.actionRequired === true);
 }
 
 // What the eye should meet first: the Technologies asking for work, then the ones with news that
@@ -160,8 +163,8 @@ function byUrgencyThenDate(a: SpotlightEntry, b: SpotlightEntry): number {
 function verdictOf(spotlight: readonly SpotlightEntry[]): DashboardVerdict {
   const featured = spotlight.flatMap((entry) => entry.featured);
   return {
-    needsAction: featured.filter((release) => release.summary?.actionRequired === true).length,
-    safe: featured.filter((release) => release.summary?.actionRequired === false).length,
+    needsAction: featured.filter((release) => release.actionRequired === true).length,
+    safe: featured.filter((release) => release.actionRequired === false).length,
   };
 }
 

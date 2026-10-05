@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { DashboardRelease, FollowedTechnology } from "../domain/build-dashboard";
 import { SignificanceSchema, SummaryStatusSchema } from "@/modules/releases";
-import { SummaryContentSchema } from "@/modules/summaries";
+import { judge, storedNotesHead, SummaryContentSchema } from "@/modules/summaries";
 
 const ReleaseRowSchema = z.object({
   version: z.string(),
@@ -10,6 +10,8 @@ const ReleaseRowSchema = z.object({
   significance_override: SignificanceSchema.nullable(),
   published_at: z.iso.datetime({ offset: true }),
   summaries: z.object({ status: SummaryStatusSchema, content: z.unknown() }).nullable(),
+  // Only the head of the notes: enough to judge them, and bounded whatever the Release carries.
+  release_notes: z.object({ body_head: z.string().nullable() }).nullable(),
 });
 
 const FollowRowSchema = z.object({
@@ -31,7 +33,7 @@ export async function readDashboard(db: SupabaseClient): Promise<DashboardData> 
   const { data, error } = await db
     .from("follows")
     .select(
-      "current_version, current_version_declared_at, technologies!inner (slug, name, releases (version, significance, significance_override, published_at, summaries (status, content)))",
+      "current_version, current_version_declared_at, technologies!inner (slug, name, releases (version, significance, significance_override, published_at, summaries (status, content), release_notes (body_head)))",
     );
   if (error) throw error;
 
@@ -58,12 +60,14 @@ type ReleaseRow = z.infer<typeof ReleaseRowSchema>;
 // Content that does not match the schema counts as no Summary: never as safe to upgrade.
 function toDashboardRelease(slug: string, row: ReleaseRow): DashboardRelease {
   const ready = row.summaries?.status === "ready" ? SummaryContentSchema.safeParse(row.summaries.content) : null;
+  const summary = ready?.success ? ready.data : null;
   return {
     slug,
     version: row.version,
     significance: row.significance_override ?? row.significance,
     publishedAt: new Date(row.published_at),
     summaryStatus: row.summaries?.status ?? null,
-    summary: ready?.success ? ready.data : null,
+    summary,
+    ...judge(summary ? summary.actionRequired : null, storedNotesHead(row.release_notes?.body_head)),
   };
 }
