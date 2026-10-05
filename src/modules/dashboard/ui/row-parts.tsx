@@ -19,10 +19,12 @@ export function TechnologyName({ slug, name, muted }: { slug: string; name: stri
   );
 }
 
-export function ReleaseVersion({ release }: { release: DashboardRelease }) {
+// `glyphHidden` is for a row that is not about Significance: the compact Spotlight row says where a
+// Technology stands, and the shape of a Release published outside the window only contradicts it.
+export function ReleaseVersion({ release, glyphHidden }: { release: DashboardRelease; glyphHidden?: boolean }) {
   return (
     <span className="inline-flex min-w-0 items-center gap-[6px]">
-      <SignificanceLabel significance={release.significance} labelHidden />
+      {!glyphHidden && <SignificanceLabel significance={release.significance} labelHidden />}
       <Link
         href={releasePath(release.slug, release.version)}
         className="font-mono text-body text-text no-underline [overflow-wrap:anywhere] hover:underline"

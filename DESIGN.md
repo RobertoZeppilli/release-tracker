@@ -426,12 +426,14 @@ When a technology is retired, a muted note sits between a top and a bottom 1px `
 A navigational link in compiler grammar: Mono 13px, a faint `-->` arrow (aria-hidden), a 1ch gap, then the lowercase label in `help` with a 1px dashed `help` underline that turns solid on hover. Used for migration links on release rows and for `browse all 42 technologies`. It sits 12px below the content it follows.
 
 ### Section Title with Legend
-The Section title (`spotlight (7)`) and its hairline rule, followed by a significance legend: the 12px SVG glyph, the label word in `text-muted` (Mono 400, no tracking) and a faint fact (`· last 30 days`, `· newest first`, `· by ISO week, UTC`). It names the one significance level the section lists, so row glyphs carry no visible label word (each keeps a screen-reader label).
+The Section title (`spotlight (3)`) and its hairline rule, followed by a significance legend: the 12px SVG glyph, the label word in `text-muted` (Mono 400, no tracking) and a faint fact (`· last 30 days`, `· newest first`, `· by ISO week, UTC`). It names the one significance level the section lists, so row glyphs carry no visible label word (each keeps a screen-reader label). Every count in a section title counts **Releases**, Spotlight included, so the titles agree with each other and with the counts line under the verdict.
 
 ### Stack Status Row (signature)
 Dashboard sections list releases one per row: the Technology name (Grotesk 600 16px, linking to its Technology page), the version cell (12px significance glyph + Mono 16px `text` version link, 6px gap), the date cell and the content column. The content repeats the Release Row: summary title, Mono 13px row verdict, breaking list and `-->` help pointer for action rows. Neutral verdicts stay in `text-muted`.
 
-In Spotlight each followed Technology appears exactly once: action rows first, then ok rows, then **compact rows** for Technologies without a featured release in the window. A compact row keeps the grid but tightens to 8px vertical padding, sets the name at 500 in `text-muted` (`text` on hover), and puts one Mono 13px muted line in the content column: `latest major · none featured in 30 days`.
+In Spotlight each followed Technology appears exactly once: action rows first, then ok rows, then **compact rows** for Technologies without a featured release in the window. A compact row keeps the grid but tightens to 8px vertical padding, sets the name at 500 in `text-muted` (`text` on hover), and puts one Mono 13px muted line in the content column: `latest major · none featured in 30 days`. It carries **no significance glyph**: the version it names is only where the Technology stands, and the glyph of a Release published outside the window contradicts the line beside it.
+
+When not one entry has a featured Release or an In Use Line, the rows are replaced by a single muted note line, with no list and no rules: `note: nothing featured in the last 30 days, across the 7 technologies you follow`, the last part linking to `/technologies`. The section holds the best space on the page, right under the verdict, and spending it on N rows that each say the same nothing is the one thing it must not do.
 
 ### In Use Line
 Where the Version in use shows up on the Dashboard, in two places, both Mono 13px `text-muted` and both naming the day of the declaration:
