@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { Significance } from "./significance";
 import { computeUpgradePath, type UpgradePath, upgradeStartRejection } from "./upgrade-path";
 
-function release(version: string, significance: Significance, actionRequired: boolean | null = null) {
-  return { version, significance, actionRequired, publishedAt: new Date("2026-01-01T00:00:00Z") };
+function release(version: string, significance: Significance, actionRequired: boolean | null = null, unjudged = false) {
+  return { version, significance, actionRequired, unjudged, publishedAt: new Date("2026-01-01T00:00:00Z") };
 }
 
 type Release = ReturnType<typeof release>;
@@ -20,6 +20,15 @@ function versions(result: UpgradePath<Release>): string[] {
 }
 
 describe("computeUpgradePath", () => {
+  // CONTEXT.md, Note giudicabili: a Release whose notes could not be judged is one to check, so it
+  // joins `missing` and is counted again under `unjudged`, which is what keeps the words honest.
+  it("counts a Release whose notes could not be judged as one to check, never as safe", () => {
+    const result = path(
+      computeUpgradePath([release("6.1.0", "notable", false), release("6.2.0", "featured", null, true)], "6.0.0"),
+    );
+    expect(result.counts).toMatchObject({ total: 2, safe: 1, missing: 1, unjudged: 1, actionRequired: 0 });
+  });
+
   it("covers the stable Releases after `from`, up to and including the latest stable one", () => {
     const result = computeUpgradePath(
       [
@@ -76,11 +85,11 @@ describe("computeUpgradePath", () => {
         "5.2.0",
       ),
     );
-    const counts = { total: 6, featured: 1, notable: 3, digest: 2, actionRequired: 2, safe: 1, missing: 1 };
+    const counts = { total: 6, featured: 1, notable: 3, digest: 2, actionRequired: 2, safe: 1, missing: 1, unjudged: 0 };
     expect(result.counts).toEqual(counts);
     expect(result.majors.map(({ major, counts }) => [major, counts])).toEqual([
-      [5, { total: 3, featured: 0, notable: 2, digest: 1, actionRequired: 0, safe: 1, missing: 1 }],
-      [6, { total: 3, featured: 1, notable: 1, digest: 1, actionRequired: 2, safe: 0, missing: 0 }],
+      [5, { total: 3, featured: 0, notable: 2, digest: 1, actionRequired: 0, safe: 1, missing: 1, unjudged: 0 }],
+      [6, { total: 3, featured: 1, notable: 1, digest: 1, actionRequired: 2, safe: 0, missing: 0, unjudged: 0 }],
     ]);
   });
 

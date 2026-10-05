@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { type StoredSummary, SummaryContentSchema } from "@/modules/summaries";
+import { judge, notesHead, type StoredSummary, SummaryContentSchema } from "@/modules/summaries";
 import { SummaryStatusSchema } from "../domain/initial-summary-status";
 import type { ReleaseDetail } from "../domain/release-page";
 import { SignificanceSchema } from "../domain/significance";
@@ -36,6 +36,9 @@ export async function getRelease(db: SupabaseClient, technologyId: string, versi
   if (error) throw error;
   if (data === null) return null;
   const row = ReleaseDetailRowSchema.parse(data);
+  const summary = readSummary(row.summaries);
+  // The page already carries the whole body, so the head comes from it instead of a second column.
+  const notes = row.release_notes ? notesHead(row.release_notes.body) : null;
   return {
     version: row.version,
     significance: row.significance_override ?? row.significance,
@@ -44,7 +47,8 @@ export async function getRelease(db: SupabaseClient, technologyId: string, versi
     recordedAt: new Date(row.created_at),
     notes: row.release_notes,
     summaryStatus: row.summaries?.status ?? null,
-    summary: readSummary(row.summaries),
+    summary,
+    unjudged: summary !== null && judge(summary.content.actionRequired, notes).unjudged,
   };
 }
 

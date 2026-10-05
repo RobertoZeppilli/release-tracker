@@ -374,11 +374,13 @@ A `<details>` panel on `raised` with a 1px rule border and 6px radius. The summa
 **Motion:** the underline reveals left to right (clip-path, 650ms, cubic-bezier(0.16, 1, 0.3, 1), 120ms delay). This is the system's only motion moment besides the chevron. Under `prefers-reduced-motion`, the underline appears immediately and smooth scrolling is off.
 
 ### Summary States
-Vocabulary: `ready` (verdict `action required` or `safe to upgrade`), `pending` / `processing`, `unavailable`, `skipped`, `failed`. Non-ready states replace the verdict with a Status-scale line and a muted explanation paragraph:
+Vocabulary: `ready` (verdict `action required`, `safe to upgrade`, or no verdict at all), `pending` / `processing`, `unavailable`, `skipped`, `failed`. Non-ready states replace the verdict with a Status-scale line and a muted explanation paragraph:
 - pending: muted clock + `pending: summary queued`
 - unavailable: muted info + `note: no release notes to summarize` (the source view is hidden and "View on GitHub" is offered)
 - skipped: muted info + `note: no summary for this older release`
 - failed: coral x-circle + `error: summary unavailable`
+
+**The seventh state: a ready Summary with no verdict.** When the release notes only point somewhere else instead of describing what changed, the verdict line is **muted info + `note: not enough notes to judge`**, at the same Verdict scale the two verdicts use, and a muted paragraph at the measure follows it, before the counts row. Everything else stays: the counts, the title, the key points and the provenance are all still what the Summary says. The state carries **no ink**, like 404: a judgement we cannot make is an absence, not a failure, and the paragraph says where the notes that could be judged are rather than apologising. It is the only state in which a verdict is withdrawn rather than missing, so the paragraph is the part that does the work: without it the reader is left with a claim taken back and no next move. `action required` is never withdrawn this way, because a listed breaking change is a fact the notes stated.
 
 The release notes stay available below in every state except unavailable.
 
@@ -395,14 +397,14 @@ A `git diff --stat` line for each major version, inside a list with a top rule a
 1. The major (`v6`) in `text`.
 2. A faint `|` gutter.
 3. A proportional bar, 8px high, whose width is the group's release count relative to the largest group (the largest is 100%, with a 28px minimum). Segments are separated by 2px and filled neutrally in significance order: featured `text`, notable `text-muted`, digest `rule-strong`. The bar is aria-hidden.
-4. The counts in words, in `text-muted` and using the list's own vocabulary (`4 releases · 1 featured · 3 digest`, `2 notable, 1 not summarized`). When a group has a release that needs action, it appears inline as the warning glyph plus `warning: needs action` in `action`.
+4. The counts in words, in `text-muted` and using the list's own vocabulary (`4 releases · 1 featured · 3 digest`, `2 notable, 1 not summarized`, and `1 to check` for one whose notes could not be judged). When a group has a release that needs action, it appears inline as the warning glyph plus `warning: needs action` in `action`.
 
 The bar never stands alone: every segment is also counted in words. A legend below it (Mono 12px, `text-faint`) repeats each significance shape glyph next to a 10x8 swatch of its bar fill and the label word. It lists only the significance levels that appear in the bars.
 
 ### Release Row
 One release per row: significance glyph and label, the version as a Mono 16px `text` link (underlined on hover), a Mono 13px `text-faint` ISO date, and a content column. The content column holds the Grotesk 500 16px/1.45 summary title, then a Mono 13px row verdict with its glyph at 0.95em: `warning: action required · 4 breaking changes` in `action`, or `ok: safe to upgrade` in `ok`. An action release also lists its breaking changes (coral octagon + `breaking[n]:` Mono 13px, then Grotesk 14px/1.6 titles) and ends with a `-->` help pointer to the release page (`--> migrate to vite 6.0.0`).
 
-**Neutral row verdicts.** A release without a ready summary puts a neutral status in the verdict slot, with no ink: the info glyph + `note: no summary for this older release`, or the **clock glyph + `pending: summary queued`** for previews still waiting for a summary. Each is followed by `· read the release notes` as an underlined link.
+**Neutral row verdicts.** A release without a ready summary puts a neutral status in the verdict slot, with no ink: the info glyph + `note: no summary for this older release`, or the **clock glyph + `pending: summary queued`** for previews still waiting for a summary. Each is followed by `· read the release notes` as an underlined link. A release whose notes could not be judged reads **info glyph + `note: not enough notes to judge`** in the same slot: the row says the Summary is there and the verdict is not, and the paragraph that explains it belongs to the release page, not to a row.
 
 ### Digest Row
 Consecutive digest releases fold into one `<details>` row between rules: the digest glyph and label, then a Mono 13px muted summary (`14 digest releases · 5.2.1 to 5.2.14 · no action needed`), then a right-aligned chevron that rotates 90deg (200ms, same curve as the source view, no transition under reduced motion). On hover the summary text turns `text`. When open, the versions show as a Mono 13px auto-fill grid (22ch minimum per cell), with versions in `text` and dates in `text-faint`, indented to the content column. For mobile behaviour, see Layout.

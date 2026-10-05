@@ -13,6 +13,8 @@ function row(technology: FollowedTechnology, version: string, publishedAt: strin
     publishedAt: new Date(publishedAt),
     summaryStatus: "ready",
     summary: null,
+    actionRequired: null,
+    unjudged: false,
   };
   return { technology, release };
 }

@@ -74,7 +74,7 @@ export default async function ReleasePage({ params }: Props) {
         <ReleaseHeader technologyName={technology.name} release={release} source={source} />
         {technology.retired && <RetiredNote name={technology.name} latest={null} />}
         <CitationProvider>
-          {release.summary && <SummaryView summary={release.summary} notes={lines ?? []} />}
+          {release.summary && <SummaryView summary={release.summary} notes={lines ?? []} unjudged={release.unjudged} />}
           <SummaryStatusBlock release={release} hasGitHub={githubRepo(technology.sources) !== null} />
           {lines && release.notes && <ReleaseNotesSource lines={lines} url={release.notes.url} />}
         </CitationProvider>

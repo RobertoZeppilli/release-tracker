@@ -9,7 +9,7 @@ const release: ReleaseDetail = {
   publishedAt: new Date("2026-01-13T09:30:00Z"),
   recordedAt: new Date("2026-01-14T02:00:00Z"),
   notes: null,
-  summaryStatus: "pending",
+  summaryStatus: "pending", unjudged: false,
   summary: null,
 };
 

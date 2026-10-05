@@ -3,8 +3,10 @@ import { foldDigests, type ListedRelease, type MajorRow } from "./group-by-major
 import type { SummaryStatus } from "./initial-summary-status";
 import { compareVersions, parseVersion, sortByVersion, splitByMajor } from "./version";
 
-// `actionRequired` is null while the Release has no ready Summary.
-export type PathRelease = ListedRelease & { actionRequired: boolean | null };
+// `actionRequired` is null while the Release has no ready Summary, and also when it has one whose
+// Release Notes could not be judged (CONTEXT.md, Note giudicabili): `unjudged` tells the two apart,
+// because only one of them can say there is a Summary to read.
+export type PathRelease = ListedRelease & { actionRequired: boolean | null; unjudged: boolean };
 
 // What the Technology page reads: the path needs the verdict, and each row says what the Summary
 // says, so `summary` carries the whole content of a ready one and is null while there is none.
@@ -19,6 +21,9 @@ export type PathCounts = {
   safe: number;
   // Featured and notable Releases without a ready Summary: neither safe nor action required.
   missing: number;
+  // Of which have a ready Summary whose notes could not be judged. A subset of `missing`, so the
+  // three verdict counts still add up to the summarized Releases.
+  unjudged: number;
 };
 
 export type PathMajor<T> = { major: number; counts: PathCounts; rows: MajorRow<T>[] };
@@ -92,5 +97,6 @@ function countPath(releases: readonly PathRelease[]): PathCounts {
     actionRequired: count(({ actionRequired }) => actionRequired === true),
     safe: count(({ actionRequired }) => actionRequired === false),
     missing: count(({ actionRequired }) => actionRequired === null),
+    unjudged: count(({ unjudged }) => unjudged),
   };
 }

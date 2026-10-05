@@ -10,30 +10,47 @@ function plural(count: number, word: string): string {
   return `${word}${count === 1 ? "" : "s"}`;
 }
 
+const VERDICTS = {
+  action: { Icon: TriangleAlert, className: "text-action", label: "warning:", claim: "action required" },
+  safe: { Icon: CircleCheck, className: "text-ok", label: "ok:", claim: "safe to upgrade" },
+  unjudged: { Icon: Info, className: "text-text-muted", label: "note:", claim: "not enough notes to judge" },
+} as const;
+
 // `notes` are the release notes as the source view below renders them: the line numbers of a citation
 // are derived from that same text, so a quote the notes do not contain simply gets no pointer.
-export function SummaryView({ summary, notes = [] }: { summary: StoredSummary; notes?: string[] }) {
+export function SummaryView({
+  summary,
+  notes = [],
+  unjudged = false,
+}: {
+  summary: StoredSummary;
+  notes?: string[];
+  unjudged?: boolean;
+}) {
   const { content, model, promptVersion } = summary;
   const breaking = content.breakingChanges.length;
   const provenance = ["summary", "from the release notes only", model, promptVersion && `prompt ${promptVersion}`];
   const body = notes.join("\n");
   const cite = (quote: string | undefined) => (quote ? locateCitation(body, quote) : null);
+  const verdict = VERDICTS[unjudged ? "unjudged" : content.actionRequired ? "action" : "safe"];
   return (
     <section aria-labelledby="verdict" className="mt-6">
       <p id="verdict" className="flex flex-wrap items-baseline gap-x-[0.4ch] font-mono text-verdict">
-        {content.actionRequired ? (
-          <span className="text-action">
-            <Glyph Icon={TriangleAlert} />
-            warning:
-          </span>
-        ) : (
-          <span className="text-ok">
-            <Glyph Icon={CircleCheck} />
-            ok:
-          </span>
-        )}{" "}
-        <span>{content.actionRequired ? "action required" : "safe to upgrade"}</span>
+        <span className={verdict.className}>
+          <Glyph Icon={verdict.Icon} />
+          {verdict.label}
+        </span>{" "}
+        <span>{verdict.claim}</span>
       </p>
+      {/* DESIGN.md, Summary States: the muted state says where the notes that could be judged are,
+          instead of leaving the reader with a verdict we withdrew and no next move. */}
+      {unjudged && (
+        <p className="mt-3 max-w-measure text-text-muted">
+          These release notes point somewhere else instead of describing what changed, so neither
+          verdict would be honest: we found no breaking changes, which is not the same as there being
+          none. The notes are below, with the link they point to.
+        </p>
+      )}
       {/* The counts row is `diagnostic`, the same as the Dashboard's: 15px was never in the scale. */}
       <p className="mt-3 flex flex-wrap gap-4 font-mono text-diagnostic text-text-muted">
         {breaking > 0 ? (

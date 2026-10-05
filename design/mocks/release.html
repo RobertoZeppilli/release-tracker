@@ -98,6 +98,10 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .verdict-line .glyph { stroke-width: 1.75; width: 0.8em; height: 0.8em; align-self: center; }
 .sev-action { color: var(--action); }
 .sev-ok { color: var(--ok); }
+/* The seventh state carries no ink: a judgement we cannot make is an absence, not a failure. */
+.sev-note { color: var(--text-muted); }
+.only-unjudged { display: none; }
+.verdict-why { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); }
 .sev-breaking { color: var(--breaking); }
 /* The counts row is 14px/1.7, the same as .counts on dashboard.html: 15px is not in the scale. */
 .verdict-count { margin: var(--space-3) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); display: flex; gap: var(--space-4); flex-wrap: wrap; }
@@ -174,8 +178,14 @@ pre.fix .add { color: var(--ok); }
 /* Summary states */
 .state, .only-unavailable { display: none; }
 main[data-state^="ready"] .state-ready { display: block; }
-main[data-state="ready-safe"] .only-action { display: none; }
-main[data-state="ready-action"] .only-safe { display: none; }
+main[data-state="ready-safe"] .only-action,
+main[data-state="ready-unjudged"] .only-action { display: none; }
+main[data-state="ready-action"] .only-safe,
+main[data-state="ready-unjudged"] .only-safe { display: none; }
+main[data-state="ready-unjudged"] .only-unjudged { display: block; }
+/* The two lines that are flex rows keep being flex rows when this state reveals them. */
+main[data-state="ready-unjudged"] .only-unjudged.verdict-line,
+main[data-state="ready-unjudged"] .only-unjudged.verdict-count { display: flex; }
 main[data-state="pending"] .state-pending,
 main[data-state="unavailable"] .state-unavailable,
 main[data-state="skipped"] .state-skipped,
@@ -274,6 +284,18 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
       </p>
       <p class="verdict-line only-safe">
         <span class="sev sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok:</span><span>safe to upgrade</span>
+      </p>
+      <p class="verdict-line only-unjudged">
+        <span class="sev sev-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span><span>not enough notes to judge</span>
+      </p>
+      <p class="verdict-why only-unjudged">
+        These release notes point somewhere else instead of describing what changed, so neither verdict
+        would be honest: we found no breaking changes, which is not the same as there being none. The
+        notes are below, with the link they point to.
+      </p>
+      <p class="verdict-count only-unjudged">
+        <span><strong>0</strong> breaking changes</span>
+        <span><strong>4</strong> key points</span>
       </p>
       <p class="verdict-count only-action">
         <a href="#breaking"><strong>4</strong> breaking changes</a>
@@ -429,6 +451,7 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
   <select id="state-select">
     <option value="ready-action">ready · action required</option>
     <option value="ready-safe">ready · safe to upgrade</option>
+    <option value="ready-unjudged">ready · not enough notes to judge</option>
     <option value="pending">pending / processing</option>
     <option value="unavailable">unavailable</option>
     <option value="skipped">skipped</option>

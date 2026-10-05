@@ -12,6 +12,9 @@ export type ReleaseDetail = {
   summaryStatus: SummaryStatus | null;
   // Only for a `ready` Summary whose content validates.
   summary: StoredSummary | null;
+  // A ready Summary whose Release Notes could not be judged (CONTEXT.md, Note giudicabili): the
+  // Summary is shown, its verdict is not.
+  unjudged: boolean;
 };
 
 // A Version may hold characters that are not safe in a path segment, such as `+` in build metadata.

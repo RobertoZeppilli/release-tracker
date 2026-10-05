@@ -22,7 +22,10 @@ export function pathSentence(from: string, to: string, counts: PathCounts): stri
   const clauses = [
     counts.actionRequired > 0 && count(counts.actionRequired, "needs action", "need action"),
     counts.safe > 0 && count(counts.safe, "is safe to upgrade", "are safe to upgrade"),
-    counts.missing > 0 && count(counts.missing, "has no summary yet (check its notes)", "have no summary yet (check their notes)"),
+    counts.missing - counts.unjudged > 0 &&
+      count(counts.missing - counts.unjudged, "has no summary yet (check its notes)", "have no summary yet (check their notes)"),
+    counts.unjudged > 0 &&
+      count(counts.unjudged, "has notes too thin to judge", "have notes too thin to judge"),
     counts.digest > 0 && count(counts.digest, "is a digest fix you can skip", "are digest fixes you can skip"),
   ].filter((clause) => clause !== false);
   const list = clauses.length > 1 ? `${clauses.slice(0, -1).join(", ")} and ${clauses.at(-1)}` : clauses[0];
@@ -40,8 +43,16 @@ export function majorWords(counts: PathCounts): { kinds: string; action: string 
   return {
     kinds: kinds.join(" · "),
     action: counts.actionRequired > 0 ? count(counts.actionRequired, "needs action", "need action") : null,
-    missing: counts.missing > 0 ? `${counts.missing} not summarized` : null,
+    missing: missingWords(counts),
   };
+}
+
+// `missing` holds two different facts, and neither may be printed as the other: a Release with no
+// Summary is not summarized, one whose notes could not be judged is there to be checked.
+function missingWords({ missing, unjudged }: PathCounts): string | null {
+  const parts = [missing - unjudged > 0 && `${missing - unjudged} not summarized`, unjudged > 0 && `${unjudged} to check`];
+  const words = parts.filter((part) => part !== false);
+  return words.length > 0 ? words.join(" · ") : null;
 }
 
 // A declaration the app never verifies: the note names the day it was made, so the numbers under it

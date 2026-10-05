@@ -22,15 +22,20 @@ describe("pageVerdict", () => {
 });
 
 function release(options: Partial<DashboardRelease> = {}): DashboardRelease {
-  return {
+  const row: DashboardRelease = {
     slug: "react",
     version: "19.0.0",
     significance: "featured",
     publishedAt: new Date("2024-12-05T00:00:00Z"),
     summaryStatus: "ready",
+    actionRequired: null,
+    unjudged: false,
     summary: null,
     ...options,
   };
+  // A test that states a verdict keeps it, including `null`: the derivation is only the default.
+  const stated = "actionRequired" in options;
+  return { ...row, actionRequired: stated ? row.actionRequired : row.summary ? row.summary.actionRequired : null };
 }
 
 const content = {
@@ -53,6 +58,14 @@ describe("rowVerdict", () => {
     const summary = { ...content, actionRequired: false, breakingChanges: [] };
 
     expect(rowVerdict(release({ summary }))).toEqual({ tone: "ok", label: "ok:", claim: "safe to upgrade" });
+  });
+
+  it("says a Summary is there but could not judge, which is not the same as no Summary", () => {
+    const summary = { ...content, actionRequired: false, breakingChanges: [] };
+    const row = release({ summary, actionRequired: null, unjudged: true });
+
+    expect(rowVerdict(row)).toEqual({ tone: "muted", label: "note:", claim: "not enough notes to judge" });
+    expect(rowVerdict(release({ summary: null }))).toEqual({ tone: "muted", label: "note:", claim: "no summary · read the release notes" });
   });
 
   it("says the Summary is queued while it is still coming", () => {
@@ -94,7 +107,7 @@ function standing(counts: Partial<BehindStanding["counts"]> = {}): BehindStandin
     version: "6.0.0",
     declaredAt: DECLARED,
     to: "6.2.1",
-    counts: { total: 0, featured: 0, notable: 0, digest: 0, actionRequired: 0, safe: 0, missing: 0, ...counts },
+    counts: { total: 0, featured: 0, notable: 0, digest: 0, actionRequired: 0, safe: 0, missing: 0, unjudged: 0, ...counts },
   };
 }
 
