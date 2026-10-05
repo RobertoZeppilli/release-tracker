@@ -2,17 +2,29 @@
 
 import { Info } from "lucide-react";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
-import { countMatches, matchesQuery, type PickerSections, type PickerTechnology } from "../domain/picker";
+import {
+  countMatches,
+  liveSections,
+  matchesQuery,
+  type PickerSections,
+  type PickerTechnology,
+} from "../domain/picker";
 import { useFilterQuery } from "./filter-query";
+import { useFollows } from "./follows-provider";
 import { FollowToggleLimitNote } from "./limit-note";
 import { FollowStatus, PickerFilter } from "./picker-header";
 import { PickerRow } from "./picker-row";
 
 // The sections come from the server and never move: following and unfollowing change the toggle and
-// the count, not where a row sits, so a list does not shift under the pointer mid visit.
+// the count, not where a row sits, so a list does not shift under the pointer mid visit. The count
+// in the title is therefore the one thing that can stay true during the visit, and it does: it
+// counts where the rows belong now, not where they sit (issue #64).
 export function TechnologyPicker({ sections }: { sections: PickerSections }) {
   const [query, setQuery] = useFilterQuery();
+  const follows = useFollows();
   const { shown, total } = countMatches(sections, query);
+  const rows = [...sections.following, ...sections.catalog, ...sections.retired];
+  const live = liveSections(sections, rows.filter((row) => follows.isFollowing(row.id)).map((row) => row.id));
 
   return (
     <>
@@ -25,12 +37,12 @@ export function TechnologyPicker({ sections }: { sections: PickerSections }) {
         <PickerFilter query={query} onQuery={setQuery} shown={shown} total={total} />
       </section>
 
-      <Section id="following" rows={sections.following} query={query} />
-      <Section id="catalog" rows={sections.catalog} query={query}>
+      <Section id="following" rows={sections.following} belong={live.following} query={query} />
+      <Section id="catalog" rows={sections.catalog} belong={live.catalog} query={query}>
         <FollowToggleLimitNote />
       </Section>
       {sections.retired.length > 0 && (
-        <Section id="retired" rows={sections.retired} query={query}>
+        <Section id="retired" rows={sections.retired} belong={live.retired} query={query}>
           <Note>
             <span className="font-sans text-body">
               These are no longer in the catalog and get no new releases. Past releases stay readable. They
@@ -58,18 +70,23 @@ export function TechnologyPicker({ sections }: { sections: PickerSections }) {
 function Section({
   id,
   rows,
+  belong,
   query,
   children,
 }: {
-  id: string;
+  id: keyof PickerSections;
   rows: PickerTechnology[];
+  belong: PickerTechnology[];
   query: string;
   children?: React.ReactNode;
 }) {
   const visible = rows.filter((row) => matchesQuery(row, query));
   if (rows.length > 0 && visible.length === 0) return null;
-  // While the filter is on, the title says both numbers, so a section never looks smaller than it is.
-  const count = query.trim() === "" ? `${rows.length}` : `${visible.length} of ${rows.length}`;
+  // The title counts the rows that belong to the section now, wherever they sit; the filter counts
+  // the ones it would let through. While the filter is on the title says both numbers, so a section
+  // never looks smaller than it is.
+  const matching = belong.filter((row) => matchesQuery(row, query));
+  const count = query.trim() === "" ? `${belong.length}` : `${matching.length} of ${belong.length}`;
 
   return (
     <section className="mt-7" aria-labelledby={`${id}-title`}>
@@ -82,7 +99,12 @@ function Section({
       {children}
       <ul>
         {rows.map((technology) => (
-          <PickerRow key={technology.id} technology={technology} hidden={!matchesQuery(technology, query)} />
+          <PickerRow
+            key={technology.id}
+            technology={technology}
+            section={id}
+            hidden={!matchesQuery(technology, query)}
+          />
         ))}
       </ul>
     </section>

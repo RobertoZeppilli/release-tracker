@@ -50,3 +50,11 @@ export function countMatches(sections: PickerSections, query: string): { shown: 
   const rows = [...sections.following, ...sections.catalog, ...sections.retired];
   return { shown: rows.filter((row) => matchesQuery(row, query)).length, total: rows.length };
 }
+
+// Where every row belongs by the follows the page holds now, which is not where it sits: a row
+// followed during the visit keeps its place until the next visit, so the section counts are the only
+// thing that can tell the truth about it in the meantime. The rule is the one `splitPicker` uses, so
+// the live count and the next visit can never disagree.
+export function liveSections(sections: PickerSections, followed: readonly string[]): PickerSections {
+  return splitPicker([...sections.following, ...sections.catalog, ...sections.retired], followed);
+}

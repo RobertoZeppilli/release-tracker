@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countMatches, matchesQuery, type PickerTechnology, splitPicker } from "./picker";
+import { countMatches, liveSections, matchesQuery, type PickerTechnology, splitPicker } from "./picker";
 
 function technology(name: string, options: Partial<PickerTechnology> = {}): PickerTechnology {
   const slug = name.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-");
@@ -62,5 +62,37 @@ describe("countMatches", () => {
     expect(countMatches(sections, "")).toEqual({ shown: 4, total: 4 });
     expect(countMatches(sections, "react")).toEqual({ shown: 2, total: 4 });
     expect(countMatches(sections, "qwik")).toEqual({ shown: 0, total: 4 });
+  });
+});
+
+describe("liveSections", () => {
+  // What the visit started with: React and Create React App followed, Vite and Angular not.
+  const sections = splitPicker([vite, react, angular, cra], [react.id, cra.id]);
+
+  it("moves a Technology followed during the visit into the count of `following`", () => {
+    const live = liveSections(sections, [react.id, cra.id, vite.id]);
+
+    expect(live.following.map((row) => row.name)).toEqual(["React", "Vite"]);
+    expect(live.catalog.map((row) => row.name)).toEqual(["Angular"]);
+  });
+
+  it("takes a Technology unfollowed during the visit out of `following`", () => {
+    const live = liveSections(sections, [cra.id]);
+
+    expect(live.following).toEqual([]);
+    expect(live.catalog.map((row) => row.name)).toEqual(["Angular", "React", "Vite"]);
+  });
+
+  // A retired Technology nobody follows can never be followed again, so it belongs nowhere.
+  it("drops a retired Technology once it is let go", () => {
+    expect(liveSections(sections, [react.id]).retired).toEqual([]);
+  });
+
+  it("says what the visit found when nothing has been toggled", () => {
+    const live = liveSections(sections, [react.id, cra.id]);
+
+    expect(live.following.map((row) => row.name)).toEqual(sections.following.map((row) => row.name));
+    expect(live.catalog.map((row) => row.name)).toEqual(sections.catalog.map((row) => row.name));
+    expect(live.retired.map((row) => row.name)).toEqual(sections.retired.map((row) => row.name));
   });
 });

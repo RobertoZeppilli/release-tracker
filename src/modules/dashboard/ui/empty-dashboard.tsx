@@ -42,7 +42,7 @@ export function EmptyDashboard({ shortlist, total }: { shortlist: readonly Picke
         <SectionTitle id="catalog-title" title={`in the catalog (${shortlist.length})`} />
         <ul className="border-t border-rule">
           {shortlist.map((technology) => (
-            <PickerRow key={technology.id} technology={technology} hidden={false} />
+            <PickerRow key={technology.id} technology={technology} section={null} hidden={false} />
           ))}
         </ul>
         <FollowToggleLimitNote />
