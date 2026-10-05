@@ -302,3 +302,38 @@ describe("summaries pipeline", () => {
     expect(await readSummary(inFlight)).toMatchObject({ status: "processing", batch_id: "msgbatch_elsewhere" });
   });
 });
+
+// Issue #88: a Summary that renders as a real one must say where it came from. The pipeline above is
+// the only writer that reaches `ready`, so these tests go straight at the table, the way a hand
+// written row would.
+describe("the provenance of a ready Summary", () => {
+  async function setSummary(releaseId: string, row: Record<string, unknown>) {
+    return serviceClient().from("summaries").update(row).eq("release_id", releaseId);
+  }
+
+  it.each([
+    ["model", { status: "ready", content, prompt_version: PROMPT_VERSION }],
+    ["prompt version", { status: "ready", content, model: SUMMARY_MODEL }],
+    ["content", { status: "ready", model: SUMMARY_MODEL, prompt_version: PROMPT_VERSION }],
+  ])("is refused by the database without the %s", async (_what, row) => {
+    const releaseId = await seedPending("9.0.0");
+
+    const { error } = await setSummary(releaseId, row);
+
+    expect(error?.message).toMatch(/summaries_ready_provenance/);
+    expect((await readSummary(releaseId)).status).toBe("pending");
+  });
+
+  // Every status before `ready` stands for a Summary nobody is shown: provenance it has not got yet.
+  it.each(["pending", "processing", "failed", "unavailable", "skipped"] as const)(
+    "leaves a %s Summary without provenance alone",
+    async (status) => {
+      const releaseId = await seedPending(`9.1.0-${status}`);
+
+      const { error } = await setSummary(releaseId, { status, model: null, prompt_version: null });
+
+      expect(error).toBeNull();
+      expect(await readSummary(releaseId)).toMatchObject({ status, model: null, prompt_version: null });
+    },
+  );
+});

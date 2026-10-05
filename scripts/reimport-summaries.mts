@@ -40,7 +40,10 @@ const statements = releaseIds.map((releaseId) => {
   return [
     `-- ${releaseId}: a title of ${parsed.content.title.length} characters`,
     `update summaries set status = 'ready', content = '${content}'::jsonb, failure_reason = null, updated_at = now()`,
-    `where release_id = '${releaseId}' and status = 'failed';`,
+    // Issue #88: a ready Summary needs its provenance, and these rows already carry it, because
+    // submit writes model and prompt version before the batch leaves. The guard keeps the statement
+    // from reaching a Release that failed before being sent: that one would be refused, not fixed.
+    `where release_id = '${releaseId}' and status = 'failed' and model is not null and prompt_version is not null;`,
   ].join("\n");
 });
 

@@ -52,9 +52,13 @@ export async function getRelease(db: SupabaseClient, technologyId: string, versi
   };
 }
 
-// Stored content is checked again on read: a row that does not validate shows as unavailable.
+// Stored content is checked again on read: a row that does not validate shows as unavailable. The
+// provenance is read the same way instead of being trusted: the constraint of issue #88 keeps a ready
+// row from losing it, and a row that somehow did is not a Summary we are willing to show.
 function readSummary(summary: z.infer<typeof ReleaseDetailRowSchema>["summaries"]): StoredSummary | null {
   if (summary?.status !== "ready") return null;
+  const { model, prompt_version: promptVersion } = summary;
+  if (model === null || promptVersion === null) return null;
   const content = SummaryContentSchema.safeParse(summary.content);
-  return content.success ? { content: content.data, model: summary.model, promptVersion: summary.prompt_version } : null;
+  return content.success ? { content: content.data, model, promptVersion } : null;
 }

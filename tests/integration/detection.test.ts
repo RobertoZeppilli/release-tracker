@@ -86,7 +86,20 @@ async function seedRelease(technologyId: string, version: string, significance: 
     .single();
   if (inserted.error) throw inserted.error;
   const releaseId = z.object({ id: z.uuid() }).parse(inserted.data).id;
-  const summary = await db.from("summaries").insert({ release_id: releaseId, status: "ready" });
+  // Issue #88: a ready Summary carries its content and its provenance, or the database refuses it.
+  // This one is only here so the Release looks settled; what it says is never read.
+  const summary = await db.from("summaries").insert({
+    release_id: releaseId,
+    status: "ready",
+    content: {
+      title: "Nothing here is read by this test.",
+      keyPoints: [{ text: "One." }, { text: "Two." }, { text: "Three." }],
+      breakingChanges: [],
+      actionRequired: false,
+    },
+    model: "claude-opus-5",
+    prompt_version: "v4",
+  });
   if (summary.error) throw summary.error;
   return releaseId;
 }
