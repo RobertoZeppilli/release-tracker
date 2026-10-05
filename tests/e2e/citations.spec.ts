@@ -70,3 +70,56 @@ test("an #L anchor opens the notes on that line", async ({ page }) => {
   await expect(page.locator("#release-notes")).toHaveAttribute("open", /.*/);
   await expect(page.locator("#L4")).toBeFocused();
 });
+
+// Issue #84: the notes are markdown, and the quote well renders them cleaned while the panel below
+// keeps the line character for character. The line is a real one, from react 19.3.0.
+const RAW = "- Move `react-server-dom-webpack/*.unbundled` to private `react-server-dom-unbundled` (@eps1lon [#35290](https://github.com/facebook/react/pull/35290))";
+const MARKDOWN_NOTES = ["# Release 4.0.0", "", RAW].join("\n");
+const QUOTE = "Move `react-server-dom-webpack/*.unbundled` to private `react-server-dom-unbundled`";
+
+test.describe("a quote taken from markdown notes", () => {
+  let markdown: FixtureTechnology;
+
+  test.beforeAll(async () => {
+    markdown = await seedTechnology([
+      {
+        version: "4.0.0",
+        significance: "featured",
+        origin: "detected",
+        status: "ready",
+        notes: MARKDOWN_NOTES,
+        summary: {
+          title: "The unbundled entry point is private.",
+          keyPoints: [{ text: "One entry point moved." }, { text: "The bundled entry is unchanged." }, { text: "No other export moved." }],
+          breakingChanges: [{ change: "The unbundled entry point is private", migration: "Import the bundled entry instead.", quote: QUOTE }],
+          actionRequired: true,
+        },
+      },
+    ]);
+  });
+
+  test.afterAll(async () => {
+    await markdown.remove();
+  });
+
+  test("reads as prose in the well and stays verbatim in the notes", async ({ page }) => {
+    await page.goto(`/technologies/${markdown.slug}/4.0.0`);
+
+    const diagnostic = page.locator('article[aria-labelledby="b1"]');
+    const quote = await diagnostic.innerText();
+
+    expect(quote).toContain("Move react-server-dom-webpack/*.unbundled to private react-server-dom-unbundled");
+    // No list dash of its own, no literal backtick, and the address of the link is not spelled out.
+    expect(quote).not.toContain("`");
+    expect(quote).not.toContain("https://github.com");
+    expect(quote).not.toContain("[#35290]");
+    await expect(diagnostic.getByRole("link", { name: "#35290" })).toHaveAttribute(
+      "href",
+      "https://github.com/facebook/react/pull/35290",
+    );
+
+    // The panel below is where the comparison with the original is made: it changes in nothing.
+    await page.getByRole("link", { name: "release-notes:3" }).click();
+    await expect(page.locator("#L3")).toHaveText(RAW);
+  });
+});

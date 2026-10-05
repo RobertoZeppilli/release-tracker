@@ -365,6 +365,8 @@ Rows in order:
 6. `=` gutter + cyan `help:` label with the wrench glyph, then the Grotesk migration text.
 7. Optional fix diff: a `sunken` block with a 1px rule border, 6px radius and Mono 13.5px text. `-` lines are coral, `+` lines are green.
 
+**The quote is cleaned, never rewritten.** The release notes are markdown, so a quoted line arrives with its list dash, its literal backticks and its links written out in full. The quote row drops the leading list marker, renders a backtick span with the Inline Code token and reduces `[#35290](url)` to a link reading `#35290`. Character-for-character fidelity lives in the Source View below, which is what its line numbers are for, and the stored quote is untouched: the verbatim check depends on it. Inside the well the Inline Code token keeps its mark and drops its geometry, with no 0.92em and no horizontal padding, because the well is a monospace grid that the caret row counts in characters; the span reads on `raised` against the `sunken` well and gets its air from a shadow, which takes no width. A link is marked with a dashed bottom border in cyan, for the same reason. The coral underline and the caret run both measure the cleaned line, so they mark the words and not the markdown punctuation.
+
 ### Tally
 A Mono 14px muted closing line after the diagnostics. The breaking count is in coral, e.g. "4 breaking changes, 4 with a suggested migration, all cited from the release notes".
 
