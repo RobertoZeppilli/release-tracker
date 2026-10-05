@@ -14,9 +14,10 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 ## Stato
 
 **Da dove ripartire (2026-10-05).** Della #47 restano **solo il P0-2**, il settimo stato derivato, e
-il giro finale. Fatti e uniti: il **P0-1** (PR #89) e il **P2-9** (PR #90). Fatto e **in attesa di
-merge: il gruppo della #64**, cioè P1-3, P1-4 e P1-5, nella **PR #91**. **La #47 resta aperta**:
-nessuna di queste PR scrive `Closes`, perché l'issue si chiude con l'ultimo dei cinque.
+il giro finale. Fatti e uniti tutti e tre: il **P0-1** (PR #89), il **P2-9** (PR #90) e il
+**gruppo della #64**, cioè P1-3, P1-4 e P1-5 (PR #91, unita il 2026-10-05). **La #47 resta aperta**:
+nessuna di quelle PR scrive `Closes`, perché l'issue si chiude con l'ultimo dei cinque, che è il
+P0-2.
 
 Il P0-2 è l'unico che **richiede una risposta dell'utente prima di scrivere codice**, ed è l'unico
 che **può costare**: la via che tocca il prompt delle Sintesi porta a rigenerare, e rigenerare spende.
@@ -173,7 +174,7 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
 - Produzione: **https://release-tracker-drab.vercel.app** (`release-tracker.vercel.app` è di un altro
   progetto). Gli URL dei singoli deployment sono protetti da Vercel (302).
 
-## Sessione del 2026-10-05: il P2-9 e il gruppo della #64 (PR #90 unita, PR #91 aperta)
+## Sessione del 2026-10-05: il P2-9 e il gruppo della #64 (PR #90 e PR #91, unite)
 
 Due interventi della #47 in una sessione, un branch e una PR ciascuno, come il metodo prevede.
 
@@ -190,7 +191,7 @@ Due interventi della #47 in una sessione, un branch e una PR ciascuno, come il m
 - Due test E2E tengono fermo il difetto. Quello sui bersagli serve davvero: **axe li lasciava passare
   sull'esenzione di spaziatura**, quindi la suite della #23 non li vedeva.
 
-### Il gruppo della #64: P1-3, P1-4, P1-5 (PR #91, **aperta**)
+### Il gruppo della #64: P1-3, P1-4, P1-5 (PR #91, **unita**)
 
 - **P1-3**: i titoli di sezione contano dove le righe **appartengono adesso**. La regola sta nel
   dominio, in `liveSections`, e riusa `splitPicker`, così il conteggio vivo e la prossima visita non
@@ -334,7 +335,7 @@ L'ordine consigliato, dal più autonomo al più legato a una decisione (**ne res
 1. ~~**P0-1** (verdetti sulle righe della pagina Technology)~~: **fatto il 2026-10-04**, PR #89, unita.
 2. ~~**P2-9** (i due difetti misurati)~~: **fatto il 2026-10-05**, PR #90, unita.
 3. ~~**Il gruppo della #64** (P1-3 i conteggi, P1-4 Spotlight, P1-5 la barra sul telefono)~~:
-   **fatto il 2026-10-05**, PR #91, **aperta e non unita**.
+   **fatto il 2026-10-05**, PR #91, unita.
 4. **P0-2** (il settimo stato): **da qui si riparte**, ed è l'unico che richiede una risposta
    dell'utente prima di scrivere codice, e l'unico che può costare.
 
