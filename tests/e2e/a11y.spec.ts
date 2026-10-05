@@ -232,3 +232,25 @@ for (const theme of THEMES) {
     });
   });
 }
+
+// WCAG 2.2 AA 2.5.8. axe lets both of these pass on the spacing exception, so the size is asserted
+// here: they sit in the top bar rather than inside a sentence, so neither has the inline exemption,
+// and at the Label line height they measured 20.8px before issue #47.
+test.describe("target size in the top bar", () => {
+  const MINIMUM = 24;
+
+  test("sign out is at least 24 by 24", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/dashboard");
+    const box = await page.getByRole("button", { name: "sign out" }).boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(MINIMUM);
+    expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
+  });
+
+  test("sign in is at least 24 by 24", async ({ page }) => {
+    await page.goto("/technologies");
+    const box = await page.getByRole("link", { name: "sign in" }).boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(MINIMUM);
+    expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
+  });
+});
