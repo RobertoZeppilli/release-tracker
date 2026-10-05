@@ -13,26 +13,81 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-05).** Della #47 restano **solo il P0-2**, il settimo stato derivato, e
-il giro finale. Fatti e uniti tutti e tre: il **P0-1** (PR #89), il **P2-9** (PR #90) e il
-**gruppo della #64**, cioè P1-3, P1-4 e P1-5 (PR #91, unita il 2026-10-05). **La #47 resta aperta**:
-nessuna di quelle PR scrive `Closes`, perché l'issue si chiude con l'ultimo dei cinque, che è il
-P0-2.
-
-Il P0-2 è l'unico che **richiede una risposta dell'utente prima di scrivere codice**, ed è l'unico
-che **può costare**: la via che tocca il prompt delle Sintesi porta a rigenerare, e rigenerare spende.
-Per la regola dell'utente, la sessione nuova **chiede prima di spendere** e, se l'unica via buona è
-quella, si ferma lì.
+**Da dove ripartire (2026-10-05, sera).** **Tutti e cinque gli interventi della #47 sono scritti.**
+Il P0-2, l'ultimo, è nella **PR #92**, aperta e **da non unire prima del giro a mano sul preview**.
+Uniti prima: il **P0-1** (PR #89), il **P2-9** (PR #90) e il **gruppo della #64**, cioè P1-3, P1-4 e
+P1-5 (PR #91). La #92 è la sola che scrive `Closes #47`, perché è l'ultima dei cinque.
 
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, partiamo dal P0-2 della #47
+leggi docs/HANDOFF.md, chiudiamo la #47: giro a mano sul preview della PR #92
 ```
 
-Prima di dire che la #47 è chiusa restano, come vuole l'issue: `pnpm lint`, `pnpm typecheck`,
-`pnpm test`, `pnpm test:e2e` e **il giro a mano nel browser**, più il giudizio sulle tre pagine che
-la revisione ha trovato già disegnate (404, errore, login).
+**Quello che resta è solo il giro finale**, come vuole l'issue: `pnpm lint`, `pnpm typecheck`,
+`pnpm test` e `pnpm test:e2e` sono **già passati sulla #92** (498 unitari verdi; negli E2E 140 passati
+e 1 fallito, `current-version.spec.ts:89`, che **passa da solo**, quindi è un problema di tempi e non
+del verdetto: se rifallisce, non cercarlo nel codice del P0-2). Mancano:
+
+1. **Il giro a mano nel browser, sul preview della #92, non in locale.** ⚠️ Il settimo stato **non è
+   visibile in locale**: serve una Sintesi `ready` e generarla spende. In produzione
+   `https://release-tracker-drab.vercel.app/technologies/vite/8.0.0` ce l'ha già, ed è il caso da
+   guardare per primo. Gli altri due casi veri sono `webpack 5.0.0` e `tRPC 11.0.0`. Senza preview,
+   l'aspetto si controlla sul mock: `design/mocks/release.html?state=ready-unjudged`.
+2. **Il giudizio sulle tre pagine** che la revisione ha trovato già disegnate (404, errore, login).
+3. Poi unire la #92, che chiude la #47 e sblocca la **#26**, l'ultima fetta del PRD.
+
+### Che cosa ha deciso l'utente sul P0-2, per non ridiscuterlo
+
+**Due risposte date il 2026-10-05, entrambe applicate nella #92.**
+
+1. **Stato derivato ora, prompt `v5` quando c'è credito.** Il settimo stato si calcola alla resa da
+   quello che è già memorizzato, quindi **nessuna Sintesi è stata rigenerata e non si è speso niente**.
+   Il prompt resta a `v4`. Il bump è la **issue #93**, `ready-for-human`, "Blocked by #47": costa, e
+   non si parte senza conferma esplicita.
+2. **Si attiva solo quando le Note non sono giudicabili**, non "sempre su una major con 0 breaking".
+   Conseguenza: il trigger non è la Rilevanza, sono le Note, quindi **nessun caso speciale per
+   `major`** e la regola vale anche su una patch le cui note sono un rimando.
+
+Il nome del dominio è **Note giudicabili** (`notesJudgeable`), approvato dall'utente, ed è in
+`CONTEXT.md` con la sua voce e la sua riga nella tabella dei nomi.
+
+### Il P0-2, com'è stato fatto: quello che non va ricercato
+
+- **La regola sta in un posto solo**, `src/modules/summaries/domain/notes-judgement.ts`, ed **erra
+  verso il silenzio**: una riga che descrive qualcosa mantiene le note giudicabili, così un modo di
+  rimandare mai visto si legge come descrizione invece di spegnere un verdetto onesto. Ogni stringa
+  dei suoi test è il corpo memorizzato di una Release vera: **non sostituirli con esempi inventati.**
+- **Misurata su tutto il Catalogo, non a campione**: 107 note su 1821 non giudicabili, ogni singola
+  non-`digest` davvero un rimando, **zero falsi positivi**. Cambiano 10 Release con un verdetto e 25
+  preview. I `digest` non hanno mai verdetto (`initial-summary-status.ts` li mette `skipped`).
+- ⚠️ **Il verdetto si rende in tre posti, non due**: pagina Release (`summary-view.tsx`), righe della
+  pagina Technology (`release-verdict.tsx`) e Dashboard (`dashboard-copy.ts`). E **alimenta dei
+  conteggi**: `safe`, `missing`, `needsAction`, le Stat Row. Per questo una Release non giudicabile
+  diventa `actionRequired: null`, la forma che il sistema già legge come "né sicura né intervento
+  richiesto": così i conteggi si raddrizzano da soli. Senza quello la Dashboard avrebbe continuato a
+  dire `ok: nothing needs action` contando `vite 8.0.0` fra i sicuri, **lo stesso difetto un livello
+  sopra**. `unjudged` viaggia accanto perché `1 not summarized` su una Release che **ha** una Sintesi
+  sarebbe una bugia nuova. Un `action required` non si ritira mai così: un breaking change elencato è
+  un fatto che le note hanno dichiarato.
+- **Perché una colonna generata e non il corpo delle note**: `release_notes.body_head` tiene i primi
+  401 caratteri. Le note lunghe descrivono qualcosa e sono giudicabili senza leggerle. Misurato: senza
+  questo la pagina Technology si tirerebbe su **1,1 MB** di corpi per `pnpm` solo per decidere
+  un'etichetta. Il 401 va tenuto uguale a `NOTES_HEAD_LENGTH + 1`.
+
+### ⚠️ Lo stato dell'ambiente locale, perché l'ho cambiato io
+
+La migrazione ha richiesto `pnpm db:reset`, che **ha svuotato il database locale** (non c'è un
+`seed.sql`: i dati vengono dai job). Ripristinato subito dopo:
+
+```
+pnpm exec tsx --conditions=react-server --env-file=.env.local scripts/sync-catalog.mts
+pnpm dev:login
+```
+
+⚠️ Nota: `pnpm catalog:sync` **non legge `.env.local`** e muore sulle variabili d'ambiente; serve la
+forma lunga sopra. Le Sintesi `ready` in locale erano **0 prima e sono 0 adesso**, quindi in locale si
+vedono solo gli stati `pending` e `skipped`. Il dev server è stato riavviato sulla 3000.
 
 Il metodo di lavoro è rimasto quello deciso il 2026-10-03 e ha funzionato: **un branch e una PR per
 ogni intervento**, non uno per tutta la #47.
