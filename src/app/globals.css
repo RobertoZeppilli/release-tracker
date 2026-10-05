@@ -159,6 +159,19 @@
   }
 }
 
+/* DESIGN.md: the Inline Code token inside a quote well. The well is a monospace grid: the caret row
+   counts characters and `caretWidth` measures the quote in them, so a code span there cannot carry
+   the 0.92em size or the horizontal padding the token has in prose, which would move every character
+   after it off the grid. It keeps the mark and drops the geometry: the well is `sunken`, so the span
+   reads on `raised`, and the 2px of air around it comes from a shadow, which takes no width. */
+@utility quoted-code {
+  background: var(--raised);
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--raised);
+  font-size: inherit;
+  padding: 0;
+}
+
 /* DESIGN.md: where the caret row cannot be shown, the cited stretch carries this underline inside the
    quote row instead. A utility, so the page can name the width it takes over at. */
 @utility cited-quote {
