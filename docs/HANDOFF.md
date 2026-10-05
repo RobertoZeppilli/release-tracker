@@ -13,28 +13,57 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-05, sera tardi).** **La #47 è chiusa.** Tutti e cinque gli interventi
-sono uniti: il **P0-1** (PR #89), il **P2-9** (PR #90), il **gruppo della #64** cioè P1-3, P1-4 e
-P1-5 (PR #91), e il **P0-2** (PR #92, unita in squash il 2026-10-05, l'unica che portava
-`Closes #47`). Il giro a mano sul preview è stato fatto e la produzione è stata verificata dopo il
-merge.
+**Da dove ripartire (2026-10-05, notte).** **La #47 è chiusa** e la **#84 pure.** I cinque interventi
+della #47 sono uniti: il **P0-1** (PR #89), il **P2-9** (PR #90), il **gruppo della #64** cioè P1-3,
+P1-4 e P1-5 (PR #91), e il **P0-2** (PR #92, l'unica che portava `Closes #47`). Dopo di loro la #84,
+sbloccata dalla chiusura della #47, con la **PR #95**. Tutto verificato in produzione.
 
 Il primo comando della sessione nuova, scegliendo fra le tre strade qui sotto:
 
 ```
-leggi docs/HANDOFF.md, prendiamo la #84
+leggi docs/HANDOFF.md, prendiamo la #88
 ```
 
 **Le strade aperte, in ordine di quanto sono prendibili da soli:**
 
-1. **Lavoro autonomo, due issue `ready-for-agent` e nessuna bloccata**: la **#84** (la citazione
-   mostra markdown grezzo nel pozzo della Release), sbloccata proprio dalla chiusura della #47, e la
-   **#88** (una Sintesi `ready` senza provenienza non viene rifiutata dal database).
-2. **La #94**, aperta in questa sessione e `ready-for-human`: il verdetto della Dashboard si
-   contraddice. Non è lavoro da prendere da soli perché chiede prima una regola di dominio in
-   `CONTEXT.md`. Vedi sotto.
+1. **Lavoro autonomo: resta una sola issue `ready-for-agent` e non è bloccata**, la **#88** (una
+   Sintesi `ready` senza provenienza non viene rifiutata dal database).
+2. **La #94**, aperta il 2026-10-05 e `ready-for-human`: il verdetto della Dashboard si contraddice.
+   Non è lavoro da prendere da soli perché chiede prima una regola di dominio in `CONTEXT.md`.
+   Vedi sotto.
 3. **La #26**, la landing page, **ultima fetta del PRD**. Resta ferma sul **nome del prodotto**, che
    l'utente ha rinviato il 2026-10-03: senza di lui non chiude il primo criterio di accettazione.
+
+### La #84, com'è stata fatta: quello che non va ricercato
+
+La pulizia del markdown nel pozzo di citazione è **di sola resa** e sta in un posto solo,
+`src/modules/summaries/domain/quote-markdown.ts`. `renderQuote(line, start, end)` prende la riga
+grezza e gli offset della citazione e restituisce i pezzi da disegnare, ciascuno col suo tipo e un
+flag `cited`, più la lunghezza e gli offset **in caratteri resi**.
+
+- ⚠️ **La citazione memorizzata non si tocca**: la verifica verbatim dipende dal testo esatto, e il
+  pannello delle Note continua a mostrare la riga carattere per carattere.
+- **Il punto non ovvio**: la citazione arriva misurata sul markdown, mentre la sottolineatura
+  corallo, la riga dei caret e il calcolo di `caretWidth` vanno misurati su quello che il lettore
+  vede. Per questo gli offset viaggiano **attraverso** la pulizia invece di essere ricalcolati dopo.
+- **Il token Inline Code dentro il pozzo** tiene il segno e lascia la geometria: niente `0.92em` e
+  niente padding orizzontale, perché il pozzo è una griglia monospace che i caret contano in
+  caratteri. È l'utility `quoted-code` in `globals.css`, e la nota sta in `DESIGN.md` sotto
+  "Breaking Diagnostic". Misurato sulla pagina invece che dato per buono: span di codice **63px per
+  7 caratteri**, caret **180px per 20**, cioè 9px l'uno.
+- **Fuori scope di proposito**: il grassetto `**build:**` delle note di vite resta grezzo. La issue
+  elencava tre pulizie e il grassetto non era fra queste; aggiungerlo vorrebbe dire inventare un
+  token che `DESIGN.md` non ha per il pozzo. Se serve, è una issue sua.
+
+### ⚠️ Una CI che non parte può essere solo una coda
+
+Il 2026-10-05 la CI della PR #95 non è partita per oltre venti minuti: Vercel e CodeRabbit avevano
+già risposto, i due job no, e `gh run list` non mostrava nessun run. Diagnosi data e **sbagliata**:
+minuti di GitHub Actions esauriti. Erano **i runner in coda**, e il run è partito da solo.
+
+Da ricordare: i workflow risultavano `active` e non c'era nessun segnale di quota. Prima di mandare
+l'utente a guardare il billing, aspettare. Chiudere e riaprire la PR non serve a niente: non
+accelera una coda.
 
 ### ⚠️ La #94: il verdetto della Dashboard si contraddice, e non è una regressione
 
@@ -155,8 +184,8 @@ Il metodo di lavoro è rimasto quello deciso il 2026-10-03 e ha funzionato: **un
 ogni intervento**, non uno per tutta la #47.
 
 **C'è di nuovo lavoro autonomo: la #88**, `ready-for-agent`, aperta dall'utente il 2026-10-04 e **non
-bloccata da niente** (una Sintesi `ready` senza provenienza non viene rifiutata dal database). È
-l'unica issue prendibile da soli fuori dalla #47, insieme alla #84 che però è bloccata dalla #47.
+bloccata da niente** (una Sintesi `ready` senza provenienza non viene rifiutata dal database). Dopo
+la chiusura della #84 è **l'unica issue prendibile da soli** rimasta.
 
 **La #47** (revisione del design di tutta l'app con `impeccable`) ha la **#64 dentro**, deciso con
 l'utente il 2026-10-03. I suoi "Blocked by" (#21, #23, #63, #68) sono tutti chiusi.
@@ -275,7 +304,8 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75), la **#25** (PR #77), la **#72**
   (PR #79) e la **#36** (PR #81) il 2026-10-02; la **#24** (PR #82) il 2026-10-03.
   La **#47** è **chiusa il 2026-10-05** con la PR #92, che la portava a termine dopo le PR #89, #90
-  e #91: con lei si sblocca la **#84** e resta la **#26** come ultima fetta del PRD.
+  e #91; la **#84** è chiusa lo stesso giorno con la **PR #95**. Resta la **#26** come ultima fetta
+  del PRD.
   Aperta il 2026-10-05: **#94** (il verdetto della Dashboard si contraddice, `ready-for-human`).
   Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
   Aperta dall'utente il 2026-10-04: **#88** (una Sintesi `ready` senza provenienza non viene
@@ -427,8 +457,8 @@ tranne la #87, perché toccano gli stessi mock e lo stesso `DESIGN.md` che la #4
 
 - **#83** il Cammino di upgrade parte da un non-risultato garantito (`ready-for-human`: il valore di
   partenza è una scelta di prodotto).
-- **#84** markdown grezzo nel pozzo di citazione (**l'unica `ready-for-agent` fra queste cinque**:
-  meccanica e testabile, nessuna decisione di design dentro; resta bloccata dalla #47).
+- ~~**#84** markdown grezzo nel pozzo di citazione~~: era l'unica `ready-for-agent` fra queste cinque,
+  **fatta il 2026-10-05** con la PR #95, appena la #47 l'ha sbloccata.
 - **#85** dalla citazione non si torna al breaking change che l'ha chiamata (`ready-for-human`:
   aggiunge un componente al sistema).
 - **#86** il Catalogo è 32 righe alfabetiche, raggrupparle per genere (`ready-for-human`: introduce
