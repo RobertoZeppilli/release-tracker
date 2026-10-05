@@ -5,6 +5,7 @@ import { BreakingChangeItem } from "./breaking-change-item";
 import { CitePointer } from "./cite-pointer";
 import { Glyph } from "./glyph";
 import { InlineCode } from "./inline-code";
+import { provenanceLine } from "./summary-copy";
 
 function plural(count: number, word: string): string {
   return `${word}${count === 1 ? "" : "s"}`;
@@ -27,9 +28,8 @@ export function SummaryView({
   notes?: string[];
   unjudged?: boolean;
 }) {
-  const { content, model, promptVersion } = summary;
+  const { content } = summary;
   const breaking = content.breakingChanges.length;
-  const provenance = ["summary", "from the release notes only", model, promptVersion && `prompt ${promptVersion}`];
   const body = notes.join("\n");
   const cite = (quote: string | undefined) => (quote ? locateCitation(body, quote) : null);
   const verdict = VERDICTS[unjudged ? "unjudged" : content.actionRequired ? "action" : "safe"];
@@ -70,7 +70,7 @@ export function SummaryView({
       <h2 className="mt-5 max-w-measure font-sans text-summary-title font-medium text-balance">
         <InlineCode text={content.title} />
       </h2>
-      <p className="mt-2 font-mono text-meta text-text-faint">{provenance.filter(Boolean).join(" · ")}</p>
+      <p className="mt-2 font-mono text-meta text-text-faint">{provenanceLine(summary)}</p>
 
       <ul aria-label="Key points" className="mt-5 max-w-measure border-t border-rule">
         {content.keyPoints.map((point, index) => {

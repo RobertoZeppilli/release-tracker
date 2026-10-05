@@ -34,5 +34,6 @@ export type KeyPoint = z.infer<typeof KeyPointSchema>;
 export type BreakingChange = z.infer<typeof BreakingChangeSchema>;
 export type SummaryContent = z.infer<typeof SummaryContentSchema>;
 
-// A ready Summary as the pages read it.
-export type StoredSummary = { content: SummaryContent; model: string | null; promptVersion: string | null };
+// A ready Summary as the pages read it. Provenance is never optional here: the database refuses a
+// ready row without it (summaries_ready_provenance), so the pages can always say where it came from.
+export type StoredSummary = { content: SummaryContent; model: string; promptVersion: string };
