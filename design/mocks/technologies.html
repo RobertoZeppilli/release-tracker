@@ -142,6 +142,19 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
   .row-status { grid-column: 1 / -1; grid-row: 3; }
   .review { left: var(--space-4); justify-content: space-between; }
 }
+/* Below 430px the quota comes down into the strip beside the links, so the bar keeps the two rows
+   it is specified as: the three items did not fit on one line, and the phones where the check
+   happens most often spent a third row on chrome (issue #47, P1-5). The strip has no column gap,
+   so its rule runs unbroken across the row. */
+@media (max-width: 429px) {
+  .topbar-inner { column-gap: 0; }
+  .topbar-actions { display: contents; }
+  .topbar-inner > nav { width: auto; flex: 1; }
+  .wordmark { margin-right: auto; }
+  .topbar-actions > * { margin-left: var(--space-4); }
+  .quota { order: 3; margin-left: 0; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }

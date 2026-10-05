@@ -20,8 +20,16 @@ export const TECHNOLOGIES_CRUMB = { label: "technologies", href: "/technologies"
 
 // Below 640px the slot leaves the bar and becomes a 40px strip under it, with the same links in the
 // same order: No Dead End Rule in DESIGN.md. Nothing is hidden and nothing opens, so the keyboard
-// reaches it in document order.
-const SLOT = "max-sm:order-3 max-sm:flex max-sm:h-[40px] max-sm:w-full max-sm:items-center max-sm:border-t max-sm:border-rule";
+// reaches it in document order. Below 430px the quota comes down into the strip beside it, so the
+// bar stays the two rows DESIGN.md specifies: on an iPhone SE, an iPhone 14 or a Pixel the three
+// items did not fit on one line and the bar took a third row, 153px of chrome before the verdict.
+const SLOT =
+  "max-sm:order-3 max-sm:flex max-sm:h-[40px] max-sm:items-center max-sm:border-t max-sm:border-rule min-[430px]:max-sm:w-full max-[429px]:grow";
+
+// The quota in the bar at 430px and up, in the strip below it. It carries the strip's rule with it,
+// and the strip has no gap between the two, so the rule runs unbroken across the row.
+const QUOTA =
+  "ml-auto flex h-[56px] items-center max-[429px]:order-3 max-[429px]:ml-0 max-[429px]:h-[40px] max-[429px]:border-t max-[429px]:border-rule";
 
 // `path` is the breadcrumb after the wordmark; the last item is the current page. On a signed-in
 // page `nav` replaces the breadcrumb with the two destinations, as in DESIGN.md; `nav` without a
@@ -71,7 +79,7 @@ function HeaderShell({ children, quota }: { children: React.ReactNode; quota?: R
         Skip to content
       </a>
       <header className="border-b border-rule">
-        <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-5 px-4 sm:h-[56px] sm:flex-nowrap sm:px-5">
+        <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-5 px-4 max-[429px]:gap-x-0 sm:h-[56px] sm:flex-nowrap sm:px-5">
           <Link
             href="/"
             className="flex h-[56px] shrink-0 items-center font-mono text-[14px] whitespace-nowrap no-underline [font-variant-ligatures:none]"
@@ -79,8 +87,10 @@ function HeaderShell({ children, quota }: { children: React.ReactNode; quota?: R
             release-tracker
           </Link>
           {children}
-          <div className="ml-auto flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap">
-            {quota}
+          {quota && <span className={QUOTA}>{quota}</span>}
+          <div
+            className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "max-[429px]:ml-auto" : "ml-auto"}`}
+          >
             <AuthStatus />
             <ThemeToggle />
           </div>

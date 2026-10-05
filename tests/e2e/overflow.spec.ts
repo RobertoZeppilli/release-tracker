@@ -181,3 +181,42 @@ test("the release notes keep scrolling for themselves", async ({ page }) => {
   await page.locator("#release-notes > summary").click();
   await expect(page.locator("#release-notes ol")).toHaveCSS("overflow-x", "auto");
 });
+
+// The bar DESIGN.md specifies is two rows at 640px and below: 56px plus a 40px strip. It was three
+// on every common phone, 153px measured at 375 and 390, because the quota did not fit beside the
+// wordmark and the actions. Below 430px the quota comes down into the strip (issue #47, P1-5).
+test.describe("the top bar stays two rows on a phone", () => {
+  const TWO_ROWS = 56 + 40 + 1; // the rule under the strip belongs to the header too
+
+  async function dashboardAt(page: Page, width: number): Promise<void> {
+    await signIn(page);
+    await developer.clearFollows();
+    await addFollows(developer.id, [technology.id]);
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/dashboard");
+  }
+
+  for (const width of [320, 375, 390, 414, 429]) {
+    test(`is at most ${TWO_ROWS}px at ${width}px`, async ({ page }) => {
+      await dashboardAt(page, width);
+      const header = await page.locator("header").boundingBox();
+      expect(header?.height).toBeLessThanOrEqual(TWO_ROWS);
+    });
+  }
+
+  // The two phones the review measured. Above the step the quota is back in the bar, where the three
+  // items fit on one line and the strip is the navigation alone.
+  for (const width of [375, 390]) {
+    test(`puts the quota in the strip at ${width}px`, async ({ page }) => {
+      await dashboardAt(page, width);
+      const quota = await page.getByLabel("Followed technologies").boundingBox();
+      expect(quota?.y).toBeGreaterThanOrEqual(56);
+    });
+  }
+
+  test("keeps the quota in the bar from 430px up", async ({ page }) => {
+    await dashboardAt(page, 430);
+    const quota = await page.getByLabel("Followed technologies").boundingBox();
+    expect(quota?.y).toBeLessThan(56);
+  });
+});
