@@ -21,7 +21,7 @@ export function DashboardSummary({
       <p id="page-verdict" className="font-mono text-verdict">
         <SeverityLabel tone={tone} label={label} /> {claim}
       </p>
-      <p className="mt-3 font-mono text-diagnostic text-text-muted tabular-nums">
+      <p className="mt-3 max-w-measure font-mono text-diagnostic text-text-muted tabular-nums">
         Last 30 days across <Count value={counts.technologies} /> {counts.technologies === 1 ? "technology" : "technologies"}:{" "}
         <CountLink value={counts.featured} href="#spotlight" label="featured" exists />
         {verdict.needsAction > 0 && (
@@ -37,7 +37,7 @@ export function DashboardSummary({
       {/* Only for whoever declared a Version in use, and it stays muted: the distance is a count, and
           the one inked line on the page is the verdict above it. */}
       {inUse && (
-        <p className="mt-2 font-mono text-diagnostic text-text-muted tabular-nums">
+        <p className="mt-2 max-w-measure font-mono text-diagnostic text-text-muted tabular-nums">
           {inUseTotalsLine(inUse, counts.technologies)}
         </p>
       )}

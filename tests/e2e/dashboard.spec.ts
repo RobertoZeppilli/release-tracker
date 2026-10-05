@@ -146,3 +146,28 @@ test("keeps an open week of the Digest in the URL, through a reload and in a sha
   await page.locator("#digest details").first().locator("summary").click();
   await expect(page).toHaveURL(/\/dashboard$/);
 });
+
+// DESIGN.md gives prose a 72ch measure, and the counts line used to run the whole 992px column: 142
+// characters on one measure, which is the defect P2-9 of issue #47 named. The budget is computed
+// from the advance of the live font, as the caret row is, instead of being guessed from the pixels.
+test("keeps the counts line inside the 72ch measure", async ({ page }) => {
+  await addFollows(developer.id, [breaking.id, safe.id, busy.id]);
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  const counts = page.getByText(/^Last 30 days across /);
+  await expect(counts).toBeVisible();
+  const measured = await counts.evaluate((node) => {
+    const probe = document.createElement("span");
+    probe.style.font = getComputedStyle(node).font;
+    probe.style.position = "absolute";
+    probe.style.whiteSpace = "pre";
+    probe.textContent = "0".repeat(72);
+    document.body.append(probe);
+    const budget = probe.getBoundingClientRect().width;
+    probe.remove();
+    return { width: node.getBoundingClientRect().width, budget };
+  });
+
+  expect(measured.width).toBeLessThanOrEqual(measured.budget + 1);
+});
