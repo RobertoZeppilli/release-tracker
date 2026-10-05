@@ -29,12 +29,48 @@ leggi docs/HANDOFF.md, chiudiamo la #47: giro a mano sul preview della PR #92
 e 1 fallito, `current-version.spec.ts:89`, che **passa da solo**, quindi è un problema di tempi e non
 del verdetto: se rifallisce, non cercarlo nel codice del P0-2). Mancano:
 
-1. **Il giro a mano nel browser, sul preview della #92, non in locale.** ⚠️ Il settimo stato **non è
-   visibile in locale**: serve una Sintesi `ready` e generarla spende. In produzione
-   `https://release-tracker-drab.vercel.app/technologies/vite/8.0.0` ce l'ha già, ed è il caso da
-   guardare per primo. Gli altri due casi veri sono `webpack 5.0.0` e `tRPC 11.0.0`. Senza preview,
-   l'aspetto si controlla sul mock: `design/mocks/release.html?state=ready-unjudged`.
+1. ⚠️⚠️ **PRIMA DI TUTTO: applicare la migrazione a produzione, poi mergiare.** Il giro a mano sul
+   preview è stato fatto il 2026-10-05 e **ha trovato un difetto di sequenza, non di codice.**
+
+   **Che cosa si è visto.** Sul preview della #92, `/technologies/vite/8.0.0` e
+   `/technologies/webpack/5.0.0` mostrano il settimo stato **giusto**: glifo info muto,
+   `note: not enough notes to judge`, il paragrafo, e il verdetto che finalmente **concorda** con il
+   key point sotto di lui invece di contraddirlo. Ma **`/technologies/vite` dà 500.**
+
+   **Perché**, ricostruito e coerente con tutte le prove: i preview **condividono il database di
+   produzione**, dove la migrazione `20261005074035_notes_judgement.sql` non è ancora applicata,
+   perché `.github/workflows/deploy-database.yml` gira **su push a `main`**, cioè dopo il merge. La
+   pagina Release funziona perché `get-release.ts` legge `body` e calcola la testa in TypeScript; la
+   pagina Technology e la Dashboard falliscono perché leggono la colonna nuova **`body_head`**, che in
+   produzione non c'è ancora. In locale, con la migrazione applicata, `technology.spec.ts` passa.
+
+   ⚠️ **Non è solo il preview: è anche il merge.** Al push su `main`, Vercel pubblica il codice nuovo
+   e il workflow applica la migrazione **sullo stesso push**, in parallelo: finché la migrazione non
+   atterra, la pagina Technology e la Dashboard rispondono 500 **in produzione**.
+
+   **La via, decisa ma non ancora eseguita** (serve il via libera dell'utente, perché scrive sul
+   database di produzione): prima lo schema, poi il codice che lo legge. La migrazione aggiunge una
+   colonna generata e il codice vecchio la ignora, quindi applicarla in anticipo è sicuro.
+
+   ```
+   gh workflow run deploy-database.yml --ref 47-p0-2-not-enough-notes-to-judge
+   ```
+
+   Poi ricontrollare `/technologies/vite` sul preview, dove deve comparire la riga
+   `note: not enough notes to judge` su `8.0.0`, **e solo dopo mergiare la #92**.
+
+   ⚠️ Il settimo stato **non è visibile in locale**: serve una Sintesi `ready` e generarla spende. I
+   tre casi veri sono `vite 8.0.0`, `webpack 5.0.0` e `tRPC 11.0.0`. Senza preview, l'aspetto si
+   controlla sul mock: `design/mocks/release.html?state=ready-unjudged`.
+
+   **La Dashboard resta da guardare**: è la terza superficie del verdetto, richiede l'accesso, e
+   l'agente non inserisce credenziali. La guarda l'utente.
 2. **Il giudizio sulle tre pagine** che la revisione ha trovato già disegnate (404, errore, login).
+   **Dato di partenza raccolto il 2026-10-05**: il 500 qui sopra non ha mostrato la pagina di errore
+   disegnata, ma quella **di default di Next** ("This page couldn't load", bottone `Reload`), invece
+   di quella che `DESIGN.md` specifica (x-circle corallo, `error: this page could not be loaded`,
+   `Try again` e la riga `reference <digest>`). Da capire se l'`error.tsx` non copre quel segmento o
+   se l'errore arriva al `global-error`. Non è stato indagato: è lavoro della #47, non del P0-2.
 3. Poi unire la #92, che chiude la #47 e sblocca la **#26**, l'ultima fetta del PRD.
 
 ### Che cosa ha deciso l'utente sul P0-2, per non ridiscuterlo
