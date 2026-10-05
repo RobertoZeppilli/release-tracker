@@ -13,65 +13,91 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-05, sera).** **Tutti e cinque gli interventi della #47 sono scritti.**
-Il P0-2, l'ultimo, è nella **PR #92**, aperta e **da non unire prima del giro a mano sul preview**.
-Uniti prima: il **P0-1** (PR #89), il **P2-9** (PR #90) e il **gruppo della #64**, cioè P1-3, P1-4 e
-P1-5 (PR #91). La #92 è la sola che scrive `Closes #47`, perché è l'ultima dei cinque.
+**Da dove ripartire (2026-10-05, sera tardi).** **La #47 è chiusa.** Tutti e cinque gli interventi
+sono uniti: il **P0-1** (PR #89), il **P2-9** (PR #90), il **gruppo della #64** cioè P1-3, P1-4 e
+P1-5 (PR #91), e il **P0-2** (PR #92, unita in squash il 2026-10-05, l'unica che portava
+`Closes #47`). Il giro a mano sul preview è stato fatto e la produzione è stata verificata dopo il
+merge.
 
-Il primo comando della sessione nuova:
+Il primo comando della sessione nuova, scegliendo fra le tre strade qui sotto:
 
 ```
-leggi docs/HANDOFF.md, chiudiamo la #47: giro a mano sul preview della PR #92
+leggi docs/HANDOFF.md, prendiamo la #84
 ```
 
-**Quello che resta è solo il giro finale**, come vuole l'issue: `pnpm lint`, `pnpm typecheck`,
-`pnpm test` e `pnpm test:e2e` sono **già passati sulla #92** (498 unitari verdi; negli E2E 140 passati
-e 1 fallito, `current-version.spec.ts:89`, che **passa da solo**, quindi è un problema di tempi e non
-del verdetto: se rifallisce, non cercarlo nel codice del P0-2). Mancano:
+**Le strade aperte, in ordine di quanto sono prendibili da soli:**
 
-1. ⚠️⚠️ **PRIMA DI TUTTO: applicare la migrazione a produzione, poi mergiare.** Il giro a mano sul
-   preview è stato fatto il 2026-10-05 e **ha trovato un difetto di sequenza, non di codice.**
+1. **Lavoro autonomo, due issue `ready-for-agent` e nessuna bloccata**: la **#84** (la citazione
+   mostra markdown grezzo nel pozzo della Release), sbloccata proprio dalla chiusura della #47, e la
+   **#88** (una Sintesi `ready` senza provenienza non viene rifiutata dal database).
+2. **La #94**, aperta in questa sessione e `ready-for-human`: il verdetto della Dashboard si
+   contraddice. Non è lavoro da prendere da soli perché chiede prima una regola di dominio in
+   `CONTEXT.md`. Vedi sotto.
+3. **La #26**, la landing page, **ultima fetta del PRD**. Resta ferma sul **nome del prodotto**, che
+   l'utente ha rinviato il 2026-10-03: senza di lui non chiude il primo criterio di accettazione.
 
-   **Che cosa si è visto.** Sul preview della #92, `/technologies/vite/8.0.0` e
-   `/technologies/webpack/5.0.0` mostrano il settimo stato **giusto**: glifo info muto,
-   `note: not enough notes to judge`, il paragrafo, e il verdetto che finalmente **concorda** con il
-   key point sotto di lui invece di contraddirlo. Ma **`/technologies/vite` dà 500.**
+### ⚠️ La #94: il verdetto della Dashboard si contraddice, e non è una regressione
 
-   **Perché**, ricostruito e coerente con tutte le prove: i preview **condividono il database di
-   produzione**, dove la migrazione `20261005074035_notes_judgement.sql` non è ancora applicata,
-   perché `.github/workflows/deploy-database.yml` gira **su push a `main`**, cioè dopo il merge. La
-   pagina Release funziona perché `get-release.ts` legge `body` e calcola la testa in TypeScript; la
-   pagina Technology e la Dashboard falliscono perché leggono la colonna nuova **`body_head`**, che in
-   produzione non c'è ancora. In locale, con la migrazione applicata, `technology.spec.ts` passa.
+Trovata il 2026-10-05 nel giro a mano, su uno screenshot della Dashboard di produzione mandato
+dall'utente. In testa `ok: nothing needs action` col glifo verde, e due righe sotto
+`In use on 2 of 5: 31 releases behind · 2 need action`, con React a `1 needs action` e webpack a
+`1 needs action · 7 to check`.
 
-   ⚠️ **Non è solo il preview: è anche il merge.** Al push su `main`, Vercel pubblica il codice nuovo
-   e il workflow applica la migrazione **sullo stesso push**, in parallelo: finché la migrazione non
-   atterra, la pagina Technology e la Dashboard rispondono 500 **in produzione**.
+Il perché, già diagnosticato, da non rifare: `verdictOf` in
+`src/modules/dashboard/domain/build-dashboard.ts` conta **solo le Release `featured` degli ultimi 30
+giorni**, e quella schermata ha `0 featured`; `inUseTotals`, invece, somma il Cammino di upgrade
+dalla Versione in uso **senza finestra temporale**. Due ambiti diversi impaginati come uno solo, e
+con l'insieme vuoto il verdetto afferma una cosa vera a vuoto e la presenta come rassicurazione.
 
-   **La via, decisa ma non ancora eseguita** (serve il via libera dell'utente, perché scrive sul
-   database di produzione): prima lo schema, poi il codice che lo legge. La migrazione aggiunge una
-   colonna generata e il codice vecchio la ignora, quindi applicarla in anticipo è sicuro.
+**Verificato che è preesistente**: su `main` prima della #92 `verdictOf` aveva già lo stesso ambito,
+il P0-2 ha cambiato solo da dove si legge `actionRequired`. Per questo la #92 è stata unita lo stesso:
+tenerla ferma per un difetto già su `main` non proteggeva nessuno. Decisione dell'utente, presa su
+raccomandazione motivata.
 
-   ```
-   gh workflow run deploy-database.yml --ref 47-p0-2-not-enough-notes-to-judge
-   ```
+Le tre vie sono scritte nella issue. La terza, **non dare verdetto quando l'insieme è vuoto**, è
+quella consigliata, perché si tiene con la regola che la #47 ha appena fissato: senza materiale per
+giudicare non si giudica (CONTEXT.md, Note giudicabili). In coda alla issue c'è anche il `1 previews`
+al singolare, da confermare o correggere.
 
-   Poi ricontrollare `/technologies/vite` sul preview, dove deve comparire la riga
-   `note: not enough notes to judge` su `8.0.0`, **e solo dopo mergiare la #92**.
+### Che cosa ha mostrato il giro a mano, per non rifarlo
 
-   ⚠️ Il settimo stato **non è visibile in locale**: serve una Sintesi `ready` e generarla spende. I
-   tre casi veri sono `vite 8.0.0`, `webpack 5.0.0` e `tRPC 11.0.0`. Senza preview, l'aspetto si
-   controlla sul mock: `design/mocks/release.html?state=ready-unjudged`.
+- **Il settimo stato è giusto** su pagina Release e su righe della pagina Technology, su **quattro**
+  casi veri e non tre: `vite 8.0.0`, **`vite 8.2.0`**, `webpack 5.0.0`, `tRPC 11.0.0`.
+- **Sulla Dashboard non è osservabile oggi**, e non per un difetto: `vite 8.0.0` è del 2026-03-12,
+  fuori dalla finestra dei 30 giorni, e con `0 featured` nessuna riga di Spotlight porta un verdetto.
+  La resa è coperta dal test in `dashboard-copy.test.ts`, che fissa `unjudged` distinto da
+  `no summary · read the release notes`.
+- **Le tre pagine mai disegnate, punto chiuso.** Il **404 disegnato è giusto** sul preview
+  (`/test/throw` in produzione è un 404, perché esiste solo con `E2E_AUTH_SECRET`). La **pagina di
+  errore disegnata funziona**: `tests/e2e/errors.spec.ts` la verifica proprio con `/test/throw`, e
+  l'`error.tsx` copre il segmento. ⚠️ **Quello che si era visto il 2026-10-05 non era un boundary
+  mancante**: `/technologies/[slug]` è ISR (`revalidate = 3600`, nessuna pagina costruita in
+  anticipo), e quando il render **statico** della prima visita fallisce Next non passa dal boundary
+  client e serve il suo fallback ("This page couldn't load"). Se si vuole la pagina disegnata anche
+  lì è un lavoro a sé, non ancora aperto come issue. Resta da guardare solo il **login**.
+- **Produzione verificata dopo il merge**: `/`, `/technologies/vite`, `/technologies/vite/8.0.0` e
+  `/technologies/webpack/5.0.0` rispondono 200 e portano `not enough notes to judge`; `/technologies`
+  e `/dashboard` rimandano a `/login?next=…`, come devono. `Deploy database` e `CI` verdi sul merge.
 
-   **La Dashboard resta da guardare**: è la terza superficie del verdetto, richiede l'accesso, e
-   l'agente non inserisce credenziali. La guarda l'utente.
-2. **Il giudizio sulle tre pagine** che la revisione ha trovato già disegnate (404, errore, login).
-   **Dato di partenza raccolto il 2026-10-05**: il 500 qui sopra non ha mostrato la pagina di errore
-   disegnata, ma quella **di default di Next** ("This page couldn't load", bottone `Reload`), invece
-   di quella che `DESIGN.md` specifica (x-circle corallo, `error: this page could not be loaded`,
-   `Try again` e la riga `reference <digest>`). Da capire se l'`error.tsx` non copre quel segmento o
-   se l'errore arriva al `global-error`. Non è stato indagato: è lavoro della #47, non del P0-2.
-3. Poi unire la #92, che chiude la #47 e sblocca la **#26**, l'ultima fetta del PRD.
+### ⚠️ La lezione di sequenza, che vale per ogni migrazione futura
+
+**I preview condividono il database di produzione**, e `.github/workflows/deploy-database.yml` gira
+**su push a `main`**, cioè dopo il merge. Quindi una migrazione che il codice nuovo legge va applicata
+**prima**, altrimenti il preview dà 500 e, al merge, lo danno anche le pagine in produzione finché la
+migrazione non atterra. Qui è successo: `/technologies/vite` dava 500 perché leggeva `body_head`, che
+in produzione non c'era.
+
+La via, usata e funzionante, da rifare uguale (prima lo schema, poi il codice che lo legge; una
+colonna aggiunta è ignorata dal codice vecchio, quindi anticiparla è sicuro):
+
+```
+gh workflow run deploy-database.yml --ref <branch-della-PR>
+```
+
+⚠️ **L'agente non può lanciarlo**: il classificatore di auto mode blocca `gh workflow run` su un
+workflow che scrive sul database di produzione. Lo lancia l'utente, dal terminale o col `!` nel
+prompt; poi l'agente lo segue da solo, perché `gh run list` e `gh run watch` sono letture e passano.
+Il job `catalog` che segue le migrazioni **non spende**: tocca GitHub e npm, non Anthropic.
 
 ### Che cosa ha deciso l'utente sul P0-2, per non ridiscuterlo
 
@@ -248,8 +274,9 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   (PR #59), la **#54** (PR #60) e la **#23** (PR #61), tutte unite il 2026-09-29; la **#62** (PR #66
   e #67) e la **#68** (PR #74) il 2026-09-30; la **#63** (PR #75), la **#25** (PR #77), la **#72**
   (PR #79) e la **#36** (PR #81) il 2026-10-02; la **#24** (PR #82) il 2026-10-03.
-  Sbloccata, con la #63, la **#47**, che ora non ha più niente davanti. Della #47 è fatto il
-  **P0-1**, con la **PR #89** del 2026-10-04, aperta e non unita.
+  La **#47** è **chiusa il 2026-10-05** con la PR #92, che la portava a termine dopo le PR #89, #90
+  e #91: con lei si sblocca la **#84** e resta la **#26** come ultima fetta del PRD.
+  Aperta il 2026-10-05: **#94** (il verdetto della Dashboard si contraddice, `ready-for-human`).
   Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
   Aperta dall'utente il 2026-10-04: **#88** (una Sintesi `ready` senza provenienza non viene
   rifiutata dal database), `ready-for-agent` e libera da blocchi.
@@ -319,7 +346,7 @@ non c'è, e **l'agente non può scriversi le autorizzazioni da solo**: il tentat
 
 ## Sessione del 2026-10-04: il P0-1 della #47, le righe della pagina Technology (PR #89)
 
-Branch `47-p0-1-release-row-content`, **PR #89 aperta e non unita**, con un riferimento alla #47 e
+Branch `47-p0-1-release-row-content`, **PR #89 unita il 2026-10-05**, con un riferimento alla #47 e
 **senza** `Closes`. La #47 resta aperta.
 
 ### Che cosa è stato fatto, e la cosa da ricordare
@@ -421,18 +448,20 @@ stesso branch, **la #47 non si chiude per sessioni e tiene bloccata la #26**, ch
 del PRD. Nessuna delle PR intermedie scrive `Closes #47`: la #47 si chiude solo con l'ultima dei
 cinque.
 
-L'ordine consigliato, dal più autonomo al più legato a una decisione (**ne resta uno**):
+L'ordine consigliato, dal più autonomo al più legato a una decisione (**tutti fatti**):
 
 1. ~~**P0-1** (verdetti sulle righe della pagina Technology)~~: **fatto il 2026-10-04**, PR #89, unita.
 2. ~~**P2-9** (i due difetti misurati)~~: **fatto il 2026-10-05**, PR #90, unita.
 3. ~~**Il gruppo della #64** (P1-3 i conteggi, P1-4 Spotlight, P1-5 la barra sul telefono)~~:
    **fatto il 2026-10-05**, PR #91, unita.
-4. **P0-2** (il settimo stato): **da qui si riparte**, ed è l'unico che richiede una risposta
-   dell'utente prima di scrivere codice, e l'unico che può costare.
+4. ~~**P0-2** (il settimo stato)~~: **fatto il 2026-10-05**, PR #92, unita, l'unica che portava
+   `Closes #47`. Era l'unico che richiedeva una risposta dell'utente prima di scrivere codice: le due
+   risposte sono in "Che cosa ha deciso l'utente sul P0-2". Non ha speso niente, perché lo stato si
+   deriva alla resa da quello che era già memorizzato.
 
-Da fare comunque, prima di dire che la #47 è chiusa: `pnpm lint`, `pnpm typecheck`, `pnpm test`,
-`pnpm test:e2e`, e **il giro a mano nel browser** che l'handoff prevede da prima della revisione.
-Il criterio "nessuna regressione negli E2E né nei controlli di accessibilità della #23" è dell'issue.
+Il giro finale è stato fatto: `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm test:e2e` sulla #92,
+e **il giro a mano nel browser** sul preview, che ha trovato la sequenza della migrazione e la #94.
+Il criterio "nessuna regressione negli E2E né nei controlli di accessibilità della #23" è rispettato.
 
 ### P0-1, da cui si riparte: le righe della pagina Technology sono vuote
 
