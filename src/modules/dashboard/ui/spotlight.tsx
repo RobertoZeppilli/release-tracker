@@ -1,3 +1,5 @@
+import { Info } from "lucide-react";
+import Link from "next/link";
 import { SignificanceLabel } from "@/modules/releases/ui";
 import { InlineCode } from "@/modules/summaries/ui";
 import type { DashboardRelease, SpotlightEntry, SpotlightStanding } from "../domain/build-dashboard";
@@ -39,7 +41,7 @@ function FeaturedCell({ release, thisWeek }: { release: DashboardRelease; thisWe
 function CompactCell({ standing }: { standing: SpotlightStanding }) {
   return (
     <div className={CELL}>
-      <ReleaseVersion release={standing.release} />
+      <ReleaseVersion release={standing.release} glyphHidden />
       <PublishedAt release={standing.release} />
       <p className="min-w-0 font-mono text-diagnostic text-text-muted max-[880px]:col-span-full">
         latest {standing.major ? "major" : "release"} · none featured in 30 days
@@ -74,11 +76,20 @@ function EntryCells({ entry, thisWeek }: { entry: SpotlightEntry; thisWeek: stri
 }
 
 export function Spotlight({ entries, thisWeek }: { entries: readonly SpotlightEntry[]; thisWeek: string }) {
+  // The count is Releases, like every other section title on the page: `spotlight (5)` over five
+  // rows that each said `none featured` was counting Technologies, and contradicting `0 featured`
+  // in the summary two lines above.
+  const featured = entries.reduce((total, entry) => total + entry.featured.length, 0);
+  // A row is worth its place when it carries a featured Release or a distance from the Version in
+  // use. When not one of them does, the five compact rows say the same nothing five times, in the
+  // space right under the verdict: one muted line says it once and gives the space back.
+  const silent = entries.every((entry) => entry.featured.length === 0 && !entry.behind);
+
   return (
     <section id="spotlight" aria-labelledby="spotlight-title" className="mt-7 scroll-mt-4">
       <SectionTitle
         id="spotlight-title"
-        title={`spotlight (${entries.length})`}
+        title={`spotlight (${featured})`}
         aside={
           <span className="flex items-center gap-2">
             <SignificanceLabel significance="featured" />
@@ -86,14 +97,24 @@ export function Spotlight({ entries, thisWeek }: { entries: readonly SpotlightEn
           </span>
         }
       />
-      <ul className="border-t border-rule">
-        {entries.map((entry) => (
-          <li key={entry.technology.slug} className={ROW}>
-            <TechnologyName {...entry.technology} muted={entry.featured.length === 0} />
-            <EntryCells entry={entry} thisWeek={thisWeek} />
-          </li>
-        ))}
-      </ul>
+      {silent ? (
+        <p className="font-mono text-diagnostic text-text-muted">
+          <Info aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
+          note: nothing featured in the last 30 days, across the{" "}
+          <Link href="/technologies" className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current">
+            {entries.length} {entries.length === 1 ? "technology" : "technologies"} you follow
+          </Link>
+        </p>
+      ) : (
+        <ul className="border-t border-rule">
+          {entries.map((entry) => (
+            <li key={entry.technology.slug} className={ROW}>
+              <TechnologyName {...entry.technology} muted={entry.featured.length === 0} />
+              <EntryCells entry={entry} thisWeek={thisWeek} />
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

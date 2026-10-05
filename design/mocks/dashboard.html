@@ -160,6 +160,11 @@ main[data-state="empty"] .for-empty { display: block; }
 main[data-state="empty"] .for-stack { display: none; }
 main[data-state="safe"] .for-safe { display: inline; }
 main[data-state="safe"] .for-action { display: none; }
+/* Nothing featured in the window: Spotlight gives the space back instead of repeating itself. */
+main[data-state="silent"] #spotlight .rows { display: none; }
+main[data-state="silent"] #spotlight .line { display: block; }
+main[data-state="silent"] .for-action { display: none; }
+#spotlight .line { display: none; }
 
 /* Design-review control, not part of the product */
 .review { position: fixed; right: var(--space-4); bottom: var(--space-4); background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
@@ -192,6 +197,19 @@ main[data-state="safe"] .for-action { display: none; }
   .catalog .row .btn { grid-row: 1 / 3; grid-column: 2; }
   .review { left: var(--space-4); justify-content: space-between; }
 }
+/* Below 430px the quota comes down into the strip beside the links, so the bar keeps the two rows
+   it is specified as: the three items did not fit on one line, and the phones where the check
+   happens most often spent a third row on chrome (issue #47, P1-5). The strip has no column gap,
+   so its rule runs unbroken across the row. */
+@media (max-width: 429px) {
+  .topbar-inner { column-gap: 0; }
+  .topbar-actions { display: contents; }
+  .topbar-inner > nav { width: auto; flex: 1; }
+  .wordmark { margin-right: auto; }
+  .topbar-actions > * { margin-left: var(--space-4); }
+  .quota { order: 3; margin-left: 0; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .week summary .chev { transition: none; }
@@ -246,7 +264,8 @@ main[data-state="safe"] .for-action { display: none; }
     </section>
 
     <section class="section" id="spotlight" aria-labelledby="spotlight-title">
-      <h2 class="section-title" id="spotlight-title">spotlight (7)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg>featured <span class="fact">· last 30 days</span></span></h2>
+      <h2 class="section-title" id="spotlight-title">spotlight (<span id="spotlight-n">3</span>)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg>featured <span class="fact">· last 30 days</span></span></h2>
+      <p class="line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: nothing featured in the last 30 days, across the <a href="technologies.html">7 technologies you follow</a></p>
       <ul class="rows">
         <li class="row">
           <a class="tech" href="#">React</a>
@@ -294,7 +313,7 @@ main[data-state="safe"] .for-action { display: none; }
         </li>
         <li class="row compact">
           <a class="tech" href="#">Next.js</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="#">15.0.0</a></span>
+          <span class="ver"><a href="#">15.0.0</a></span>
           <span class="when"><time datetime="2024-10-21">2024-10-21</time></span>
           <div class="main">
             <p>latest major · none featured in 30 days</p>
@@ -303,19 +322,19 @@ main[data-state="safe"] .for-action { display: none; }
         </li>
         <li class="row compact">
           <a class="tech" href="#">Node.js</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="#">23.0.0</a></span>
+          <span class="ver"><a href="#">23.0.0</a></span>
           <span class="when"><time datetime="2024-10-16">2024-10-16</time></span>
           <p class="main">latest major · none featured in 30 days</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Vitest</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="#">2.0.0</a></span>
+          <span class="ver"><a href="#">2.0.0</a></span>
           <span class="when"><time datetime="2024-07-08">2024-07-08</time></span>
           <p class="main">latest major · none featured in 30 days</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Tailwind CSS</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="#">3.0.0</a></span>
+          <span class="ver"><a href="#">3.0.0</a></span>
           <span class="when"><time datetime="2021-12-09">2021-12-09</time></span>
           <p class="main">latest major · none featured in 30 days</p>
         </li>
@@ -492,6 +511,7 @@ main[data-state="safe"] .for-action { display: none; }
   <select id="state-select">
     <option value="action">7 followed · 2 need action</option>
     <option value="safe">7 followed · nothing needs action</option>
+    <option value="silent">7 followed · nothing featured</option>
     <option value="empty">0 followed</option>
   </select>
 </div>
@@ -533,6 +553,8 @@ document.getElementById("state-select").addEventListener("change", (event) => {
   main.dataset.state = state;
   if (state === "empty") syncFollowCount();
   else quotaN.textContent = "7";
+  // The title counts Releases, so it is 0 when Spotlight has nothing featured to show.
+  document.getElementById("spotlight-n").textContent = state === "silent" ? "0" : "3";
 });
 </script>
 </body>

@@ -13,16 +13,16 @@ export function FollowStatus() {
     <p className="m-0 font-mono text-status text-text-muted tabular-nums">
       <Info aria-hidden className="mr-[0.4ch] inline size-[0.8em] align-[-0.08em]" />
       <span className="mr-[0.4ch]">note:</span>
-      <span aria-live="polite">
-        <span className="sr-only" data-testid="follow-status">
-          you follow {count} of {FREE_FOLLOW_LIMIT} technologies
-        </span>
-        <span aria-hidden className="max-sm:hidden">
-          you follow <span className="text-text">{count}</span> of {FREE_FOLLOW_LIMIT} technologies
-        </span>
-        <span aria-hidden className="sm:hidden">
-          <span className="text-text">{count}</span> of {FREE_FOLLOW_LIMIT} followed
-        </span>
+      {/* Only the spoken sentence is live. The two visible ones say the same thing twice, once wide
+          and once narrow, and a live region around all three made one toggle arrive three times. */}
+      <span aria-live="polite" className="sr-only" data-testid="follow-status">
+        you follow {count} of {FREE_FOLLOW_LIMIT} technologies
+      </span>
+      <span aria-hidden className="max-sm:hidden">
+        you follow <span className="text-text">{count}</span> of {FREE_FOLLOW_LIMIT} technologies
+      </span>
+      <span aria-hidden className="sm:hidden">
+        <span className="text-text">{count}</span> of {FREE_FOLLOW_LIMIT} followed
       </span>
     </p>
   );

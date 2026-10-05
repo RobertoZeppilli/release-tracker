@@ -1,8 +1,8 @@
 "use client";
 
-import { CircleX } from "lucide-react";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import type { FollowRejection } from "../domain/follow-rejection";
+import { RowStatusLine } from "./row-status-line";
 
 // What the database refused, said once for every page that can be refused: what did not happen, why,
 // and the way out. The Toggle points at it with `aria-describedby`, so the id comes from the caller.
@@ -18,10 +18,9 @@ export function FollowRejectionNote({
   className: string;
 }) {
   return (
-    <p id={id} className={`font-mono text-diagnostic text-breaking ${className}`}>
-      <CircleX aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-      error: {message(rejection)}
-    </p>
+    <RowStatusLine id={id} tone="error" className={className}>
+      {message(rejection)}
+    </RowStatusLine>
   );
 }
 
