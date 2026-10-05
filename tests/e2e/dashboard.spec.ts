@@ -104,7 +104,10 @@ test("offers the Catalog when the Developer follows nothing, and follows from th
 
   await page.getByRole("button", { name: "Open dashboard" }).click();
   await expect(page.getByText("you follow no technologies yet")).toBeHidden();
-  await expect(page.getByRole("heading", { name: /spotlight \(1\)/ })).toBeVisible();
+  // Spotlight counts Releases, not Technologies (issue #47, P1-4), and whichever Technology the
+  // shortlist opened with may have none featured in the window: the point here is that the section
+  // is there at all, which is what following from the Catalog bought.
+  await expect(page.getByRole("heading", { name: /spotlight \(\d+\)/ })).toBeVisible();
 });
 
 test("fills Latest, Previews and the Weekly Digest with the window", async ({ page }) => {
