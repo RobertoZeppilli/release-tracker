@@ -51,7 +51,8 @@ dichiarano una `category`: il fixture principale e' una `library`, i filler un `
 test puo' dire in che gruppo sta la sua riga. **528 unitari, 63 di integrazione e 150 E2E verdi**,
 `lint` e `typecheck` puliti. Nessun flake in questa corsa.
 
-**Cosa manca alla #86**: solo commit e PR.
+**La #86 e' sulla PR #102**, dal commit `0264ecd`. Manca solo: applicare la migrazione a
+produzione, poi il merge, poi la verifica in produzione.
 ⚠️ **La migrazione va applicata a produzione prima del merge** (i preview usano il database di
 produzione: schema prima, codice dopo).
 ⚠️ Il `db:reset` cancella l'utente locale: `pnpm dev:login` lo ricrea.
