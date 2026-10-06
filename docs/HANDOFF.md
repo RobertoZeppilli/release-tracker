@@ -16,8 +16,8 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte sul 07).** La **#87 è a metà**, sul branch
-`87-forbid-em-dash-in-summaries`. Fatto e committato (`3196a37`): il divieto del trattino lungo nel
+**Da dove ripartire (2026-10-06, notte sul 07).** La **#87 è fatta**, sul branch
+`87-forbid-em-dash-in-summaries`, e resta solo la PR. Committato (`3196a37`): il divieto nel
 system prompt, `PROMPT_VERSION` a **v5**, e un test unitario che asserisce il divieto, i quattro
 campi nominati e l'esenzione delle `quote` (nel test il carattere è scritto con la sua sequenza di
 escape unicode, così il sorgente non ne contiene uno). 529 unitari verdi, `lint` e `typecheck`
@@ -31,25 +31,23 @@ titolo e `pnpm 11.22.0` nella `migration` di un breaking change, più 9 che ce l
 rigenerazione: i tre campi si correggono in posto, spazio-trattino-spazio diventa due punti più
 spazio. Le due righe sono in `docs/DECISIONI.md`.
 
-**Quello che resta da fare, e che serve le mani dell'utente.** La correzione è scritta e collaudata
-(la logica di riscrittura del JSON provata in sola lettura su un valore letterale: titolo e
-`migration` corretti, `quote` intatta, ordine e `actionRequired` invariati), ma **non è stata
-applicata**, perché:
+**Le tre Sintesi sono corrette**, l'utente ha lanciato l'SQL nel SQL Editor di produzione il
+2026-10-06 e il riconteggio ha dato `0 | 0 | 0 | 9`: zero nei tre campi che il prompt governa, e le 9
+`quote` intatte col loro trattino, come da progetto. Lo spazio-trattino-spazio è diventato due punti
+più spazio in tutti e tre i casi.
+⚠️ **Le pagine restano vecchie per un'ora**: sono ISR (`export const revalidate = 3600` in
+`technologies/[slug]/[version]/page.tsx`), e la cache di rotta **ignora il parametro antichache**, che
+torna `X-Vercel-Cache: HIT` anche con una query nuova. Subito dopo l'SQL le tre pagine mostravano
+ancora il trattino: non è un difetto, e il deploy del merge le ricostruisce comunque. Chi verifica
+guardi l'ora o il deploy, non il parametro.
+⚠️ Attenzione a come si legge una pagina di produzione da qui: `curl | python` decodifica in cp1252 e
+fa **sparire** il conteggio dei trattini lunghi. Va salvato il file e riletto in UTF-8.
 
-1. Il file della correzione è in
-   `…/scratchpad/query-em-dash-fix.yml` (fuori dal repo): **il commit e il push su `main` mi sono
-   stati negati dal classificatore** (`Production Deploy` e `Modify Shared Resources`). Su `main` è
-   rimasta la versione **di sola lettura** del workflow, `.github/workflows/query-em-dash.yml`
-   (`7a73745`), **che va cancellata** quando la correzione è fatta.
-2. La via più corta, ora, è **incollare l'SQL nel SQL Editor** della dashboard di produzione: fa
-   stampare i valori di prima, sostituisce, ristampa e riconta. Niente commit su `main`, niente
-   deploy.
-3. Poi: cancellare il workflow da `main`, verificare le tre pagine in produzione, e aprire la **PR
-   che chiude la #87** dal branch (`Closes #87` in inglese).
-
-⚠️ **`workflow_dispatch` funziona solo se il workflow sta su `main`**: GitHub risolve il workflow dal
-branch di default. È per questo che il workflow della lettura è finito su `main` invece che sul
-branch della issue.
+**Il workflow della lettura se ne va col merge.** `.github/workflows/query-em-dash.yml` era finito su
+`main` (`7a73745`) perché `workflow_dispatch` si risolve solo dal branch di default; la PR della #87
+porta `main` dentro il branch e lo cancella, così non serve nessun commit diretto su `main`. Il file
+della versione che correggeva da sola, e l'SQL incollato a mano, sono rimasti nello scratchpad della
+sessione, fuori dal repo.
 
 **Lo stato precedente (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
 (`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
