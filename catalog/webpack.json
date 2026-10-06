@@ -1,6 +1,7 @@
 {
   "name": "webpack",
   "description": "Module bundler for JavaScript",
+  "category": "build tool",
   "classificationStrategy": "semver",
   "sources": [
     {

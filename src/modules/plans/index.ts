@@ -6,7 +6,9 @@ export {
 } from "./domain/current-version";
 export { FREE_FOLLOW_LIMIT } from "./domain/follow-limit";
 export {
+  type CategoryGroup,
   countMatches,
+  groupByCategory,
   matchesQuery,
   type PickerSections,
   type PickerTechnology,

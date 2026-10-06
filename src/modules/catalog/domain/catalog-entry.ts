@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ClassificationStrategySchema, unknownVersionPlaceholders, VERSION_PLACEHOLDERS } from "@/modules/releases";
+import { CategorySchema } from "./category";
 
 const RepoSchema = z.string().regex(/^[\w.-]+\/[\w.-]+$/, "expected owner/name");
 
@@ -73,6 +74,7 @@ export const SlugSchema = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "expected
 export const CatalogFileSchema = z.strictObject({
   name: z.string().min(1),
   description: z.string(),
+  category: CategorySchema,
   classificationStrategy: ClassificationStrategySchema,
   sources: z
     .array(SourceSchema)

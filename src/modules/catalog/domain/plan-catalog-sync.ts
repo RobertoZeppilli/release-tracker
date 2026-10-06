@@ -56,6 +56,7 @@ function matches(entry: CatalogEntry, technology: StoredTechnology): boolean {
     !technology.retired &&
     entry.name === technology.name &&
     entry.description === technology.description &&
+    entry.category === technology.category &&
     entry.classificationStrategy === technology.classificationStrategy &&
     sameSources(entry.sources, technology.sources)
   );

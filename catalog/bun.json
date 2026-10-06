@@ -1,6 +1,7 @@
 {
   "name": "Bun",
   "description": "JavaScript runtime and toolkit",
+  "category": "runtime",
   "classificationStrategy": "semver",
   "sources": [
     {

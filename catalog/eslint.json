@@ -1,6 +1,7 @@
 {
   "name": "ESLint",
   "description": "Linter for JavaScript and TypeScript",
+  "category": "lint and formatting",
   "classificationStrategy": "semver",
   "sources": [
     {

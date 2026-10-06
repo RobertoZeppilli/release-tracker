@@ -57,6 +57,7 @@ function technologyFields(entry: CatalogEntry) {
   return {
     name: entry.name,
     description: entry.description,
+    category: entry.category,
     classification_strategy: entry.classificationStrategy,
   };
 }

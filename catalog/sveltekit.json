@@ -1,6 +1,7 @@
 {
   "name": "SvelteKit",
   "description": "Application framework built on Svelte",
+  "category": "framework",
   "classificationStrategy": "semver",
   "sources": [
     {

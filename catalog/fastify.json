@@ -1,6 +1,7 @@
 {
   "name": "Fastify",
   "description": "Fast web framework for Node.js",
+  "category": "server framework",
   "classificationStrategy": "semver",
   "sources": [
     {

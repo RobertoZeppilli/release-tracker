@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import type { Category } from "@/modules/catalog";
 import type { SummaryContent } from "@/modules/summaries";
 
 const LocalSupabaseSchema = z.object({ API_URL: z.url(), SECRET_KEY: z.string().min(1) });
@@ -73,7 +74,9 @@ export type FixtureTechnology = {
 // A Technology of its own for each run, so pages cached by earlier runs never interfere.
 export async function seedTechnology(
   releases: FixtureRelease[],
-  { retired = false }: { retired?: boolean } = {},
+  // Every Technology has a Category, and the picker groups the Catalog by it: a fixture declares its
+  // own so a test can say which group its row belongs to.
+  { retired = false, category = "library" }: { retired?: boolean; category?: Category } = {},
 ): Promise<FixtureTechnology> {
   const db = serviceClient();
   const slug = `e2e-${randomUUID().slice(0, 8)}`;
@@ -82,7 +85,7 @@ export async function seedTechnology(
 
   const technology = await db
     .from("technologies")
-    .insert({ slug, name, classification_strategy: "semver", retired })
+    .insert({ slug, name, category, classification_strategy: "semver", retired })
     .select("id")
     .single();
   if (technology.error) throw technology.error;
@@ -152,7 +155,8 @@ export async function seedFillers(count: number): Promise<FixtureFillers> {
   const db = serviceClient();
   const rows = Array.from({ length: count }, () => {
     const slug = `filler-${randomUUID().slice(0, 8)}`;
-    return { slug, name: `Filler ${slug.slice(7)}`, classification_strategy: "semver" as const };
+    // A Category of their own, so the fillers never crowd the group a test is looking at.
+    return { slug, name: `Filler ${slug.slice(7)}`, category: "platform" as const, classification_strategy: "semver" as const };
   });
 
   const inserted = await db.from("technologies").insert(rows).select("id");

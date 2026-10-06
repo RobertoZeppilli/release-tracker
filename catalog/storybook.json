@@ -1,6 +1,7 @@
 {
   "name": "Storybook",
   "description": "Workshop for building UI components",
+  "category": "testing",
   "classificationStrategy": "semver",
   "sources": [
     {

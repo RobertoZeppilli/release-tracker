@@ -1,6 +1,7 @@
 {
   "name": "Vitest",
   "description": "Test runner powered by Vite",
+  "category": "testing",
   "classificationStrategy": "semver",
   "sources": [
     {

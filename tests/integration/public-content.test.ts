@@ -32,7 +32,7 @@ describe("public content", () => {
   it("is not writable by anon", async () => {
     const anon = anonClient();
     const writes = await Promise.all([
-      anon.from("technologies").insert({ slug: "anon", name: "anon", classification_strategy: "semver" }),
+      anon.from("technologies").insert({ slug: "anon", name: "anon", category: "library", classification_strategy: "semver" }),
       anon.from("technologies").update({ name: "changed" }).eq("id", content.technologyId),
       anon.from("releases").update({ significance: "digest" }).eq("id", content.releaseId),
       anon.from("release_notes").update({ body: "changed" }).eq("release_id", content.releaseId),

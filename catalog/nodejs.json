@@ -1,6 +1,7 @@
 {
   "name": "Node.js",
   "description": "JavaScript runtime built on V8",
+  "category": "runtime",
   "classificationStrategy": "node",
   "sources": [
     {

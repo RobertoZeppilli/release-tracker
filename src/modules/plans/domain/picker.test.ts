@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { countMatches, liveSections, matchesQuery, type PickerTechnology, splitPicker } from "./picker";
+import {
+  countMatches,
+  groupByCategory,
+  liveSections,
+  matchesQuery,
+  type PickerTechnology,
+  splitPicker,
+} from "./picker";
 
 function technology(name: string, options: Partial<PickerTechnology> = {}): PickerTechnology {
   const slug = name.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-");
@@ -10,6 +17,7 @@ function technology(name: string, options: Partial<PickerTechnology> = {}): Pick
     description: `${name} description`,
     latest: "1.0.0",
     retired: false,
+    category: "library",
     ...options,
   };
 }
@@ -94,5 +102,42 @@ describe("liveSections", () => {
     expect(live.following.map((row) => row.name)).toEqual(sections.following.map((row) => row.name));
     expect(live.catalog.map((row) => row.name)).toEqual(sections.catalog.map((row) => row.name));
     expect(live.retired.map((row) => row.name)).toEqual(sections.retired.map((row) => row.name));
+  });
+});
+
+describe("groupByCategory", () => {
+  const rows = [
+    technology("Vite", { category: "build tool" }),
+    technology("Zod", { category: "library" }),
+    technology("React", { category: "framework" }),
+    technology("TypeScript", { category: "language" }),
+    technology("Vue", { category: "framework" }),
+  ];
+
+  // Not alphabetical by Category: the order is the one CONTEXT.md declares, from the language to the
+  // platform, because the Catalog is read to put a stack together.
+  it("keeps the declared order of the Categories, and the row order inside each", () => {
+    expect(groupByCategory(rows)).toEqual([
+      { category: "language", rows: [rows[3]] },
+      { category: "framework", rows: [rows[2], rows[4]] },
+      { category: "build tool", rows: [rows[0]] },
+      { category: "library", rows: [rows[1]] },
+    ]);
+  });
+
+  it("leaves out a Category with no row to show, rather than an empty group", () => {
+    expect(groupByCategory([rows[1]])).toEqual([{ category: "library", rows: [rows[1]] }]);
+  });
+
+  it("has nothing to group when the Catalog section is empty", () => {
+    expect(groupByCategory([])).toEqual([]);
+  });
+
+  // Every row lands in exactly one group: a Technology has one Category and there is no "other".
+  it("holds every row once", () => {
+    const grouped = groupByCategory(rows).flatMap((group) => group.rows);
+
+    expect(grouped).toHaveLength(rows.length);
+    expect(new Set(grouped.map((row) => row.id)).size).toBe(rows.length);
   });
 });

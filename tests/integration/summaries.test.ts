@@ -49,7 +49,7 @@ let created: string[] = [];
 async function seedTechnology(technologySlug: string): Promise<string> {
   const inserted = await serviceClient()
     .from("technologies")
-    .insert({ slug: technologySlug, name: "Summary test", classification_strategy: "semver" })
+    .insert({ slug: technologySlug, name: "Summary test", category: "library", classification_strategy: "semver" })
     .select("id")
     .single();
   if (inserted.error) throw inserted.error;

@@ -1,6 +1,7 @@
 {
   "name": "Next.js",
   "description": "React framework for the web",
+  "category": "framework",
   "classificationStrategy": "semver",
   "sources": [
     {

@@ -1,6 +1,7 @@
 {
   "name": "Prisma",
   "description": "ORM and database toolkit for Node.js",
+  "category": "database",
   "classificationStrategy": "semver",
   "sources": [
     {

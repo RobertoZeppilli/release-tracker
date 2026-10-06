@@ -15,6 +15,34 @@ L'insieme curato delle **Tecnologie** che si possono seguire. Lo gestisce l'ammi
 utenti non lo modificano.
 _Evitare_: registry, lista pacchetti.
 
+**Genere**:
+Il mestiere che una **Tecnologia** svolge in uno stack, e il modo in cui il **Catalogo** si legge:
+una **Tecnologia** ha esattamente un **Genere**. Non viene dalla **Fonte**, che non lo dichiara: lo
+**curiamo noi** nel file `catalog/<slug>.json`, come curiamo il **Catalogo** stesso. I **Generi**
+sono un insieme chiuso di dieci, nei nomi e nell'ordine qui sotto, e il database rifiuta un valore
+che non sia uno di questi. L'ordine non è alfabetico: va dal linguaggio alla piattaforma, perché il
+**Catalogo** si scorre per metterne insieme uno stack, non per cercare un nome che si sa già.
+
+| Genere | Codice / UI | Tecnologie |
+| --- | --- | --- |
+| Linguaggio | `language` | typescript, rust |
+| Runtime | `runtime` | nodejs, deno, bun |
+| Framework | `framework` | angular, astro, next, nuxt, react, svelte, sveltekit, vue |
+| Framework server | `server framework` | express, fastify, nestjs, trpc |
+| Database | `database` | prisma, drizzle-orm |
+| Strumento di build | `build tool` | vite, webpack, turborepo, pnpm |
+| Test | `testing` | vitest, jest, playwright, storybook |
+| Lint e formattazione | `lint and formatting` | eslint, prettier, biome |
+| Libreria | `library` | axios, zod, tailwindcss, zustand, redux-toolkit |
+| Piattaforma | `platform` | electron, terraform |
+
+**`library` è un genere, non un residuo**: è una **Tecnologia** che si importa dentro il codice
+dell'applicazione e che non detta la forma del progetto, al contrario di un `framework`, né gira da
+fuori su quel codice, al contrario di un `build tool`, di `testing` o di `lint and formatting`. Si
+definisce così in positivo, ed è il motivo per cui `axios` e `tailwindcss` stanno nella stessa
+casella pur non somigliandosi. Non esiste e non va creato un genere "altro".
+_Evitare_: categoria, tipo, tag.
+
 **Tecnologia ritirata**:
 Una **Tecnologia** tolta dal **Catalogo**: non ha più **Rilevamento**, ma le sue **Release** e
 **Sintesi** restano consultabili e chi la seguiva la vede segnalata. Una **Tecnologia** non si
@@ -255,6 +283,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 |---|---|---|
 | Tecnologia | `Technology` | |
 | Catalogo | `Catalog` | |
+| Genere | `category` | `language` · `runtime` · `framework` · `server framework` · `database` · `build tool` · `testing` · `lint and formatting` · `library` · `platform` |
 | Fonte | `Source` | ruolo: `detection` · `notes`; tipo: `npm` · `pypi` · `github-releases` · `changelog` |
 | Formato dei tag | `tagFormat` | segnaposto: `{version}` · `{major}` · `{minor}` · `{patch}` · `{prerelease}` |
 | Formato delle Anteprime | `prereleaseTagFormat` | solo sulle Fonti `notes`, facoltativo |

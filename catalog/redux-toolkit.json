@@ -1,6 +1,7 @@
 {
   "name": "Redux Toolkit",
   "description": "Standard toolset for Redux",
+  "category": "library",
   "classificationStrategy": "semver",
   "sources": [
     {

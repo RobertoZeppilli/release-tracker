@@ -1,6 +1,7 @@
 {
   "name": "Zod",
   "description": "TypeScript-first schema validation",
+  "category": "library",
   "classificationStrategy": "semver",
   "sources": [
     {

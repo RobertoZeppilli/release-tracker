@@ -80,6 +80,7 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 
 /* Sections */
 .section { margin-top: var(--space-7); }
+.group { margin-top: var(--space-5); }
 .section-title { margin: 0 0 var(--space-2); display: flex; align-items: baseline; gap: var(--space-3); font: 600 13px var(--mono); color: var(--text-muted); letter-spacing: 0.02em; }
 .section-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
 
@@ -209,7 +210,7 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
   <section class="section" id="catalog" aria-labelledby="catalog-title">
     <h2 class="section-title" id="catalog-title">catalog (35)</h2>
     <p class="line" id="limit-note" hidden><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: <strong>10</strong> of 10 followed · unfollow one to follow another</p>
-    <ul class="rows" id="catalog-rows"></ul>
+    <div id="catalog-groups"></div>
   </section>
 
   <section class="section" id="retired" aria-labelledby="retired-title" hidden>
@@ -223,7 +224,7 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
     <p class="intro">The catalog is curated, and requests for new technologies aren't open yet.</p>
   </section>
 
-  <p class="foot"><span>catalog: 42 technologies, alphabetical</span><span>sample content for design review</span></p>
+  <p class="foot"><span>catalog: 37 technologies, grouped by category</span><span>sample content for design review</span></p>
 </main>
 
 <div class="review" role="group" aria-label="Design review controls">
@@ -239,49 +240,48 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
 </div>
 
 <script>
+// The ten Categories in the order CONTEXT.md declares them, from the language to the platform.
+const CATEGORIES = ["language", "runtime", "framework", "server framework", "database", "build tool", "testing", "lint and formatting", "library", "platform"];
+
+// The Catalog as it stands, with the Category each Technology is curated under.
 const CATALOG = [
-  ["Angular", "19.0.4", "web application framework"],
-  ["Astro", "5.0.4", "content-driven web framework"],
-  ["Biome", "1.9.4", "formatter and linter for web projects"],
-  ["Deno", "2.1.4", "JavaScript and TypeScript runtime"],
-  ["Django", "5.1.4", "Python web framework"],
-  ["Drizzle ORM", "0.38.0", "TypeScript ORM for SQL databases"],
-  ["Electron", "33.2.1", "desktop apps with web technologies"],
-  ["esbuild", "0.24.0", "JavaScript bundler"],
-  ["ESLint", "9.16.0", "JavaScript linter"],
-  ["Expo", "52.0.18", "platform for React Native apps"],
-  ["Express", "5.0.1", "web framework for Node.js"],
-  ["FastAPI", "0.115.6", "Python API framework"],
-  ["Go", "1.23.4", "programming language"],
-  ["Hono", "4.6.13", "web framework for edge runtimes"],
-  ["Jest", "29.7.0", "JavaScript test runner"],
-  ["Next.js", "15.1.0", "React framework"],
-  ["Node.js", "23.4.0", "JavaScript runtime"],
-  ["Nuxt", "3.14.1592", "Vue framework"],
-  ["Playwright", "1.49.1", "browser testing and automation"],
-  ["pnpm", "9.15.0", "package manager"],
-  ["Prettier", "3.4.2", "code formatter"],
-  ["Prisma", "6.0.1", "ORM for Node.js and TypeScript"],
-  ["Python", "3.13.1", "programming language"],
-  ["React", "19.0.0", "library for web and native UIs"],
-  ["React Native", "0.76.5", "framework for native apps"],
-  ["React Router", "7.0.2", "routing for React"],
-  ["Redux Toolkit", "2.5.0", "state management for Redux"],
-  ["Remix", "2.15.1", "full-stack React framework"],
-  ["Rust", "1.83.0", "systems programming language"],
-  ["Storybook", "8.4.7", "workshop for UI components"],
-  ["Supabase JS", "2.47.3", "Supabase client library"],
-  ["Svelte", "5.12.0", "UI compiler"],
-  ["SvelteKit", "2.10.1", "Svelte framework"],
-  ["Tailwind CSS", "3.4.16", "utility-first CSS"],
-  ["TanStack Query", "5.62.3", "async state for web apps"],
-  ["Turborepo", "2.3.3", "monorepo build system"],
-  ["TypeScript", "5.7.2", "typed superset of JavaScript"],
-  ["Vite", "6.0.3", "frontend build tool"],
-  ["Vitest", "2.1.8", "Vite-native test runner"],
-  ["Vue", "3.5.13", "progressive web framework"],
-  ["Webpack", "5.97.1", "module bundler"],
-  ["Zod", "3.24.1", "TypeScript schema validation"],
+  ["TypeScript", "5.7.2", "JavaScript with syntax for types", "language"],
+  ["Rust", "1.83.0", "systems programming language", "language"],
+  ["Node.js", "23.4.0", "JavaScript runtime built on V8", "runtime"],
+  ["Deno", "2.1.4", "secure runtime for JavaScript and TypeScript", "runtime"],
+  ["Bun", "1.1.38", "JavaScript runtime and toolkit", "runtime"],
+  ["Angular", "19.0.4", "application framework for the web", "framework"],
+  ["Astro", "5.0.4", "web framework for content-driven sites", "framework"],
+  ["Next.js", "15.1.0", "React framework for the web", "framework"],
+  ["Nuxt", "3.14.1592", "application framework built on Vue", "framework"],
+  ["React", "19.0.0", "library for web and native user interfaces", "framework"],
+  ["Svelte", "5.12.0", "compiler-first UI framework", "framework"],
+  ["SvelteKit", "2.10.1", "application framework built on Svelte", "framework"],
+  ["Vue", "3.5.13", "progressive JavaScript framework", "framework"],
+  ["Express", "5.0.1", "web framework for Node.js", "server framework"],
+  ["Fastify", "5.2.0", "fast web framework for Node.js", "server framework"],
+  ["NestJS", "10.4.15", "server-side framework for Node.js", "server framework"],
+  ["tRPC", "11.0.0", "end-to-end typesafe APIs", "server framework"],
+  ["Drizzle ORM", "0.38.0", "TypeScript ORM for SQL databases", "database"],
+  ["Prisma", "6.0.1", "ORM and database toolkit for Node.js", "database"],
+  ["pnpm", "9.15.0", "package manager for Node.js", "build tool"],
+  ["Turborepo", "2.3.3", "build system for JavaScript monorepos", "build tool"],
+  ["Vite", "6.0.3", "frontend build tool", "build tool"],
+  ["webpack", "5.97.1", "module bundler for JavaScript", "build tool"],
+  ["Jest", "29.7.0", "JavaScript testing framework", "testing"],
+  ["Playwright", "1.49.1", "end-to-end browser testing", "testing"],
+  ["Storybook", "8.4.7", "workshop for building UI components", "testing"],
+  ["Vitest", "2.1.8", "test runner powered by Vite", "testing"],
+  ["Biome", "1.9.4", "formatter and linter for web projects", "lint and formatting"],
+  ["ESLint", "9.16.0", "linter for JavaScript and TypeScript", "lint and formatting"],
+  ["Prettier", "3.4.2", "opinionated code formatter", "lint and formatting"],
+  ["Axios", "1.7.9", "promise-based HTTP client", "library"],
+  ["Redux Toolkit", "2.5.0", "standard toolset for Redux", "library"],
+  ["Tailwind CSS", "3.4.16", "utility-first CSS framework", "library"],
+  ["Zod", "3.24.1", "TypeScript-first schema validation", "library"],
+  ["Zustand", "5.0.2", "state management for React", "library"],
+  ["Electron", "33.2.1", "desktop applications with web technologies", "platform"],
+  ["Terraform", "1.10.2", "infrastructure as code", "platform"],
 ];
 const RETIRED = ["Create React App", "5.0.1", "React app setup"];
 const LIMIT = 10;
@@ -289,10 +289,10 @@ const STACK = ["Next.js", "Node.js", "React", "Tailwind CSS", "TypeScript", "Vit
 const STATES = {
   seven: { follows: STACK },
   full: { follows: [...STACK, "Playwright", "Prisma", "Zod"] },
-  rejected: { follows: [...STACK, "Playwright", "Prisma", "Zod"], rejected: "TanStack Query" },
+  rejected: { follows: [...STACK, "Playwright", "Prisma", "Zod"], rejected: "Zustand" },
   retired: { follows: STACK, retired: true },
   nomatch: { follows: STACK, query: "qwik" },
-  moved: { follows: STACK, moved: "TanStack Query" },
+  moved: { follows: STACK, moved: "Zustand" },
 };
 
 // What a row says when a toggle has sent it to another section while it keeps its place. The counts
@@ -313,14 +313,14 @@ function toggle(name, on, retired) {
     `<span class="when-on"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Following</span></button>`;
 }
 
-function row([name, version, desc], on, opts = {}) {
+function row([name, version, desc, category], on, opts = {}) {
   const facts = opts.retired
     ? `last <strong>${version}</strong> · ${desc} · retired 2024-10`
     : `latest <strong>${version}</strong> · ${desc}`;
   const error = opts.rejected
     ? `<p class="row-status error" id="err-${slug(name)}"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: not followed · you already follow 10 (one was added in another session) · unfollow one to follow another</p>`
     : "";
-  return `<li class="row" data-search="${esc((name + " " + desc).toLowerCase())}">` +
+  return `<li class="row" data-search="${esc((name + " " + desc).toLowerCase())}"${category ? ` data-category="${esc(category)}"` : ""}>` +
     `<a class="tech" href="technology.html">${esc(name)}</a>` +
     `<span class="facts">${facts}</span>${toggle(name, on, opts.retired)}${error}</li>`;
 }
@@ -328,13 +328,20 @@ function row([name, version, desc], on, opts = {}) {
 function render(stateKey) {
   const state = STATES[stateKey];
   const follows = new Set(state.follows);
-  const following = CATALOG.filter(([n]) => follows.has(n));
+  // `following` and `retired` stay one alphabetical list each: only the Catalog is read by Category.
+  const following = CATALOG.filter(([n]) => follows.has(n)).sort((a, b) => a[0].localeCompare(b[0], "en"));
   const rest = CATALOG.filter(([n]) => !follows.has(n));
 
   $("following-rows").innerHTML = following.map((t) => row(t, true)).join("");
-  $("catalog-rows").innerHTML = rest
-    .map((t) => row(t, t[0] === state.moved, { rejected: t[0] === state.rejected }))
-    .join("");
+  $("catalog-groups").innerHTML = CATEGORIES.map((category) => {
+    const group = rest.filter((t) => t[3] === category);
+    if (!group.length) return "";
+    const id = `catalog-${category.replace(/ /g, "-")}`;
+    const rows = group.map((t) => row(t, t[0] === state.moved, { rejected: t[0] === state.rejected })).join("");
+    return `<section class="group" data-category="${category}" aria-labelledby="${id}-title">` +
+      `<h3 class="section-title" id="${id}-title">${category} (${group.length})</h3>` +
+      `<ul class="rows">${rows}</ul></section>`;
+  }).join("");
   $("retired-rows").innerHTML = state.retired ? row(RETIRED, true, { retired: true }) : "";
   $("retired").hidden = !state.retired;
 
@@ -365,7 +372,8 @@ function sync() {
 // A row sits where the visit found it and belongs where its toggle says: the note is the difference.
 function syncNotes() {
   for (const section of ["following", "catalog"]) {
-    for (const rowEl of $(`${section}-rows`).querySelectorAll(".row")) {
+    const holder = section === "catalog" ? $("catalog-groups") : $(`${section}-rows`);
+    for (const rowEl of holder.querySelectorAll(".row")) {
       const btn = rowEl.querySelector(".follow");
       const on = btn && btn.getAttribute("aria-pressed") === "true";
       const moved = btn && (section === "catalog") === on;
@@ -411,6 +419,19 @@ function applyFilter() {
     title.textContent = `${id} (${q ? `${matching} of ${belong.length}` : belong.length})`;
     shown += visible;
     if (id !== "retired" || rows.length) section.hidden = rows.length > 0 && visible === 0;
+    // Inside the Catalog the same two rules apply one level down: the group title counts where its
+    // rows belong, and a group with no match is hidden instead of standing there empty.
+    for (const group of section.querySelectorAll(".group")) {
+      const groupRows = [...group.querySelectorAll(".row")];
+      const matching = groupRows.filter((r) => !r.hidden);
+      const belongHere = [...document.querySelectorAll(".row")].filter(
+        (r) => belongs(r) === "catalog" && r.dataset.category === group.dataset.category,
+      );
+      const hit = belongHere.filter((r) => !q || r.dataset.search.includes(q)).length;
+      group.querySelector(".section-title").textContent =
+        `${group.dataset.category} (${q ? `${hit} of ${belongHere.length}` : belongHere.length})`;
+      group.hidden = groupRows.length > 0 && matching.length === 0;
+    }
   }
   const noMatch = q && shown === 0;
   $("no-match").hidden = !noMatch;

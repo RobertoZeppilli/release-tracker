@@ -1,6 +1,7 @@
 {
   "name": "Axios",
   "description": "Promise-based HTTP client",
+  "category": "library",
   "classificationStrategy": "semver",
   "sources": [
     {

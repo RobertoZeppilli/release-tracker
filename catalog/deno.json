@@ -1,6 +1,7 @@
 {
   "name": "Deno",
   "description": "Secure runtime for JavaScript and TypeScript",
+  "category": "runtime",
   "classificationStrategy": "semver",
   "sources": [
     {
