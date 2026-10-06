@@ -28,7 +28,16 @@ aperte qui sotto e vuole il via dell'utente.
 issue**: la causa era una sola e la spiegazione sta nella sua sezione qui sotto. Con lui **non resta
 nessun flake noto** in E2E.
 
-**Com'è stata fatta.** Il flake era nelle attese del test, non nella pagina, e `UpgradePathBlock` e
+**Dove sta `main` e come ci è arrivato.** La punta è **`4645504`**, e sopra la PR #105 ci sono due
+commit andati **diretti su `main`, senza branch nè PR**: `32700e5`, i documenti, che è la via normale,
+e `4645504`, il lavoro sul flake, che sono cinque file di test. Il secondo è **un'eccezione concessa a
+voce dall'utente** ("va bene così, lascia su main") dopo che gliel'ho fatto notare: `CLAUDE.md` chiede
+un branch e una PR anche per i test, quindi **non è la regola nuova**, come già per la PR #104. La
+corsa di `32700e5` è **verde**; quella di `4645504` era in moto mentre si scriveva, ed è la prima che
+gira le attese nuove contro il build di produzione: **chi riprende la guardi** con
+`gh run list --branch main`, perché in CI i retry sono 2 e il flake vecchio usciva lì.
+
+**Com'è stata fatta la #100.** Il flake era nelle attese del test, non nella pagina, e `UpgradePathBlock` e
 `UpgradePathView` **non sono stati toccati**: il diff è di 7 righe in `tests/e2e/a11y.spec.ts`. Le
 due attese ora nominano un fatto che solo la resa risolta può portare, perché la partenza del
 fallback è quella ricavata:
@@ -249,7 +258,7 @@ ferma sul nome del prodotto; **#69** esplicitamente dopo il lancio.
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md e dimmi che strade sono aperte, poi ne scelgo una
+leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
 ```
 
 ---
