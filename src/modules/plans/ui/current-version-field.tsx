@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { compareVersions, parseVersion } from "@/modules/releases";
-import { invalidMessage, isoDate, SeverityLabel, VERSION_BUTTON_CLASS, VERSION_INPUT_CLASS } from "@/modules/releases/ui";
+import {
+  invalidMessage,
+  isoDate,
+  SeverityLabel,
+  VERSION_BUTTON_CLASS,
+  VERSION_INPUT_CLASS,
+  VERSION_LABEL_CLASS,
+} from "@/modules/releases/ui";
 import type { Decline } from "../domain/current-version";
 import { useFollows } from "./follows-provider";
 
@@ -73,7 +80,9 @@ export function CurrentVersionField({
       aria-label={`Version of ${name} in use`}
       className={`flex flex-wrap items-center gap-3 font-mono text-diagnostic text-text-muted ${className ?? ""}`}
     >
-      <label htmlFor={FIELD_ID}>Version in use</label>
+      <label htmlFor={FIELD_ID} className={VERSION_LABEL_CLASS}>
+        Version in use
+      </label>
       <input
         id={FIELD_ID}
         name="current-version"

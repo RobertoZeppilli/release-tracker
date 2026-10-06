@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PathCounts } from "../domain/upgrade-path";
-import { declaredStartNote, invalidMessage, majorWords, pathSentence, pathVerdict } from "./upgrade-path-copy";
+import { declaredStartNote, defaultStartNote, invalidMessage, majorWords, pathSentence, pathVerdict } from "./upgrade-path-copy";
 
 const none: PathCounts = { total: 0, featured: 0, notable: 0, digest: 0, actionRequired: 0, safe: 0, missing: 0, unjudged: 0 };
 
@@ -58,6 +58,18 @@ describe("declaredStartNote", () => {
   it("names the Version and the day it was declared, right above the counts built on it", () => {
     expect(declaredStartNote("6.0.0", new Date("2026-09-12T00:00:00Z"))).toBe(
       "starting from 6.0.0, the version you declared in use on 2026-09-12.",
+    );
+  });
+});
+
+describe("defaultStartNote", () => {
+  // The reader asked for nothing, so the note has to say both which Release and why that one.
+  it("says where a start nobody gave comes from", () => {
+    expect(defaultStartNote("7.1.9", "previousMajor")).toBe(
+      "starting from 7.1.9, the last release of the previous major, because no version was given.",
+    );
+    expect(defaultStartNote("8.1.0", "oldest")).toBe(
+      "starting from 8.1.0, the oldest release recorded, because no version was given.",
     );
   });
 });

@@ -10,6 +10,10 @@ export type FormMessage = { tone: "breaking" | "muted"; label: string; body: Rea
 export const VERSION_BUTTON_CLASS =
   "inline-flex h-[34px] cursor-pointer items-center rounded-md border border-rule-strong bg-transparent px-3 font-sans text-diagnostic font-medium text-text hover:border-text-faint hover:bg-raised disabled:cursor-not-allowed disabled:border-rule disabled:text-text-faint";
 
+// The two version controls sit one under the other on the Technology page, so their labels share a
+// column wide enough for the longer of the two and the fields line up on one left edge.
+export const VERSION_LABEL_CLASS = "inline-block w-[14ch] max-[640px]:w-auto";
+
 export const VERSION_INPUT_CLASS =
   "h-[38px] w-[14ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text placeholder:text-text-faint hover:border-text-faint aria-invalid:border-breaking";
 
@@ -29,7 +33,9 @@ export function UpgradeForm({
 }) {
   return (
     <Form action={action} className="mt-6 flex flex-wrap items-center gap-3 font-mono text-diagnostic text-text-muted">
-      <label htmlFor="from">Upgrade from</label>
+      <label htmlFor="from" className={VERSION_LABEL_CLASS}>
+        Upgrade from
+      </label>
       <input
         key={value}
         id="from"

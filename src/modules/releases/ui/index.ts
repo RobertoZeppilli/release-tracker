@@ -6,6 +6,7 @@ export { type ExternalSource, ReleaseHeader } from "./release-header";
 export { ReleaseList } from "./release-list";
 export { ReleaseNotesSource } from "./release-notes-source";
 export { SummaryStatusBlock } from "./summary-status-block";
-export { UpgradeForm, VERSION_BUTTON_CLASS, VERSION_INPUT_CLASS } from "./upgrade-form";
+export { UpgradeForm, VERSION_BUTTON_CLASS, VERSION_INPUT_CLASS, VERSION_LABEL_CLASS } from "./upgrade-form";
+export { type PathStart, UpgradePathBlock } from "./upgrade-path";
 export { UpgradePathView } from "./upgrade-path-view";
 export { type UpgradeStart, UpgradeStartProvider } from "./upgrade-start";

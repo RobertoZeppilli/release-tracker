@@ -67,8 +67,9 @@ test.describe("the Release rows of the plain list", () => {
     await technology.remove();
   });
 
-  test("declare the verdict, what breaks and where to migrate, with no `from` given", async ({ page }) => {
-    await page.goto(`/technologies/${technology.slug}`);
+  test("declare the verdict, what breaks and where to migrate", async ({ page }) => {
+    // An empty `from` is the plain list: without it the page draws the path it derives itself.
+    await page.goto(`/technologies/${technology.slug}?from=`);
 
     const v2 = page.getByRole("region", { name: "v2 2 releases" });
     await expect(v2).toContainText("Fixture 2.0.0 release.");

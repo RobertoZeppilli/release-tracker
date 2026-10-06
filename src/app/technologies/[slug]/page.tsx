@@ -8,9 +8,9 @@ import { technologyMeta } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
 import { TechnologyHeader } from "@/modules/catalog/ui";
 import { TechnologyFollow, TechnologyScope } from "@/modules/plans/ui";
-import { groupByMajor } from "@/modules/releases";
+import { defaultUpgradeStart, groupByMajor } from "@/modules/releases";
 import { listReleases } from "@/modules/releases/server";
-import { ReleaseList, UpgradeForm, UpgradePathView } from "@/modules/releases/ui";
+import { ReleaseList, UpgradePathBlock, UpgradePathView } from "@/modules/releases/ui";
 
 // ISR: no page is built ahead (the build has no database); each is rendered on its first visit,
 // then served from cache and regenerated at most once an hour.
@@ -43,7 +43,9 @@ export default async function TechnologyPage({ params }: Props) {
   const releases = await listReleases(createPublicClient(), technology.id);
   const grouped = groupByMajor(releases);
   const list = <ReleaseList slug={technology.slug} grouped={grouped} retired={technology.retired} />;
-  const base = `/technologies/${technology.slug}`;
+  // The start the page falls back to when nobody gave one, derived from the Releases alone, so it is
+  // part of the cached render: the Visitor who never fills the form still lands on an Upgrade Path.
+  const fallback = defaultUpgradeStart(releases);
 
   return (
     <>
@@ -65,13 +67,19 @@ export default async function TechnologyPage({ params }: Props) {
             }
           />
           {grouped.latest ? (
-            // `?from` is read on the client; until then the page shows the form and the plain list.
+            // `?from` is read on the client; until then the page shows the path it derived itself.
             <Suspense
               fallback={
-                <>
-                  <UpgradeForm action={base} latest={grouped.latest} versions={[]} value="" message={null} />
+                <UpgradePathBlock
+                  slug={technology.slug}
+                  name={technology.name}
+                  latest={grouped.latest}
+                  retired={technology.retired}
+                  releases={releases}
+                  start={fallback ? { kind: "default", ...fallback } : { kind: "none" }}
+                >
                   {list}
-                </>
+                </UpgradePathBlock>
               }
             >
               <UpgradePathView
@@ -80,6 +88,7 @@ export default async function TechnologyPage({ params }: Props) {
                 latest={grouped.latest}
                 retired={technology.retired}
                 releases={releases}
+                fallback={fallback}
               >
                 {list}
               </UpgradePathView>
