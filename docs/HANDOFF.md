@@ -30,6 +30,17 @@ sul branch della PR (run 37463104730, lanciato dall'utente: il classificatore lo
 È la via da riusare per ogni migrazione futura, e funziona perché il workflow fa il checkout del ref
 che gli si dà. La dashboard di Supabase non serve.
 
+**Chiesto dall'utente a cose fatte e scartato: i generi a fisarmonica.** Non è stato scritto niente.
+Le tre ragioni, per non ridiscuterle da zero: un accordion vuole uno **stato** per gruppo (aperto o
+chiuso, se ricordarlo fra le visite, come si arriva sulla pagina); **collide col filtro**, che è la
+trappola che la issue segnalava già, perché cercare `zod` con `library` chiuso fa dire alla pagina
+`1 of 37 match` senza mostrare niente, e l'unica uscita è aprire d'ufficio i gruppi con
+corrispondenze, cioè disfare il collasso proprio quando serve; e **spegne il Ctrl+F del browser** su
+una pagina che è un elenco di nomi. In più nell'app non esiste nessun disclosure, quindi sarebbe un
+pattern nuovo per tutto il sistema. **L'alternativa raccomandata, se la pagina sembra lunga**: un
+indice dei generi in cima, dieci link ancora su una riga sotto il filtro, senza stato e senza
+toccare il filtro. Non è stata scelta: se si fa, è una issue sua.
+
 **I quattro nodi HITL della #86, decisi con l'utente. Da non riaprire:**
 
 1. **`library` resta un genere**, definito in positivo in `CONTEXT.md` (si importa nel codice, non
