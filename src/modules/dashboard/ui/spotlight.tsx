@@ -3,12 +3,19 @@ import Link from "next/link";
 import { SignificanceLabel } from "@/modules/releases/ui";
 import { InlineCode } from "@/modules/summaries/ui";
 import type { DashboardRelease, SpotlightEntry, SpotlightStanding } from "../domain/build-dashboard";
+import { quietNote } from "./dashboard-copy";
 import { BehindLine, PublishedAt, ReleaseVersion, RowVerdict, SummaryTitle, TechnologyName } from "./row-parts";
 import { SectionTitle } from "./section-title";
 
 // One row per followed Technology: the name keeps its own column, and the Releases stack beside it,
 // so two featured Releases of the same Technology read as one entry and not as two Technologies.
-const ROW = "grid grid-cols-[14ch_minmax(0,1fr)] items-baseline gap-x-4 border-b border-rule py-3 max-[880px]:grid-cols-1 max-[880px]:gap-y-2";
+const ROW_BASE =
+  "grid grid-cols-[14ch_minmax(0,1fr)] items-baseline gap-x-4 border-b border-rule max-[880px]:grid-cols-1 max-[880px]:gap-y-2";
+const ROW = `${ROW_BASE} py-3`;
+// A Technology with nothing featured carries a version, a date and whatever distance it declared:
+// three facts on one line, which do not need the padding of a row that carries a Summary.
+const QUIET_ROW = `${ROW_BASE} py-2`;
+const NOTE = "font-mono text-diagnostic text-text-muted";
 const CELL = "grid grid-cols-[17ch_11ch_minmax(0,1fr)] items-baseline gap-x-4 max-[880px]:grid-cols-[minmax(0,1fr)_auto]";
 
 function FeaturedCell({ release, thisWeek }: { release: DashboardRelease; thisWeek: string }) {
@@ -43,8 +50,10 @@ function CompactCell({ standing }: { standing: SpotlightStanding }) {
     <div className={CELL}>
       <ReleaseVersion release={standing.release} glyphHidden />
       <PublishedAt release={standing.release} />
+      {/* What the row shows is the latest major, or the latest Release where no major exists. That
+          nothing was featured is said once by the group note above, not again on every row. */}
       <p className="min-w-0 font-mono text-diagnostic text-text-muted max-[880px]:col-span-full">
-        latest {standing.major ? "major" : "release"} · none featured in 30 days
+        latest {standing.major ? "major" : "release"}
       </p>
     </div>
   );
@@ -80,6 +89,8 @@ export function Spotlight({ entries, thisWeek }: { entries: readonly SpotlightEn
   // rows that each said `none featured` was counting Technologies, and contradicting `0 featured`
   // in the summary two lines above.
   const featured = entries.reduce((total, entry) => total + entry.featured.length, 0);
+  const loud = entries.filter((entry) => entry.featured.length > 0);
+  const quiet = entries.filter((entry) => entry.featured.length === 0);
   // A row is worth its place when it carries a featured Release or a distance from the Version in
   // use. When not one of them does, the five compact rows say the same nothing five times, in the
   // space right under the verdict: one muted line says it once and gives the space back.
@@ -97,24 +108,49 @@ export function Spotlight({ entries, thisWeek }: { entries: readonly SpotlightEn
           </span>
         }
       />
-      {silent ? (
-        <p className="font-mono text-diagnostic text-text-muted">
-          <Info aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-          note: nothing featured in the last 30 days, across the{" "}
-          <Link href="/technologies" className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current">
-            {entries.length} {entries.length === 1 ? "technology" : "technologies"} you follow
-          </Link>
-        </p>
-      ) : (
-        <ul className="border-t border-rule">
-          {entries.map((entry) => (
-            <li key={entry.technology.slug} className={ROW}>
-              <TechnologyName {...entry.technology} muted={entry.featured.length === 0} />
-              <EntryCells entry={entry} thisWeek={thisWeek} />
-            </li>
-          ))}
-        </ul>
+      {loud.length > 0 && <EntryRows entries={loud} thisWeek={thisWeek} />}
+      {quiet.length > 0 && (
+        <>
+          <p className={loud.length > 0 ? `mt-5 mb-2 ${NOTE}` : NOTE}>
+            <Info aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
+            {loud.length > 0 ? (
+              <>note: {quietNote(quiet.length, entries.length)} · latest major below</>
+            ) : (
+              <>
+                note: nothing featured in the last 30 days, across the{" "}
+                <Link
+                  href="/technologies"
+                  className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current"
+                >
+                  {entries.length} {entries.length === 1 ? "technology" : "technologies"} you follow
+                </Link>
+              </>
+            )}
+          </p>
+          {!silent && <EntryRows entries={quiet} thisWeek={thisWeek} quiet />}
+        </>
       )}
     </section>
+  );
+}
+
+function EntryRows({
+  entries,
+  thisWeek,
+  quiet,
+}: {
+  entries: readonly SpotlightEntry[];
+  thisWeek: string;
+  quiet?: boolean;
+}) {
+  return (
+    <ul className="border-t border-rule">
+      {entries.map((entry) => (
+        <li key={entry.technology.slug} className={quiet ? QUIET_ROW : ROW}>
+          <TechnologyName {...entry.technology} muted={entry.featured.length === 0} />
+          <EntryCells entry={entry} thisWeek={thisWeek} />
+        </li>
+      ))}
+    </ul>
   );
 }

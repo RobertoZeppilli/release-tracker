@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { type FixtureTechnology, seedTechnology } from "./fixtures";
+import { expect, type Page, test } from "@playwright/test";
+import { e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDeveloper, seedTechnology } from "./fixtures";
 
 // The guard of issue #63: no page is a dead end. Below 640px the navigation used to be hidden, so a
 // phone reading a Release page had the wordmark and nothing else. The checks below walk the way out
@@ -8,15 +8,24 @@ import { type FixtureTechnology, seedTechnology } from "./fixtures";
 const PHONE = { width: 390, height: 844 };
 
 let technology: FixtureTechnology;
+let developer: FixtureDeveloper;
+
+async function signIn(page: Page): Promise<void> {
+  const response = await page.request.post("/api/test/session", {
+    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
+  });
+  expect(response.status()).toBe(204);
+}
 
 test.beforeAll(async () => {
+  developer = await seedDeveloper();
   technology = await seedTechnology([
     { version: "2.0.0", significance: "featured", origin: "detected", status: "ready", notes: "# 2.0.0\n\nThe default export is gone.", actionRequired: true },
   ]);
 });
 
 test.afterAll(async () => {
-  await technology.remove();
+  await Promise.all([technology.remove(), developer.remove()]);
 });
 
 test("at 390px a Release page climbs to its Technology and on to the Catalog", async ({ page }) => {
@@ -69,6 +78,18 @@ test("above 640px the slot stays inside the bar", async ({ page }) => {
   if (!mark || !strip) return;
   expect(strip.x, "the breadcrumb sits to the right of the wordmark").toBeGreaterThan(mark.x + mark.width - 1);
   expect(strip.y, "on one row with the wordmark").toBeLessThan(mark.y + mark.height);
+});
+
+// Behind sign-in the two destinations live in the account panel on a phone, so the bar keeps one
+// row: the strip was a second copy of what the panel already carries from every page.
+test("a signed-in page gives its sections to the account panel at 390px", async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await expect(page.getByRole("navigation", { name: "Sections" })).toBeHidden();
+  await page.getByRole("button", { name: /^Account/ }).click();
+  await expect(page.getByRole("link", { name: "technologies", exact: true })).toBeVisible();
 });
 
 // The token specimen the home page still shows (#26 replaces it) had a header of its own with no

@@ -54,15 +54,22 @@ function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWee
         rows={dashboard.latest}
         thisWeek={dashboard.thisWeek}
       />
-      <ReleaseSection
-        id="previews"
-        title="previews"
-        significance="preview"
-        fact="betas and release candidates"
-        rows={dashboard.previews}
-        thisWeek={dashboard.thisWeek}
-      />
-      <WeeklyDigest weeks={dashboard.digest} open={openWeeks} />
+      {/* The closing band: previews and the digest side by side from 1040px, where the column is wide
+          enough for two readable halves. The page ends on a block instead of thinning out row by row
+          down to nothing. With only one of the two on the page the empty track collapses and the
+          section keeps the full width. */}
+      <div className="mt-8 grid items-start gap-7 min-[1040px]:grid-cols-[repeat(auto-fit,minmax(29.5rem,1fr))] [&>section]:mt-0">
+        <ReleaseSection
+          id="previews"
+          title="previews"
+          significance="preview"
+          fact="betas and release candidates"
+          rows={dashboard.previews}
+          thisWeek={dashboard.thisWeek}
+          band
+        />
+        <WeeklyDigest weeks={dashboard.digest} open={openWeeks} band />
+      </div>
     </>
   );
 }

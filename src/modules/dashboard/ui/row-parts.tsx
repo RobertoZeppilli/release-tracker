@@ -36,11 +36,21 @@ export function ReleaseVersion({ release, glyphHidden }: { release: DashboardRel
 }
 
 // "this week" is the current ISO week in UTC, the same week the Weekly Digest folds by.
-export function PublishedAt({ release, thisWeek }: { release: DashboardRelease; thisWeek?: string }) {
+export function PublishedAt({
+  release,
+  thisWeek,
+  band,
+}: {
+  release: DashboardRelease;
+  thisWeek?: string;
+  band?: boolean;
+}) {
   const recent = thisWeek !== undefined && isoWeekKey(isoWeekOf(release.publishedAt)) === thisWeek;
 
   return (
-    <span className="flex flex-col font-mono text-label text-text-faint max-[880px]:items-end max-[880px]:justify-self-end">
+    <span
+      className={`flex flex-col font-mono text-label text-text-faint max-[880px]:items-end max-[880px]:justify-self-end ${band ? "min-[1040px]:items-end min-[1040px]:justify-self-end" : ""}`}
+    >
       <time dateTime={isoDate(release.publishedAt)}>{isoDate(release.publishedAt)}</time>
       {recent && <span className="text-meta text-text-muted">this week</span>}
     </span>

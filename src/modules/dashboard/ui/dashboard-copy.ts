@@ -116,6 +116,14 @@ export function inUseRows(totals: InUseTotals): FactRow[] {
   ];
 }
 
+// The quiet half of Spotlight. Every followed Technology is accounted for once, so the ones with
+// nothing featured keep a row; what they do not keep is the sentence saying it, which used to repeat
+// word for word on each of them and spent the whole content column saying the same nothing. The
+// group says it once, above the rows.
+export function quietNote(quiet: number, total: number): string {
+  return `${quiet} of the ${total} you follow had nothing featured`;
+}
+
 export function behindLine(standing: BehindStanding): string {
   const parts =
     standing.counts.total === 0

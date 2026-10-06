@@ -16,7 +16,57 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte).** **Il ritento dei transitori è fatto**, con la **PR #107**,
+**Da dove ripartire (2026-10-06, notte fonda).** **La rinfrescata alla UI è aperta nella PR #108**,
+sul branch `dashboard-layout`, due commit, **non unita**: la CI era ancora in corso quando la sessione
+si è chiusa, **va guardata prima di unire** (`gh run list --branch dashboard-layout`). La PR non chiude
+nessuna issue: lavoro chiesto a voce, branch e PR comunque, come per la #107. In locale: `lint`,
+`typecheck`, **538 unitari** e **154 E2E** verdi.
+
+L'utente era partito chiedendo se usare una skill "ispirata alle web app famose" (tipo 21st.dev).
+**La risposta è stata no, e vale ancora**: quelle skill producono card, badge, ombre e accenti di
+brand, cioè l'elenco dei "Don't" di `DESIGN.md`. Si è usata `impeccable`, che ha la disposizione nel
+suo giro, sul mock prima e sul codice poi.
+
+### Cosa è cambiato, e cosa è stato deciso di non cambiare
+
+- **Il silenzio di Spotlight costa una riga sola.** `latest major · none featured in 30 days` si
+  ripeteva identico su ogni Tecnologia senza niente in evidenza. Ora una riga `note:` lo dice una
+  volta per il gruppo e le righe tengono solo ciò che le distingue. Ogni Tecnologia resta contata
+  esattamente una volta, come vuole il contratto di direzione in `.impeccable/`.
+- **La coda non si spegne più**: `previews` e `weekly digest` affiancati da 1040px in su. Dentro mezza
+  colonna le righe si riflettono come sul telefono, con la variante `min-[1040px]` passata solo a
+  quelle due sezioni: **le soglie di `DESIGN.md` non sono state toccate**.
+- ⚠️ **I riquadri dei conteggi NON vanno allargati a tutta la colonna.** È stato provato e rimesso
+  com'era: il limite di 72ch è la correzione del difetto P2-9 della #47, un test E2E lo sorveglia, e a
+  992px l'etichetta e il suo numero finiscono a un quarto di colonna di distanza. L'utente aveva
+  offerto di cambiare la regola; la raccomandazione, motivata sul renderizzato, è stata tenerla.
+- **Il pannello del profilo** (foto GitHub, handle, `dashboard`, `technologies`, `sign out`). La prima
+  versione era una striscia sotto la barra, che non rompeva nessuna regola; **l'utente ha chiesto un
+  pannello che fluttua**, e questa è una sua decisione presa a ragion veduta: `DESIGN.md` è stato
+  aggiornato invece di restare smentito (One Raised Plane Rule e il "Don't" sulle superfici).
+- **Il toggle del tema resta nella barra**, fuori dal pannello: le pagine pubbliche si leggono anche
+  senza accesso e un visitatore non ha nessun pannello in cui trovarlo. Non spostarlo senza risolvere
+  prima quello.
+- **Sotto i 640px la striscia con le due sezioni sparisce solo sulle pagine dietro l'accesso.** Home e
+  404 la tengono: lì il lettore può essere un visitatore senza pannello, e toglierla riaprirebbe il
+  vicolo cieco della #63. Due test E2E lo sorvegliano. Sotto i 429px la quota si prende la striscia da
+  sola, a tutta larghezza, e la barra resta le due righe della #47.
+
+⚠️ **Due trappole della scala delle spaziature**, già pagate: `globals.css` azzera `--spacing` e
+definisce solo `--spacing-1..8`, quindi **`right-0`, `top-0` e simili non esistono** (il pannello
+restava ancorato a sinistra e a 390px usciva dallo schermo) e **`size-6` vale 32px, non 24**. Nei file
+nuovi si scrivono i valori espliciti, `right-[0px]` e `size-[24px]`.
+
+⚠️ **I mock `release.html` e `technology.html` non vanno cambiati**: mostrano il visitatore, che il
+pannello non ce l'ha. Quelli dietro l'accesso (`dashboard.html`, `technologies.html`) portano la
+barra nuova. In `dashboard.html` la riga `in use` sta sopra l'elenco dei breaking perché lì esiste il
+puntatore `--> migrate`, che **la Dashboard costruita non ha**: nel codice quella riga appartiene alla
+Tecnologia, che può portare due Release in evidenza, e resta dopo le celle.
+
+**Da fare dopo il merge**: guardare la Dashboard e una pagina Tecnologia in produzione, da telefono,
+perché la barra a una riga e il pannello sono esattamente ciò che non si vede in locale.
+
+**Lo stato precedente (2026-10-06, notte).** **Il ritento dei transitori è fatto**, con la **PR #107**,
 unita su `main` (`9b0fe58`), e il branch `catalog-sync-transient-retry` è cancellato in locale e su
 GitHub. **`CI` e `Deploy database` verdi** sul merge (run 37520785712, `integration` in 6m24s):
 **151 E2E, 1 saltato, zero flaky**.

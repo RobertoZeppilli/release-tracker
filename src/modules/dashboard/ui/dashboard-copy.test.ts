@@ -5,6 +5,7 @@ import {
   inUseCaption,
   inUseRows,
   pageVerdict,
+  quietNote,
   rowVerdict,
   weekRange,
   windowCaption,
@@ -196,5 +197,11 @@ describe("windowRows", () => {
   it("names a single preview in the singular", () => {
     expect(windowRows({ ...COUNTS, previews: 1 })[2].label).toBe("preview");
     expect(windowRows(COUNTS)[2].label).toBe("previews");
+  });
+});
+
+describe("quietNote", () => {
+  it("counts the followed Technologies with nothing featured, once for the whole group", () => {
+    expect(quietNote(4, 7)).toBe("4 of the 7 you follow had nothing featured");
   });
 });

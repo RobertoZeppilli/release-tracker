@@ -60,6 +60,19 @@ svg.sig { width: 12px; height: 12px; flex: none; }
 .btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
 .btn:hover { background: var(--raised); border-color: var(--text-faint); }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
+/* Account: the picture opens a panel under the bar with what belongs to the viewer rather than to
+   the page. It is the one surface allowed over the text, and it carries no shadow. */
+.topbar-actions { position: relative; }
+.account > summary { list-style: none; cursor: pointer; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.account > summary::-webkit-details-marker { display: none; }
+.account > summary:hover { background: var(--raised); border-color: var(--text-faint); }
+/* The GitHub picture sits here at 24px; without one the initial stands in, as drawn. */
+.account .portrait { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--rule); border-radius: 4px; font: 400 12px var(--mono); color: var(--text); }
+.account-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; min-width: 180px; padding: var(--space-2) 0; background: var(--raised); border: 1px solid var(--rule); border-radius: var(--radius); }
+.account-panel .who { margin: 0 0 var(--space-1); padding: 0 var(--space-3) var(--space-2); border-bottom: 1px solid var(--rule); font: 400 12px var(--mono); color: var(--text-faint); }
+.account-panel a, .account-panel button { display: flex; align-items: center; width: 100%; min-height: 24px; padding: 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; background: none; border: 0; cursor: pointer; }
+.account-panel a:hover, .account-panel button:hover { background: var(--sunken); color: var(--text); }
+.account-panel .out { margin-top: var(--space-1); padding-top: var(--space-1); border-top: 1px solid var(--rule); }
 
 main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 
@@ -120,6 +133,32 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
 .pointer .label { border-bottom: 1px dashed var(--help); }
 .pointer:hover .label { border-bottom-style: solid; }
 
+/* The quiet half of Spotlight: the Technologies with nothing featured in the window. The phrase
+   "latest major - none featured in 30 days" used to repeat on every one of these rows and spent the
+   whole content column saying the same thing; it is said once, here, and the rows keep only what
+   differs between them. */
+.quiet-note { margin: var(--space-5) 0 var(--space-2); font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
+.rows.quiet .row { padding: var(--space-2) 0; }
+.rows.quiet .row:first-child { border-top: 1px solid var(--rule); }
+
+/* The closing band: previews and the digest sit side by side from 900px, so the page ends on a block
+   instead of thinning out row by row down to nothing. */
+.tail { margin-top: var(--space-8); display: grid; gap: var(--space-7); align-items: start; }
+.tail > .section { margin-top: 0; }
+/* The band needs the full container to hold two readable halves: below 1040px the two sections
+   stack and keep the linear page they had. */
+@media (min-width: 1040px) {
+  .tail { grid-template-columns: 1fr 1fr; column-gap: var(--space-7); }
+  /* Half the column is too narrow for the four-column row, so a row in the band reflows exactly as
+     it does on a phone: name, version and date on the first line, the content across the width. */
+  .tail .row { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: var(--space-1); }
+  .tail .row .when { text-align: right; }
+  .tail .row .main { grid-column: 1 / -1; }
+  /* The week keeps its summary on one line in half a column, as it does on a phone. */
+  .tail .week summary .range { display: none; }
+  .tail .week summary > span { min-width: 0; }
+}
+
 /* Compact Spotlight row: the latest major, one line */
 .row.compact { padding: var(--space-2) 0; }
 .row.compact .main { font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
@@ -168,7 +207,8 @@ main[data-state="empty"] .for-stack { display: none; }
 main[data-state="safe"] .for-safe { display: inline; }
 main[data-state="safe"] .for-action { display: none; }
 /* Nothing featured in the window: Spotlight gives the space back instead of repeating itself. */
-main[data-state="silent"] #spotlight .rows { display: none; }
+main[data-state="silent"] #spotlight .rows,
+main[data-state="silent"] #spotlight .quiet-note { display: none; }
 main[data-state="silent"] #spotlight .line { display: block; }
 main[data-state="silent"] .for-action { display: none; }
 #spotlight .line { display: none; }
@@ -180,10 +220,14 @@ main[data-state="silent"] .for-action { display: none; }
 @media (max-width: 640px) {
   .topbar-inner, main { padding: 0 var(--space-4); }
   .topbar-inner { gap: var(--space-3); }
-  /* The slot drops to a 40px strip under the bar: same links, no drawer (The No Dead End Rule). */
   .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
   .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
-  .topbar-inner > nav { order: 3; width: 100%; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+  /* A page behind sign-in gives its two sections to the account panel, which is on every page: the
+     strip would be a second copy of them, and the bar keeps one row. */
+  .topbar-inner > nav { display: none; }
+  .topbar-inner { position: relative; }
+  .topbar-actions { position: static; }
+  .account-panel { top: calc(100% + 4px); right: var(--space-4); left: var(--space-4); }
   .quota { margin-right: 0; }
   .quota .of { display: none; }
   main { padding-top: var(--space-5); padding-bottom: 120px; }
@@ -214,7 +258,7 @@ main[data-state="silent"] .for-action { display: none; }
   .topbar-inner > nav { width: auto; flex: 1; }
   .wordmark { margin-right: auto; }
   .topbar-actions > * { margin-left: var(--space-4); }
-  .quota { order: 3; margin-left: 0; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+  .quota { order: 3; margin-left: 0; width: 100%; height: 40px; display: flex; align-items: center; column-gap: 0.5ch; border-top: 1px solid var(--rule); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -248,10 +292,18 @@ main[data-state="silent"] .for-action { display: none; }
     </nav>
     <div class="topbar-actions">
       <a class="quota" href="#" id="quota"><strong id="quota-n">7</strong><span class="of"> of 10</span> followed</a>
+      <details class="account">
+        <summary aria-label="Account, signed in as robertozep"><span class="portrait" aria-hidden="true">R</span></summary>
+        <div class="account-panel">
+          <p class="who">robertozep</p>
+          <a href="dashboard.html">dashboard</a>
+          <a href="technologies.html">technologies</a>
+          <div class="out"><button type="button">sign out</button></div>
+        </div>
+      </details>
       <button class="btn btn-icon" type="button" id="theme" aria-label="Switch to light theme">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
       </button>
-      <a class="btn" href="#">Sign out</a>
     </div>
   </div>
 </header>
@@ -316,6 +368,7 @@ main[data-state="silent"] .for-action { display: none; }
             <p class="title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
             <p class="row-verdict for-action sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required · 4 breaking changes</p>
             <p class="row-verdict for-safe sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
+            <p class="in-use-line">in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action</p>
             <ul class="breaks for-action" aria-label="Breaking changes in Vite 6.0.0">
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <span class="mono">resolve.conditions</span> no longer include the defaults</span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><span class="mono">json.stringify</span> now defaults to <span class="mono">'auto'</span></span></li>
@@ -323,7 +376,6 @@ main[data-state="silent"] .for-action { display: none; }
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></li>
             </ul>
             <a class="pointer for-action" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
-            <p class="in-use-line">in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action</p>
           </div>
         </li>
         <li class="row">
@@ -335,32 +387,29 @@ main[data-state="silent"] .for-action { display: none; }
             <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
           </div>
         </li>
+      </ul>
+      <p class="quiet-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: 4 of the 7 you follow had nothing featured · latest major below</p>
+      <ul class="rows quiet">
         <li class="row compact">
           <a class="tech" href="#">Next.js</a>
           <span class="ver"><a href="#">15.0.0</a></span>
           <span class="when"><time datetime="2024-10-21">2024-10-21</time></span>
-          <div class="main">
-            <p>latest major · none featured in 30 days</p>
-            <p class="in-use-line">in use 15.0.0 since 2026-08-30 · 4 releases behind 15.0.4 · 1 needs action</p>
-          </div>
+          <p class="main in-use-line">in use 15.0.0 since 2026-08-30 · 4 releases behind 15.0.4 · 1 needs action</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Node.js</a>
           <span class="ver"><a href="#">23.0.0</a></span>
           <span class="when"><time datetime="2024-10-16">2024-10-16</time></span>
-          <p class="main">latest major · none featured in 30 days</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Vitest</a>
           <span class="ver"><a href="#">2.0.0</a></span>
           <span class="when"><time datetime="2024-07-08">2024-07-08</time></span>
-          <p class="main">latest major · none featured in 30 days</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Tailwind CSS</a>
           <span class="ver"><a href="#">3.0.0</a></span>
           <span class="when"><time datetime="2021-12-09">2021-12-09</time></span>
-          <p class="main">latest major · none featured in 30 days</p>
         </li>
       </ul>
     </section>
@@ -406,6 +455,7 @@ main[data-state="silent"] .for-action { display: none; }
       </ul>
     </section>
 
+    <div class="tail">
     <section class="section" id="previews" aria-labelledby="previews-title">
       <h2 class="section-title" id="previews-title">previews (2)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg>preview <span class="fact">· betas and release candidates</span></span></h2>
       <ul class="rows">
@@ -501,6 +551,7 @@ main[data-state="silent"] .for-action { display: none; }
         </li>
       </ul>
     </section>
+    </div>
   </div>
 
   <!-- Empty state: 0 technologies followed -->

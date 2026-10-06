@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { AuthStatus } from "@/modules/auth/ui";
-import { ThemeToggle } from "./theme-toggle";
+import { SiteHeaderBar } from "./site-header-bar";
 
 export type PathItem = string | { label: string; href: string };
 
@@ -26,11 +25,6 @@ export const TECHNOLOGIES_CRUMB = { label: "technologies", href: "/technologies"
 const SLOT =
   "max-sm:order-3 max-sm:flex max-sm:h-[40px] max-sm:items-center max-sm:border-t max-sm:border-rule min-[430px]:max-sm:w-full max-[429px]:grow";
 
-// The quota in the bar at 430px and up, in the strip below it. It carries the strip's rule with it,
-// and the strip has no gap between the two, so the rule runs unbroken across the row.
-const QUOTA =
-  "ml-auto flex h-[56px] items-center max-[429px]:order-3 max-[429px]:ml-0 max-[429px]:h-[40px] max-[429px]:border-t max-[429px]:border-rule";
-
 // `path` is the breadcrumb after the wordmark; the last item is the current page. On a signed-in
 // page `nav` replaces the breadcrumb with the two destinations, as in DESIGN.md; `nav` without a
 // section (the home page) shows the same destinations with none of them current.
@@ -49,9 +43,13 @@ export function SiteHeader({
   return <HeaderShell quota={quota}>{path ? <Breadcrumb path={path} /> : null}</HeaderShell>;
 }
 
+// A page behind sign-in hands its two destinations to the account panel below 640px instead of
+// spending a 40px strip on them: the panel holds the same two, in the same order, from every page
+// including the public ones. The home page and the 404 keep the strip, because they are read signed
+// out too and a visitor has no panel to open (`current` is `true` exactly there).
 function SignedInNav({ current }: { current: NavItem | true }) {
   return (
-    <nav aria-label="Sections" className={SLOT}>
+    <nav aria-label="Sections" className={current === true ? SLOT : `${SLOT} max-sm:hidden`}>
       <ul className="flex gap-4 font-mono text-label text-text-muted">
         {NAV.map((item) => (
           <li key={item.label}>
@@ -79,22 +77,7 @@ function HeaderShell({ children, quota }: { children: React.ReactNode; quota?: R
         Skip to content
       </a>
       <header className="border-b border-rule">
-        <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-5 px-4 max-[429px]:gap-x-0 sm:h-[56px] sm:flex-nowrap sm:px-5">
-          <Link
-            href="/"
-            className="flex h-[56px] shrink-0 items-center font-mono text-[14px] whitespace-nowrap no-underline [font-variant-ligatures:none]"
-          >
-            release-tracker
-          </Link>
-          {children}
-          {quota && <span className={QUOTA}>{quota}</span>}
-          <div
-            className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "max-[429px]:ml-auto" : "ml-auto"}`}
-          >
-            <AuthStatus />
-            <ThemeToggle />
-          </div>
-        </div>
+        <SiteHeaderBar quota={quota}>{children}</SiteHeaderBar>
       </header>
     </>
   );
