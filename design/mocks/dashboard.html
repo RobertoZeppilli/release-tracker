@@ -120,6 +120,32 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
 .pointer .label { border-bottom: 1px dashed var(--help); }
 .pointer:hover .label { border-bottom-style: solid; }
 
+/* The quiet half of Spotlight: the Technologies with nothing featured in the window. The phrase
+   "latest major - none featured in 30 days" used to repeat on every one of these rows and spent the
+   whole content column saying the same thing; it is said once, here, and the rows keep only what
+   differs between them. */
+.quiet-note { margin: var(--space-5) 0 var(--space-2); font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
+.rows.quiet .row { padding: var(--space-2) 0; }
+.rows.quiet .row:first-child { border-top: 1px solid var(--rule); }
+
+/* The closing band: previews and the digest sit side by side from 900px, so the page ends on a block
+   instead of thinning out row by row down to nothing. */
+.tail { margin-top: var(--space-8); display: grid; gap: var(--space-7); align-items: start; }
+.tail > .section { margin-top: 0; }
+/* The band needs the full container to hold two readable halves: below 1040px the two sections
+   stack and keep the linear page they had. */
+@media (min-width: 1040px) {
+  .tail { grid-template-columns: 1fr 1fr; column-gap: var(--space-7); }
+  /* Half the column is too narrow for the four-column row, so a row in the band reflows exactly as
+     it does on a phone: name, version and date on the first line, the content across the width. */
+  .tail .row { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: var(--space-1); }
+  .tail .row .when { text-align: right; }
+  .tail .row .main { grid-column: 1 / -1; }
+  /* The week keeps its summary on one line in half a column, as it does on a phone. */
+  .tail .week summary .range { display: none; }
+  .tail .week summary > span { min-width: 0; }
+}
+
 /* Compact Spotlight row: the latest major, one line */
 .row.compact { padding: var(--space-2) 0; }
 .row.compact .main { font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
@@ -168,7 +194,8 @@ main[data-state="empty"] .for-stack { display: none; }
 main[data-state="safe"] .for-safe { display: inline; }
 main[data-state="safe"] .for-action { display: none; }
 /* Nothing featured in the window: Spotlight gives the space back instead of repeating itself. */
-main[data-state="silent"] #spotlight .rows { display: none; }
+main[data-state="silent"] #spotlight .rows,
+main[data-state="silent"] #spotlight .quiet-note { display: none; }
 main[data-state="silent"] #spotlight .line { display: block; }
 main[data-state="silent"] .for-action { display: none; }
 #spotlight .line { display: none; }
@@ -316,6 +343,7 @@ main[data-state="silent"] .for-action { display: none; }
             <p class="title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
             <p class="row-verdict for-action sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required · 4 breaking changes</p>
             <p class="row-verdict for-safe sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
+            <p class="in-use-line">in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action</p>
             <ul class="breaks for-action" aria-label="Breaking changes in Vite 6.0.0">
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <span class="mono">resolve.conditions</span> no longer include the defaults</span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><span class="mono">json.stringify</span> now defaults to <span class="mono">'auto'</span></span></li>
@@ -323,7 +351,6 @@ main[data-state="silent"] .for-action { display: none; }
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></li>
             </ul>
             <a class="pointer for-action" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
-            <p class="in-use-line">in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action</p>
           </div>
         </li>
         <li class="row">
@@ -335,32 +362,29 @@ main[data-state="silent"] .for-action { display: none; }
             <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
           </div>
         </li>
+      </ul>
+      <p class="quiet-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: 4 of the 7 you follow had nothing featured · latest major below</p>
+      <ul class="rows quiet">
         <li class="row compact">
           <a class="tech" href="#">Next.js</a>
           <span class="ver"><a href="#">15.0.0</a></span>
           <span class="when"><time datetime="2024-10-21">2024-10-21</time></span>
-          <div class="main">
-            <p>latest major · none featured in 30 days</p>
-            <p class="in-use-line">in use 15.0.0 since 2026-08-30 · 4 releases behind 15.0.4 · 1 needs action</p>
-          </div>
+          <p class="main in-use-line">in use 15.0.0 since 2026-08-30 · 4 releases behind 15.0.4 · 1 needs action</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Node.js</a>
           <span class="ver"><a href="#">23.0.0</a></span>
           <span class="when"><time datetime="2024-10-16">2024-10-16</time></span>
-          <p class="main">latest major · none featured in 30 days</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Vitest</a>
           <span class="ver"><a href="#">2.0.0</a></span>
           <span class="when"><time datetime="2024-07-08">2024-07-08</time></span>
-          <p class="main">latest major · none featured in 30 days</p>
         </li>
         <li class="row compact">
           <a class="tech" href="#">Tailwind CSS</a>
           <span class="ver"><a href="#">3.0.0</a></span>
           <span class="when"><time datetime="2021-12-09">2021-12-09</time></span>
-          <p class="main">latest major · none featured in 30 days</p>
         </li>
       </ul>
     </section>
@@ -406,6 +430,7 @@ main[data-state="silent"] .for-action { display: none; }
       </ul>
     </section>
 
+    <div class="tail">
     <section class="section" id="previews" aria-labelledby="previews-title">
       <h2 class="section-title" id="previews-title">previews (2)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg>preview <span class="fact">· betas and release candidates</span></span></h2>
       <ul class="rows">
@@ -501,6 +526,7 @@ main[data-state="silent"] .for-action { display: none; }
         </li>
       </ul>
     </section>
+    </div>
   </div>
 
   <!-- Empty state: 0 technologies followed -->
