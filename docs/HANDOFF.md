@@ -13,9 +13,38 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, pomeriggio).** **La #83 è chiusa**, con la **PR #99**, unita su
-`main` con `check` e `integration` verdi, cioè con i 145 E2E passati contro la build di produzione.
-Prossimo lavoro: la **#85**.
+**Da dove ripartire (2026-10-06, sera).** **La #85 è fatta**, sul branch `85-back-to-the-diagnostic`,
+con la **PR #101**, che è **aperta e non ancora unita**. Quindi, nell'ordine:
+
+1. **Guardare la CI della #101** e unirla.
+2. **Verificarla in produzione**: su una Release con una Sintesi `ready` e almeno una citazione,
+   seguire un `release-notes:N` e controllare che sopra la riga citata compaia
+   `<-- back to breaking[1]`, che seguirlo riporti alla diagnostica giusta, e che i key point
+   leggano `note[1]:`, `note[2]:` e così via. In locale non ci sono Sintesi `ready`, quindi la
+   verifica vera è lì.
+3. **Poi la #86**, che è il lavoro successivo. ⚠️ Il nodo di `library` va sciolto con l'utente
+   **prima** di scrivere una riga di codice (vedi sotto).
+
+**La #85, com'è stata fatta.** Era una issue HITL, e le due scelte di forma rimaste aperte sono state
+decise con l'utente. **Da non riaprire:**
+
+- **Un solo puntatore**, `<-- back to breaking[1]`, su una riga propria **sopra** la prima riga
+  dell'intervallo attivo, nella lavatura dell'intervallo e nell'inchiostro della severità che ha
+  citato. La riga tiene la gutter ma **non prende un numero suo**: i numeri di riga sono la ragione
+  per cui si guarda il pannello, e nasconderne uno sarebbe stato il contrario del punto.
+- **I key point sono numerati** `note[n]:`, in una colonna da 11.5ch, e ognuno è l'ancora su cui
+  atterra il ritorno. Un key point è numerato per la stessa ragione per cui lo è un breaking change:
+  una citazione che porta dentro le Note deve poter **nominare** la diagnostica da cui veniva.
+- Il ritorno è un semplice link `#b1`: porta lo scroll **e** il focus sul titolo della diagnostica
+  (che per questo ha `tabindex="-1"`), e lascia il tasto Indietro puntato alla riga citata. **Non
+  disegna e non anima niente**: la sottolineatura dell'andata resta l'unico momento di moto.
+- **Conseguenza da ricordare**: il puntatore precede la riga citata nell'ordine del documento e
+  l'andata lascia il focus sulla riga, quindi da tastiera si raggiunge con **Shift+Tab**. È scritto
+  nel test e in `DESIGN.md`. L'unico modo di avere il Tab in avanti sarebbe mettere il puntatore
+  **sotto** l'intervallo, che è la forma che l'utente non ha scelto.
+- La citazione attiva porta con sè chi l'ha chiamata (`CiteOrigin` in `citation-context.tsx`): è
+  quello il pezzo nuovo, il resto è resa. `DESIGN.md` lo registra sotto **Source View** ("The way
+  back") e **Note Lines**, e `design/mocks/release.html` lo mostra per tutte e due le severità.
 
 **La #83 è verificata in produzione**, su `/technologies/vite`: il campo arriva precompilato con
 `7.3.6` senza che nessuno abbia chiesto niente, la riga sotto dice perché, il verdetto è
@@ -25,14 +54,10 @@ in fondo c'è `--> show all 79 releases`. I due campi partono dallo stesso bordo
 viewport. La larghezza telefono resta coperta dagli E2E (`overflow.spec.ts` e `technology.spec.ts`
 girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparire sotto i 640px.
 
-**Le decisioni già prese con l'utente, da non riaprire.** Le tre issue scelte vanno fatte in
-quest'ordine, una per branch e per PR:
+**Le decisioni già prese con l'utente, da non riaprire.** Delle tre issue scelte la prima, la #85, è
+fatta (sopra). Restano le altre due, in quest'ordine, una per branch e per PR:
 
-1. **#85** (ritorno dalla citazione alla diagnostica): **un solo puntatore**, nella gutter della
-   **prima riga citata** dell'intervallo attivo, nell'inchiostro della severità che ha citato.
-   Attivarlo porta **anche il focus** sul titolo della diagnostica, non solo lo scroll. Nessun
-   secondo momento di moto. Una citazione sola è attiva per volta, quindi un puntatore solo.
-2. **#86** (generi del Catalogo): **dieci generi a grana fine**, curati **da noi** nel file
+1. **#86** (generi del Catalogo): **dieci generi a grana fine**, curati **da noi** nel file
    `catalog/<slug>.json`, non presi dalla Fonte. `language` (typescript, rust), `runtime` (nodejs,
    deno, bun), `framework` (angular, astro, next, nuxt, react, svelte, sveltekit, vue),
    `server framework` (express, fastify, nestjs, trpc), `database` (prisma, drizzle-orm),
@@ -43,14 +68,14 @@ quest'ordine, una per branch e per PR:
    caselle, e la issue vieta il gruppo "altro". Da sciogliere con l'utente **prima** di scrivere il
    codice: o lo si spacca (`styling`, `state management`, `validation`, `http client`), o si scrive
    in `CONTEXT.md` perchè `library` è un genere e non un residuo.
-3. **#87** (trattino lungo nelle Sintesi): **solo il prompt**, cioè divieto in `title`, `keyPoints` e
+2. **#87** (trattino lungo nelle Sintesi): **solo il prompt**, cioè divieto in `title`, `keyPoints` e
    `breakingChanges` con le `quote` escluse, `PROMPT_VERSION` a **v5**, e un test unitario sul testo
    del prompt. **Zero spesa.** Il conteggio delle Sintesi già scritte **lo lancia l'utente** su
    produzione con una query che gli va preparata: `.env.local` punta al database locale, che di
    `ready` non ne ha nessuna. Che farne si decide dopo, col numero davanti. ⚠️ Se la #87 prende
    il `v5`, **la #93 diventa v6**: le due issue se lo contendono.
 
-**Poi, e solo dopo le tre**: le **due box della Dashboard**, che l'utente ha chiesto il 2026-10-06
+**Poi, e solo dopo quelle**: le **due box della Dashboard**, che l'utente ha chiesto il 2026-10-06
 guardando `docs/Cattura.JPG` (fuori da git). Una box per i conteggi della finestra e una per la In
 Use Line, dentro **righe etichetta a sinistra e numero a destra**, non una riga di fatti separati da
 `·` che su mobile va a capo in mezzo ai numeri. Va aperta una issue sua prima di farla. Da ricordare:
@@ -103,10 +128,23 @@ Tutti e due verdi lanciati da soli, tutti e due verdi alla seconda corsa complet
 fallimento è sempre un follow che non risulta dove dovrebbe, sotto carico parallelo con quattro
 worker. In CI i retry sono 2, in locale 0. **Non è causato dalla #83**, che non tocca i follow.
 
-### Le strade aperte dopo la #83
+Durante la #85 è ricomparso una volta, sempre `technologies.spec.ts:86`, con l'errore in chiaro:
+`follows_technology_id_fkey`, cioè la pulizia della fixture che cancella la Technology mentre un
+follow la tiene ancora. Verde rilanciato da solo. Resta senza una issue sua.
 
-Dopo le tre issue scelte e le box della Dashboard restano: **#93** (prompt v5, o v6, con la terza
-uscita sulle note giudicabili) e **#57** (Haiku invece di Opus), tutte e due **spendono** su
+### ⚠️ Un secondo flake, questo con una issue: la #100
+
+`a11y.spec.ts:159` ("a technology page and its upgrade path") cade a tratti su `#path-verdict`
+trovato **due volte**. Non è un difetto della pagina: è la struttura della #83, dove il fallback del
+`Suspense` e il figlio che legge `?from=` contengono tutti e due quell'id, e durante lo streaming
+stanno nel documento insieme. **Verificato riportando `src/` a `main`: cade uguale**, quindi non
+appartiene alla #85, dov'è stato notato. Si riproduce di più a `.next` cancellata. È la **#100**,
+`ready-for-agent`, e il criterio dice esplicitamente che un `.first()` non va bene.
+
+### Le strade aperte dopo la #85
+
+Dopo la #86, la #87 e le box della Dashboard restano la **#100** (il flake qui sopra) e:
+**#93** (prompt v5, o v6, con la terza uscita sulle note giudicabili) e **#57** (Haiku invece di Opus), tutte e due **spendono** su
 Anthropic; **#65** e **#64**, tecniche, serve solo il via; **#80** (tocca GitHub e npm, non
 Anthropic, ma genera Sintesi a valle); **#26** la landing page, ferma sul nome del prodotto; **#69**
 esplicitamente dopo il lancio.
@@ -114,7 +152,7 @@ esplicitamente dopo il lancio.
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, prendiamo la #85
+leggi docs/HANDOFF.md, controlla la PR #101 e poi prendiamo la #86
 ```
 
 ---
