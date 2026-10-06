@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { BehindStanding, DashboardRelease } from "../domain/build-dashboard";
-import { behindLine, inUseTotalsLine, pageVerdict, rowVerdict, weekRange } from "./dashboard-copy";
+import {
+  behindLine,
+  inUseCaption,
+  inUseRows,
+  pageVerdict,
+  rowVerdict,
+  weekRange,
+  windowCaption,
+  windowRows,
+} from "./dashboard-copy";
 
 describe("pageVerdict", () => {
   it("says nothing needs action when no featured Release asks for work", () => {
@@ -134,16 +143,58 @@ describe("behindLine", () => {
   });
 });
 
-describe("inUseTotalsLine", () => {
+describe("inUseRows", () => {
   it("names the oldest declaration, so the total says how stale it may be", () => {
-    expect(inUseTotalsLine({ declared: 3, behind: 9, needsAction: 2, since: DECLARED }, 7)).toBe(
-      "In use on 3 of 7: 9 releases behind · 2 need action · oldest declared 2026-09-12.",
-    );
+    expect(inUseCaption({ declared: 3, behind: 9, needsAction: 2, since: DECLARED }, 7)).toBe("version in use · 3 of 7");
+    expect(inUseRows({ declared: 3, behind: 9, needsAction: 2, since: DECLARED })).toEqual([
+      { label: "releases behind", value: "9" },
+      { label: "need action", value: "2" },
+      { label: "oldest declared", value: "2026-09-12" },
+    ]);
   });
 
-  it("leaves the action clause out when no Release asks for work", () => {
-    expect(inUseTotalsLine({ declared: 1, behind: 0, needsAction: 0, since: DECLARED }, 1)).toBe(
-      "In use on 1 of 1: all up to date · oldest declared 2026-09-12.",
-    );
+  it("leaves the action row out when no Release asks for work, and counts in the singular", () => {
+    expect(inUseRows({ declared: 1, behind: 1, needsAction: 1, since: DECLARED })).toEqual([
+      { label: "release behind", value: "1" },
+      { label: "needs action", value: "1" },
+      { label: "oldest declared", value: "2026-09-12" },
+    ]);
+    expect(inUseRows({ declared: 1, behind: 0, needsAction: 0, since: DECLARED })).toEqual([
+      { label: "releases behind", value: "0" },
+      { label: "oldest declared", value: "2026-09-12" },
+    ]);
+  });
+});
+
+const COUNTS = { technologies: 7, featured: 3, featuredNeedsAction: 0, notable: 4, previews: 2, digest: 23 };
+
+describe("windowRows", () => {
+  it("names the window and how many Technologies it covers", () => {
+    expect(windowCaption(7)).toBe("last 30 days · 7 technologies");
+    expect(windowCaption(1)).toBe("last 30 days · 1 technology");
+  });
+
+  it("links a count only where its section exists, and Spotlight always exists", () => {
+    const rows = windowRows({ ...COUNTS, featured: 0, notable: 0 });
+
+    expect(rows.map(({ key, value, href, linked }) => ({ key, value, href, linked }))).toEqual([
+      { key: "featured", value: 0, href: "#spotlight", linked: true },
+      { key: "notable", value: 0, href: "#latest", linked: false },
+      { key: "previews", value: 2, href: "#previews", linked: true },
+      { key: "digest", value: 23, href: "#digest", linked: true },
+    ]);
+  });
+
+  // Issue #94: the verdict above counts the Version in use too, so the narrower number has to say
+  // its own scope where it stands, which is inside the `featured` row.
+  it("keeps the action count attached to featured", () => {
+    expect(windowRows({ ...COUNTS, featuredNeedsAction: 2 })[0].note).toEqual({ value: 2, words: "need action" });
+    expect(windowRows({ ...COUNTS, featuredNeedsAction: 1 })[0].note).toEqual({ value: 1, words: "needs action" });
+    expect(windowRows(COUNTS)[0].note).toBeNull();
+  });
+
+  it("names a single preview in the singular", () => {
+    expect(windowRows({ ...COUNTS, previews: 1 })[2].label).toBe("preview");
+    expect(windowRows(COUNTS)[2].label).toBe("previews");
   });
 });

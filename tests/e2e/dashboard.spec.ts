@@ -68,6 +68,11 @@ test.beforeEach(async () => {
   await developer.clearFollows();
 });
 
+// A row of a count box: the label on the left, its number on the right.
+function boxRow(page: Page, box: string, label: string) {
+  return page.getByTestId(box).getByRole("listitem").filter({ hasText: label });
+}
+
 async function signIn(page: Page): Promise<void> {
   const response = await page.request.post("/api/test/session", {
     data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
@@ -105,8 +110,8 @@ test("counts the work ahead of the Version in use, with nothing featured in the 
   await page.goto("/dashboard");
 
   await expect(page.locator("#page-verdict")).toContainText("1 needs action");
-  await expect(page.getByText("0 featured")).toBeVisible();
-  await expect(page.getByText(/1 need(s)? action/).first()).toBeVisible();
+  await expect(boxRow(page, "window-counts", "featured")).toContainText("0");
+  await expect(boxRow(page, "in-use-counts", "needs action")).toContainText("1");
 });
 
 test("gives no verdict when nothing it accounts for can be judged", async ({ page }) => {
@@ -192,17 +197,18 @@ test("keeps an open week of the Digest in the URL, through a reload and in a sha
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 
-// DESIGN.md gives prose a 72ch measure, and the counts line used to run the whole 992px column: 142
-// characters on one measure, which is the defect P2-9 of issue #47 named. The budget is computed
-// from the advance of the live font, as the caret row is, instead of being guessed from the pixels.
-test("keeps the counts line inside the 72ch measure", async ({ page }) => {
+// DESIGN.md gives prose a 72ch measure, and the counts used to run the whole 992px column as one
+// sentence: 142 characters on one measure, which is the defect P2-9 of issue #47 named. They are a
+// box now, and what the measure holds is the pair of them.
+test("keeps the count boxes inside the 72ch measure", async ({ page }) => {
   await addFollows(developer.id, [breaking.id, safe.id, busy.id]);
   await signIn(page);
   await page.goto("/dashboard");
 
-  const counts = page.getByText(/^Last 30 days across /);
-  await expect(counts).toBeVisible();
-  const measured = await counts.evaluate((node) => {
+  const box = page.getByTestId("window-counts");
+  await expect(box).toBeVisible();
+  const measured = await box.evaluate((node) => {
+    const boxes = node.parentElement ?? node;
     const probe = document.createElement("span");
     probe.style.font = getComputedStyle(node).font;
     probe.style.position = "absolute";
@@ -211,8 +217,22 @@ test("keeps the counts line inside the 72ch measure", async ({ page }) => {
     document.body.append(probe);
     const budget = probe.getBoundingClientRect().width;
     probe.remove();
-    return { width: node.getBoundingClientRect().width, budget };
+    return { width: boxes.getBoundingClientRect().width, budget };
   });
 
   expect(measured.width).toBeLessThanOrEqual(measured.budget + 1);
+});
+
+// The boxes hold the numbers the page opens with, so a row is a label and its number, never a
+// sentence: the label sits on the left and the number on the right of the same row.
+test("reads the window and the Version in use as rows of label and number", async ({ page }) => {
+  await addFollows(developer.id, [breaking.id, safe.id]);
+  await declareCurrentVersion(developer.id, breaking.id, "1.0.0");
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await expect(page.getByTestId("window-counts")).toContainText("last 30 days · 2 technologies");
+  await expect(boxRow(page, "window-counts", "digest")).toBeVisible();
+  await expect(page.getByTestId("in-use-counts")).toContainText("version in use · 1 of 2");
+  await expect(boxRow(page, "in-use-counts", "oldest declared")).toBeVisible();
 });

@@ -1,5 +1,11 @@
 import { isoDate, plural, type Tone } from "@/modules/releases/ui";
-import type { BehindStanding, DashboardRelease, DashboardVerdict, InUseTotals } from "../domain/build-dashboard";
+import type {
+  BehindStanding,
+  DashboardCounts,
+  DashboardRelease,
+  DashboardVerdict,
+  InUseTotals,
+} from "../domain/build-dashboard";
 
 export type Verdict = { tone: Tone; label: string; claim: string; pending?: true };
 
@@ -40,20 +46,74 @@ export function weekRange(start: Date, end: Date): string {
   return `${month(start)} ${start.getUTCDate()} to ${to}`;
 }
 
-// The two lines built on the Version in use. Both name the day the declaration was made, because it
+// The two things built on the Version in use. Both name the day the declaration was made, because it
 // is the one fact that tells a reader whether the count in front of it still means anything: the app
 // never checks a declaration, so a count on top of it is exactly as old as the declaration is.
-function needWord(count: number): string {
-  return `${count} ${count === 1 ? "needs" : "need"} action`;
+function actionWords(count: number): string {
+  return count === 1 ? "needs action" : "need action";
 }
 
-export function inUseTotalsLine(totals: InUseTotals, technologies: number): string {
-  const parts = [
-    totals.behind === 0 ? "all up to date" : `${plural(totals.behind, "release")} behind`,
-    ...(totals.needsAction > 0 ? [needWord(totals.needsAction)] : []),
-    `oldest declared ${isoDate(totals.since)}`,
+function needWord(count: number): string {
+  return `${count} ${actionWords(count)}`;
+}
+
+// The two count boxes. A box is a caption and a list of rows, each row a label on the left and its
+// number on the right: the facts used to run as one sentence of items separated by `·`, which on a
+// phone wrapped in the middle of the numbers (DESIGN.md, Count Box).
+export type CountRow = {
+  key: string;
+  label: string;
+  value: number;
+  href: string;
+  // A count points at a section only where that section exists; Spotlight is always on the page.
+  linked: boolean;
+  // Issue #94: a number of narrower scope says its own scope where it stands, so `need action` stays
+  // inside the `featured` row instead of becoming a row of its own.
+  note: { value: number; words: string } | null;
+};
+
+export type FactRow = { label: string; value: string };
+
+export function windowCaption(technologies: number): string {
+  return `last 30 days · ${technologies} ${technologies === 1 ? "technology" : "technologies"}`;
+}
+
+export function windowRows(counts: DashboardCounts): CountRow[] {
+  return [
+    {
+      key: "featured",
+      label: "featured",
+      value: counts.featured,
+      href: "#spotlight",
+      linked: true,
+      note:
+        counts.featuredNeedsAction > 0
+          ? { value: counts.featuredNeedsAction, words: actionWords(counts.featuredNeedsAction) }
+          : null,
+    },
+    { key: "notable", label: "notable", value: counts.notable, href: "#latest", linked: counts.notable > 0, note: null },
+    {
+      key: "previews",
+      label: counts.previews === 1 ? "preview" : "previews",
+      value: counts.previews,
+      href: "#previews",
+      linked: counts.previews > 0,
+      note: null,
+    },
+    { key: "digest", label: "digest", value: counts.digest, href: "#digest", linked: counts.digest > 0, note: null },
   ];
-  return `In use on ${totals.declared} of ${technologies}: ${parts.join(" · ")}.`;
+}
+
+export function inUseCaption(totals: InUseTotals, technologies: number): string {
+  return `version in use · ${totals.declared} of ${technologies}`;
+}
+
+export function inUseRows(totals: InUseTotals): FactRow[] {
+  return [
+    { label: totals.behind === 1 ? "release behind" : "releases behind", value: `${totals.behind}` },
+    ...(totals.needsAction > 0 ? [{ label: actionWords(totals.needsAction), value: `${totals.needsAction}` }] : []),
+    { label: "oldest declared", value: isoDate(totals.since) },
+  ];
 }
 
 export function behindLine(standing: BehindStanding): string {
