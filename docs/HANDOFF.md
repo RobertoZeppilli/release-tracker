@@ -16,7 +16,42 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
+**Da dove ripartire (2026-10-06, notte sul 07).** La **#87 è a metà**, sul branch
+`87-forbid-em-dash-in-summaries`. Fatto e committato (`3196a37`): il divieto del trattino lungo nel
+system prompt, `PROMPT_VERSION` a **v5**, e un test unitario che asserisce il divieto, i quattro
+campi nominati e l'esenzione delle `quote` (nel test il carattere è scritto con la sua sequenza di
+escape unicode, così il sorgente non ne contiene uno). 529 unitari verdi, `lint` e `typecheck`
+puliti, UI non toccata.
+⚠️ **La #93 diventa `v6`**: il `v5` se l'è preso la #87.
+
+**Il conteggio su produzione è fatto** (run 37467451186, workflow di sola lettura): **122 Sintesi
+`ready`, 3 col trattino lungo** in un campo scritto dal modello, `vite 8.0.0` e `vite 8.2.0` nel
+titolo e `pnpm 11.22.0` nella `migration` di un breaking change, più 9 che ce l'hanno solo dentro una
+`quote` e che restano come sono. **L'utente ha deciso di non spendere** i circa 6 centesimi della
+rigenerazione: i tre campi si correggono in posto, spazio-trattino-spazio diventa due punti più
+spazio. Le due righe sono in `docs/DECISIONI.md`.
+
+**Quello che resta da fare, e che serve le mani dell'utente.** La correzione è scritta e collaudata
+(la logica di riscrittura del JSON provata in sola lettura su un valore letterale: titolo e
+`migration` corretti, `quote` intatta, ordine e `actionRequired` invariati), ma **non è stata
+applicata**, perché:
+
+1. Il file della correzione è in
+   `…/scratchpad/query-em-dash-fix.yml` (fuori dal repo): **il commit e il push su `main` mi sono
+   stati negati dal classificatore** (`Production Deploy` e `Modify Shared Resources`). Su `main` è
+   rimasta la versione **di sola lettura** del workflow, `.github/workflows/query-em-dash.yml`
+   (`7a73745`), **che va cancellata** quando la correzione è fatta.
+2. La via più corta, ora, è **incollare l'SQL nel SQL Editor** della dashboard di produzione: fa
+   stampare i valori di prima, sostituisce, ristampa e riconta. Niente commit su `main`, niente
+   deploy.
+3. Poi: cancellare il workflow da `main`, verificare le tre pagine in produzione, e aprire la **PR
+   che chiude la #87** dal branch (`Closes #87` in inglese).
+
+⚠️ **`workflow_dispatch` funziona solo se il workflow sta su `main`**: GitHub risolve il workflow dal
+branch di default. È per questo che il workflow della lettura è finito su `main` invece che sul
+branch della issue.
+
+**Lo stato precedente (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
 (`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
 Prossimo lavoro: la **#87** (il trattino lungo nelle Sintesi), poi le due box della Dashboard.
 
@@ -119,12 +154,9 @@ girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparir
 **Le decisioni già prese con l'utente, da non riaprire.** Delle tre issue scelte restano solo la
 #87 e, dopo, le box della Dashboard. La #85 e la #86 sono fatte (sopra).
 
-**#87** (trattino lungo nelle Sintesi): **solo il prompt**, cioè divieto in `title`, `keyPoints` e
-`breakingChanges` con le `quote` escluse, `PROMPT_VERSION` a **v5**, e un test unitario sul testo del
-prompt. **Zero spesa.** Il conteggio delle Sintesi già scritte **lo lancia l'utente** su produzione
-con una query che gli va preparata: `.env.local` punta al database locale, che di `ready` non ne ha
-nessuna. Che farne si decide dopo, col numero davanti. ⚠️ Se la #87 prende il `v5`, **la #93
-diventa v6**: le due issue se lo contendono.
+**#87** (trattino lungo nelle Sintesi): decisa e in corso, vedi "Da dove ripartire". Il prompt è
+fatto, il conteggio è fatto, e sulle tre Sintesi esistenti la decisione è **non spendere**: si
+correggono in posto. Resta solo da applicare la correzione e aprire la PR. **La #93 è `v6`.**
 
 **Poi, e solo dopo quelle**: le **due box della Dashboard**, che l'utente ha chiesto il 2026-10-06
 guardando `docs/Cattura.JPG` (fuori da git). Una box per i conteggi della finestra e una per la In
