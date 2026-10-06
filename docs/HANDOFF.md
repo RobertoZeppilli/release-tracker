@@ -13,9 +13,17 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, pomeriggio).** **La #83 è fatta ma non ancora unita**: branch
-`default-upgrade-start`, **PR #99**, in attesa di `CI` e del merge. Primo passo della sessione nuova:
-controllare che la #99 sia verde e unita (`gh pr view 99`), e solo dopo prendere la #85.
+**Da dove ripartire (2026-10-06, pomeriggio).** **La #83 è chiusa**, con la **PR #99**, unita su
+`main` con `check` e `integration` verdi, cioè con i 145 E2E passati contro la build di produzione.
+Prossimo lavoro: la **#85**.
+
+**La #83 è verificata in produzione**, su `/technologies/vite`: il campo arriva precompilato con
+`7.3.6` senza che nessuno abbia chiesto niente, la riga sotto dice perché, il verdetto è
+`note: 3 to check`, il gruppo `v8 29 releases` comprende la `8.0.0` (il punto della regola scelta) e
+in fondo c'è `--> show all 79 releases`. I due campi partono dallo stesso bordo sinistro.
+⚠️ **Il controllo a 390px non è riuscito**: il ridimensionamento della finestra non ha cambiato il
+viewport. La larghezza telefono resta coperta dagli E2E (`overflow.spec.ts` e `technology.spec.ts`
+girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparire sotto i 640px.
 
 **Le decisioni già prese con l'utente, da non riaprire.** Le tre issue scelte vanno fatte in
 quest'ordine, una per branch e per PR:
@@ -106,7 +114,7 @@ esplicitamente dopo il lancio.
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, controlla la PR #99 e poi prendiamo la #85
+leggi docs/HANDOFF.md, prendiamo la #85
 ```
 
 ---
