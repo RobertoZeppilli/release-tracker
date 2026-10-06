@@ -13,17 +13,25 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, sera).** **La #85 è fatta**, sul branch `85-back-to-the-diagnostic`,
-con la **PR #101**, che è **aperta e non ancora unita**. Quindi, nell'ordine:
+**Da dove ripartire (2026-10-06, sera).** **La #85 è chiusa**, con la **PR #101**, unita su `main`
+(`1fc8af5`), e il branch è cancellato in locale e su GitHub. Prossimo lavoro: la **#86**.
+⚠️ Il nodo di `library` va sciolto con l'utente **prima** di scrivere una riga di codice (vedi sotto).
 
-1. **Guardare la CI della #101** e unirla.
-2. **Verificarla in produzione**: su una Release con una Sintesi `ready` e almeno una citazione,
-   seguire un `release-notes:N` e controllare che sopra la riga citata compaia
-   `<-- back to breaking[1]`, che seguirlo riporti alla diagnostica giusta, e che i key point
-   leggano `note[1]:`, `note[2]:` e così via. In locale non ci sono Sintesi `ready`, quindi la
-   verifica vera è lì.
-3. **Poi la #86**, che è il lavoro successivo. ⚠️ Il nodo di `library` va sciolto con l'utente
-   **prima** di scrivere una riga di codice (vedi sotto).
+**La #85 è verificata in produzione**, su tutte e due le severità:
+
+- `/technologies/react/19.3.0` è il caso dell'issue parola per parola: `breaking[1]` cita
+  `release-notes:164` dentro 186 righe di changelog quasi identiche. Seguendolo si atterra sulla 164
+  e sopra c'è `<-- back to breaking[1]` in corallo, sulla lavatura dell'intervallo; seguirlo riporta
+  alla diagnostica con l'URL a `#b1`, senza animazione. **Il tasto Indietro riporta alla riga 164**,
+  con puntatore e lavatura ancora lì: è la gamba che l'issue diceva mancante.
+- `/technologies/vite/8.0.0`: i key point leggono `note[1]:`, `note[2]:`, `note[3]:`, e la citazione
+  di `note[1]` apre il pannello con `<-- back to note[1]` in cyan sopra la riga lavata, con ritorno
+  a `#n1`.
+- Il controllo a 390px **non è stato rifatto nel browser**, perché è quello che era già fallito con
+  la #83 (il ridimensionamento non cambia il viewport). La larghezza telefono resta coperta dagli
+  E2E e da uno screenshot a 390 fatto in locale prima della PR.
+- ⚠️ Visto di passaggio: il titolo della Sintesi di `vite/8.0.0` contiene un **trattino lungo**
+  ("ships with no inline release notes — details are only in the changelog"). È esattamente la #87.
 
 **La #85, com'è stata fatta.** Era una issue HITL, e le due scelte di forma rimaste aperte sono state
 decise con l'utente. **Da non riaprire:**
@@ -152,7 +160,7 @@ esplicitamente dopo il lancio.
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, controlla la PR #101 e poi prendiamo la #86
+leggi docs/HANDOFF.md, prendiamo la #86
 ```
 
 ---
