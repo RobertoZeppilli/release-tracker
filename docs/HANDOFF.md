@@ -16,8 +16,20 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte sul 07).** La **#87 è fatta**, sul branch
-`87-forbid-em-dash-in-summaries`, e resta solo la PR. Committato (`3196a37`): il divieto nel
+**Da dove ripartire (2026-10-06, notte sul 07).** **La #87 è chiusa**, con la **PR #103**, unita su
+`main` (`3fd7b58`); l'issue si è chiusa da sola col `Closes #87`. `CI` e `Deploy database` verdi su
+`main`. Prossimo lavoro: le **due box della Dashboard**, che vogliono una issue loro prima di essere
+fatte (vedi sotto).
+
+**La #87 è verificata in produzione**, dopo il deploy del merge: `vite/8.0.0` legge "ships with no
+inline release notes**:** details are only in the changelog." e `vite/8.2.0` "no inline notes**:**
+details live only in the linked `CHANGELOG.md`.", tutte e due con **zero** trattini lunghi in pagina;
+`pnpm/11.22.0` legge "(the error names the location)**:** the command fails with
+`ERR_PNPM_CONFIG_SET_NOT_A_PROJECT_SETTING`" e conserva i suoi **36** trattini, che sono le Note e le
+citazioni (erano 38: i due spariti sono le due occorrenze della stessa `migration`, una nel payload
+RSC e una nell'HTML reso). È la prova che il divieto non ha toccato le `quote`.
+
+**Com'è stata fatta.** Committato (`3196a37`): il divieto nel
 system prompt, `PROMPT_VERSION` a **v5**, e un test unitario che asserisce il divieto, i quattro
 campi nominati e l'esenzione delle `quote` (nel test il carattere è scritto con la sua sequenza di
 escape unicode, così il sorgente non ne contiene uno). 529 unitari verdi, `lint` e `typecheck`
@@ -43,11 +55,12 @@ guardi l'ora o il deploy, non il parametro.
 ⚠️ Attenzione a come si legge una pagina di produzione da qui: `curl | python` decodifica in cp1252 e
 fa **sparire** il conteggio dei trattini lunghi. Va salvato il file e riletto in UTF-8.
 
-**Il workflow della lettura se ne va col merge.** `.github/workflows/query-em-dash.yml` era finito su
-`main` (`7a73745`) perché `workflow_dispatch` si risolve solo dal branch di default; la PR della #87
-porta `main` dentro il branch e lo cancella, così non serve nessun commit diretto su `main`. Il file
-della versione che correggeva da sola, e l'SQL incollato a mano, sono rimasti nello scratchpad della
-sessione, fuori dal repo.
+**Il workflow della lettura se n'è andato col merge.** `.github/workflows/query-em-dash.yml` era
+finito su `main` (`7a73745`) perché **`workflow_dispatch` si risolve solo dal branch di default**: un
+workflow che sta solo sul branch della issue è invisibile al dispatch. La PR ha portato `main` dentro
+il branch e l'ha cancellato, così non è servito nessun commit diretto su `main`. Da ricordare per la
+prossima volta: per una lettura una volta sola il SQL Editor della dashboard è la via corta, e il
+workflow è costato un commit su `main` e un deploy di produzione per niente.
 
 **Lo stato precedente (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
 (`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
@@ -225,7 +238,8 @@ appartiene alla #85, dov'è stato notato. Si riproduce di più a `.next` cancell
 ### Le strade aperte dopo la #85
 
 Dopo la #87 e le box della Dashboard restano la **#100** (il flake qui sopra) e:
-**#93** (prompt v5, o v6, con la terza uscita sulle note giudicabili) e **#57** (Haiku invece di Opus), tutte e due **spendono** su
+**#93** (prompt **v6**, con la terza uscita sulle note giudicabili: il `v5` se l'è preso la #87) e
+**#57** (Haiku invece di Opus), tutte e due **spendono** su
 Anthropic; **#65** e **#64**, tecniche, serve solo il via; **#80** (tocca GitHub e npm, non
 Anthropic, ma genera Sintesi a valle); **#26** la landing page, ferma sul nome del prodotto; **#69**
 esplicitamente dopo il lancio.
