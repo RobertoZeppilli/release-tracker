@@ -143,14 +143,15 @@ describe("buildDashboard", () => {
       NOW,
     );
 
-    expect(dashboard.counts).toEqual({ technologies: 2, featured: 1, notable: 2, previews: 1, digest: 1 });
+    expect(dashboard.counts).toEqual({ technologies: 2, featured: 1, featuredNeedsAction: 0, notable: 2, previews: 1, digest: 1 });
   });
 
   it("is empty when the Developer follows nothing, which is what the empty state reads", () => {
     const dashboard = buildDashboard([], [release({ slug: "react", version: "19.0.0" })], NOW);
 
     expect(dashboard.spotlight).toEqual([]);
-    expect(dashboard.verdict).toEqual({ needsAction: 0, safe: 0 });
+    // Nothing followed is nothing to judge, so the page gets no verdict rather than a reassurance.
+    expect(dashboard.verdict).toBeNull();
     expect(dashboard.counts.technologies).toBe(0);
   });
 
@@ -292,5 +293,73 @@ describe("the Version in use", () => {
     );
 
     expect(dashboard.inUse).toEqual({ declared: 2, behind: 5, needsAction: 1, since: OLDER });
+  });
+});
+
+// CONTEXT.md, Verdetto della Dashboard: what the verdict counts, and when it declines to speak.
+// Issue #94: `ok: nothing needs action` used to sit above a line reading `2 need action`, because the
+// verdict looked only at the featured Releases of the window while that line followed the Version in
+// use with no window at all.
+describe("the page verdict", () => {
+  const OLD = new Date("2024-06-01T00:00:00Z");
+
+  function inUse(technology: FollowedTechnology, version: string): FollowedTechnology {
+    return { ...technology, currentVersion: { version, declaredAt: new Date("2024-11-20T00:00:00Z") } };
+  }
+
+  it("counts what the Version in use leaves ahead, with nothing featured in the window", () => {
+    const dashboard = buildDashboard(
+      [inUse(react, "18.0.0")],
+      [
+        release({ slug: "react", version: "18.0.0", significance: "notable", summary: summary(), publishedAt: OLD }),
+        release({ slug: "react", version: "18.1.0", significance: "notable", summary: needsAction(), publishedAt: OLD }),
+      ],
+      NOW,
+    );
+
+    expect(dashboard.counts.featured).toBe(0);
+    expect(dashboard.inUse?.needsAction).toBe(1);
+    expect(dashboard.verdict).toEqual({ needsAction: 1, safe: 0 });
+  });
+
+  it("counts a Release once when it is both featured in the window and ahead of the Version in use", () => {
+    const dashboard = buildDashboard(
+      [inUse(react, "18.0.0")],
+      [
+        release({ slug: "react", version: "18.0.0", significance: "notable", summary: summary(), publishedAt: OLD }),
+        release({ slug: "react", version: "19.0.0", summary: needsAction() }),
+      ],
+      NOW,
+    );
+
+    expect(dashboard.spotlight[0].featured.map((found) => found.version)).toEqual(["19.0.0"]);
+    expect(dashboard.inUse?.needsAction).toBe(1);
+    expect(dashboard.verdict).toEqual({ needsAction: 1, safe: 0 });
+  });
+
+  it("gives no verdict when nothing it accounts for carries one", () => {
+    const dashboard = buildDashboard(
+      [react],
+      [release({ slug: "react", version: "19.0.0", summaryStatus: "pending", summary: null })],
+      NOW,
+    );
+
+    expect(dashboard.spotlight[0].featured).toHaveLength(1);
+    expect(dashboard.verdict).toBeNull();
+  });
+
+  it("keeps the narrower featured count for the line that stands next to it", () => {
+    const dashboard = buildDashboard(
+      [inUse(react, "18.0.0"), vite],
+      [
+        release({ slug: "react", version: "18.0.0", significance: "notable", summary: summary(), publishedAt: OLD }),
+        release({ slug: "react", version: "18.1.0", significance: "notable", summary: needsAction(), publishedAt: OLD }),
+        release({ slug: "vite", version: "6.0.0", summary: needsAction() }),
+      ],
+      NOW,
+    );
+
+    expect(dashboard.counts.featuredNeedsAction).toBe(1);
+    expect(dashboard.verdict).toEqual({ needsAction: 2, safe: 0 });
   });
 });

@@ -183,6 +183,24 @@ La vista personale di uno sviluppatore con le **Release** delle **Tecnologie** c
 per **Rilevanza** in sezioni: **In primo piano**, **Novità**, **Anteprime** e **Digest settimanale**.
 _Evitare_: home, feed (è una sola sezione).
 
+**Verdetto della Dashboard**:
+La riga in testa alla **Dashboard**, che risponde a una domanda sola: fra le **Release** di cui la
+pagina rende conto, ce n'è qualcuna che richiede **Intervento richiesto**? L'insieme di cui rende
+conto è tutto quello che la pagina mostra come lavoro possibile, cioè le **Release** _In evidenza_
+degli ultimi 30 giorni e, per ogni **Tecnologia** seguita che ha una **Versione in uso**, le
+**Release** del suo **Cammino di upgrade**. Una **Release** che sta in entrambi conta una volta: il
+verdetto conta **Release**, non occorrenze.
+Contano solo le **Release** che hanno un verdetto, con le regole delle **Note giudicabili**: quelle
+senza **Sintesi** _Pronta_ e quelle le cui note non sono giudicabili non contano né come sicure né
+come **Intervento richiesto**. Se nessuna **Release** dell'insieme ha un verdetto, **il verdetto non
+si dà**: la pagina non afferma che c'è lavoro e non afferma che non ce n'è. Un insieme vuoto non
+autorizza una rassicurazione, come su note non giudicabili non autorizza un giudizio sulla
+**Release**.
+Da qui la regola di impaginazione: **nessun conto mostrato sotto il verdetto può smentirlo**. Un
+numero che vive in un ambito più stretto, come le _In evidenza_ della finestra, dice il proprio
+ambito dove sta.
+_Evitare_: stato generale, riepilogo, tutto ok.
+
 **In primo piano**:
 La sezione della **Dashboard** con le **Release** _In evidenza_ degli ultimi 30 giorni; per ogni
 **Tecnologia** seguita che non ne ha, mostra in forma compatta la sua ultima major.

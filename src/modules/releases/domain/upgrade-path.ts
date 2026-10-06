@@ -40,6 +40,9 @@ export type UpgradePath<T> =
       // For a `from` that is not recorded: the recorded stable Versions just before and after it.
       suggestions: string[];
       counts: PathCounts;
+      // The stable Releases the path covers, newest last. `counts` is derived from exactly these, so
+      // a caller that has to reason about the Releases themselves never restates the selection rule.
+      range: T[];
       majors: PathMajor<T>[];
       previews: T[];
     };
@@ -70,6 +73,7 @@ export function computeUpgradePath<T extends PathRelease>(releases: readonly T[]
     recorded,
     suggestions: recorded ? [] : [before, range[0]].flatMap((entry) => (entry ? [entry.release.version] : [])),
     counts: countPath(range.map(({ release }) => release)),
+    range: range.map(({ release }) => release),
     majors: [...splitByMajor(range).entries()].map(([major, members]) => ({
       major,
       counts: countPath(members),

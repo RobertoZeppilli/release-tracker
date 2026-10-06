@@ -10,7 +10,7 @@ export function DashboardSummary({
   counts,
   inUse,
 }: {
-  verdict: DashboardVerdict;
+  verdict: DashboardVerdict | null;
   counts: DashboardCounts;
   inUse: InUseTotals | null;
 }) {
@@ -24,14 +24,16 @@ export function DashboardSummary({
       <p className="mt-3 max-w-measure font-mono text-diagnostic text-text-muted tabular-nums">
         Last 30 days across <Count value={counts.technologies} /> {counts.technologies === 1 ? "technology" : "technologies"}:{" "}
         <CountLink value={counts.featured} href="#spotlight" label="featured" exists />
-        {verdict.needsAction > 0 && (
+        {/* The verdict above counts the Version in use too, so this parenthesis carries the narrower
+            number: next to `featured`, it has to be the featured ones. */}
+        {counts.featuredNeedsAction > 0 && (
           <>
             {" ("}
-            <Count value={verdict.needsAction} /> {verdict.needsAction === 1 ? "needs" : "need"} action{")"}
+            <Count value={counts.featuredNeedsAction} /> {counts.featuredNeedsAction === 1 ? "needs" : "need"} action{")"}
           </>
         )}
         , <CountLink value={counts.notable} href="#latest" label="notable" />,{" "}
-        <CountLink value={counts.previews} href="#previews" label="previews" />,{" "}
+        <CountLink value={counts.previews} href="#previews" label={counts.previews === 1 ? "preview" : "previews"} />,{" "}
         <CountLink value={counts.digest} href="#digest" label="digest" />.
       </p>
       {/* Only for whoever declared a Version in use, and it stays muted: the distance is a count, and
