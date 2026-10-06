@@ -16,51 +16,54 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, pomeriggio).** **Le due box della Dashboard sono fatte**, con la
-**PR #104**, unita su `main` (`010d33a`); il branch `dashboard-count-boxes` è cancellato in locale e
-su GitHub. `Deploy database` verde; la CI del merge è stata cancellata e **rilanciata a mano** (run
-37475231634): `check` verde, `integration` ancora in corso mentre si scriveva, **da
-controllare** (vedi la trappola qui sotto). Restano da
-fare due cose: **verificarle in produzione** dopo il deploy del merge, e scegliere il lavoro
-seguente, che non è più deciso da nessuno: la **#100** è l'unica `ready-for-agent`.
+**Da dove ripartire (2026-10-06, sera).** **La #100 è chiusa**, con la **PR #105**, unita su `main`
+(`9b91fab`): l'issue si è chiusa da sola col `Closes #100`, e il branch `a11y-upgrade-path-wait` è
+cancellato in locale e su GitHub. `Deploy database` verde. **Niente da verificare in produzione**: il
+lavoro tocca un solo file di test e nessuna riga di `src/`. **Le due box della Dashboard sono
+verificate in produzione**, dall'utente in persona: lo stato di prima sta nel diario di ottobre.
+**Non c'è più nessuna issue `ready-for-agent`**, quindi il lavoro seguente si sceglie fra le strade
+aperte qui sotto e vuole il via dell'utente.
 
-**Niente issue, per scelta dell'utente**: il lavoro era in coda qui nell'handoff dopo la #87 e
-l'utente ha detto di andare diretto, quindi la PR #104 non chiude niente e il corpo della PR lo
-dice. Non è la regola, è stata un'eccezione concessa a voce.
+**Com'è stata fatta.** Il flake era nelle attese del test, non nella pagina, e `UpgradePathBlock` e
+`UpgradePathView` **non sono stati toccati**: il diff è di 7 righe in `tests/e2e/a11y.spec.ts`. Le
+due attese ora nominano un fatto che solo la resa risolta può portare, perché la partenza del
+fallback è quella ricavata:
 
-**Com'è stata fatta.** I numeri che aprivano la Dashboard erano due frasi di fatti separati da `·`
-che su telefono andavano a capo in mezzo ai numeri (`docs/Cattura.JPG`, fuori da git). Ora sono due
-box: didascalia muta con l'ambito (`last 30 days · 6 technologies`, `version in use · 3 of 6`), poi
-righe con l'etichetta a sinistra e il numero a destra. Il pannello è quello che il sistema aveva già
-due volte, la Source View e il blocco diff: 1px `rule` su `raised`, raggio 6px, quindi **il "Don't"
-di `DESIGN.md` non è stato toccato**. `DESIGN.md` registra **Count Box** come signature e
-`design/mocks/dashboard.html` la mostra. Le funzioni di copia sono pure e testate
-(`windowCaption`/`windowRows`, `inUseCaption`/`inUseRows`); `inUseTotalsLine` non esiste più.
+1. `?from=1.8.9`: la frase che apre il Cammino, `Between 1.8.9 and 2.0.0 there are 2 releases`. Il
+   fallback scrive `Between 1.9.0 and 2.0.0 there is 1 release`, perché la sua partenza è `1.9.0`,
+   l'ultima stabile della major precedente. **Il verdetto non bastava**: il testo dell'`h2` è
+   `warning: 1 needs action` in tutte e due le rese, quindi la strada del `getByRole("heading")`
+   suggerita dalla issue non distingueva niente.
+2. `?from=9.9.9`: il rifiuto che nomina la Versione rifiutata,
+   `9.9.9 is newer than 2.0.0, the latest stable release.`. Lì il fallback scrive la nota della
+   partenza ricavata. **Era lo stesso difetto latente nel test accanto**, stesso file e stessa causa,
+   e l'ho corretto insieme.
 
-**Le scelte di forma, da non ridiscutere:**
+Fuori da `a11y.spec.ts` il doppione non si presenta: in `keyboard.spec.ts:126` e nei giri di
+`upgrade-path.spec.ts` il Cammino arriva da un submit del form, cioè da una navigazione del client
+senza fallback. **Non sono stati toccati**, ed è il motivo per cui `#path-verdict` vive ancora là.
 
-1. **Il link è la riga intera**, non il solo numero: su un telefono un bersaglio di due caratteri non
-   è un bersaglio. Al passaggio del mouse l'etichetta va a `text` e il numero si sottolinea.
-2. **La griglia tiene due colonne anche con una box sola** (chiesto dall'utente a lavoro in corso):
-   la box della finestra conserva la sua metà di misura, e dichiarare una Versione in uso aggiunge
-   una box accanto invece di dimezzare quella che c'era. Sotto i 640px si impilano.
-3. **`all up to date` è sparito**: in una tabella di etichette e numeri era l'unica riga fuori forma,
-   e ora si legge `releases behind 0`.
-4. Conservati dalla riga vecchia: ogni conteggio linka alla sua sezione **solo dove la sezione
-   esiste**, e `(2 need action)` resta dentro la riga `featured` (regola della #94).
-5. Le due box portano un `data-testid` (`window-counts`, `in-use-counts`), come già `follow-status`:
-   è l'aggancio degli E2E, perché le righe concatenano etichetta e numero nel testo.
+**Verifiche fatte prima del merge**: `lint` e `typecheck` puliti e **undici giri di fila** di
+`pnpm test:e2e a11y.spec.ts`, 30 su 30 ciascuno, l'ultimo a `.next` cancellata. Cancellare `.next`
+mentre il `pnpm dev` dell'utente gira sulla 3000 **non lo ha incartato**: ha ricompilato da solo e
+ha risposto 200.
 
-**Verifiche fatte prima del merge**: `lint` e `typecheck` puliti, **533 unitari**, `dashboard.spec`
-10 su 10, e `a11y` + `current-version` + `overflow` 57 su 57 con l'audit WCAG in tema chiaro e scuro.
-Guardata nel browser a 1280px, a 390px e nel caso della sola box.
+⚠️ **La CI del merge è stata cancellata una seconda volta, ma la causa non è quella di prima.**
+Nessuno ha pushato niente su `main` durante la corsa: la richiesta che l'ha soppiantata (sempre
+`Canceling since a higher priority waiting request for ci-refs/heads/main exists`) è **la corsa
+`pull_request` della PR #105**, che era rimasta in coda e si è messa in moto alle 14:52, cioè
+**sette minuti dopo il merge**, sullo stesso sha `cbd17dd`. Da ricordare per il prossimo merge:
+**prima di unire, guardare se la corsa della PR è finita** (`gh pr checks <N>`), perché una corsa in
+coda che arriva dopo il merge si porta via la corsa del merge. La buona notizia è che la corsa
+cancellata **aveva già fatto tutto**: `check` verde, e dentro `integration` i passi
+`test:integration`, `build` e `test:e2e` tutti riusciti (148 passati, 2 flaky ritentati, 1 saltato);
+la cancellazione ha preso solo i passi di chiusura.
 
-⚠️ **La CI del merge è stata cancellata dopo 13 secondi**, con `Canceling since a higher priority
-waiting request for ci-refs/heads/main exists` (run 37475231634): il workflow ha
-`concurrency: ci-${{ github.ref }}` con `cancel-in-progress`, e il merge ha lasciato `main` senza una
-corsa verde. È lo stesso effetto già visto committando documenti durante una corsa, da un'altra
-causa. **Si rimedia con `gh run rerun <id>`**, che è quello che è stato fatto qui: chi riprende
-guardi `gh run list --branch main` e, se la corsa rilanciata non è verde, parta da lì.
+**La domanda lasciata aperta dallo stato di prima è chiusa**, e vale come rimedio: la corsa
+rilanciata a mano (37475231634) era stata cancellata anche lei, ma la corsa nata dal **commit dei
+documenti** su `main` subito dopo (37476164810) è **verde**, quindi `ac4732d` aveva la sua corsa. È
+la via più economica di un `gh run rerun`: un commit di documenti su `main` fa partire una corsa sua,
+e questa sessione si chiude così.
 
 **Lo stato precedente (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
 (`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
@@ -163,12 +166,12 @@ viewport. La larghezza telefono resta coperta dagli E2E (`overflow.spec.ts` e `t
 girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparire sotto i 640px.
 
 **Le decisioni già prese con l'utente, da non riaprire.** Le tre issue scelte (#85, #86, #87) sono
-tutte fatte, e con loro le due box della Dashboard (sopra). **La #93 è `v6`**, non `v5`: il `v5` se
+tutte fatte, e con loro le due box della Dashboard e la #100. **La #93 è `v6`**, non `v5`: il `v5` se
 l'è preso la #87, e il titolo della issue su GitHub dice ancora "Prompt v5", da correggere prima che
 qualcuno la prenda.
 
 **Niente è più deciso in anticipo.** Il lavoro seguente si sceglie fra le strade aperte qui sotto, e
-la sola `ready-for-agent` è la **#100**.
+**nessuna è `ready-for-agent`**: la #100 era l'ultima.
 
 **La #83, com'è stata fatta.** La **Versione** di partenza ricavata è **l'ultima Release stabile
 della major precedente**, scelta dall'utente fra tre: è l'unica il cui Cammino contiene sempre la
@@ -213,20 +216,19 @@ Durante la #85 è ricomparso una volta, sempre `technologies.spec.ts:86`, con l'
 `follows_technology_id_fkey`, cioè la pulizia della fixture che cancella la Technology mentre un
 follow la tiene ancora. Verde rilanciato da solo. Resta senza una issue sua.
 
-### ⚠️ Un secondo flake, questo con una issue: la #100
+### Il flake del Cammino è chiuso, quello sui follow no
 
-`a11y.spec.ts:159` ("a technology page and its upgrade path") cade a tratti su `#path-verdict`
-trovato **due volte**. Non è un difetto della pagina: è la struttura della #83, dove il fallback del
-`Suspense` e il figlio che legge `?from=` contengono tutti e due quell'id, e durante lo streaming
-stanno nel documento insieme. **Verificato riportando `src/` a `main`: cade uguale**, quindi non
-appartiene alla #85, dov'è stato notato. Si riproduce di più a `.next` cancellata. È la **#100**,
-`ready-for-agent`, e il criterio dice esplicitamente che un `.first()` non va bene.
+`a11y.spec.ts` cadeva a tratti su `#path-verdict` trovato **due volte**, e la causa non era la
+pagina: il fallback del `Suspense` e il figlio che legge `?from=` contengono tutti e due quell'id
+(struttura della #83). Era la **#100**, chiusa il 2026-10-06 con la PR #105; la spiegazione e la
+forma della correzione stanno qui sopra. **Resta vivo solo il flake sui follow**, quello della
+sezione precedente, che non ha una issue sua.
 
 ### Le strade aperte
 
-Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte. La **#100** (il
-flake qui sopra) è **l'unica `ready-for-agent`**: si può prendere senza chiedere niente. Le altre
-sono tutte `ready-for-human`: **#93** (prompt **v6**, con la terza uscita sulle note giudicabili) e
+Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e con la #100
+chiusa **non ce n'è più nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via
+dell'utente. Sono tutte `ready-for-human`: **#93** (prompt **v6**, con la terza uscita sulle note giudicabili) e
 **#57** (Haiku invece di Opus) **spendono** su Anthropic; **#65** e **#64**, tecniche, serve solo il
 via; **#80** (tocca GitHub e npm, non Anthropic, ma genera Sintesi a valle); **#26** la landing page,
 ferma sul nome del prodotto; **#69** esplicitamente dopo il lancio.
@@ -234,7 +236,7 @@ ferma sul nome del prodotto; **#69** esplicitamente dopo il lancio.
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, verifichiamo le box in produzione e poi prendiamo la #100
+leggi docs/HANDOFF.md e dimmi che strade sono aperte, poi ne scelgo una
 ```
 
 ---
@@ -254,6 +256,8 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-06 (pomeriggio): le due box della Dashboard (PR #104)
+  - ⚠️ La CI del merge si fa cancellare da una richiesta che aspetta, e si rimedia con `gh run rerun`
 - Stato al 2026-10-06 (notte sul 07): la #87 chiusa (PR #103)
   - ⚠️ Le pagine della Release restano vecchie un'ora: sono ISR e la cache ignora l'antichache
   - ⚠️ `curl | python` decodifica in cp1252 e fa sparire il conteggio dei trattini lunghi
