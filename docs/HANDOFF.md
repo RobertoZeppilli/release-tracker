@@ -1,4 +1,4 @@
-# Handoff — release-tracker: implementazione delle issue
+# Handoff, release-tracker: implementazione delle issue
 
 Parla con l'utente **in italiano**. Progetto in `C:\Users\rober\progetti\release-tracker`, repository
 git con remote privato **https://github.com/RobertoZeppilli/release-tracker** (branch `main`, `gh`
@@ -16,51 +16,51 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte sul 07).** **La #87 è chiusa**, con la **PR #103**, unita su
-`main` (`3fd7b58`); l'issue si è chiusa da sola col `Closes #87`. `CI` e `Deploy database` verdi su
-`main`. Prossimo lavoro: le **due box della Dashboard**, che vogliono una issue loro prima di essere
-fatte (vedi sotto).
+**Da dove ripartire (2026-10-06, pomeriggio).** **Le due box della Dashboard sono fatte**, con la
+**PR #104**, unita su `main` (`010d33a`); il branch `dashboard-count-boxes` è cancellato in locale e
+su GitHub. `Deploy database` verde; la CI del merge è stata cancellata e **rilanciata a mano** (run
+37475231634): `check` verde, `integration` ancora in corso mentre si scriveva, **da
+controllare** (vedi la trappola qui sotto). Restano da
+fare due cose: **verificarle in produzione** dopo il deploy del merge, e scegliere il lavoro
+seguente, che non è più deciso da nessuno: la **#100** è l'unica `ready-for-agent`.
 
-**La #87 è verificata in produzione**, dopo il deploy del merge: `vite/8.0.0` legge "ships with no
-inline release notes**:** details are only in the changelog." e `vite/8.2.0` "no inline notes**:**
-details live only in the linked `CHANGELOG.md`.", tutte e due con **zero** trattini lunghi in pagina;
-`pnpm/11.22.0` legge "(the error names the location)**:** the command fails with
-`ERR_PNPM_CONFIG_SET_NOT_A_PROJECT_SETTING`" e conserva i suoi **36** trattini, che sono le Note e le
-citazioni (erano 38: i due spariti sono le due occorrenze della stessa `migration`, una nel payload
-RSC e una nell'HTML reso). È la prova che il divieto non ha toccato le `quote`.
+**Niente issue, per scelta dell'utente**: il lavoro era in coda qui nell'handoff dopo la #87 e
+l'utente ha detto di andare diretto, quindi la PR #104 non chiude niente e il corpo della PR lo
+dice. Non è la regola, è stata un'eccezione concessa a voce.
 
-**Com'è stata fatta.** Committato (`3196a37`): il divieto nel
-system prompt, `PROMPT_VERSION` a **v5**, e un test unitario che asserisce il divieto, i quattro
-campi nominati e l'esenzione delle `quote` (nel test il carattere è scritto con la sua sequenza di
-escape unicode, così il sorgente non ne contiene uno). 529 unitari verdi, `lint` e `typecheck`
-puliti, UI non toccata.
-⚠️ **La #93 diventa `v6`**: il `v5` se l'è preso la #87.
+**Com'è stata fatta.** I numeri che aprivano la Dashboard erano due frasi di fatti separati da `·`
+che su telefono andavano a capo in mezzo ai numeri (`docs/Cattura.JPG`, fuori da git). Ora sono due
+box: didascalia muta con l'ambito (`last 30 days · 6 technologies`, `version in use · 3 of 6`), poi
+righe con l'etichetta a sinistra e il numero a destra. Il pannello è quello che il sistema aveva già
+due volte, la Source View e il blocco diff: 1px `rule` su `raised`, raggio 6px, quindi **il "Don't"
+di `DESIGN.md` non è stato toccato**. `DESIGN.md` registra **Count Box** come signature e
+`design/mocks/dashboard.html` la mostra. Le funzioni di copia sono pure e testate
+(`windowCaption`/`windowRows`, `inUseCaption`/`inUseRows`); `inUseTotalsLine` non esiste più.
 
-**Il conteggio su produzione è fatto** (run 37467451186, workflow di sola lettura): **122 Sintesi
-`ready`, 3 col trattino lungo** in un campo scritto dal modello, `vite 8.0.0` e `vite 8.2.0` nel
-titolo e `pnpm 11.22.0` nella `migration` di un breaking change, più 9 che ce l'hanno solo dentro una
-`quote` e che restano come sono. **L'utente ha deciso di non spendere** i circa 6 centesimi della
-rigenerazione: i tre campi si correggono in posto, spazio-trattino-spazio diventa due punti più
-spazio. Le due righe sono in `docs/DECISIONI.md`.
+**Le scelte di forma, da non ridiscutere:**
 
-**Le tre Sintesi sono corrette**, l'utente ha lanciato l'SQL nel SQL Editor di produzione il
-2026-10-06 e il riconteggio ha dato `0 | 0 | 0 | 9`: zero nei tre campi che il prompt governa, e le 9
-`quote` intatte col loro trattino, come da progetto. Lo spazio-trattino-spazio è diventato due punti
-più spazio in tutti e tre i casi.
-⚠️ **Le pagine restano vecchie per un'ora**: sono ISR (`export const revalidate = 3600` in
-`technologies/[slug]/[version]/page.tsx`), e la cache di rotta **ignora il parametro antichache**, che
-torna `X-Vercel-Cache: HIT` anche con una query nuova. Subito dopo l'SQL le tre pagine mostravano
-ancora il trattino: non è un difetto, e il deploy del merge le ricostruisce comunque. Chi verifica
-guardi l'ora o il deploy, non il parametro.
-⚠️ Attenzione a come si legge una pagina di produzione da qui: `curl | python` decodifica in cp1252 e
-fa **sparire** il conteggio dei trattini lunghi. Va salvato il file e riletto in UTF-8.
+1. **Il link è la riga intera**, non il solo numero: su un telefono un bersaglio di due caratteri non
+   è un bersaglio. Al passaggio del mouse l'etichetta va a `text` e il numero si sottolinea.
+2. **La griglia tiene due colonne anche con una box sola** (chiesto dall'utente a lavoro in corso):
+   la box della finestra conserva la sua metà di misura, e dichiarare una Versione in uso aggiunge
+   una box accanto invece di dimezzare quella che c'era. Sotto i 640px si impilano.
+3. **`all up to date` è sparito**: in una tabella di etichette e numeri era l'unica riga fuori forma,
+   e ora si legge `releases behind 0`.
+4. Conservati dalla riga vecchia: ogni conteggio linka alla sua sezione **solo dove la sezione
+   esiste**, e `(2 need action)` resta dentro la riga `featured` (regola della #94).
+5. Le due box portano un `data-testid` (`window-counts`, `in-use-counts`), come già `follow-status`:
+   è l'aggancio degli E2E, perché le righe concatenano etichetta e numero nel testo.
 
-**Il workflow della lettura se n'è andato col merge.** `.github/workflows/query-em-dash.yml` era
-finito su `main` (`7a73745`) perché **`workflow_dispatch` si risolve solo dal branch di default**: un
-workflow che sta solo sul branch della issue è invisibile al dispatch. La PR ha portato `main` dentro
-il branch e l'ha cancellato, così non è servito nessun commit diretto su `main`. Da ricordare per la
-prossima volta: per una lettura una volta sola il SQL Editor della dashboard è la via corta, e il
-workflow è costato un commit su `main` e un deploy di produzione per niente.
+**Verifiche fatte prima del merge**: `lint` e `typecheck` puliti, **533 unitari**, `dashboard.spec`
+10 su 10, e `a11y` + `current-version` + `overflow` 57 su 57 con l'audit WCAG in tema chiaro e scuro.
+Guardata nel browser a 1280px, a 390px e nel caso della sola box.
+
+⚠️ **La CI del merge è stata cancellata dopo 13 secondi**, con `Canceling since a higher priority
+waiting request for ci-refs/heads/main exists` (run 37475231634): il workflow ha
+`concurrency: ci-${{ github.ref }}` con `cancel-in-progress`, e il merge ha lasciato `main` senza una
+corsa verde. È lo stesso effetto già visto committando documenti durante una corsa, da un'altra
+causa. **Si rimedia con `gh run rerun <id>`**, che è quello che è stato fatto qui: chi riprende
+guardi `gh run list --branch main` e, se la corsa rilanciata non è verde, parta da lì.
 
 **Lo stato precedente (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
 (`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
@@ -162,26 +162,13 @@ in fondo c'è `--> show all 79 releases`. I due campi partono dallo stesso bordo
 viewport. La larghezza telefono resta coperta dagli E2E (`overflow.spec.ts` e `technology.spec.ts`
 girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparire sotto i 640px.
 
-**Le decisioni già prese con l'utente, da non riaprire.** Delle tre issue scelte restano solo la
-#87 e, dopo, le box della Dashboard. La #85 e la #86 sono fatte (sopra).
+**Le decisioni già prese con l'utente, da non riaprire.** Le tre issue scelte (#85, #86, #87) sono
+tutte fatte, e con loro le due box della Dashboard (sopra). **La #93 è `v6`**, non `v5`: il `v5` se
+l'è preso la #87, e il titolo della issue su GitHub dice ancora "Prompt v5", da correggere prima che
+qualcuno la prenda.
 
-**#87** (trattino lungo nelle Sintesi): decisa e in corso, vedi "Da dove ripartire". Il prompt è
-fatto, il conteggio è fatto, e sulle tre Sintesi esistenti la decisione è **non spendere**: si
-correggono in posto. Resta solo da applicare la correzione e aprire la PR. **La #93 è `v6`.**
-
-**Poi, e solo dopo quelle**: le **due box della Dashboard**, che l'utente ha chiesto il 2026-10-06
-guardando `docs/Cattura.JPG` (fuori da git). Una box per i conteggi della finestra e una per la In
-Use Line, dentro **righe etichetta a sinistra e numero a destra**, non una riga di fatti separati da
-`·` che su mobile va a capo in mezzo ai numeri. Va aperta una issue sua prima di farla. Da ricordare:
-
-- **Il "Don't" di `DESIGN.md` non va cambiato**: vieta di avvolgere le **diagnostiche** in card o
-  badge, e un pannello esiste già due volte nel sistema, la Source View e il blocco diff, tutti e
-  due con bordo 1px `rule` e raggio 6px. Le due box riusano quel trattamento.
-- **Due cose da non perdere nel rifacimento**: ogni numero è oggi un **link** alla sua sezione
-  (`#spotlight`, `#latest`, `#previews`, `#digest`), e la parentesi `(2 need action)` deve restare
-  attaccata a `featured`, per la regola fissata dalla #94 (un numero di ambito più stretto dice il
-  proprio ambito dove sta).
-- L'utente ha chiesto attenzione esplicita a **tablet e mobile**, non solo al desktop.
+**Niente è più deciso in anticipo.** Il lavoro seguente si sceglie fra le strade aperte qui sotto, e
+la sola `ready-for-agent` è la **#100**.
 
 **La #83, com'è stata fatta.** La **Versione** di partenza ricavata è **l'ultima Release stabile
 della major precedente**, scelta dall'utente fra tre: è l'unica il cui Cammino contiene sempre la
@@ -235,19 +222,19 @@ stanno nel documento insieme. **Verificato riportando `src/` a `main`: cade ugua
 appartiene alla #85, dov'è stato notato. Si riproduce di più a `.next` cancellata. È la **#100**,
 `ready-for-agent`, e il criterio dice esplicitamente che un `.first()` non va bene.
 
-### Le strade aperte dopo la #85
+### Le strade aperte
 
-Dopo la #87 e le box della Dashboard restano la **#100** (il flake qui sopra) e:
-**#93** (prompt **v6**, con la terza uscita sulle note giudicabili: il `v5` se l'è preso la #87) e
-**#57** (Haiku invece di Opus), tutte e due **spendono** su
-Anthropic; **#65** e **#64**, tecniche, serve solo il via; **#80** (tocca GitHub e npm, non
-Anthropic, ma genera Sintesi a valle); **#26** la landing page, ferma sul nome del prodotto; **#69**
-esplicitamente dopo il lancio.
+Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte. La **#100** (il
+flake qui sopra) è **l'unica `ready-for-agent`**: si può prendere senza chiedere niente. Le altre
+sono tutte `ready-for-human`: **#93** (prompt **v6**, con la terza uscita sulle note giudicabili) e
+**#57** (Haiku invece di Opus) **spendono** su Anthropic; **#65** e **#64**, tecniche, serve solo il
+via; **#80** (tocca GitHub e npm, non Anthropic, ma genera Sintesi a valle); **#26** la landing page,
+ferma sul nome del prodotto; **#69** esplicitamente dopo il lancio.
 
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, prendiamo la #87
+leggi docs/HANDOFF.md, verifichiamo le box in produzione e poi prendiamo la #100
 ```
 
 ---
@@ -267,6 +254,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-06 (notte sul 07): la #87 chiusa (PR #103)
+  - ⚠️ Le pagine della Release restano vecchie un'ora: sono ISR e la cache ignora l'antichache
+  - ⚠️ `curl | python` decodifica in cp1252 e fa sparire il conteggio dei trattini lunghi
+  - ⚠️ `workflow_dispatch` si risolve solo dal branch di default
 - Stato al 2026-10-06: la #88 e la #94 chiuse (PR #96 e #97)
   - ⚠️ Il 2026-10-06 il token di Supabase è stato abbandonato, non sostituito
 - Stato al 2026-10-03: la #47 e la #84 chiuse
@@ -462,7 +453,7 @@ creano comunque solo con un token `org:admin`, cioè a mano in Console.
 1. ~~**Adattatore** (autonomo)~~: `pnpm add @anthropic-ai/sdk`, `ANTHROPIC_API_KEY` nello schema Zod di
    `src/env/parse-env.ts` (`ServerEnvSchema`, `startsWith("sk-ant-")`, **opzionale** come
    `CRON_SECRET`: senza chiave i job restano 503 invece di impedire l'avvio dell'app), riga in
-   `.env.example`, poi l'adattatore vero dietro `createSummaryBatches()` — stesso contratto del fake
+   `.env.example`, poi l'adattatore vero dietro `createSummaryBatches()`, con lo stesso contratto del fake
    in `tests/integration/fake-summary-batches.ts`. **Invocare prima la skill `claude-api`**: modello
    `claude-opus-5`, e le forme dell'API sono cambiate (niente `budget_tokens`, niente prefill).
 2. **Prova su una sola Release vera**, qualche centesimo, per vedere se il prompt `v2` regge fuori
@@ -473,14 +464,14 @@ creano comunque solo con un token `org:admin`, cioè a mano in Console.
 
 Il prompt `v2` chiede già una citazione **verbatim** delle Note per ogni breaking change e
 `locateCitation` (#12) dice se quella citazione esiste nel testo: il criterio "nessuna breaking
-change assente dalle Note" è automatico. All'utente resta il giudizio che nessuna macchina dà —
+change assente dalle Note" è automatico. All'utente resta il giudizio che nessuna macchina dà:
 l'**Intervento richiesto** atteso e le breaking changes **mancanti**, marcate una volta nel set
 atteso e poi confrontate a ogni versione del prompt.
 
 ### Soldi
 
 Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
-dimezzato dalla Batch API — pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
+dimezzato dalla Batch API, pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
 
 ## Debito noto: l'output grezzo del modello non si conserva
 
