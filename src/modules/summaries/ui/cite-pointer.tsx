@@ -1,7 +1,7 @@
 "use client";
 
 import type { Citation } from "../domain/citations";
-import { type CiteSeverity, useCitation } from "./citation-context";
+import { type CiteOrigin, type CiteSeverity, useCitation } from "./citation-context";
 
 function range(citation: Citation): string {
   return citation.fromLine === citation.toLine ? `${citation.fromLine}` : `${citation.fromLine}-${citation.toLine}`;
@@ -9,7 +9,17 @@ function range(citation: Citation): string {
 
 // `release-notes:12-13`: follows to the cited line in the notes below. The href keeps it a real link,
 // so a copied address opens the notes on that line; the handler adds the highlight and the focus.
-export function CitePointer({ citation, severity, className = "" }: { citation: Citation; severity: CiteSeverity; className?: string }) {
+export function CitePointer({
+  citation,
+  severity,
+  origin,
+  className = "",
+}: {
+  citation: Citation;
+  severity: CiteSeverity;
+  origin: CiteOrigin;
+  className?: string;
+}) {
   const store = useCitation();
   const anchor = `#L${citation.fromLine}`;
   return (
@@ -20,7 +30,7 @@ export function CitePointer({ citation, severity, className = "" }: { citation: 
       onClick={(event) => {
         if (!store) return;
         event.preventDefault();
-        store.show(citation, severity);
+        store.show(citation, severity, origin);
         window.history.replaceState(null, "", anchor);
       }}
       className={`border-b border-dashed border-current font-mono text-label whitespace-nowrap text-help no-underline hover:border-solid ${className}`}

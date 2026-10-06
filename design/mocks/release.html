@@ -119,7 +119,7 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 
 /* Key points */
 .notes { list-style: none; margin: var(--space-5) 0 0; padding: 0; max-width: var(--measure); border-top: 1px solid var(--rule); }
-.notes li { display: grid; grid-template-columns: 8.5ch 1fr; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--rule); }
+.notes li { display: grid; grid-template-columns: 11.5ch 1fr; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--rule); }
 .notes .cite { margin-left: var(--space-2); }
 
 /* Diagnostics */
@@ -170,6 +170,12 @@ pre.fix .add { color: var(--ok); }
 .source-lines li.cited-breaking { background: var(--breaking-wash); --cite: var(--breaking); }
 .source-lines li.cited-note { background: var(--help-wash); --cite: var(--help); }
 .source-lines li[class*="cited"] .span { color: var(--text); position: relative; }
+/* Issue #85: the return leg of a cite pointer. A row of its own above the active range, in its wash
+   and its ink, naming the diagnostic that cited. No animation: the underline below is the only one. */
+.source-lines li.back { counter-increment: none; }
+.source-lines li.back::before { content: "<--"; font-variant-ligatures: none; }
+.source-lines li.back a { color: var(--cite); text-decoration: none; border-bottom: 1px dashed currentColor; }
+.source-lines li.back a:hover { border-bottom-style: solid; }
 .source-lines li[class*="cited"] .span::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--cite); clip-path: inset(0 100% 0 0); animation: caret 650ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards; }
 @keyframes caret { to { clip-path: inset(0 0 0 0); } }
 
@@ -311,19 +317,19 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
     <p class="provenance">summary · from the release notes only · claude-opus-5 · prompt v3</p>
 
     <ul class="notes" aria-label="Key points">
-      <li><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span><span>The new <code>Environment API</code> lets frameworks run code in environments closer to production. It is experimental and opt-in. <a class="cite" href="#L7" data-cite="7" data-sev="note">release-notes:7</a></span></li>
-      <li><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span><span>Supported Node.js versions are 18, 20 and 22 or later; Node 21 is no longer supported. <a class="cite" href="#L10" data-cite="10" data-sev="note">release-notes:10</a></span></li>
-      <li><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span><span>Asset references are now processed in more HTML elements, such as <code>&lt;video poster&gt;</code> and <code>&lt;meta content&gt;</code>. <a class="cite" href="#L28" data-cite="28" data-sev="note">release-notes:28</a></span></li>
-      <li><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span><span>TypeScript PostCSS configs now load through <code>tsx</code> or <code>jiti</code> via postcss-load-config v6. <a class="cite" href="#L31" data-cite="31" data-sev="note">release-notes:31</a></span></li>
+      <li id="n1" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[1]:</span><span>The new <code>Environment API</code> lets frameworks run code in environments closer to production. It is experimental and opt-in. <a class="cite" href="#L7" data-cite="7" data-sev="note" data-origin="n1" data-origin-label="note[1]">release-notes:7</a></span></li>
+      <li id="n2" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[2]:</span><span>Supported Node.js versions are 18, 20 and 22 or later; Node 21 is no longer supported. <a class="cite" href="#L10" data-cite="10" data-sev="note" data-origin="n2" data-origin-label="note[2]">release-notes:10</a></span></li>
+      <li id="n3" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[3]:</span><span>Asset references are now processed in more HTML elements, such as <code>&lt;video poster&gt;</code> and <code>&lt;meta content&gt;</code>. <a class="cite" href="#L28" data-cite="28" data-sev="note" data-origin="n3" data-origin-label="note[3]">release-notes:28</a></span></li>
+      <li id="n4" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[4]:</span><span>TypeScript PostCSS configs now load through <code>tsx</code> or <code>jiti</code> via postcss-load-config v6. <a class="cite" href="#L31" data-cite="31" data-sev="note" data-origin="n4" data-origin-label="note[4]">release-notes:31</a></span></li>
     </ul>
 
     <div class="only-action">
       <h2 class="section-title" id="breaking">breaking changes (4)</h2>
 
       <article class="diag" aria-labelledby="b1">
-        <h3 class="diag-head" id="b1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <code>resolve.conditions</code> no longer include the defaults</span></h3>
+        <h3 class="diag-head" id="b1" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <code>resolve.conditions</code> no longer include the defaults</span></h3>
         <div class="diag-body">
-          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L12" data-cite="12-13" data-sev="breaking">release-notes:12-13</a></span></div>
+          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L12" data-cite="12-13" data-sev="breaking" data-origin="b1" data-origin-label="breaking[1]">release-notes:12-13</a></span></div>
           <div class="well" data-fits="1024">
             <div class="gut quote"><span>12</span><span>The default value of <span class="q-span">resolve.conditions has changed</span>; custom values replace the defaults.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The default value of </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
@@ -336,9 +342,9 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
       </article>
 
       <article class="diag" aria-labelledby="b2">
-        <h3 class="diag-head" id="b2"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><code>json.stringify</code> now defaults to <code>'auto'</code></span></h3>
+        <h3 class="diag-head" id="b2" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><code>json.stringify</code> now defaults to <code>'auto'</code></span></h3>
         <div class="diag-body">
-          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L16" data-cite="16-17" data-sev="breaking">release-notes:16-17</a></span></div>
+          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L16" data-cite="16-17" data-sev="breaking" data-origin="b2" data-origin-label="breaking[2]">release-notes:16-17</a></span></div>
           <div class="well" data-fits="900">
             <div class="gut quote"><span>16</span><span>json.stringify: <span class="q-span">'auto' is now the default</span> and only stringifies large JSON files.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">json.stringify: </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
@@ -349,9 +355,9 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
       </article>
 
       <article class="diag" aria-labelledby="b3">
-        <h3 class="diag-head" id="b3"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></h3>
+        <h3 class="diag-head" id="b3" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></h3>
         <div class="diag-body">
-          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L20" data-cite="20-21" data-sev="breaking">release-notes:20-21</a></span></div>
+          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L20" data-cite="20-21" data-sev="breaking" data-origin="b3" data-origin-label="breaking[3]">release-notes:20-21</a></span></div>
           <div class="well" data-fits="900">
             <div class="gut quote"><span>20</span><span>The <span class="q-span">modern API is now used by default for Sass</span>. The legacy API is still available.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
@@ -362,9 +368,9 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
       </article>
 
       <article class="diag" aria-labelledby="b4">
-        <h3 class="diag-head" id="b4"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></h3>
+        <h3 class="diag-head" id="b4" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></h3>
         <div class="diag-body">
-          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L24" data-cite="24-25" data-sev="breaking">release-notes:24-25</a></span></div>
+          <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L24" data-cite="24-25" data-sev="breaking" data-origin="b4" data-origin-label="breaking[4]">release-notes:24-25</a></span></div>
           <div class="well" data-fits="1024">
             <div class="gut quote"><span>24</span><span>In library mode the CSS file is now <span class="q-span">named from package.json "name"</span> instead of style.css.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">In library mode the CSS file is now </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
@@ -483,6 +489,14 @@ function lineRange(cite) {
   return Array.from({ length: end - start + 1 }, (_, offset) => document.getElementById(`L${start + offset}`));
 }
 
+// Issue #85: one citation is active at a time, so there is one back pointer, and it moves with it.
+const back = document.createElement("li");
+back.className = "back";
+const backLink = document.createElement("a");
+const backCell = document.createElement("span");
+backCell.append(backLink);
+back.append(backCell);
+
 document.querySelectorAll("[data-cite]").forEach((link) => {
   link.addEventListener("click", (event) => {
     event.preventDefault();
@@ -491,6 +505,11 @@ document.querySelectorAll("[data-cite]").forEach((link) => {
     const lines = lineRange(link.dataset.cite);
     void lines[0].offsetWidth;
     lines.forEach((line) => line.classList.add(`cited-${link.dataset.sev}`));
+    back.classList.remove("cited-breaking", "cited-note");
+    back.classList.add(`cited-${link.dataset.sev}`);
+    backLink.href = `#${link.dataset.origin}`;
+    backLink.textContent = `back to ${link.dataset.originLabel}`;
+    lines[0].before(back);
     lines[0].setAttribute("tabindex", "-1");
     lines[0].scrollIntoView({ block: "center" });
     lines[0].focus({ preventScroll: true });

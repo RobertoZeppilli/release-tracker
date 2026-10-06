@@ -75,15 +75,24 @@ export function SummaryView({
       <ul aria-label="Key points" className="mt-5 max-w-measure border-t border-rule">
         {content.keyPoints.map((point, index) => {
           const citation = cite(point.quote);
+          const number = index + 1;
+          const id = `n${number}`;
+          // Numbered, and focusable, for the same reason `breaking[1]` is: a citation that leads
+          // into the notes has to be able to name the diagnostic it came from on the way back.
           return (
-            <li key={index} className="grid grid-cols-[8.5ch_1fr] gap-3 border-b border-rule py-2 max-[640px]:grid-cols-1 max-[640px]:gap-0">
+            <li
+              key={index}
+              id={id}
+              tabIndex={-1}
+              className="grid scroll-mt-6 grid-cols-[11.5ch_1fr] gap-3 border-b border-rule py-2 max-[640px]:grid-cols-1 max-[640px]:gap-0"
+            >
               <span className="whitespace-nowrap font-mono text-[14px] leading-[1.6] text-text-muted">
                 <Glyph Icon={Info} />
-                note:
+                note[{number}]:
               </span>{" "}
               <span>
                 <InlineCode text={point.text} />
-                {citation && <CitePointer citation={citation} severity="note" className="ml-2" />}
+                {citation && <CitePointer citation={citation} severity="note" origin={{ id, label: `note[${number}]` }} className="ml-2" />}
               </span>
             </li>
           );
