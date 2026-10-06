@@ -29,6 +29,7 @@ test.describe("a Visitor", () => {
     await page.goto("/login?next=%2Fdashboard");
     await expect(page).toHaveURL("/dashboard");
     // The Dashboard shows no email: what says the Developer is in are the signed-in controls.
+    await openAccount(page);
     await expect(page.getByRole("button", { name: "sign out" })).toBeVisible();
     await expect(page.getByLabel("Followed technologies")).toBeVisible();
   });
@@ -61,9 +62,17 @@ test.describe("the local way in", () => {
 
     await button.click();
     await expect(page).toHaveURL("/technologies");
+    await openAccount(page);
     await expect(page.getByRole("button", { name: "sign out" })).toBeVisible();
   });
 });
+
+// The account strip under the bar: what belongs to the viewer rather than to the page. It opens
+// from the picture at the right of the bar, and on a public page it is where the way back to the
+// Dashboard lives, since the breadcrumb takes the slot the navigation would have used.
+async function openAccount(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /^Account/ }).click();
+}
 
 test.describe("a Developer", () => {
   test("sees the signed-in navigation and can sign out", async ({ page }) => {
@@ -74,6 +83,7 @@ test.describe("a Developer", () => {
     await expect(nav.getByRole("link", { name: "dashboard" })).toHaveAttribute("aria-current", "page");
     await expect(nav.getByRole("link", { name: "technologies" })).toBeVisible();
 
+    await openAccount(page);
     await page.getByRole("button", { name: "sign out" }).click();
     await expect(page).toHaveURL("/");
 
@@ -87,6 +97,19 @@ test.describe("a Developer", () => {
 
     await signIn(page);
     await page.goto("/technologies/vite");
+    await openAccount(page);
     await expect(page.getByRole("button", { name: "sign out" })).toBeVisible();
+  });
+
+  // The Technology and Release pages give the slot to the breadcrumb, so the two destinations are
+  // not in the bar there. The way to the Dashboard is in the account strip instead of nowhere.
+  test("reaches the Dashboard from a public page, where the navigation is not in the bar", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/technologies/vite");
+    await expect(page.getByRole("navigation", { name: "Sections" })).toHaveCount(0);
+
+    await openAccount(page);
+    await page.getByRole("link", { name: "dashboard" }).click();
+    await expect(page).toHaveURL("/dashboard");
   });
 });

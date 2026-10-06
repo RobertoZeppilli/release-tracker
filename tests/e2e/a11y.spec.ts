@@ -247,6 +247,7 @@ test.describe("target size in the top bar", () => {
   test("sign out is at least 24 by 24", async ({ page }) => {
     await signIn(page);
     await page.goto("/dashboard");
+    await page.getByRole("button", { name: /^Account/ }).click();
     const box = await page.getByRole("button", { name: "sign out" }).boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(MINIMUM);
     expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);

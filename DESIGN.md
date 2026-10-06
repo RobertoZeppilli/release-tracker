@@ -325,7 +325,7 @@ The mock stamps each well with the width its own quote needs: two at 1024px (88 
 The system is flat with no shadows. Depth comes from three tonal layers: `sunken` wells for quotes, diffs and inline code, `ground` for the page, and one `raised` plane for the source view and hover states. Edges are 1px `rule` borders.
 
 ### Named Rules
-**The One Raised Plane Rule.** Only the release-notes source view sits on `raised`. Quoted and code material sinks. Nothing floats.
+**The One Raised Plane Rule.** Only the release-notes source view sits on `raised`. Quoted and code material sinks. One surface floats, and only one: the account panel under the top bar, on `raised` inside a 1px `rule`, with no shadow under it. It is what the viewer opened, it closes on Escape, on a click anywhere else and on following one of its own links, and nothing else on any page is allowed to hover over the text.
 
 ## Shapes
 
@@ -346,10 +346,12 @@ There is one navigation, not two: a single top bar on every page, with one slot 
 
 - Top bar: the Mono 14px `release-tracker` wordmark, then the slot, then right-aligned actions. The slot holds either a Mono 13px muted breadcrumb (`technologies / vite / 6.0.0`, current item in `text`) or, on signed-in pages, a Mono 13px muted nav (`dashboard`, `technologies`, 16px gap, `aria-current` item in `text`).
 - **Breadcrumb steps are links wherever they have a destination**, for everyone, and `technologies` always points at `/technologies`. The breadcrumb describes where the page sits, and `/technologies/vite/6.0.0` really does sit under `/technologies`, so the step tells the truth about the hierarchy rather than about the viewer's rights. A visitor who follows it lands on sign-in and is returned to `/technologies` afterwards. The header cannot branch on it anyway: the session arrives after the first paint, and a header that changed shape when it arrived would remount the page.
-- **At 640px and below the bar becomes two rows**: the 56px bar keeps the wordmark and the actions, and the slot drops to a 40px strip under it, separated by a 1px `rule` and aligned to the same gutter. The links are the same links, in the same scale, in the same order. There is no drawer, no toggle and no hidden state: nothing to open means nothing to discover, and the strip stays a plain list of links that the keyboard reaches in document order. It costs 40px of height on a page that already scrolls.
+- **At 640px and below the bar becomes two rows wherever the slot still has something to say**: the 56px bar keeps the wordmark and the actions, and the slot drops to a 40px strip under it, separated by a 1px `rule` and aligned to the same gutter. That is every page read signed out: the breadcrumb on a Technology or Release page, and the two sections on the home page and the 404, where the viewer may have no account. The strip is a plain list of links in document order, with nothing to open and nothing to discover.
+- **A page behind sign-in gives its two sections to the account panel below 640px** instead of a strip. The panel holds the same two, in the same order, and it is on every page rather than only on the signed-in ones, so the way out is one action from everywhere and the bar on a phone is one row. Below 429px the quota takes the strip for itself, at full width, and the bar stays the two rows it is specified as.
+- **Account panel:** the right-hand action is a 34px square button holding the GitHub picture at 24px, squared to 4px inside a 1px `rule`; without a picture the handle's initial stands in, and without a handle a 16px neutral mark. It opens a panel under the bar, right-aligned to the page's own gutter, 180px at its narrowest, on `raised` inside a 1px `rule`: the handle in Mono 12px faint over a rule, then `dashboard` and `technologies`, then `sign out` under a second rule, each item 24px high with a `sunken` hover. **It holds the two destinations because the public Technology and Release pages give the slot to the breadcrumb**, and without them a signed-in reader has no way back to the Dashboard from there. **The theme toggle stays in the bar**, outside the panel: those pages are read signed out too, and a visitor has no panel to find it in. At 640px and below the panel spans the gutters and opens under the whole header, strip included, instead of covering it.
 - **Quota link:** before the actions, a Mono 13px muted link `N of 10 followed` with the number in `text`, turning `text` on hover. On mobile it shortens to `N followed`.
 
-**The No Dead End Rule.** From every page, every page the viewer has a right to reach is one or two links away, at every width, phone included. A navigation that disappears at a breakpoint is not a density choice, it is a dead end: before this rule the slot was hidden below 640px, and the only link out of a release page on a phone was the wordmark.
+**The No Dead End Rule.** From every page, every page the viewer has a right to reach is one or two actions away, at every width, phone included. Before this rule the slot was hidden below 640px and the only link out of a release page on a phone was the wordmark: a navigation that disappears is a dead end, not a density choice. What satisfies the rule is a destination that is always there, not a strip in particular. A signed-in viewer has the account panel on every page, public pages included, which is why a phone may give it the two sections instead of a second row; a viewer without a panel keeps the links in the open, which is why the home page and the 404 keep their strip.
 
 ### Verdict Line (signature)
 A glyph plus severity label in the severity ink (`warning:` amber / `ok:` green), then the plain verdict in `text`, at Verdict scale. Below it is a Mono 14px/1.7 muted count row, with numbers in `text` (`4 breaking changes`, `4 key points`). The breaking count links to the diagnostics.
@@ -526,10 +528,10 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 
 ### Don't:
 - **Don't** use hue for anything but severity. There are no brand accents or decorative colour.
-- **Don't** add shadows or extra raised surfaces. Depth is `sunken` / `ground` / one `raised`.
+- **Don't** add shadows or extra raised surfaces. Depth is `sunken` / `ground` / one `raised`, and the account panel is the single surface allowed over the page (see The One Raised Plane Rule).
 - **Don't** wrap diagnostics in cards or badges. Structure comes from gutters and grammar.
 - **Don't** colour `note:` or non-error status lines. They stay `text-muted`.
 - **Don't** give significance (featured, notable, digest, preview) a severity ink, and don't let a bar carry meaning without its counts in words.
 - **Don't** shrink the verdict scale to fit longer copy.
-- **Don't** hide navigation at a breakpoint, and don't put it behind a drawer or a hamburger. Narrow screens get the same links, on a second row.
+- **Don't** leave a viewer without a way to the destinations at any width. Narrow screens get the same links, on a second row, or in the account panel that every page carries for whoever is signed in. There is no hamburger: what opens is the account, and it is the viewer's own menu, not the page's navigation.
 - **Don't** make a breadcrumb step a link for some viewers and plain text for others. The step follows the hierarchy, and sign-in handles the rest.

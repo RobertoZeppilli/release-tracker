@@ -60,6 +60,19 @@ svg.sig { width: 12px; height: 12px; flex: none; }
 .btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
 .btn:hover { background: var(--raised); border-color: var(--text-faint); }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
+/* Account: the picture opens a panel under the bar with what belongs to the viewer rather than to
+   the page. It is the one surface allowed over the text, and it carries no shadow. */
+.topbar-actions { position: relative; }
+.account > summary { list-style: none; cursor: pointer; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.account > summary::-webkit-details-marker { display: none; }
+.account > summary:hover { background: var(--raised); border-color: var(--text-faint); }
+/* The GitHub picture sits here at 24px; without one the initial stands in, as drawn. */
+.account .portrait { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--rule); border-radius: 4px; font: 400 12px var(--mono); color: var(--text); }
+.account-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; min-width: 180px; padding: var(--space-2) 0; background: var(--raised); border: 1px solid var(--rule); border-radius: var(--radius); }
+.account-panel .who { margin: 0 0 var(--space-1); padding: 0 var(--space-3) var(--space-2); border-bottom: 1px solid var(--rule); font: 400 12px var(--mono); color: var(--text-faint); }
+.account-panel a, .account-panel button { display: flex; align-items: center; width: 100%; min-height: 24px; padding: 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; background: none; border: 0; cursor: pointer; }
+.account-panel a:hover, .account-panel button:hover { background: var(--sunken); color: var(--text); }
+.account-panel .out { margin-top: var(--space-1); padding-top: var(--space-1); border-top: 1px solid var(--rule); }
 
 main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 
@@ -207,10 +220,14 @@ main[data-state="silent"] .for-action { display: none; }
 @media (max-width: 640px) {
   .topbar-inner, main { padding: 0 var(--space-4); }
   .topbar-inner { gap: var(--space-3); }
-  /* The slot drops to a 40px strip under the bar: same links, no drawer (The No Dead End Rule). */
   .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
   .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
-  .topbar-inner > nav { order: 3; width: 100%; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+  /* A page behind sign-in gives its two sections to the account panel, which is on every page: the
+     strip would be a second copy of them, and the bar keeps one row. */
+  .topbar-inner > nav { display: none; }
+  .topbar-inner { position: relative; }
+  .topbar-actions { position: static; }
+  .account-panel { top: calc(100% + 4px); right: var(--space-4); left: var(--space-4); }
   .quota { margin-right: 0; }
   .quota .of { display: none; }
   main { padding-top: var(--space-5); padding-bottom: 120px; }
@@ -241,7 +258,7 @@ main[data-state="silent"] .for-action { display: none; }
   .topbar-inner > nav { width: auto; flex: 1; }
   .wordmark { margin-right: auto; }
   .topbar-actions > * { margin-left: var(--space-4); }
-  .quota { order: 3; margin-left: 0; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+  .quota { order: 3; margin-left: 0; width: 100%; height: 40px; display: flex; align-items: center; column-gap: 0.5ch; border-top: 1px solid var(--rule); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -275,10 +292,18 @@ main[data-state="silent"] .for-action { display: none; }
     </nav>
     <div class="topbar-actions">
       <a class="quota" href="#" id="quota"><strong id="quota-n">7</strong><span class="of"> of 10</span> followed</a>
+      <details class="account">
+        <summary aria-label="Account, signed in as robertozep"><span class="portrait" aria-hidden="true">R</span></summary>
+        <div class="account-panel">
+          <p class="who">robertozep</p>
+          <a href="dashboard.html">dashboard</a>
+          <a href="technologies.html">technologies</a>
+          <div class="out"><button type="button">sign out</button></div>
+        </div>
+      </details>
       <button class="btn btn-icon" type="button" id="theme" aria-label="Switch to light theme">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
       </button>
-      <a class="btn" href="#">Sign out</a>
     </div>
   </div>
 </header>
