@@ -74,10 +74,12 @@ test("a Developer follows a Technology, and the follow is still there after a re
   ).toHaveAttribute("href", `/technologies/${technology.slug}`);
 
   await toggle(page, "Follow").click();
-  // The row answers at once, and it stays in the section where the visit found it.
+  // The row answers at once, and it has already moved: the section that holds it is the one it
+  // belongs to, without a reload (issue #64).
   await expect(toggle(page, "Unfollow")).toHaveAttribute("aria-pressed", "true");
   await expect(followed(page)).toHaveText(/^you follow 1 of \d+ technologies$/);
-  await expect(section(page, "catalog").getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
+  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
 
   // The reload reads the database, which the press has not reached yet.
   await followWritten(toggle(page, "Unfollow"));
@@ -97,6 +99,9 @@ test("a Developer unfollows a Technology and it stays unfollowed after a reload"
   await toggle(page, "Unfollow").click();
   await expect(toggle(page, "Follow")).toHaveAttribute("aria-pressed", "false");
   await expect(followed(page)).toHaveText(/^you follow 0 of \d+ technologies$/);
+  // The trip the other way: back in the Catalog, and out of `following`, on the same press.
+  await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
 
   await followWritten(toggle(page, "Follow"));
   await page.reload();
@@ -108,6 +113,27 @@ test("a Developer unfollows a Technology and it stays unfollowed after a reload"
 function group(page: Page, category: string): Locator {
   return page.getByRole("region", { name: new RegExp(`^${category} \\(`) });
 }
+
+test("the press keeps its place when the row moves, in both directions", async ({ page }) => {
+  await page.goto("/technologies");
+
+  // Pressed from the keyboard, so the focus is the thing the move could take away. The toggle is
+  // torn down in `catalog` and built again in `following`, and it comes back with the focus: that
+  // is what pays for letting the row move at all (issue #64).
+  await toggle(page, "Follow").focus();
+  await page.keyboard.press("Enter");
+  const unfollow = toggle(page, "Unfollow");
+  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(unfollow).toBeFocused();
+
+  // And on the way back, which is the same trip and the same hand on the keyboard.
+  await followWritten(unfollow);
+  await page.keyboard.press("Enter");
+  const follow = toggle(page, "Follow");
+  await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(follow).toBeFocused();
+  await followWritten(follow);
+});
 
 test("the Catalog is grouped by Category, and the filter works inside the groups", async ({ page }) => {
   await page.goto("/technologies");
@@ -125,8 +151,8 @@ test("the Catalog is grouped by Category, and the filter works inside the groups
   await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
   await expect(section(page, "following").getByRole("region")).toHaveCount(0);
 
-  // The count of a group follows a toggle on the same tick the Catalog count does, and the row stays
-  // where the visit found it until the next one.
+  // A group loses the row the moment it is followed, and its count says so on the same tick the
+  // Catalog count does.
   await developer.clearFollows();
   await page.goto("/technologies");
   const before = await library.getByRole("heading").textContent();
@@ -134,7 +160,7 @@ test("the Catalog is grouped by Category, and the filter works inside the groups
   expect(total).toBeGreaterThan(0);
   await toggle(page, "Follow").click();
   await expect(library.getByRole("heading")).toHaveText(`library (${total - 1})`);
-  await expect(library.getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
+  await expect(library.getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
   await developer.clearFollows();
 });
 

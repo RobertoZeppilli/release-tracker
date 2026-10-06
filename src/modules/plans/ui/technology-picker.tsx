@@ -8,11 +8,18 @@ import { FollowToggleLimitNote } from "./limit-note";
 import { FollowStatus, PickerFilter } from "./picker-header";
 import { CatalogSection, FlatSection, Note } from "./picker-section";
 
-// The sections come from the server and never move: following and unfollowing change the toggle and
-// the count, not where a row sits, so a list does not shift under the pointer mid visit. The count
-// in the title is therefore the one thing that can stay true during the visit, and it does: it
-// counts where the rows belong now, not where they sit (issue #64). Inside `catalog` the rows are
-// read by Category (issue #86); `following` and `retired` stay one list each.
+// A toggle moves the row: following one sends it to `following` on the same tick the count and the
+// follow status move, so what the page says and what it shows can never disagree. This reverses the
+// first shape of the page, where a row kept its place until the next visit to keep the list still
+// under the pointer; honest counts alone were tried first (issue #64) and a Developer still had to
+// reload to find the row they had just followed. What pays for the move is the focus: the Toggle
+// takes it back at the row's new place, so the press keeps its place for the keyboard and the eye.
+// The move is instant and the page animates nothing, which leaves the caret draw the one motion
+// moment the system declares.
+//
+// `retired` is the exception, and it reads from the server's sections: letting a retired Technology
+// go takes it out of every section, and the row stays where it is to say that final thing. Inside
+// `catalog` the rows are read by Category (issue #86); `following` and `retired` stay one list each.
 export function TechnologyPicker({ sections }: { sections: PickerSections }) {
   const [query, setQuery] = useFilterQuery();
   const follows = useFollows();
@@ -31,8 +38,8 @@ export function TechnologyPicker({ sections }: { sections: PickerSections }) {
         <PickerFilter query={query} onQuery={setQuery} shown={shown} total={total} />
       </section>
 
-      <FlatSection id="following" rows={sections.following} belong={live.following} query={query} />
-      <CatalogSection rows={sections.catalog} belong={live.catalog} query={query}>
+      <FlatSection id="following" rows={live.following} query={query} />
+      <CatalogSection rows={live.catalog} query={query}>
         <FollowToggleLimitNote />
       </CatalogSection>
       {sections.retired.length > 0 && (

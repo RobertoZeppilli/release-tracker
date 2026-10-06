@@ -31,13 +31,15 @@ function allFilteredOut(rows: readonly PickerTechnology[], query: string): boole
 export function FlatSection({
   id,
   rows,
-  belong,
+  belong = rows,
   query,
   children,
 }: {
   id: keyof PickerSections;
   rows: PickerTechnology[];
-  belong: PickerTechnology[];
+  // Only `retired` passes it: a row it holds can stop belonging to any section at all, and stays to
+  // say so. Everywhere else the rows are the rows that belong, because a toggle moves them at once.
+  belong?: PickerTechnology[];
   query: string;
   children?: React.ReactNode;
 }) {
@@ -49,7 +51,7 @@ export function FlatSection({
         {id} ({count(belong, query)})
       </h2>
       {children}
-      <RowList rows={rows} section={id} query={query} />
+      <RowList rows={rows} query={query} />
     </section>
   );
 }
@@ -60,77 +62,48 @@ export function FlatSection({
 // Catalog count.
 export function CatalogSection({
   rows,
-  belong,
   query,
   children,
 }: {
   rows: PickerTechnology[];
-  belong: PickerTechnology[];
   query: string;
   children?: React.ReactNode;
 }) {
   if (allFilteredOut(rows, query)) return null;
   const groups = groupByCategory(rows);
-  const belongByCategory = new Map(groupByCategory(belong).map((group) => [group.category, group.rows]));
 
   return (
     <section className="mt-7" aria-labelledby="catalog-title">
       <h2 id="catalog-title" className={TITLE_CLASS}>
-        catalog ({count(belong, query)})
+        catalog ({count(rows, query)})
       </h2>
       {children}
       {groups.map((group) => (
-        <CategoryBlock
-          key={group.category}
-          group={group}
-          belong={belongByCategory.get(group.category) ?? []}
-          query={query}
-        />
+        <CategoryBlock key={group.category} group={group} query={query} />
       ))}
     </section>
   );
 }
 
-function CategoryBlock({
-  group,
-  belong,
-  query,
-}: {
-  group: CategoryGroup;
-  belong: PickerTechnology[];
-  query: string;
-}) {
+function CategoryBlock({ group, query }: { group: CategoryGroup; query: string }) {
   if (allFilteredOut(group.rows, query)) return null;
   const id = `catalog-${group.category.replaceAll(" ", "-")}`;
 
   return (
     <section className="mt-5" aria-labelledby={`${id}-title`}>
       <h3 id={`${id}-title`} className={TITLE_CLASS}>
-        {group.category} ({count(belong, query)})
+        {group.category} ({count(group.rows, query)})
       </h3>
-      <RowList rows={group.rows} section="catalog" query={query} />
+      <RowList rows={group.rows} query={query} />
     </section>
   );
 }
 
-function RowList({
-  rows,
-  section,
-  query,
-}: {
-  rows: PickerTechnology[];
-  section: keyof PickerSections;
-  query: string;
-}) {
+function RowList({ rows, query }: { rows: PickerTechnology[]; query: string }) {
   return (
     <ul>
       {rows.map((technology) => (
-        <PickerRow
-          key={technology.id}
-          technology={technology}
-          section={section}
-          hidden={!matchesQuery(technology, query)}
-        />
+        <PickerRow key={technology.id} technology={technology} hidden={!matchesQuery(technology, query)} />
       ))}
     </ul>
   );

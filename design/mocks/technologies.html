@@ -98,10 +98,9 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; }
 .facts { font: 400 13px/1.6 var(--mono); color: var(--text-faint); font-variant-numeric: tabular-nums; }
 .facts strong { color: var(--text-muted); font-weight: 400; }
-/* Row Status Line: one geometry for what a row says about itself, in the measure every error line
-   uses, the same as .field-error on technology.html. Only the error variant is inked. */
-.row-status { grid-column: 2 / -1; margin: var(--space-2) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
-.row-status.error { color: var(--breaking); }
+/* Row Error Line: what a row says about itself when the database refuses it, in the measure every
+   error line uses, the same as .field-error on technology.html. */
+.row-status { grid-column: 2 / -1; margin: var(--space-2) 0 0; font: 400 14px/1.7 var(--mono); color: var(--breaking); }
 .row-note { font: 400 13px/1.6 var(--mono); color: var(--text-muted); white-space: nowrap; }
 
 /* Follow Toggle */
@@ -234,7 +233,6 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
     <option value="full">10 of 10 followed</option>
     <option value="rejected">follow rejected by server</option>
     <option value="retired">8 followed, 1 retired</option>
-    <option value="moved">followed from the catalog, row stays</option>
     <option value="nomatch">filter with no match</option>
   </select>
 </div>
@@ -292,14 +290,6 @@ const STATES = {
   rejected: { follows: [...STACK, "Playwright", "Prisma", "Zod"], rejected: "Zustand" },
   retired: { follows: STACK, retired: true },
   nomatch: { follows: STACK, query: "qwik" },
-  moved: { follows: STACK, moved: "Zustand" },
-};
-
-// What a row says when a toggle has sent it to another section while it keeps its place. The counts
-// in the titles have already moved; this is the row saying where it went.
-const MOVED = {
-  catalog: "following · moves to the following section on your next visit",
-  following: "unfollowed · leaves this section on your next visit",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -318,16 +308,32 @@ function row([name, version, desc, category], on, opts = {}) {
     ? `last <strong>${version}</strong> · ${desc} · retired 2024-10`
     : `latest <strong>${version}</strong> · ${desc}`;
   const error = opts.rejected
-    ? `<p class="row-status error" id="err-${slug(name)}"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: not followed · you already follow 10 (one was added in another session) · unfollow one to follow another</p>`
+    ? `<p class="row-status" id="err-${slug(name)}"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: not followed · you already follow 10 (one was added in another session) · unfollow one to follow another</p>`
     : "";
   return `<li class="row" data-search="${esc((name + " " + desc).toLowerCase())}"${category ? ` data-category="${esc(category)}"` : ""}>` +
     `<a class="tech" href="technology.html">${esc(name)}</a>` +
     `<span class="facts">${facts}</span>${toggle(name, on, opts.retired)}${error}</li>`;
 }
 
+// The page as the visit found it, plus every press since. A press moves the row, so the lists are
+// painted again from the follows instead of being patched where they sit (issue #64).
+let visit = null;
+
 function render(stateKey) {
   const state = STATES[stateKey];
-  const follows = new Set(state.follows);
+  visit = {
+    follows: new Set(state.follows),
+    retired: Boolean(state.retired),
+    rejected: state.rejected || null,
+    gone: false,
+  };
+  $("filter").value = state.query || "";
+  paint();
+}
+
+function paint(focusName) {
+  const state = visit;
+  const follows = visit.follows;
   // `following` and `retired` stay one alphabetical list each: only the Catalog is read by Category.
   const following = CATALOG.filter(([n]) => follows.has(n)).sort((a, b) => a[0].localeCompare(b[0], "en"));
   const rest = CATALOG.filter(([n]) => !follows.has(n));
@@ -337,27 +343,30 @@ function render(stateKey) {
     const group = rest.filter((t) => t[3] === category);
     if (!group.length) return "";
     const id = `catalog-${category.replace(/ /g, "-")}`;
-    const rows = group.map((t) => row(t, t[0] === state.moved, { rejected: t[0] === state.rejected })).join("");
+    const rows = group.map((t) => row(t, false, { rejected: t[0] === state.rejected })).join("");
     return `<section class="group" data-category="${category}" aria-labelledby="${id}-title">` +
       `<h3 class="section-title" id="${id}-title">${category} (${group.length})</h3>` +
       `<ul class="rows">${rows}</ul></section>`;
   }).join("");
-  $("retired-rows").innerHTML = state.retired ? row(RETIRED, true, { retired: true }) : "";
-  $("retired").hidden = !state.retired;
+  // A retired row that was let go is painted once and then left alone: it is the one row a press
+  // does not move, and what it says has taken the place of its toggle.
+  if (!visit.gone) $("retired-rows").innerHTML = visit.retired ? row(RETIRED, true, { retired: true }) : "";
+  $("retired").hidden = !visit.retired;
 
   if (state.rejected) {
     const btn = document.querySelector(`[data-name="${state.rejected}"]`);
     btn.setAttribute("aria-describedby", `err-${slug(state.rejected)}`);
   }
-  $("filter").value = state.query || "";
   sync();
   applyFilter();
+  // The row has left one section for another, so this button is a new node: the focus follows it,
+  // which is what keeps the place of the press.
+  if (focusName) document.querySelector(`[data-name="${focusName}"]`)?.focus();
 }
 
 function sync() {
   const pressed = [...document.querySelectorAll(".follow[aria-pressed='true']")].length;
   document.querySelectorAll("[data-count]").forEach((el) => { el.textContent = String(pressed); });
-  syncNotes();
   const full = pressed >= LIMIT;
   $("limit-note").hidden = !full;
   document.querySelectorAll(".follow[aria-pressed='false']").forEach((btn) => {
@@ -369,33 +378,11 @@ function sync() {
   });
 }
 
-// A row sits where the visit found it and belongs where its toggle says: the note is the difference.
-function syncNotes() {
-  for (const section of ["following", "catalog"]) {
-    const holder = section === "catalog" ? $("catalog-groups") : $(`${section}-rows`);
-    for (const rowEl of holder.querySelectorAll(".row")) {
-      const btn = rowEl.querySelector(".follow");
-      const on = btn && btn.getAttribute("aria-pressed") === "true";
-      const moved = btn && (section === "catalog") === on;
-      const note = rowEl.querySelector(".row-status:not(.error)");
-      if (moved && !note) {
-        rowEl.insertAdjacentHTML(
-          "beforeend",
-          `<p class="row-status"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: ${MOVED[section]}</p>`,
-        );
-      } else if (!moved && note) {
-        note.remove();
-      }
-    }
-  }
-}
-
-// Where a row belongs, which is not where it sits until the next visit. A retired row that was let
-// go belongs nowhere: it can never be followed again.
+// Where a row belongs, which is now where it sits, with one exception: a retired row that was let go
+// stays to say so and belongs to no section at all, because it can never be followed again.
 function belongs(rowEl) {
-  const on = rowEl.querySelector(".follow")?.getAttribute("aria-pressed") === "true";
-  if (rowEl.closest("#retired-rows")) return on ? "retired" : null;
-  return on ? "following" : "catalog";
+  if (rowEl.closest("#retired-rows")) return rowEl.querySelector(".follow") ? "retired" : null;
+  return rowEl.closest("#following") ? "following" : "catalog";
 }
 
 function applyFilter() {
@@ -412,8 +399,9 @@ function applyFilter() {
       if (match) visible++;
     });
     total += rows.length;
-    // The title counts where the rows belong now; `rows` is only where they happen to sit.
-    const belong = [...document.querySelectorAll(".row")].filter((r) => belongs(r) === id);
+    // The title counts the rows that belong to the section, which is every row it holds but a
+    // retired one that was let go.
+    const belong = rows.filter((r) => belongs(r) === id);
     const matching = belong.filter((r) => !q || r.dataset.search.includes(q)).length;
     const title = section.querySelector(".section-title");
     title.textContent = `${id} (${q ? `${matching} of ${belong.length}` : belong.length})`;
@@ -424,12 +412,8 @@ function applyFilter() {
     for (const group of section.querySelectorAll(".group")) {
       const groupRows = [...group.querySelectorAll(".row")];
       const matching = groupRows.filter((r) => !r.hidden);
-      const belongHere = [...document.querySelectorAll(".row")].filter(
-        (r) => belongs(r) === "catalog" && r.dataset.category === group.dataset.category,
-      );
-      const hit = belongHere.filter((r) => !q || r.dataset.search.includes(q)).length;
       group.querySelector(".section-title").textContent =
-        `${group.dataset.category} (${q ? `${hit} of ${belongHere.length}` : belongHere.length})`;
+        `${group.dataset.category} (${q ? `${matching.length} of ${groupRows.length}` : groupRows.length})`;
       group.hidden = groupRows.length > 0 && matching.length === 0;
     }
   }
@@ -446,17 +430,19 @@ document.addEventListener("click", (event) => {
   if (!btn || btn.getAttribute("aria-disabled") === "true") return;
   const on = btn.getAttribute("aria-pressed") !== "true";
   const name = btn.dataset.name;
-  const rowEl = btn.closest(".row");
-  rowEl.querySelector(".row-error")?.remove();
   if (!on && btn.hasAttribute("data-retired")) {
+    visit.gone = true;
+    visit.follows.delete(name);
     btn.outerHTML = `<span class="row-note" role="status">unfollowed · can't be followed again</span>`;
-  } else {
-    btn.setAttribute("aria-pressed", String(on));
-    btn.setAttribute("aria-label", `${on ? "Unfollow" : "Follow"} ${name}`);
+    sync();
+    applyFilter();
+    return;
   }
-  sync();
-  // The section counts move with the toggle, not only with the filter (issue #64).
-  applyFilter();
+  if (on) visit.follows.add(name);
+  else visit.follows.delete(name);
+  // The refusal belongs to the press that got it, and this is the next press in that row.
+  if (visit.rejected === name) visit.rejected = null;
+  paint(name);
 });
 
 $("filter").addEventListener("input", applyFilter);

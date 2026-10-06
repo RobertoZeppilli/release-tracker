@@ -1,13 +1,17 @@
 "use client";
 
+import { CircleX } from "lucide-react";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import type { FollowRejection } from "../domain/follow-rejection";
-import { RowStatusLine } from "./row-status-line";
 
 // What the database refused, said once for every page that can be refused: what did not happen, why,
 // and the way out. The Toggle points at it with `aria-describedby`, so the id comes from the caller.
 // `diagnostic` is the one measure for an error line (DESIGN.md, `field-error`): it is the same on
 // the Upgrade Path form, and it lifts the error off the 13px facts of the row it sits under.
+//
+// It is the only thing a row says about itself now. The note that told a row where it was going
+// (issue #64) left with the row's old habit of staying put, so the geometry it shared with this
+// line lives here, where it is used.
 export function FollowRejectionNote({
   id,
   rejection,
@@ -18,9 +22,10 @@ export function FollowRejectionNote({
   className: string;
 }) {
   return (
-    <RowStatusLine id={id} tone="error" className={className}>
-      {message(rejection)}
-    </RowStatusLine>
+    <p id={id} className={`font-mono text-diagnostic text-breaking ${className}`}>
+      <CircleX aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
+      error: {message(rejection)}
+    </p>
   );
 }
 
