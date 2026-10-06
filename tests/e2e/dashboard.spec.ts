@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   addFollows,
+  declareCurrentVersion,
   e2eAuthSecret,
   type FixtureDeveloper,
   type FixtureTechnology,
@@ -17,9 +18,11 @@ let developer: FixtureDeveloper;
 let breaking: FixtureTechnology;
 let safe: FixtureTechnology;
 let busy: FixtureTechnology;
+let ahead: FixtureTechnology;
+let queued: FixtureTechnology;
 
 test.beforeAll(async () => {
-  [developer, breaking, safe, busy] = await Promise.all([
+  [developer, breaking, safe, busy, ahead, queued] = await Promise.all([
     seedDeveloper(),
     seedTechnology([
       { version: "4.0.0", significance: "featured", origin: "detected", status: "ready", notes: "Notes.", actionRequired: true, publishedAt: daysAgo(3) },
@@ -35,13 +38,30 @@ test.beforeAll(async () => {
       { version: "3.0.9", significance: "digest", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(1) },
       { version: "3.0.8", significance: "digest", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(21) },
     ]),
+    // Issue #94: nothing featured inside the window, and real work ahead of the Version in use.
+    // The verdict used to read `ok: nothing needs action` over a line saying the opposite.
+    seedTechnology([
+      { version: "1.0.0", significance: "notable", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false, publishedAt: daysAgo(90) },
+      { version: "1.1.0", significance: "notable", origin: "imported", status: "ready", notes: "Notes.", actionRequired: true, publishedAt: daysAgo(80) },
+    ]),
+    // Followed, featured, and with no Summary to judge it by.
+    seedTechnology([
+      { version: "5.0.0", significance: "featured", origin: "detected", status: "pending", notes: "Notes.", publishedAt: daysAgo(6) },
+    ]),
   ]);
 });
 
 test.afterAll(async () => {
   // A follow left by the last test still references the Technology, so it goes first.
   await developer.clearFollows();
-  await Promise.all([developer.remove(), breaking.remove(), safe.remove(), busy.remove()]);
+  await Promise.all([
+    developer.remove(),
+    breaking.remove(),
+    safe.remove(),
+    busy.remove(),
+    ahead.remove(),
+    queued.remove(),
+  ]);
 });
 
 test.beforeEach(async () => {
@@ -74,6 +94,28 @@ test("says nothing needs action when every featured Release is safe", async ({ p
 
   await expect(page.locator("#page-verdict")).toContainText("nothing needs action");
   await expect(page.getByText("safe to upgrade")).toBeVisible();
+});
+
+// CONTEXT.md, Verdetto della Dashboard: the verdict counts the Upgrade Path from the Version in use
+// too, so no line under it can say the opposite.
+test("counts the work ahead of the Version in use, with nothing featured in the window", async ({ page }) => {
+  await addFollows(developer.id, [ahead.id]);
+  await declareCurrentVersion(developer.id, ahead.id, "1.0.0");
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await expect(page.locator("#page-verdict")).toContainText("1 needs action");
+  await expect(page.getByText("0 featured")).toBeVisible();
+  await expect(page.getByText(/1 need(s)? action/).first()).toBeVisible();
+});
+
+test("gives no verdict when nothing it accounts for can be judged", async ({ page }) => {
+  await addFollows(developer.id, [queued.id]);
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await expect(page.locator("#page-verdict")).toContainText("nothing here can be judged yet");
+  await expect(page.locator("#page-verdict")).not.toContainText("nothing needs action");
 });
 
 test("carries the counts line to the Spotlight section with the keyboard", async ({ page }) => {

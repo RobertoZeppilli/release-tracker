@@ -5,7 +5,11 @@ export type Verdict = { tone: Tone; label: string; claim: string; pending?: true
 
 // The page verdict counts Releases, not Technologies, and a Release without a ready Summary is
 // never called safe: "nothing needs action" is what we know, not a promise that all is well.
-export function pageVerdict({ needsAction }: DashboardVerdict): Verdict {
+// A null verdict is the page with nothing it can judge, and there it says so instead of reassuring:
+// an empty set makes "nothing needs action" true of nothing (CONTEXT.md, Verdetto della Dashboard).
+export function pageVerdict(verdict: DashboardVerdict | null): Verdict {
+  if (verdict === null) return { tone: "muted", label: "note:", claim: "nothing here can be judged yet" };
+  const { needsAction } = verdict;
   if (needsAction === 0) return { tone: "ok", label: "ok:", claim: "nothing needs action" };
   return { tone: "action", label: "warning:", claim: `${needsAction} ${needsAction === 1 ? "needs" : "need"} action` };
 }

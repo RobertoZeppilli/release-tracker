@@ -11,6 +11,11 @@ describe("pageVerdict", () => {
     });
   });
 
+  // Issue #94: with nothing it can judge, the page says so instead of reassuring.
+  it("gives no verdict when there is nothing to judge", () => {
+    expect(pageVerdict(null)).toEqual({ tone: "muted", label: "note:", claim: "nothing here can be judged yet" });
+  });
+
   it("counts the Releases that need action, in the singular when there is one", () => {
     expect(pageVerdict({ needsAction: 1, safe: 0 }).claim).toBe("1 needs action");
     expect(pageVerdict({ needsAction: 2, safe: 1 })).toEqual({

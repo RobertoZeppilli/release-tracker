@@ -13,7 +13,63 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-05, notte).** **La #47 è chiusa** e la **#84 pure.** I cinque interventi
+**Da dove ripartire (notte fra il 2026-10-05 e il 2026-10-06).** **La #88 è chiusa** (PR #96, unita e verificata in
+produzione) e la **#94 è implementata sul branch `94-dashboard-verdict-scope`**, in attesa di PR.
+Prima di loro erano state chiuse la #47 e la #84.
+
+**La #88, com'è stata fatta.** Il vincolo `summaries_ready_provenance` lega la visibilità alla
+provenienza: `status = 'ready'` implica `content`, `model` e `prompt_version`. Da ricordare:
+
+- **Il conteggio chiesto dalla issue non è stato fatto con una query su produzione.** Non serviva:
+  Postgres valida un `check` nuovo contro le righe esistenti, quindi il `deploy-database` verde **è**
+  la prova che non c'era nessuna riga `ready` senza provenienza. In locale non ce n'era nessuna
+  affatto (0 `ready`, e 128 `pending`, 84 `unavailable`, 1686 `skipped` tutte senza provenienza,
+  tutte ancora ammesse).
+- `getRelease` **legge** la provenienza invece di fidarsi: una riga `ready` che ne fosse priva si
+  rende come `unavailable`, che la pagina sa già disegnare, invece di far fallire lo Zod e con lui la
+  pagina. Scelta deliberata, non una dimenticanza.
+- Il reimport della #56 guarda `model is not null and prompt_version is not null` nella sua `where`,
+  perché una Release che fallisce **prima** di partire (note oltre il limite) è `failed` senza
+  provenienza e il vincolo la rifiuterebbe.
+- `.env.local` punta al database **locale** e le credenziali di produzione stanno su Vercel, con la
+  CLI non installata: un conteggio su produzione lo deve leggere l'utente.
+
+**La #94, com'è stata fatta, da non rifare.** Decisioni dell'utente del 2026-10-05: **prima via più
+terza**, cioè il verdetto conta tutto quello che la pagina mostra e tace quando non c'è niente da
+giudicare; e `1 previews` **corretto** in `1 preview`.
+
+- La regola nuova è in `CONTEXT.md` sotto **Verdetto della Dashboard**, e lo stato in muted è
+  documentato in `DESIGN.md` nel paragrafo "Page verdict (Dashboard)".
+- ⚠️ **La terza via da sola non bastava**, e il consiglio dato prima di leggere il codice era
+  incompleto: toglie il verdetto a insieme vuoto, ma con **una** `featured` sicura nella finestra e
+  lavoro vero sul Cammino la contraddizione tornava.
+- **Come è stata risolta la sovrapposizione**: `computeUpgradePath` ora espone `range`, cioè le
+  Release stabili che il Cammino copre, le stesse su cui `counts` è calcolato. `buildDashboard` unisce
+  `featured` della finestra e `range`, deduplica su `slug@version` e conta **Release**, non occorrenze.
+- `DashboardVerdict` è `| null`, e `DashboardCounts` ha un campo nuovo `featuredNeedsAction`: la
+  parentesi `(2 need action)` sta accanto a `featured` nella riga dei conteggi, quindi deve restare
+  nell'ambito più stretto, altrimenti si contraddice con il numero che segue.
+- Il verdetto si dà solo se **almeno una** Release dell'insieme ha un verdetto suo: le Digest e le
+  Release senza Sintesi _Pronta_ o con note non giudicabili non contano, come dappertutto.
+- ⚠️ **Una corsa di e2e su tre ha dato un fallimento non catturato**, le altre due 144 su 144. Non è
+  stato possibile nominarlo: in locale `retries` è 0 e il run dopo era verde. In CI i retry sono 2.
+  Se ricompare, catturare il nome prima di diagnosticare.
+
+**Non fatto di proposito**: il mock `design/mocks/dashboard.html` non ha lo stato nuovo del verdetto.
+`DESIGN.md` lo descrive; aggiungerlo al mock è una scelta dell'utente, non un debito nascosto.
+
+**Le strade aperte dopo la #94.** L'utente ha chiesto di contare anche le `ready-for-human`: le fa
+l'agente, le decisioni si prendono insieme. Restano fuori solo quelle che **spendono** su Anthropic,
+cioè la **#93** (prompt v5), la **#87** (divieto dell'em dash nel prompt) e la **#57** (Haiku invece
+di Opus): tutte e tre rigenerano Sintesi.
+Gratis e prendibili, con la decisione che chiedono: **#65** e **#64** (tecniche, serve solo il via),
+**#83**, **#85** e **#86** (chiedono una scelta di prodotto o di `DESIGN.md`), **#80** (tocca GitHub e
+npm, non Anthropic, ma genera Sintesi a valle: da guardare insieme), **#26** la landing page (ferma
+sul nome del prodotto) e **#69** (esplicitamente dopo il lancio).
+
+---
+
+**Lo stato precedente, per contesto.** **La #47 è chiusa** e la **#84 pure.** I cinque interventi
 della #47 sono uniti: il **P0-1** (PR #89), il **P2-9** (PR #90), il **gruppo della #64** cioè P1-3,
 P1-4 e P1-5 (PR #91), e il **P0-2** (PR #92, l'unica che portava `Closes #47`). Dopo di loro la #84,
 sbloccata dalla chiusura della #47, con la **PR #95**. Tutto verificato in produzione.
