@@ -1,6 +1,7 @@
 {
   "name": "TypeScript",
   "description": "JavaScript with syntax for types",
+  "category": "language",
   "classificationStrategy": "typescript",
   "sources": [
     { "role": "detection", "kind": "npm", "package": "typescript" },

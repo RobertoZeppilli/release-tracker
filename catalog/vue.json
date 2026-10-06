@@ -1,6 +1,7 @@
 {
   "name": "Vue",
   "description": "Progressive JavaScript framework",
+  "category": "framework",
   "classificationStrategy": "minor-major",
   "sources": [
     {

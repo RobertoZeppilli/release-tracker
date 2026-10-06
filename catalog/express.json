@@ -1,6 +1,7 @@
 {
   "name": "Express",
   "description": "Web framework for Node.js",
+  "category": "server framework",
   "classificationStrategy": "semver",
   "sources": [
     {

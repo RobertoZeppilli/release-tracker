@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { CategorySchema } from "@/modules/catalog";
 import { latestStableVersion } from "@/modules/releases";
 import type { PickerTechnology } from "../domain/picker";
 
@@ -9,6 +10,7 @@ const PickerRowSchema = z.object({
   name: z.string(),
   description: z.string(),
   retired: z.boolean(),
+  category: CategorySchema,
   releases: z.array(z.object({ version: z.string() })),
 });
 
@@ -17,7 +19,7 @@ const PickerRowSchema = z.object({
 export async function listPickerTechnologies(db: SupabaseClient): Promise<PickerTechnology[]> {
   const { data, error } = await db
     .from("technologies")
-    .select("id, slug, name, description, retired, releases (version)");
+    .select("id, slug, name, description, retired, category, releases (version)");
   if (error) throw error;
   return z
     .array(PickerRowSchema)

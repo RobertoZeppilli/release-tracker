@@ -1,6 +1,7 @@
 {
   "name": "tRPC",
   "description": "End-to-end typesafe APIs",
+  "category": "server framework",
   "classificationStrategy": "semver",
   "sources": [
     {

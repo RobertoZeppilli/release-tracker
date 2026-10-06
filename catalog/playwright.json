@@ -1,6 +1,7 @@
 {
   "name": "Playwright",
   "description": "End-to-end browser testing",
+  "category": "testing",
   "classificationStrategy": "minor-major",
   "sources": [
     {

@@ -1,6 +1,7 @@
 {
   "name": "Tailwind CSS",
   "description": "Utility-first CSS framework",
+  "category": "library",
   "classificationStrategy": "semver",
   "sources": [
     {

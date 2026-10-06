@@ -1,6 +1,7 @@
 {
   "name": "Zustand",
   "description": "State management for React",
+  "category": "library",
   "classificationStrategy": "semver",
   "sources": [
     {

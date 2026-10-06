@@ -1,17 +1,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { ClassificationStrategySchema } from "@/modules/releases";
+import { CategorySchema } from "../domain/category";
 import { SourceSchema, sourceKey } from "../domain/catalog-entry";
 import type { StoredTechnology } from "../domain/plan-catalog-sync";
 
 export const TECHNOLOGY_COLUMNS =
-  "id, slug, name, description, classification_strategy, retired, sources (id, role, kind, config, etag)";
+  "id, slug, name, description, category, classification_strategy, retired, sources (id, role, kind, config, etag)";
 
 const TechnologyRowSchema = z.object({
   id: z.uuid(),
   slug: z.string(),
   name: z.string(),
   description: z.string(),
+  category: CategorySchema,
   classification_strategy: ClassificationStrategySchema,
   retired: z.boolean(),
   sources: z.array(
@@ -35,6 +37,7 @@ export function toStoredTechnology(row: unknown): StoredTechnology {
     slug: technology.slug,
     name: technology.name,
     description: technology.description,
+    category: technology.category,
     classificationStrategy: technology.classification_strategy,
     retired: technology.retired,
     sources: technology.sources

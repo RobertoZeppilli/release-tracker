@@ -1,3 +1,5 @@
+import { CATEGORIES, type Category } from "@/modules/catalog";
+
 // The Catalog as a Developer picks from it: what is followed, what can still be followed, and the
 // retired Technologies that are still followed. A retired Technology that nobody follows is not
 // shown at all, because it can never be followed again (CONTEXT.md, "Seguire").
@@ -8,6 +10,7 @@ export type PickerTechnology = {
   description: string;
   latest: string | null;
   retired: boolean;
+  category: Category;
 };
 
 export type PickerSections = {
@@ -57,4 +60,17 @@ export function countMatches(sections: PickerSections, query: string): { shown: 
 // the live count and the next visit can never disagree.
 export function liveSections(sections: PickerSections, followed: readonly string[]): PickerSections {
   return splitPicker([...sections.following, ...sections.catalog, ...sections.retired], followed);
+}
+
+// The Catalog read by Category: ten groups of no more than eight rows instead of one list of
+// thirty-two, which is the whole point of the grouping (issue #86). The order is the one `CATEGORIES`
+// declares, and a Category with no row in hand is left out rather than shown empty: `following` and
+// `retired` are never grouped, so only the `catalog` section goes through here.
+export type CategoryGroup = { category: Category; rows: PickerTechnology[] };
+
+export function groupByCategory(rows: readonly PickerTechnology[]): CategoryGroup[] {
+  return CATEGORIES.map((category) => ({
+    category,
+    rows: rows.filter((row) => row.category === category),
+  })).filter((group) => group.rows.length > 0);
 }

@@ -63,7 +63,7 @@ async function seedTechnology(prefix: string, sources: Record<string, unknown>[]
   const slug = `${prefix}-${randomUUID()}`;
   const inserted = await db
     .from("technologies")
-    .insert({ slug, name: "Detection test", classification_strategy: "semver", retired: retiredTechnology })
+    .insert({ slug, name: "Detection test", category: "library", classification_strategy: "semver", retired: retiredTechnology })
     .select("id")
     .single();
   if (inserted.error) throw inserted.error;

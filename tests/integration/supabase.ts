@@ -49,7 +49,7 @@ export async function seedContent(): Promise<Content> {
 
   const technology = await db
     .from("technologies")
-    .insert({ slug, name: slug, classification_strategy: "semver" })
+    .insert({ slug, name: slug, category: "library", classification_strategy: "semver" })
     .select("id")
     .single();
   if (technology.error) throw technology.error;
@@ -98,7 +98,7 @@ export async function seedCatalog(count: number): Promise<Catalog> {
   const db = serviceClient();
   const rows = Array.from({ length: count }, () => {
     const slug = `tech-${randomUUID()}`;
-    return { slug, name: slug, classification_strategy: "semver" as const };
+    return { slug, name: slug, category: "library" as const, classification_strategy: "semver" as const };
   });
 
   const inserted = await db.from("technologies").insert(rows).select("id");

@@ -97,6 +97,58 @@ test("a Developer unfollows a Technology and it stays unfollowed after a reload"
   await expect(toggle(page, "Follow")).toBeVisible();
 });
 
+// The Catalog is read by Category: ten groups instead of one long alphabetical list (issue #86).
+function group(page: Page, category: string): Locator {
+  return page.getByRole("region", { name: new RegExp(`^${category} \\(`) });
+}
+
+test("the Catalog is grouped by Category, and the filter works inside the groups", async ({ page }) => {
+  await page.goto("/technologies");
+
+  // The fixture is a `library` and the fillers are a `platform`, so both groups are on the page and
+  // the row sits in its own one. The Catalog keeps its own title above them.
+  const library = group(page, "library");
+  await expect(library.getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(group(page, "platform").getByRole("link", { name: technology.name })).toHaveCount(0);
+  await expect(section(page, "catalog")).toContainText("catalog (");
+
+  // `following` and `retired` are never grouped: the Category is the Catalog's way of being read.
+  await toggle(page, "Follow").click();
+  await page.reload();
+  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(section(page, "following").getByRole("region")).toHaveCount(0);
+
+  // The count of a group follows a toggle on the same tick the Catalog count does, and the row stays
+  // where the visit found it until the next one.
+  await developer.clearFollows();
+  await page.goto("/technologies");
+  const before = await library.getByRole("heading").textContent();
+  const total = Number(/\((\d+)\)/.exec(before ?? "")?.[1]);
+  expect(total).toBeGreaterThan(0);
+  await toggle(page, "Follow").click();
+  await expect(library.getByRole("heading")).toHaveText(`library (${total - 1})`);
+  await expect(library.getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
+  await developer.clearFollows();
+});
+
+test("a filter with no match in a group hides that group, and counts over the whole Catalog", async ({ page }) => {
+  await page.goto("/technologies");
+  const filter = page.getByRole("searchbox", { name: "filter" });
+  const matches = page.locator("#matches");
+  const total = Number(/^(\d+) technologies$/.exec((await matches.textContent()) ?? "")?.[1]);
+
+  await filter.fill(technology.name);
+  // The only group left is the one holding the match; the Catalog still counts over all of itself.
+  await expect(group(page, "library")).toBeVisible();
+  await expect(group(page, "platform")).toBeHidden();
+  await expect(matches).toHaveText(`1 of ${total} match`);
+  await expect(section(page, "catalog").getByRole("heading").first()).toHaveText(/^catalog \(1 of \d+\)$/);
+  await expect(rows(page)).toHaveCount(1);
+
+  await filter.fill("");
+  await expect(group(page, "platform")).toBeVisible();
+});
+
 test("the filter narrows the rows, counts the matches and says when nothing matches", async ({ page }) => {
   await page.goto("/technologies");
   const matches = page.locator("#matches");

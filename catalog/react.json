@@ -1,6 +1,7 @@
 {
   "name": "React",
   "description": "Library for web and native user interfaces",
+  "category": "framework",
   "classificationStrategy": "semver",
   "sources": [
     { "role": "detection", "kind": "npm", "package": "react" },

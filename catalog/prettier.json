@@ -1,6 +1,7 @@
 {
   "name": "Prettier",
   "description": "Opinionated code formatter",
+  "category": "lint and formatting",
   "classificationStrategy": "semver",
   "sources": [
     {

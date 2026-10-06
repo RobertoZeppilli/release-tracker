@@ -1,6 +1,7 @@
 {
   "name": "Drizzle ORM",
   "description": "TypeScript ORM for SQL databases",
+  "category": "database",
   "classificationStrategy": "zerover",
   "sources": [
     {

@@ -1,6 +1,7 @@
 {
   "name": "Jest",
   "description": "JavaScript testing framework",
+  "category": "testing",
   "classificationStrategy": "semver",
   "sources": [
     {

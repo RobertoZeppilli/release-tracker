@@ -10,6 +10,7 @@ const entry: CatalogEntry = {
   slug,
   name: "Sync test",
   description: "A Technology written by the Catalog sync",
+  category: "library",
   classificationStrategy: "semver",
   sources: [
     { role: "detection", kind: "npm", package: slug },

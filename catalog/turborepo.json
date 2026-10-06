@@ -1,6 +1,7 @@
 {
   "name": "Turborepo",
   "description": "Build system for JavaScript monorepos",
+  "category": "build tool",
   "classificationStrategy": "semver",
   "sources": [
     {

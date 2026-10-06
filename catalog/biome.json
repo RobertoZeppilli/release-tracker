@@ -1,6 +1,7 @@
 {
   "name": "Biome",
   "description": "Formatter and linter for web projects",
+  "category": "lint and formatting",
   "classificationStrategy": "semver",
   "sources": [
     {

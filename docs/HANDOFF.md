@@ -16,7 +16,47 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, sera).** **La #85 è chiusa**, con la **PR #101**, unita su `main`
+**Da dove ripartire (2026-10-06, notte): la #86 e' a meta', sul branch `issue-86-catalog-categories`,
+non committata.** I quattro nodi HITL sono stati sciolti con l'utente e **non vanno riaperti**:
+
+1. **`library` resta un genere**, definito in positivo in `CONTEXT.md` (si importa nel codice, non
+   detta la forma del progetto come un `framework`, non gira da fuori come un `build tool`). Niente
+   gruppo "altro", niente spacchettamento in `styling`/`state management`/`validation`/`http client`.
+2. Nome inglese canonico: **`category`** (`kind` era gia' preso da `Source.kind`).
+3. Il genere compare **solo su `/technologies`**: non sulla pagina Technology, non sulla Dashboard.
+4. Col filtro, **un gruppo senza corrispondenze si nasconde**, come gia' fa una sezione; il titolo
+   `catalog` continua a contare su tutto il Catalogo.
+
+In piu', deciso da me con la ragione scritta in `DESIGN.md`: la sezione `catalog` **tiene il suo
+titolo e il suo conteggio** (e la Limit Note sotto), e i dieci generi sono `<h3>` con lo stesso
+Section Title un livello piu' in basso; l'ordine dei generi non e' alfabetico ma quello di
+`CONTEXT.md`, dal linguaggio alla piattaforma.
+
+**Fatto e verificato** (unitari 528 verdi, `pnpm lint` e `pnpm typecheck` puliti):
+`CONTEXT.md` (voce **Genere** + riga nella tabella), `category` in `CatalogFileSchema` e nei **37
+file** `catalog/*.json`, la migrazione `20261006112355_catalog_categories.sql` (enum
+`technology_category`, colonna, backfill per slug, un `DO` che si ferma con un messaggio leggibile
+se una Technology resta senza genere, poi `set not null`), `groupByCategory` in
+`plans/domain/picker.ts`, la UI spezzata in `plans/ui/picker-section.tsx`, il mock
+`design/mocks/technologies.html` (ora sui 37 veri, raggruppati) e `DESIGN.md` ("Category Groups").
+**Provata nel browser** su localhost:3000: `catalog (3 of 37)` col filtro `test` lascia solo
+`testing (3 of 4)`, e seguendo una riga i conteggi diventano `catalog (2 of 36)` e `testing (2 of 3)`
+con la riga ferma dov'e'. **Provato anche il percorso vero della migrazione** rigiocando il backfill
+su 37 righe gia' esistenti (37 aggiornate, nessuna orfana) e il ramo di errore del `DO`.
+
+**Gli E2E sono scritti e la casa e' pulita**: `technologies.spec.ts` ha due test nuovi (il Catalogo
+raggruppato con `following` e `retired` che restano una lista sola, e il gruppo senza corrispondenze
+che sparisce mentre il conteggio resta su tutto il Catalogo). Le fixture di E2E e di integrazione
+dichiarano una `category`: il fixture principale e' una `library`, i filler un `platform`, cosi' un
+test puo' dire in che gruppo sta la sua riga. **528 unitari, 63 di integrazione e 150 E2E verdi**,
+`lint` e `typecheck` puliti. Nessun flake in questa corsa.
+
+**Cosa manca alla #86**: solo commit e PR.
+⚠️ **La migrazione va applicata a produzione prima del merge** (i preview usano il database di
+produzione: schema prima, codice dopo).
+⚠️ Il `db:reset` cancella l'utente locale: `pnpm dev:login` lo ricrea.
+
+**Lo stato precedente (2026-10-06, sera).** **La #85 è chiusa**, con la **PR #101**, unita su `main`
 (`1fc8af5`), e il branch è cancellato in locale e su GitHub. `CI` verde su `main`, `check` e
 `integration` tutti e due. Prossimo lavoro: la **#86**.
 ⚠️ **Un push su `main` annulla la CI in corso**: committare documenti mentre gira la corsa del merge

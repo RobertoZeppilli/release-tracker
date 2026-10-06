@@ -1,6 +1,7 @@
 {
   "name": "Svelte",
   "description": "Compiler-first UI framework",
+  "category": "framework",
   "classificationStrategy": "semver",
   "sources": [
     {

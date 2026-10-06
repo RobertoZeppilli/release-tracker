@@ -71,7 +71,7 @@ beforeAll(async () => {
   const slug = `import-${randomUUID()}`;
   const inserted = await db
     .from("technologies")
-    .insert({ slug, name: "Import test", classification_strategy: "semver" })
+    .insert({ slug, name: "Import test", category: "library", classification_strategy: "semver" })
     .select("id")
     .single();
   if (inserted.error) throw inserted.error;

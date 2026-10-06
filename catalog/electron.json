@@ -1,6 +1,7 @@
 {
   "name": "Electron",
   "description": "Desktop applications with web technologies",
+  "category": "platform",
   "classificationStrategy": "semver",
   "sources": [
     {

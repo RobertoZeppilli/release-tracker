@@ -1,6 +1,7 @@
 {
   "name": "Nuxt",
   "description": "Application framework built on Vue",
+  "category": "framework",
   "classificationStrategy": "semver",
   "sources": [
     {

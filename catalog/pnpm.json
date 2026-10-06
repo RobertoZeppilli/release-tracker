@@ -1,6 +1,7 @@
 {
   "name": "pnpm",
   "description": "Package manager for Node.js",
+  "category": "build tool",
   "classificationStrategy": "semver",
   "sources": [
     {

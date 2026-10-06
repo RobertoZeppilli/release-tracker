@@ -1,6 +1,7 @@
 {
   "name": "Terraform",
   "description": "Infrastructure as code",
+  "category": "platform",
   "classificationStrategy": "minor-major",
   "sources": [
     {

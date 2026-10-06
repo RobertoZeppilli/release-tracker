@@ -1,6 +1,7 @@
 {
   "name": "Angular",
   "description": "Application framework for the web",
+  "category": "framework",
   "classificationStrategy": "semver",
   "sources": [
     {

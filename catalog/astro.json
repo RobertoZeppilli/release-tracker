@@ -1,6 +1,7 @@
 {
   "name": "Astro",
   "description": "Web framework for content-driven sites",
+  "category": "framework",
   "classificationStrategy": "semver",
   "sources": [
     {

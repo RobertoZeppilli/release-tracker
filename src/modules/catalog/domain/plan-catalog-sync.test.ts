@@ -6,6 +6,7 @@ const vite: CatalogEntry = {
   slug: "vite",
   name: "Vite",
   description: "Frontend build tool",
+  category: "build tool",
   classificationStrategy: "semver",
   sources: [
     { role: "detection", kind: "npm", package: "vite" },

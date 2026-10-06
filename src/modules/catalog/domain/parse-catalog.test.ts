@@ -4,6 +4,7 @@ import { parseCatalog } from "./parse-catalog";
 const vite = {
   name: "Vite",
   description: "Frontend build tool",
+  category: "build tool",
   classificationStrategy: "semver",
   sources: [
     { role: "detection", kind: "npm", package: "vite" },
@@ -105,6 +106,17 @@ describe("parseCatalog", () => {
     expect(parseCatalog([file("catalog/react.json", react)])[0].sources[1]).toEqual(changelog);
     const escaping = { ...react, sources: [vite.sources[0], { ...changelog, path: "../secrets.md" }] };
     expect(() => parseCatalog([file("catalog/react.json", escaping)])).toThrow(/sources\.1\.path: must not leave/);
+  });
+
+  // There is no "other" Category, so a Technology with a Category nobody declared is a broken file,
+  // not a row that lands in a catch-all group (issue #86).
+  it("rejects a Category outside the ten, and a file with no Category at all", () => {
+    const invented = { ...vite, category: "css framework" };
+    expect(() => parseCatalog([file("catalog/vite.json", invented)])).toThrow(/category/);
+
+    const without: Record<string, unknown> = { ...vite };
+    delete without.category;
+    expect(() => parseCatalog([file("catalog/vite.json", without)])).toThrow(/category/);
   });
 
   it("reports every broken file, not only the first", () => {
