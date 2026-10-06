@@ -16,7 +16,95 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, sera tardi).** **La #64 è chiusa**, con la **PR #106**, unita su
+**Da dove ripartire (2026-10-06, notte).** **Il ritento dei transitori è fatto**, con la **PR #107**,
+unita su `main` (`9b0fe58`), e il branch `catalog-sync-transient-retry` è cancellato in locale e su
+GitHub. **`CI` e `Deploy database` verdi** sul merge (run 37520785712, `integration` in 6m24s):
+**151 E2E, 1 saltato, zero flaky**.
+**Niente da verificare in produzione**: il lavoro tocca solo gli adattatori usati dai job server, e
+il suo effetto si vede unicamente quando una Fonte fa i capricci. La prima occasione in cui gira per
+davvero è il `catalog:sync` del prossimo deploy.
+
+**Chiesto dall'utente senza aprire una issue**, come già per il flake sui follow: `CLAUDE.md` chiede
+un branch e una PR, e questa volta li ha avuti tutti e due, quindi **non è un'eccezione come la
+#104 o `4645504`**. La PR non chiude niente e il corpo lo dice.
+
+**Non c'è nessuna issue `ready-for-agent`**, quindi il lavoro seguente si sceglie fra le strade
+aperte qui sotto e vuole il via dell'utente. **Le issue non si prendono per ora, per scelta
+dell'utente**: ci si torna quando avrà credito sul conto.
+
+### Il ritento dei transitori, e perché la diagnosi prima era mal puntata
+
+La CI su `main` è caduta sul commit dei documenti `ff92122`, e **la causa non era il commit**: GitHub
+ha risposto **504** alla terza pagina delle release di `electron`, `catalog:sync` è uscito con codice
+1 e si è portato via `build` e gli E2E, che non sono mai partiti. `check` e `test:integration` erano
+verdi. Rilanciato il solo job fallito (`gh run rerun <id> --failed`) è passato: **151 E2E, 1 saltato,
+zero flaky**.
+
+⚠️ **Da non ridiagnosticare da zero**: `sync-catalog.mts` **già** tollerava la Tecnologia che cade e
+tirava avanti con le altre, il suo commento lo dice da sempre. Il buco stava un livello sotto:
+**nessuna delle quattro chiamate HTTP** degli adattatori ritentava mai, quindi un transitorio era
+definitivo. Misurato a mano: quella pagina di `electron` risponde **200 in 4,5 secondi**, cioè sta sul
+bordo del timeout di GitHub, ed è per questo che un ritento è la cura giusta e non un cerotto.
+
+- **`retrying.ts`** (25 righe) avvolge un `fetch` e riprova secondo un calendario di attese,
+  `[1s, 4s]` per difetto. **Il calendario è la politica**: un test lo mette a zero e non aspetta
+  niente, che è il motivo per cui è un parametro e non una costante nascosta.
+- `createSourceAdapters` avvolge **una volta** il `fetch` che riceve per iniezione, e le quattro
+  chiamate (npm, le due di GitHub, il CHANGELOG) ritentano senza sapere di farlo. Nessuna logica di
+  nessun adattatore è stata toccata.
+- **Si ritenta un 5xx o una connessione che non si è mai aperta. Non un 4xx**, perché è una risposta,
+  **e nemmeno il 429**: il limite di GitHub si azzera in minuti o in un'ora, quindi riprovare dopo 4
+  secondi lo ripeterebbe soltanto e nasconderebbe perché la corsa è tornata vuota. È una scelta, non
+  una dimenticanza.
+- I quattro test nuovi passano per `createSourceAdapters` e non per la funzione nuda, così provano
+  anche che il ritento sia arrivato davvero agli adattatori.
+
+**Verifiche**: `lint` e `typecheck` puliti, **537 unitari** (533 più 4). File a 187 e 25 righe: il
+ritento è uscito da `source-adapters.ts` perché lo portava a 208 righe, oltre il limite di ~200, e la
+separazione è comunque quella giusta (la politica del trasporto non è la grammatica delle Fonti).
+
+**Decisione lasciata aperta di proposito, non un difetto.** Se dopo i tre tentativi una Tecnologia
+resta fuori, lo script esce ancora con **codice 1**, e in CI questo continua a portarsi via `build` e
+gli E2E. È un segnale voluto, ma vuol dire che una Fonte giù per davvero blocca una suite che non
+c'entra niente. È una riga da cambiare, e l'utente non l'ha ancora decisa.
+
+⚠️ **Trappola pagata in questa sessione**: il primo commit ha preso il titolo `@`, perché la sintassi
+PowerShell (`@'...'@`) è finita nel tool Bash. Il controllo del messaggio **prima** del push l'ha
+intercettata e l'`--amend` l'ha corretta. Le due shell vogliono due sintassi: heredoc in Bash.
+
+### Lo stage, pensato con l'utente e non ancora deciso
+
+L'utente ha proposto, **a lancio avvenuto**, un ambiente di stage su cui provare prima di mandare in
+produzione, da fare **dopo** la #65. Di stage non si era mai parlato prima: cercato in
+`docs/handoff/`, `DECISIONI.md` e `docs/adr/`, non c'è niente. La mia raccomandazione, **che gira
+l'ordine** e che l'utente non ha ancora accettato:
+
+1. **Lo stage copre metà della #65.** La strada 1 (dump di produzione in locale) serve a due cose,
+   gli stessi UUID per provare un SQL e **Sintesi vere** sotto gli occhi: sono esattamente quelle che
+   dà uno stage, e le dà meglio, perché i dati di produzione non finiscono sul disco dello
+   sviluppatore. Con lo stage la **strada 1 diventa inutile** e in locale resta solo la **strada 2**,
+   la più economica, che vale comunque da sola.
+2. **Il pericolo vero non è il locale, è il preview**: oggi i preview puntano al database di
+   produzione, e `catalog:sync` di un preview scriverebbe in produzione il Catalogo di quel branch.
+   Costa meno aggiustarlo **prima** del lancio, perché dopo ogni errore cade su dati di utenti veri.
+   Qui sono in disaccordo col "una volta lanciata l'app" dell'utente, almeno per la parte minima.
+
+**Ordine raccomandato**: strada 2 della #65, poi un database non di produzione per i preview, e solo
+dopo il lancio lo stage completo con una copia fresca e un passo di promozione.
+
+**Da verificare prima di decidere, non dato per certo**: quanti progetti regge il piano gratuito di
+Supabase e dopo quanto mette in pausa un progetto inattivo (uno stage è inattivo per definizione); e
+se gli ambienti personalizzati di Vercel chiedano un piano a pagamento. La versione gratuita e sicura
+è un **secondo progetto Vercel** che punta al Supabase di stage e si distribuisce da un branch.
+
+**Tre cose che lo stage non deve ereditare**, ed è dove batte la regola sulla spesa: **nessuna
+`ANTHROPIC_API_KEY`** (lo schema Zod la tiene opzionale proprio per questo: senza chiave i job
+rispondono 503, e uno stage non deve poter generare Sintesi nemmeno per sbaglio); **nessun cron di
+Rilevamento** (due ambienti alle 02:00 raddoppiano il traffico verso GitHub e npm per niente); un
+**`CRON_SECRET` suo**. Quando si farà è roba da **ADR**, non solo da issue: rovescia una riga
+dell'ADR 0005, cioè che i preview condividono il database di produzione.
+
+**Lo stato precedente (2026-10-06, sera tardi).** **La #64 è chiusa**, con la **PR #106**, unita su
 `main` (`a3ca8c4`): l'issue si è chiusa da sola col `Closes #64`, e il branch
 `64-follow-moves-the-row` è cancellato in locale e su GitHub. `Deploy database` verde.
 **È verificata in produzione, dall'utente in persona**: su `/technologies` la riga passa fra le
@@ -187,94 +275,6 @@ dominio del picker e la resa in `plans/ui/picker-section.tsx`. Le fixture di E2E
 dichiarano una `category` (il fixture principale è una `library`, i filler un `platform`). Alla
 chiusura: 528 unitari, 63 di integrazione, 150 E2E, nessun flake in quella corsa.
 
-**Lo stato precedente (2026-10-06, sera).** **La #85 è chiusa**, con la **PR #101**, unita su `main`
-(`1fc8af5`), e il branch è cancellato in locale e su GitHub. `CI` verde su `main`, `check` e
-`integration` tutti e due. Prossimo lavoro: la **#86**.
-⚠️ **Un push su `main` annulla la CI in corso**: committare documenti mentre gira la corsa del merge
-la soppianta, ed è successo due volte il 2026-10-06. Non è un fallimento, ma lascia il merge senza
-una corsa verde finché non ne parte un'altra.
-⚠️ Il nodo di `library` va sciolto con l'utente **prima** di scrivere una riga di codice (vedi sotto).
-
-**La #85 è verificata in produzione**, su tutte e due le severità:
-
-- `/technologies/react/19.3.0` è il caso dell'issue parola per parola: `breaking[1]` cita
-  `release-notes:164` dentro 186 righe di changelog quasi identiche. Seguendolo si atterra sulla 164
-  e sopra c'è `<-- back to breaking[1]` in corallo, sulla lavatura dell'intervallo; seguirlo riporta
-  alla diagnostica con l'URL a `#b1`, senza animazione. **Il tasto Indietro riporta alla riga 164**,
-  con puntatore e lavatura ancora lì: è la gamba che l'issue diceva mancante.
-- `/technologies/vite/8.0.0`: i key point leggono `note[1]:`, `note[2]:`, `note[3]:`, e la citazione
-  di `note[1]` apre il pannello con `<-- back to note[1]` in cyan sopra la riga lavata, con ritorno
-  a `#n1`.
-- Il controllo a 390px **non è stato rifatto nel browser**, perché è quello che era già fallito con
-  la #83 (il ridimensionamento non cambia il viewport). La larghezza telefono resta coperta dagli
-  E2E e da uno screenshot a 390 fatto in locale prima della PR.
-- ⚠️ Visto di passaggio: il titolo della Sintesi di `vite/8.0.0` contiene un **trattino lungo**
-  ("ships with no inline release notes — details are only in the changelog"). È esattamente la #87.
-
-**La #85, com'è stata fatta.** Era una issue HITL, e le due scelte di forma rimaste aperte sono state
-decise con l'utente. **Da non riaprire:**
-
-- **Un solo puntatore**, `<-- back to breaking[1]`, su una riga propria **sopra** la prima riga
-  dell'intervallo attivo, nella lavatura dell'intervallo e nell'inchiostro della severità che ha
-  citato. La riga tiene la gutter ma **non prende un numero suo**: i numeri di riga sono la ragione
-  per cui si guarda il pannello, e nasconderne uno sarebbe stato il contrario del punto.
-- **I key point sono numerati** `note[n]:`, in una colonna da 11.5ch, e ognuno è l'ancora su cui
-  atterra il ritorno. Un key point è numerato per la stessa ragione per cui lo è un breaking change:
-  una citazione che porta dentro le Note deve poter **nominare** la diagnostica da cui veniva.
-- Il ritorno è un semplice link `#b1`: porta lo scroll **e** il focus sul titolo della diagnostica
-  (che per questo ha `tabindex="-1"`), e lascia il tasto Indietro puntato alla riga citata. **Non
-  disegna e non anima niente**: la sottolineatura dell'andata resta l'unico momento di moto.
-- **Conseguenza da ricordare**: il puntatore precede la riga citata nell'ordine del documento e
-  l'andata lascia il focus sulla riga, quindi da tastiera si raggiunge con **Shift+Tab**. È scritto
-  nel test e in `DESIGN.md`. L'unico modo di avere il Tab in avanti sarebbe mettere il puntatore
-  **sotto** l'intervallo, che è la forma che l'utente non ha scelto.
-- La citazione attiva porta con sè chi l'ha chiamata (`CiteOrigin` in `citation-context.tsx`): è
-  quello il pezzo nuovo, il resto è resa. `DESIGN.md` lo registra sotto **Source View** ("The way
-  back") e **Note Lines**, e `design/mocks/release.html` lo mostra per tutte e due le severità.
-
-**La #83 è verificata in produzione**, su `/technologies/vite`: il campo arriva precompilato con
-`7.3.6` senza che nessuno abbia chiesto niente, la riga sotto dice perché, il verdetto è
-`note: 3 to check`, il gruppo `v8 29 releases` comprende la `8.0.0` (il punto della regola scelta) e
-in fondo c'è `--> show all 79 releases`. I due campi partono dallo stesso bordo sinistro.
-⚠️ **Il controllo a 390px non è riuscito**: il ridimensionamento della finestra non ha cambiato il
-viewport. La larghezza telefono resta coperta dagli E2E (`overflow.spec.ts` e `technology.spec.ts`
-girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparire sotto i 640px.
-
-**Le decisioni già prese con l'utente, da non riaprire.** Le tre issue scelte (#85, #86, #87) sono
-tutte fatte, e con loro le due box della Dashboard e la #100. **La #93 è `v6`**, non `v5`: il `v5` se
-l'è preso la #87, e il titolo della issue su GitHub dice ancora "Prompt v5", da correggere prima che
-qualcuno la prenda.
-
-**Niente è più deciso in anticipo.** Il lavoro seguente si sceglie fra le strade aperte qui sotto, e
-**nessuna è `ready-for-agent`**: la #100 era l'ultima.
-
-**La #83, com'è stata fatta.** La **Versione** di partenza ricavata è **l'ultima Release stabile
-della major precedente**, scelta dall'utente fra tre: è l'unica il cui Cammino contiene sempre la
-Release che apre la major, cioè dove stanno i cambiamenti che rompono. Da non rifare e da non
-ridiscutere:
-
-- La regola sta in `CONTEXT.md` sotto **Cammino di upgrade** e **Versione in uso**, la resa in
-  `DESIGN.md` sotto "Upgrade Path Form", e il mock `design/mocks/technology.html` ha lo stato nuovo
-  nel selettore "page state".
-- `defaultUpgradeStart` è dominio puro in `src/modules/releases/domain/default-upgrade-start.ts`.
-  Sotto una sola major vale la stabile più vecchia; con una sola Release stabile **non c'è Cammino**
-  e la pagina resta la lista, invece di un cammino vuoto o di un errore.
-- **Il valore ricavato è calcolato sul server** e passato al fallback del `Suspense`, perchè il
-  Cammino sta così nell'HTML della cache ISR. Prima esisteva solo dopo l'hydration, cioè proprio il
-  Visitor arrivato da una ricerca non lo vedeva mai. Per questo la resa è stata spezzata in
-  `ui/upgrade-path.tsx` (presentazionale, `UpgradePathBlock`) e `ui/upgrade-path-view.tsx` (il client
-  che legge `?from=`): le due rese devono restare la stessa, altrimenti si vede uno sfarfallio.
-- **Un `?from=` vuoto non è più un errore**: è il modo in cui il form chiede lo Storico intero, ed
-  è dove porta il `--> show all 77 releases` in fondo al Cammino. Scelta deliberata: con un valore
-  predefinito, svuotare il campo è come si chiede tutto, e un errore lì sarebbe ostile. Il ramo
-  "valore vuoto" di `invalidMessage` resta però vivo, perchè la **Versione in uso** lo usa ancora.
-- **Fuori scope di proposito**: su una Versione malformata la pagina continua a mostrare la lista
-  piena, come prima, invece di ripiegare sul cammino ricavato. Meno pezzi in movimento e nessuna
-  copia nuova da inventare.
-- **In più, su richiesta dell'utente** (`docs/align.JPG`): `Version in use` e `Upgrade from` avevano
-  etichette di lunghezza diversa e i campi partivano sfalsati. Ora condividono una colonna da 14ch,
-  `VERSION_LABEL_CLASS`, registrata in `DESIGN.md` sotto Upgrade Path Form e Version in Use.
-
 ### Il flake sui follow è chiuso, e la causa era una sola
 
 Era il flake che tornava da sessioni, su una corsa completa su due, in due test:
@@ -310,13 +310,30 @@ con i retry locali a 0, cioè senza la rete di sicurezza che in CI mascherava il
 
 ### Le strade aperte
 
-Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e **non ce n'è più
+⚠️ **Le issue sono sospese per scelta dell'utente** (2026-10-06): "lasciamo perdere le issue, ci
+torneremo quando avrò soldi sul conto". Non proporne una come lavoro seguente finché non lo rilancia
+lui. Quello che si è fatto dopo quella frase è nato dalle sue richieste dirette, senza issue.
+
+Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e **non ce n'è
 nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via dell'utente. Sono tutte
 `ready-for-human`: **#93** (prompt **v6**, con la terza uscita sulle note giudicabili) e **#57**
-(Haiku invece di Opus) **spendono** su Anthropic; **#65**, tecnica, serve solo il via; **#80** (tocca
-GitHub e npm, non Anthropic, ma genera Sintesi a valle); **#26** la landing page, ferma sul nome del
-prodotto; **#69** esplicitamente dopo il lancio. La **#64** era di questo gruppo, ed è fatta: manca
-solo la PR.
+(Haiku invece di Opus) **spendono** su Anthropic; **#65**, tecnica, serve solo il via, e adesso va
+letta insieme allo stage (vedi lo Stato: la strada 1 potrebbe non servire più); **#80** (tocca GitHub
+e npm, non Anthropic, ma genera Sintesi a valle, quindi **a costo zero solo scegliendo la strada 1 o
+la 3** della issue); **#26** la landing page, ferma sul nome del prodotto; **#69** esplicitamente
+dopo il lancio.
+
+**Fuori dalle issue, due cose vive e non decise**, nate in chat il 2026-10-06 e scritte nello Stato:
+l'**exit code di `catalog:sync`** quando una Fonte è giù per davvero, e l'**ordine stage / #65** con
+l'ADR da scrivere quando ci si arriverà.
+
+**Chiesto e fermato dall'utente: l'audit visivo dell'app.** Aveva chiesto di lanciare una taste skill
+per vedere se l'app potesse diventare più bella senza intaccare il funzionamento, poi ha detto
+"fermati" a lettura appena iniziata. **Non è stata scritta nessuna proposta e nessun file è stato
+toccato.** Due cose da sapere se si riprende: quelle skill sono scritte per landing page e portfolio
+e dichiarano **fuori scope** le UI di prodotto come questa, quindi serve solo la loro parte di
+*audit* (modalità redesign-preserve) e **`DESIGN.md` resta la legge**; e il dev server va chiuso a
+fine giro, perché quello avviato per guardare le pagine era rimasto vivo.
 
 Il primo comando della sessione nuova:
 
@@ -347,6 +364,10 @@ cosa era stata decisa.
   - ⚠️ Le pagine della Release restano vecchie un'ora: sono ISR e la cache ignora l'antichache
   - ⚠️ `curl | python` decodifica in cp1252 e fa sparire il conteggio dei trattini lunghi
   - ⚠️ `workflow_dispatch` si risolve solo dal branch di default
+- Stato al 2026-10-06 (sera): la #85 e la #83 verificate in produzione (PR #101)
+  - ⚠️ Un push su `main` annulla la CI in corso
+  - ⚠️ Il controllo a 390px non riesce ridimensionando la finestra: il viewport non cambia
+  - La Versione di partenza ricavata e le scelte di forma della #85, da non riaprire
 - Stato al 2026-10-06: la #88 e la #94 chiuse (PR #96 e #97)
   - ⚠️ Il 2026-10-06 il token di Supabase è stato abbandonato, non sostituito
 - Stato al 2026-10-03: la #47 e la #84 chiuse
@@ -516,6 +537,11 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   `<<'EOF'`. Una classe di caratteri come quella dei controlli nelle regex arriva nel file con una barra
   in meno e il test fallisce con un errore incomprensibile. Per file con barre rovesciate usare gli
   strumenti di modifica, non l'heredoc.
+- ⚠️ **Due shell, due sintassi.** Bash e PowerShell sono due strumenti distinti: la here-string di
+  PowerShell (`@'...'@`) dentro Bash non è una citazione, e il 2026-10-06 ha messo `@` come titolo di
+  un commit. Per un messaggio su più righe: heredoc in Bash (`-F - <<'EOF'`), here-string in
+  PowerShell. E **guardare il messaggio prima del push** (`git log -1 --format=%B`): lì si rimedia con
+  un `--amend`, dopo no.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
