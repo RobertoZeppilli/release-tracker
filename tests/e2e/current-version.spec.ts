@@ -130,7 +130,11 @@ test.describe("the Version in use", () => {
     await declare(page, "1.0.0");
 
     await page.goto("/dashboard");
-    await expect(page.getByText(new RegExp(`In use on 1 of 1: 3 releases behind · 1 needs action · oldest declared ${TODAY.source}\.`))).toBeVisible();
+    const inUse = page.getByTestId("in-use-counts");
+    await expect(inUse).toContainText("version in use · 1 of 1");
+    await expect(inUse.getByRole("listitem").filter({ hasText: "releases behind" })).toContainText("3");
+    await expect(inUse.getByRole("listitem").filter({ hasText: "needs action" })).toContainText("1");
+    await expect(inUse.getByRole("listitem").filter({ hasText: "oldest declared" })).toContainText(TODAY);
     const entry = page.getByRole("region", { name: /spotlight/ }).getByRole("listitem").filter({ hasText: technology.name });
     await expect(entry).toContainText(new RegExp(`in use 1\.0\.0 since ${TODAY.source} · 3 releases behind 2\.0\.0 · 1 needs action`));
   });
