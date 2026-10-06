@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Plus } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useFollows } from "./follows-provider";
 
 const BASE =
@@ -29,13 +30,28 @@ export function FollowToggle({
   errorId?: string;
 }) {
   const follows = useFollows();
+  const button = useRef<HTMLButtonElement>(null);
   const following = follows.isFollowing(technologyId);
   const pending = follows.isPending(technologyId);
   const blocked = !following && follows.atLimit;
   const describedBy = [blocked ? LIMIT_NOTE_ID : null, errorId].filter(Boolean).join(" ");
 
+  // A press moves the row to another section, so this button is torn down and built again there and
+  // the browser drops the focus on the body. Taking it back is what keeps the place of the press
+  // (issue #64): the keyboard lands where it was and the page scrolls to where the row went, which
+  // is the whole reason the row is allowed to move. It runs again when the database refuses and the
+  // row comes back. Nothing is taken from a focus that is still somewhere, so the Technology page
+  // and the Dashboard shortlist, where no row moves, are untouched.
+  const press = follows.pressedAt(technologyId);
+  useEffect(() => {
+    if (press === null) return;
+    const active = document.activeElement;
+    if (active === null || active === document.body) button.current?.focus();
+  }, [press, following]);
+
   return (
     <button
+      ref={button}
       type="button"
       aria-pressed={following}
       aria-label={`${following ? "Unfollow" : "Follow"} ${name}`}

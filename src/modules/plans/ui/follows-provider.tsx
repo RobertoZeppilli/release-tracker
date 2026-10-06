@@ -18,6 +18,9 @@ export type Follows = {
   isFollowing: (technologyId: string) => boolean;
   toggle: (technologyId: string) => void;
   isPending: (technologyId: string) => boolean;
+  // The tick of the last press on this Technology, and null when the last press was elsewhere: the
+  // Toggle that moved a row needs to know the press was its own to take the focus back (issue #64).
+  pressedAt: (technologyId: string) => number | null;
   rejectionOn: (technologyId: string) => FollowRejection | null;
   // The Version in use, declared on the follow: absent until the Developer declares one.
   currentVersionOf: (technologyId: string) => CurrentVersion | null;
@@ -64,6 +67,9 @@ export function FollowsProvider({
 // refusal are two components, and a mutation of its own for each would keep the refusal to itself.
 function FollowsScope({ developerId, children }: { developerId: string | null; children: React.ReactNode }) {
   const client = useQueryClient();
+  // A tick and not a flag, because pressing the same row twice has to count twice: the row goes
+  // back where it came from, and the focus is lost again on the way.
+  const [press, setPress] = useState<{ technologyId: string; tick: number } | null>(null);
   const { data: follows = [] } = useQuery({
     queryKey: FOLLOWS_KEY,
     queryFn: fetchFollows,
@@ -114,9 +120,12 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
     // Nothing is written for somebody the browser has not identified: no control that could ask for
     // it is on the page, and a write would be refused anyway.
     toggle: (technologyId) => {
-      if (developerId) mutation.mutate({ technologyId, follow: !following.has(technologyId) });
+      if (!developerId) return;
+      setPress((previous) => ({ technologyId, tick: (previous?.tick ?? 0) + 1 }));
+      mutation.mutate({ technologyId, follow: !following.has(technologyId) });
     },
     isPending: (technologyId) => mutation.isPending && mutation.variables?.technologyId === technologyId,
+    pressedAt: (technologyId) => (press?.technologyId === technologyId ? press.tick : null),
     rejectionOn: (technologyId) => (technologyId === rejected ? rejection : null),
     currentVersionOf: (technologyId) => following.get(technologyId)?.currentVersion ?? null,
     declare: (technologyId, version) => {

@@ -16,7 +16,60 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, sera).** **La #100 è chiusa**, con la **PR #105**, unita su `main`
+**Da dove ripartire (2026-10-06, sera tardi).** **La #64 è fatta**, sul branch
+`64-follow-moves-the-row`, **non ancora committata**: commit, push e PR aspettano il via dell'utente.
+La issue era `ready-for-human` e la scelta è stata presa con lui in chat, sulla **strada 3**: la riga
+si sposta subito, il focus la segue, **niente animazione**.
+
+**Perché la strada 3 adesso.** Il 2026-10-03 era stata scelta la **strada 1** (lasciare la riga dov'è
+e rendere onesti i conteggi), fatta con la PR #91 dentro la #47. Quella sessione aveva scritto il
+criterio per il passo dopo: *se dopo i conteggi onesti la lamentela sopravvive, il passo seguente è
+la strada 3, non la 2*. La lamentela è sopravvissuta, con queste parole dell'utente: "si ma devo
+comunque aggiornare per vederla nei seguiti". Quindi il criterio era già deciso e non è stato
+ridiscusso: si è discussa solo **la forma**, perché la strada 3 tocca una regola di sistema
+(`DESIGN.md` dichiara **un solo momento di moto**, la sottolineatura dei caret, e lo mette fra i
+"Do"). L'utente ha scelto lo **spostamento istantaneo senza moto**, scartando la variante col
+richiamo che si accende sulla riga arrivata.
+
+**Il capovolgimento è registrato dove stava la decisione di prima**: `DESIGN.md`, "Picker Sections
+(Technologies)", che adesso racconta i due passi e il perché del secondo. Era il criterio più scomodo
+della issue, e la strada 1 lo aveva evitato perché non rovesciava niente.
+
+**Com'è stata fatta.** Il dominio non è stato toccato: `liveSections` sapeva già dove ogni riga
+appartiene, e serviva solo passarlo alla resa invece che ai soli conteggi.
+
+- `technology-picker.tsx` rende `live.following` e `live.catalog`. **`retired` resta lo scatto del
+  server**: una ritirata lasciata andare non appartiene più a nessuna sezione e deve restare lì a
+  dirlo, quindi è l'unica riga che ancora non si muove (e l'unica che passa ancora `belong`).
+- **Il focus è quello che paga lo spostamento.** Il toggle è un nodo nuovo nella sezione nuova, e il
+  browser lascia il focus sul body: `pressedAt` nel provider (un **tick**, non un flag, perché
+  premere due volte la stessa riga deve contare due volte) dice al toggle che la pressione era sua, e
+  lui se lo riprende. Se lo riprende anche **quando il database rifiuta** e la riga torna indietro,
+  che era un buco della forma vecchia. Non ruba niente a un focus che sta ancora da qualche parte,
+  quindi la pagina Technology e la scorciatoia della Dashboard vuota non cambiano.
+- **La nota "si sposta alla prossima visita" è sparita**, con tutta la variante `note` della Row
+  Status Line: diceva una cosa che adesso fa la riga stessa. Restava una sola variante, quindi la
+  geometria è rientrata in `follow-rejection-note.tsx` e `row-status-line.tsx` è cancellato. In
+  `DESIGN.md` il titolo torna **"Row Error Line"**, con scritto perché la variante è uscita.
+- Il mock `technologies.html` si comporta come la pagina: dipinge le liste dai follow invece di
+  rattoppare le righe dove stanno, e rimette il focus. Lo stato `moved` del selettore "page state"
+  **non esiste più**: non c'è più niente di statico da mostrare, lo si vede premendo un toggle.
+- Il diff è **-41 righe**: lo spostamento ha tolto più codice di quanto ne abbia aggiunto, perché
+  conteggi e righe non devono più essere tenuti d'accordo a mano.
+
+**Verifiche fatte**: `lint` e `typecheck` puliti, **533 unitari**, **63 di integrazione**, **152 E2E**
+(151 prima, più quello nuovo) **con zero flaky**. Nel browser, mock e app nei **due temi**: la riga
+passa in `following`, `following (6)` / `catalog (31)` / `framework (5)` d'accordo fra loro, il focus
+resta sul toggle spostato e il giro di ritorno rimette tutto com'era. Il database locale è stato
+lasciato com'era (5 follow).
+
+**Tre test E2E in `technologies.spec.ts`** tengono fermo il comportamento: la riga si sposta al
+follow, torna all'unfollow, e **"the press keeps its place when the row moves, in both directions"**,
+che preme da tastiera e pretende il focus sul toggle nella sezione nuova.
+
+**Da fare dopo il merge**: guardarlo in produzione, che è il posto dove la lamentela è nata.
+
+**Lo stato precedente (2026-10-06, sera).** **La #100 è chiusa**, con la **PR #105**, unita su `main`
 (`9b91fab`): l'issue si è chiusa da sola col `Closes #100`, e il branch `a11y-upgrade-path-wait` è
 cancellato in locale e su GitHub. `Deploy database` verde. **Niente da verificare in produzione**: il
 lavoro tocca un solo file di test e nessuna riga di `src/`. **Le due box della Dashboard sono
@@ -249,12 +302,13 @@ con i retry locali a 0, cioè senza la rete di sicurezza che in CI mascherava il
 
 ### Le strade aperte
 
-Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e con la #100
-chiusa **non ce n'è più nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via
-dell'utente. Sono tutte `ready-for-human`: **#93** (prompt **v6**, con la terza uscita sulle note giudicabili) e
-**#57** (Haiku invece di Opus) **spendono** su Anthropic; **#65** e **#64**, tecniche, serve solo il
-via; **#80** (tocca GitHub e npm, non Anthropic, ma genera Sintesi a valle); **#26** la landing page,
-ferma sul nome del prodotto; **#69** esplicitamente dopo il lancio.
+Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e **non ce n'è più
+nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via dell'utente. Sono tutte
+`ready-for-human`: **#93** (prompt **v6**, con la terza uscita sulle note giudicabili) e **#57**
+(Haiku invece di Opus) **spendono** su Anthropic; **#65**, tecnica, serve solo il via; **#80** (tocca
+GitHub e npm, non Anthropic, ma genera Sintesi a valle); **#26** la landing page, ferma sul nome del
+prodotto; **#69** esplicitamente dopo il lancio. La **#64** era di questo gruppo, ed è fatta: manca
+solo la PR.
 
 Il primo comando della sessione nuova:
 
