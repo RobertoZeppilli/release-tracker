@@ -16,46 +16,41 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte): la #86 e' a meta', sul branch `issue-86-catalog-categories`,
-non committata.** I quattro nodi HITL sono stati sciolti con l'utente e **non vanno riaperti**:
+**Da dove ripartire (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
+(`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
+Prossimo lavoro: la **#87** (il trattino lungo nelle Sintesi), poi le due box della Dashboard.
+
+**La #86 è verificata in produzione**, su `/technologies`: il Catalogo è `catalog (31)` diviso nei
+dieci generi, e la somma dei gruppi fa 31 (`language 1`, `runtime 3`, `framework 6`, `server framework 4`,
+`database 2`, `build tool 2`, `testing 4`, `lint and formatting 3`, `library 4`, `platform 2`: i sei
+seguiti mancano perché stanno in `following`, che non è raggruppata). Con `?filter=test` legge
+`3 of 37 match`, `catalog (3 of 31)` e lascia il solo gruppo `testing (3 of 4)`.
+⚠️ **La migrazione è andata in produzione prima del merge**, col dispatch di `deploy-database.yml`
+sul branch della PR (run 37463104730, lanciato dall'utente: il classificatore lo blocca all'agente).
+È la via da riusare per ogni migrazione futura, e funziona perché il workflow fa il checkout del ref
+che gli si dà. La dashboard di Supabase non serve.
+
+**I quattro nodi HITL della #86, decisi con l'utente. Da non riaprire:**
 
 1. **`library` resta un genere**, definito in positivo in `CONTEXT.md` (si importa nel codice, non
    detta la forma del progetto come un `framework`, non gira da fuori come un `build tool`). Niente
    gruppo "altro", niente spacchettamento in `styling`/`state management`/`validation`/`http client`.
-2. Nome inglese canonico: **`category`** (`kind` era gia' preso da `Source.kind`).
+2. Nome inglese canonico: **`category`** (`kind` era già preso da `Source.kind`).
 3. Il genere compare **solo su `/technologies`**: non sulla pagina Technology, non sulla Dashboard.
-4. Col filtro, **un gruppo senza corrispondenze si nasconde**, come gia' fa una sezione; il titolo
+4. Col filtro, **un gruppo senza corrispondenze si nasconde**, come già fa una sezione; il titolo
    `catalog` continua a contare su tutto il Catalogo.
 
-In piu', deciso da me con la ragione scritta in `DESIGN.md`: la sezione `catalog` **tiene il suo
+In più, deciso da me con la ragione scritta in `DESIGN.md`: la sezione `catalog` **tiene il suo
 titolo e il suo conteggio** (e la Limit Note sotto), e i dieci generi sono `<h3>` con lo stesso
-Section Title un livello piu' in basso; l'ordine dei generi non e' alfabetico ma quello di
+Section Title un livello più in basso; l'ordine dei generi non è alfabetico ma quello di
 `CONTEXT.md`, dal linguaggio alla piattaforma.
 
-**Fatto e verificato** (unitari 528 verdi, `pnpm lint` e `pnpm typecheck` puliti):
-`CONTEXT.md` (voce **Genere** + riga nella tabella), `category` in `CatalogFileSchema` e nei **37
-file** `catalog/*.json`, la migrazione `20261006112355_catalog_categories.sql` (enum
-`technology_category`, colonna, backfill per slug, un `DO` che si ferma con un messaggio leggibile
-se una Technology resta senza genere, poi `set not null`), `groupByCategory` in
-`plans/domain/picker.ts`, la UI spezzata in `plans/ui/picker-section.tsx`, il mock
-`design/mocks/technologies.html` (ora sui 37 veri, raggruppati) e `DESIGN.md` ("Category Groups").
-**Provata nel browser** su localhost:3000: `catalog (3 of 37)` col filtro `test` lascia solo
-`testing (3 of 4)`, e seguendo una riga i conteggi diventano `catalog (2 of 36)` e `testing (2 of 3)`
-con la riga ferma dov'e'. **Provato anche il percorso vero della migrazione** rigiocando il backfill
-su 37 righe gia' esistenti (37 aggiornate, nessuna orfana) e il ramo di errore del `DO`.
-
-**Gli E2E sono scritti e la casa e' pulita**: `technologies.spec.ts` ha due test nuovi (il Catalogo
-raggruppato con `following` e `retired` che restano una lista sola, e il gruppo senza corrispondenze
-che sparisce mentre il conteggio resta su tutto il Catalogo). Le fixture di E2E e di integrazione
-dichiarano una `category`: il fixture principale e' una `library`, i filler un `platform`, cosi' un
-test puo' dire in che gruppo sta la sua riga. **528 unitari, 63 di integrazione e 150 E2E verdi**,
-`lint` e `typecheck` puliti. Nessun flake in questa corsa.
-
-**La #86 e' sulla PR #102**, dal commit `0264ecd`. Manca solo: applicare la migrazione a
-produzione, poi il merge, poi la verifica in produzione.
-⚠️ **La migrazione va applicata a produzione prima del merge** (i preview usano il database di
-produzione: schema prima, codice dopo).
-⚠️ Il `db:reset` cancella l'utente locale: `pnpm dev:login` lo ricrea.
+**Com'è stata fatta**: `category.ts` tiene l'insieme chiuso dei dieci generi e il loro ordine, la
+migrazione `20261006112355_catalog_categories.sql` ha enum, backfill per slug e un `DO` che si ferma
+con un messaggio leggibile se una Technology resterebbe senza genere, `groupByCategory` sta nel
+dominio del picker e la resa in `plans/ui/picker-section.tsx`. Le fixture di E2E e di integrazione
+dichiarano una `category` (il fixture principale è una `library`, i filler un `platform`). Alla
+chiusura: 528 unitari, 63 di integrazione, 150 E2E, nessun flake in quella corsa.
 
 **Lo stato precedente (2026-10-06, sera).** **La #85 è chiusa**, con la **PR #101**, unita su `main`
 (`1fc8af5`), e il branch è cancellato in locale e su GitHub. `CI` verde su `main`, `check` e
@@ -110,26 +105,15 @@ in fondo c'è `--> show all 79 releases`. I due campi partono dallo stesso bordo
 viewport. La larghezza telefono resta coperta dagli E2E (`overflow.spec.ts` e `technology.spec.ts`
 girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparire sotto i 640px.
 
-**Le decisioni già prese con l'utente, da non riaprire.** Delle tre issue scelte la prima, la #85, è
-fatta (sopra). Restano le altre due, in quest'ordine, una per branch e per PR:
+**Le decisioni già prese con l'utente, da non riaprire.** Delle tre issue scelte restano solo la
+#87 e, dopo, le box della Dashboard. La #85 e la #86 sono fatte (sopra).
 
-1. **#86** (generi del Catalogo): **dieci generi a grana fine**, curati **da noi** nel file
-   `catalog/<slug>.json`, non presi dalla Fonte. `language` (typescript, rust), `runtime` (nodejs,
-   deno, bun), `framework` (angular, astro, next, nuxt, react, svelte, sveltekit, vue),
-   `server framework` (express, fastify, nestjs, trpc), `database` (prisma, drizzle-orm),
-   `build tool` (vite, webpack, turborepo, pnpm), `testing` (vitest, jest, playwright, storybook),
-   `lint and formatting` (eslint, prettier, biome), `library` (axios, zod, tailwindcss, zustand,
-   redux-toolkit), `platform` (electron, terraform). ⚠️ **Nodo ancora aperto**: `library`
-   raccoglie cinque Technologies che non hanno in comune altro che non stare nelle altre nove
-   caselle, e la issue vieta il gruppo "altro". Da sciogliere con l'utente **prima** di scrivere il
-   codice: o lo si spacca (`styling`, `state management`, `validation`, `http client`), o si scrive
-   in `CONTEXT.md` perchè `library` è un genere e non un residuo.
-2. **#87** (trattino lungo nelle Sintesi): **solo il prompt**, cioè divieto in `title`, `keyPoints` e
-   `breakingChanges` con le `quote` escluse, `PROMPT_VERSION` a **v5**, e un test unitario sul testo
-   del prompt. **Zero spesa.** Il conteggio delle Sintesi già scritte **lo lancia l'utente** su
-   produzione con una query che gli va preparata: `.env.local` punta al database locale, che di
-   `ready` non ne ha nessuna. Che farne si decide dopo, col numero davanti. ⚠️ Se la #87 prende
-   il `v5`, **la #93 diventa v6**: le due issue se lo contendono.
+**#87** (trattino lungo nelle Sintesi): **solo il prompt**, cioè divieto in `title`, `keyPoints` e
+`breakingChanges` con le `quote` escluse, `PROMPT_VERSION` a **v5**, e un test unitario sul testo del
+prompt. **Zero spesa.** Il conteggio delle Sintesi già scritte **lo lancia l'utente** su produzione
+con una query che gli va preparata: `.env.local` punta al database locale, che di `ready` non ne ha
+nessuna. Che farne si decide dopo, col numero davanti. ⚠️ Se la #87 prende il `v5`, **la #93
+diventa v6**: le due issue se lo contendono.
 
 **Poi, e solo dopo quelle**: le **due box della Dashboard**, che l'utente ha chiesto il 2026-10-06
 guardando `docs/Cattura.JPG` (fuori da git). Una box per i conteggi della finestra e una per la In
@@ -199,7 +183,7 @@ appartiene alla #85, dov'è stato notato. Si riproduce di più a `.next` cancell
 
 ### Le strade aperte dopo la #85
 
-Dopo la #86, la #87 e le box della Dashboard restano la **#100** (il flake qui sopra) e:
+Dopo la #87 e le box della Dashboard restano la **#100** (il flake qui sopra) e:
 **#93** (prompt v5, o v6, con la terza uscita sulle note giudicabili) e **#57** (Haiku invece di Opus), tutte e due **spendono** su
 Anthropic; **#65** e **#64**, tecniche, serve solo il via; **#80** (tocca GitHub e npm, non
 Anthropic, ma genera Sintesi a valle); **#26** la landing page, ferma sul nome del prodotto; **#69**
@@ -208,7 +192,7 @@ esplicitamente dopo il lancio.
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, prendiamo la #86
+leggi docs/HANDOFF.md, prendiamo la #87
 ```
 
 ---
