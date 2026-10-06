@@ -1,0 +1,71 @@
+# Issue #87, one-off: count the ready Summaries that carry an em dash, and in which field.
+# Read-only, dispatch only, and it spends nothing. Delete it once the count is recorded.
+name: Query em dash
+
+on:
+  workflow_dispatch:
+
+jobs:
+  count:
+    runs-on: ubuntu-latest
+    steps:
+      # Same composition as `deploy-database.yml`: the connection string is the only credential a
+      # query needs, so no personal access token is involved. Session mode on 5432.
+      - name: Count the em dashes
+        env:
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_ID }}
+          DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          encoded=$(jq -rn --arg password "$DB_PASSWORD" '$password|@uri')
+          echo "::add-mask::$encoded"
+          url="postgresql://postgres.$PROJECT_REF:$encoded@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
+          # `chr(8212)` is the em dash, written this way so the character itself is nowhere in the repo.
+          psql "$url" -v ON_ERROR_STOP=1 <<'SQL'
+          with dash as (select '%' || chr(8212) || '%' as p)
+          select
+            count(*) as ready_total,
+            count(*) filter (where s.content->>'title' like d.p) as in_title,
+            count(*) filter (where exists (
+              select 1 from jsonb_array_elements(s.content->'keyPoints') kp where kp->>'text' like d.p
+            )) as in_key_point_text,
+            count(*) filter (where exists (
+              select 1 from jsonb_array_elements(s.content->'breakingChanges') bc
+              where bc->>'change' like d.p or bc->>'migration' like d.p
+            )) as in_breaking_change,
+            -- Outside the ban: a quote is copied from the notes, so a dash in there is not ours.
+            count(*) filter (where exists (
+              select 1 from jsonb_array_elements(s.content->'keyPoints') kp where kp->>'quote' like d.p
+            ) or exists (
+              select 1 from jsonb_array_elements(s.content->'breakingChanges') bc where bc->>'quote' like d.p
+            )) as in_quotes_only_fyi
+          from public.summaries s cross join dash d
+          where s.status = 'ready';
+
+          with dash as (select '%' || chr(8212) || '%' as p)
+          select
+            t.slug,
+            r.version,
+            s.prompt_version,
+            s.content->>'title' like d.p as title,
+            exists (
+              select 1 from jsonb_array_elements(s.content->'keyPoints') kp where kp->>'text' like d.p
+            ) as key_points,
+            exists (
+              select 1 from jsonb_array_elements(s.content->'breakingChanges') bc
+              where bc->>'change' like d.p or bc->>'migration' like d.p
+            ) as breaking_changes
+          from public.summaries s
+          join public.releases r on r.id = s.release_id
+          join public.technologies t on t.id = r.technology_id
+          cross join dash d
+          where s.status = 'ready'
+            and (
+              s.content->>'title' like d.p
+              or exists (select 1 from jsonb_array_elements(s.content->'keyPoints') kp where kp->>'text' like d.p)
+              or exists (
+                select 1 from jsonb_array_elements(s.content->'breakingChanges') bc
+                where bc->>'change' like d.p or bc->>'migration' like d.p
+              )
+            )
+          order by t.slug, r.version;
+          SQL
