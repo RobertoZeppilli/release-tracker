@@ -180,3 +180,56 @@ describe("CHANGELOG.md adapter", () => {
     await expect(createSourceAdapters({ fetch }).findNotes(changelog, ["19.2.0"])).rejects.toThrow(/404/);
   });
 });
+
+// A 504 on one page of electron's releases failed the whole Catalog import on 2026-10-06.
+describe("a Source that fails for a moment", () => {
+  const bun = { role: "detection", kind: "github-releases", repo: "oven-sh/bun", tagFormat: "bun-v{version}" } as const;
+  const releases = [githubRelease("bun-v1.4.2", "x")];
+  const version = { etag: null, versions: [{ version: "1.4.2", publishedAt: new Date("2026-03-12T10:00:00Z") }] };
+
+  // One entry per answer, in order: a status to answer with, or null for a connection that never
+  // opened. Past the last entry the Source is itself again.
+  function failingFetch(answers: readonly (number | null)[]) {
+    let asked = 0;
+    const fetch: typeof globalThis.fetch = async () => {
+      const answer = answers[asked++];
+      if (answer === undefined) return Response.json(releases);
+      if (answer === null) throw new TypeError("fetch failed");
+      return new Response("nope", { status: answer });
+    };
+    return { fetch, asked: () => asked };
+  }
+
+  function adapters(answers: readonly (number | null)[]) {
+    const { fetch, asked } = failingFetch(answers);
+    return { listVersions: createSourceAdapters({ fetch, retryDelaysMs: [0, 0] }).listVersions, asked };
+  }
+
+  it("asks again, and the second answer is the Releases", async () => {
+    const { listVersions, asked } = adapters([504]);
+    expect(await listVersions(bun)).toEqual(version);
+    expect(asked()).toBe(2);
+  });
+
+  it("asks again when the connection never opened", async () => {
+    const { listVersions, asked } = adapters([null]);
+    expect(await listVersions(bun)).toEqual(version);
+    expect(asked()).toBe(2);
+  });
+
+  // Two delays, so three asks in all, and the last failure is the one the job reports.
+  it("gives up after the last delay and fails loudly", async () => {
+    const { listVersions, asked } = adapters([504, 503, 500]);
+    await expect(listVersions(bun)).rejects.toThrow(/500/);
+    expect(asked()).toBe(3);
+  });
+
+  // A 4xx is an answer, not a moment: asking again inside seconds only repeats it.
+  it("takes a refusal for an answer and asks once", async () => {
+    for (const status of [404, 429]) {
+      const { listVersions, asked } = adapters([status, status, status]);
+      await expect(listVersions(bun)).rejects.toThrow(new RegExp(String(status)));
+      expect(asked()).toBe(1);
+    }
+  });
+});

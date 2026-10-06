@@ -9,10 +9,16 @@ import type {
   VersionListing,
 } from "../domain/source-adapters";
 import { notesTagFor, versionFromTag } from "../domain/tag-format";
+import { DEFAULT_RETRY_DELAYS_MS, retrying } from "./retrying";
 
 type Fetch = typeof fetch;
 
-export type SourceAdapterOptions = { githubToken?: string; fetch?: Fetch };
+export type SourceAdapterOptions = {
+  githubToken?: string;
+  fetch?: Fetch;
+  // One delay per retry, so the schedule is the whole policy and a test can set it to nothing.
+  retryDelaysMs?: readonly number[];
+};
 
 const NpmPackageSchema = z.object({
   versions: z.record(z.string(), z.unknown()),
@@ -36,22 +42,28 @@ const PER_PAGE = 100;
 const MAX_PAGES = 3;
 
 // Called only from server jobs, never from the client.
-export function createSourceAdapters({ githubToken, fetch = globalThis.fetch }: SourceAdapterOptions = {}): SourceAdapters {
+export function createSourceAdapters({
+  githubToken,
+  fetch = globalThis.fetch,
+  retryDelaysMs = DEFAULT_RETRY_DELAYS_MS,
+}: SourceAdapterOptions = {}): SourceAdapters {
+  // Wrapped once here, so every call below retries without knowing it does.
+  const ask = retrying(fetch, retryDelaysMs);
   return {
     async listVersions(source, etag) {
       switch (source.kind) {
         case "npm":
-          return listNpmVersions(fetch, source.package, etag);
+          return listNpmVersions(ask, source.package, etag);
         case "github-releases":
-          return listGitHubVersions(fetch, githubToken, source, etag);
+          return listGitHubVersions(ask, githubToken, source, etag);
       }
     },
     async findNotes(source, versions) {
       switch (source.kind) {
         case "github-releases":
-          return findGitHubReleaseNotes(fetch, githubToken, source, versions);
+          return findGitHubReleaseNotes(ask, githubToken, source, versions);
         case "changelog":
-          return findChangelogNotes(fetch, source, versions);
+          return findChangelogNotes(ask, source, versions);
       }
     },
   };
