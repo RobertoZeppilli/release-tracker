@@ -15,9 +15,11 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 **Da dove ripartire (2026-10-06, mattina).** **La #88 e la #94 sono chiuse**, con le PR #96 e #97,
 unite e con `CI` e `Deploy database` verdi su `main`. Prima di loro erano state chiuse la #47 e la #84.
-⚠️ **Della #94 resta da guardare una cosa sola**: la Dashboard sta dietro il login, quindi la verifica
-in produzione la fa l'utente. Sulla sua schermata, quella della issue, deve leggersi `warning: 2 need
-action` invece di `ok: nothing needs action`, e `1 preview` al singolare nella riga dei conteggi.
+**Anche la #94 è verificata in produzione**, sulla schermata dell'utente: `warning: 3 need action` in
+testa e `3 need action` sulla riga `In use`, con `0 featured` nella finestra, cioè il verdetto viene
+tutto dal Cammino di upgrade, che prima non guardava. Nessuna parentesi accanto allo zero `featured`,
+e nessuna contraddizione. Il `1 preview` al singolare lì non è osservabile, perché le Anteprime sono
+due: quella parte è coperta dai test.
 
 **La #88, com'è stata fatta.** Il vincolo `summaries_ready_provenance` lega la visibilità alla
 provenienza: `status = 'ready'` implica `content`, `model` e `prompt_version`. Da ricordare:
@@ -59,6 +61,43 @@ giudicare; e `1 previews` **corretto** in `1 preview`.
 
 **Non fatto di proposito**: il mock `design/mocks/dashboard.html` non ha lo stato nuovo del verdetto.
 `DESIGN.md` lo descrive; aggiungerlo al mock è una scelta dell'utente, non un debito nascosto.
+
+### ⚠️ Il 2026-10-06 il token di Supabase è stato abbandonato, non sostituito
+
+Alle **07:26** il job `migrations` di `deploy-database.yml` ha cominciato a fallire su `supabase link`
+con `FGA Authentication Error. Unauthorized`. Alle **07:16** lo stesso job era passato, sul merge della
+#97, con lo stesso workflow e lo stesso `project-ref`, e in mezzo nel repository era cambiato un solo
+file di documentazione.
+
+**Quello che è stato escluso, per non rifarlo:**
+
+- **Non è il token scaduto.** Ne sono stati provati quattro: quello del 29/09, uno scoped, uno con
+  **accesso pieno** all'account, e un quarto riscritto dalla clipboard per escludere spazi e newline.
+  Tutti rifiutati allo stesso modo. Il controllo di formato del CLI li accettava, quindi erano
+  `sbp_…` ben formati: li respingeva l'autorizzazione.
+- **Non sono i permessi**, visto che l'accesso pieno fallisce uguale.
+- **Non è il progetto né l'account**: `supabase projects list` dalla macchina locale risponde,
+  elenca `frbddunuaetoufsivwwu` come `ACTIVE_HEALTHY`, e anche `supabase link` in locale funziona.
+  Quello che funziona in locale è la **sessione** salvata da `supabase login`, non un token personale.
+- **Non è un guasto dichiarato**: status.supabase.com dava tutto operativo.
+
+**La via d'uscita, già in piedi.** `supabase link` serviva solo a risolvere dove sta il progetto, e
+`db push` ha bisogno della sola stringa di connessione, che è la credenziale con cui le migrazioni
+girano comunque. Il workflow ora la compone dai segreti che c'erano già, `SUPABASE_PROJECT_ID` e
+`SUPABASE_DB_PASSWORD`: **nessun segreto nuovo**, e `SUPABASE_ACCESS_TOKEN` non è più usato da nessuna
+parte. L'indirizzo è `postgresql://postgres.<ref>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`,
+**porta 5432, Session pooler**: sul 6543 una migrazione non gira, perché le serve una sessione. La
+password è codificata con `jq @uri` e la forma codificata è mascherata con `::add-mask::`, perché
+GitHub nasconde il segreto, non una sua trasformazione.
+
+Provato con `gh workflow run deploy-database.yml --ref fix-deploy-database-without-pat`: verde, con
+`Remote database is up to date.` e il job `catalog` ripartito. ⚠️ **Il dispatch lo lancia l'utente**,
+il classificatore lo blocca all'agente.
+
+**Da ricordare per il futuro**: l'indirizzo del pooler non va cercato a mano nella dashboard. Basta
+`supabase link --project-ref <ref>` in locale, leggere `supabase/.temp/pooler-url`, e poi
+`supabase unlink`, che va fatto sempre, altrimenti il repository resta puntato sulla produzione e un
+`supabase db push` senza flag scriverebbe là.
 
 **Le strade aperte dopo la #94.** L'utente ha chiesto di contare anche le `ready-for-human`: le fa
 l'agente, le decisioni si prendono insieme. Restano fuori solo quelle che **spendono** su Anthropic,
