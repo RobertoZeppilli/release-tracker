@@ -62,8 +62,9 @@ conto diventa falso in silenzio. Vale la stessa validazione della **Versione** d
 all'ultima vuol dire già aggiornato. Una **Tecnologia ritirata** seguita può averla come le altre.
 Chi non la dichiara vede l'app come chi non l'ha mai avuta: è una dichiarazione in più, non un passo
 obbligato.
-Dove c'è, è la **Versione** di partenza predefinita del **Cammino di upgrade** di quella
-**Tecnologia**; `?from=` la scavalca per una singola occhiata e non cambia quella salvata. E per ogni
+Dove c'è, è la **Versione** di partenza del **Cammino di upgrade** di quella **Tecnologia**, e vince
+sulla **Versione** di partenza che la pagina ricaverebbe da sola; `?from=` la scavalca per una
+singola occhiata e non cambia quella salvata. E per ogni
 **Tecnologia** seguita rende calcolabili le **Release** successive e quante richiedono un
 **Intervento richiesto**, con le stesse regole del **Cammino di upgrade**: le **Release** senza
 **Sintesi** _Pronta_ e quelle le cui note non sono **Note giudicabili** non contano né come sicure
@@ -214,8 +215,15 @@ _Evitare_: newsletter, riepilogo, archivio.
 **Cammino di upgrade**:
 Le **Release** di una **Tecnologia** comprese tra una **Versione** di partenza e l'ultima **Release**
 stabile, con il conto di quelle che richiedono un **Intervento richiesto**. La **Versione** di partenza
-è quella indicata da chi legge, o la **Versione in uso** dichiarata quando c'è.
+è quella indicata da chi legge, o la **Versione in uso** dichiarata quando c'è, o, in mancanza di
+entrambe, quella che la pagina ricava da sola.
 È una vista calcolata, non salvata.
+La **Versione** di partenza ricavata è **l'ultima Release stabile della major precedente**: così il
+Cammino contiene sempre la **Release** che apre la major, che è dove stanno i cambiamenti che
+rompono. Sotto una sola major non c'è nessun salto da mostrare e al suo posto vale la **Release**
+stabile più vecchia registrata; con una sola **Release** stabile non c'è Cammino e la pagina resta la
+lista. È una proposta, non una dichiarazione: la pagina dice da dove parte e perché, e chi legge la
+scavalca con `?from=`. Un `?from=` vuoto non è un errore, chiede lo **Storico** intero.
 La **Versione** di partenza deve essere ben formata e non più recente dell'ultima **Release** stabile;
 uguale all'ultima vuol dire già aggiornato. Se non è tra le **Release** registrate (lo **Storico** copre
 solo gli ultimi 12 mesi), il Cammino si calcola comunque con le **Release** successive, con una nota e

@@ -19,6 +19,26 @@ test.afterAll(async () => {
   await technology.remove();
 });
 
+test("the path is there before anyone asks, starting from the last release of the previous major", async ({ page }) => {
+  await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
+
+  await expect(page.getByLabel("Upgrade from")).toHaveValue("1.1.1");
+  await expect(page.getByLabel("Upgrade from")).toHaveAccessibleDescription(
+    "note: starting from 1.1.1, the last release of the previous major, because no version was given.",
+  );
+  // The path covers the whole v2 line, 2.0.0 included: that is the point of starting a major back.
+  await expect(page.getByRole("heading", { name: "warning: 1 needs action" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "v2 3 releases" })).toBeVisible();
+  await expect(page.getByRole("region", { name: /^v1/ })).toHaveCount(0);
+
+  // And the whole recorded history is one pointer away.
+  await page.getByRole("link", { name: "show all 7 releases" }).click();
+  await expect(page).toHaveURL(`/technologies/${technology.slug}?from=`);
+  await expect(page.getByLabel("Upgrade from")).toHaveValue("");
+  await expect(page.getByRole("region", { name: "v1 3 releases" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /needs action|up to date/ })).toHaveCount(0);
+});
+
 test("entering a Version gives the verdict for the range and leads to its Releases", async ({ page }) => {
   await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
   await page.getByLabel("Upgrade from").fill("1.0.0");

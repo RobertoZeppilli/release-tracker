@@ -76,7 +76,7 @@ test("unavailable: no notes to open, the Source is linked instead", async ({ pag
 });
 
 test("skipped: a digest Version with build metadata opens from the folded digest row", async ({ page }) => {
-  await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
+  await page.goto(`/technologies/${technology.slug}?from=`, { waitUntil: "networkidle" });
   await page.getByText("1 digest release").click();
   await page.getByRole("link", { name: "1.8.1+build.5" }).click();
 

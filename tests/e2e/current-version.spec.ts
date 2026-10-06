@@ -117,9 +117,11 @@ test.describe("the Version in use", () => {
 
     await page.getByRole("button", { name: "Clear", exact: true }).click();
     await expect(page.getByText("not declared")).toBeVisible();
-    // With nothing declared the page is back to the plain list of Releases.
-    await expect(page.getByLabel("Upgrade from")).toHaveValue("");
-    await expect(page.getByRole("heading", { name: /needs action|up to date/ })).toHaveCount(0);
+    // With nothing declared the path falls back to the start the page derives on its own.
+    await expect(page.getByLabel("Upgrade from")).toHaveValue("1.1.1");
+    await expect(page.getByLabel("Upgrade from")).toHaveAccessibleDescription(
+      "note: starting from 1.1.1, the last release of the previous major, because no version was given.",
+    );
   });
 
   test("tells the Dashboard how far behind a followed Technology is, and since when", async ({ page }) => {

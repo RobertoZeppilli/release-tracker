@@ -1,3 +1,4 @@
+import type { DefaultStartReason } from "../domain/default-upgrade-start";
 import type { InvalidFrom, PathCounts } from "../domain/upgrade-path";
 import { isoDate } from "./release-rows";
 
@@ -59,6 +60,13 @@ function missingWords({ missing, unjudged }: PathCounts): string | null {
 // can be read for what they are worth.
 export function declaredStartNote(version: string, declaredAt: Date): string {
   return `starting from ${version}, the version you declared in use on ${isoDate(declaredAt)}.`;
+}
+
+// A start the page chose on its own: the note says which Release it is and why that one, so the
+// counts under it are not read as an answer to a question the reader asked.
+export function defaultStartNote(version: string, reason: DefaultStartReason): string {
+  const which = reason === "previousMajor" ? "the last release of the previous major" : "the oldest release recorded";
+  return `starting from ${version}, ${which}, because no version was given.`;
 }
 
 export function invalidMessage(reason: InvalidFrom, from: string, latest: string | null): string {

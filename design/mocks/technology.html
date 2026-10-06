@@ -67,7 +67,7 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 
 /* Upgrade path form */
 .range-form { margin-top: var(--space-6); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; font: 400 14px var(--mono); color: var(--text-muted); }
-.range-form label { color: var(--text-muted); }
+.range-form label, .in-use label { color: var(--text-muted); display: inline-block; width: 14ch; }
 .range-form input { width: 11ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
 .range-form input:hover { border-color: var(--text-faint); }
 .range-form input[aria-invalid="true"] { border-color: var(--breaking); }
@@ -137,6 +137,13 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .read-more .label { border-bottom: 1px dashed var(--help); }
 .read-more:hover .label { border-bottom-style: solid; }
 
+/* The way back to the whole recorded history, under the last group of the path */
+.show-all { display: none; margin: 0; }
+.show-all .help-pointer { display: inline-flex; gap: 1ch; margin-top: var(--space-3); font: 400 13px var(--mono); color: var(--help); text-decoration: none; }
+.show-all .arrow { color: var(--text-faint); }
+.show-all .label { border-bottom: 1px dashed var(--help); }
+.show-all .help-pointer:hover .label { border-bottom-style: solid; }
+
 .digest { border-bottom: 1px solid var(--rule); }
 .digest summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 11ch 1fr auto; column-gap: var(--space-4); align-items: center; padding: var(--space-2) 0; font: 400 13px var(--mono); color: var(--text-muted); }
 .digest summary::-webkit-details-marker { display: none; }
@@ -167,6 +174,9 @@ main[data-state="following"] .in-use, main[data-state="in-use"] .in-use { displa
 main[data-state="in-use"] .in-use .clear { display: inline-flex; }
 main[data-state="in-use"] .in-use .declared-note, main[data-state="in-use"] .field-note { display: block; }
 main[data-state="in-use"] .in-use .undeclared { display: none; }
+main[data-state="derived"] .derived-note { display: block; }
+main[data-state="derived"] .show-all, main[data-state="range"] .show-all,
+main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { display: block; }
 
 .verdict-safe { display: none; }
 
@@ -272,6 +282,7 @@ main[data-state="in-use"] .in-use .undeclared { display: none; }
     <span>to</span><span class="to">6.0.3</span>
     <button class="btn" type="submit">Check</button>
     <p class="field-note" id="from-note"><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 6.0.0, the version you declared in use on 2026-09-12.</p>
+    <p class="field-note derived-note" id="from-derived"><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 5.4.11, the last release of the previous major, because no version was given.</p>
     <p class="field-error" id="from-error"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href="#">5.4.0</a> or <a href="#">5.4.11</a>? The path below is still from 5.2.0.</p>
   </form>
 
@@ -420,6 +431,8 @@ main[data-state="in-use"] .in-use .undeclared { display: none; }
     </ul>
   </section>
 
+  <p class="show-all"><a class="help-pointer" href="#"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">show all 53 releases</span></a></p>
+
   <p class="foot"><span>releases detected via npm · notes from GitHub</span><span>sample content for design review</span></p>
 </main>
 
@@ -427,6 +440,7 @@ main[data-state="in-use"] .in-use .undeclared { display: none; }
   <label for="state-select">page state</label>
   <select id="state-select">
     <option value="range">upgrade path from 5.2.0</option>
+    <option value="derived">upgrade path, no version given</option>
     <option value="following">following, no version in use</option>
     <option value="in-use">following, version in use declared</option>
     <option value="invalid">invalid from version</option>
@@ -447,13 +461,13 @@ const main = document.getElementById("content");
 const fromInput = document.getElementById("from");
 const followLabel = document.querySelector(".follow-label");
 const currentVersion = document.getElementById("current-version");
-const FROM = { invalid: "5.9.0", "in-use": "6.0.0" };
+const FROM = { invalid: "5.9.0", "in-use": "6.0.0", derived: "5.4.11" };
 document.getElementById("state-select").addEventListener("change", (event) => {
   const state = event.target.value;
   main.dataset.state = state;
   fromInput.value = FROM[state] ?? "5.2.0";
   fromInput.setAttribute("aria-invalid", String(state === "invalid"));
-  fromInput.setAttribute("aria-describedby", state === "in-use" ? "from-note" : "from-error");
+  fromInput.setAttribute("aria-describedby", { "in-use": "from-note", derived: "from-derived" }[state] ?? "from-error");
   // The control only exists for a Developer who follows the Technology.
   followLabel.textContent = state === "following" || state === "in-use" ? "Following" : "Follow";
   currentVersion.value = state === "in-use" ? "6.0.0" : "";
