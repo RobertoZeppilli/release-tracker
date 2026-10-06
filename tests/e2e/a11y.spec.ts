@@ -161,14 +161,19 @@ for (const theme of THEMES) {
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(technology.name);
       await scan(page, theme);
 
+      // The path arrives on a client that reads `?from=`, while the Suspense fallback beside it is the
+      // same markup with the same ids (#83, #100): an id can name both copies while the second
+      // arrives. Waiting for the sentence that opens the path at the version asked waits for the
+      // only render that can say it, and would fail if the page ever stopped reading `?from=`.
       await page.goto(`/technologies/${technology.slug}?from=1.8.9`);
-      await expect(page.locator("#path-verdict")).toBeVisible();
+      await expect(page.getByText("Between 1.8.9 and 2.0.0 there are 2 releases")).toBeVisible();
       await scan(page, theme);
     });
 
     test("a technology page with an invalid version in the form", async ({ page }) => {
+      // Same reason as above: the refusal names the version refused, which the fallback never does.
       await page.goto(`/technologies/${technology.slug}?from=9.9.9`);
-      await expect(page.locator("#from-message")).toBeVisible();
+      await expect(page.getByText("9.9.9 is newer than 2.0.0, the latest stable release.")).toBeVisible();
       await scan(page, theme);
     });
 
