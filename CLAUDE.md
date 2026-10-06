@@ -5,7 +5,9 @@ Parla con l'utente **in italiano**.
 
 ## Leggi prima
 
-1. `docs/HANDOFF.md`: stato attuale e da dove ripartire.
+1. `docs/HANDOFF.md`: stato attuale e da dove ripartire. Il diario delle sessioni passate sta in
+   `docs/handoff/<anno>-<mese>.md`, **da non leggere per intero**: l'indice è dentro `HANDOFF.md`.
+   ⚠️ Prima di dare qualcosa per non deciso, cerca lì: `grep -rn "<parola>" docs/handoff/`.
 2. PRD: issue GitHub #1. Lavoro: issue #2 e seguenti (`gh issue list`, `gh issue view N`).
    - `ready-for-agent` = implementabile in autonomia; `ready-for-human` = fermati e chiedi.
    - Rispetta "Blocked by" e i criteri di accettazione dell'issue.
