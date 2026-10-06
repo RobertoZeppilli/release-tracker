@@ -19,6 +19,19 @@ describe("prepareSummaryRequest", () => {
     expect(result.request.system).toMatch(/only the release notes/i);
   });
 
+  // Issue #87: the em dash is forbidden in every published text of the project, and a v4 Summary
+  // put one in the title of `vite 8.0.0`. The ban lives in the prompt, so it has to be asserted there.
+  it("forbids the em dash in the fields the model writes, and spares the quotes", () => {
+    const result = prepareSummaryRequest({ ...release, notes: "Fixes" });
+    if (!result.ok) throw new Error(result.reason);
+    const emDash = "\u2014";
+    expect(result.request.system).toContain(`Never write an em dash (${emDash})`);
+    for (const field of ['"title"', '"text"', '"change"', '"migration"']) {
+      expect(result.request.system).toContain(field);
+    }
+    expect(result.request.system).toMatch(/does not apply to a "quote"/);
+  });
+
   it("names the prompt version it was built with", () => {
     expect(PROMPT_VERSION).toMatch(/^v\d+$/);
   });

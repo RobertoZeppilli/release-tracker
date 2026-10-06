@@ -16,7 +16,40 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
+**Da dove ripartire (2026-10-06, notte sul 07).** La **#87 è fatta**, sul branch
+`87-forbid-em-dash-in-summaries`, e resta solo la PR. Committato (`3196a37`): il divieto nel
+system prompt, `PROMPT_VERSION` a **v5**, e un test unitario che asserisce il divieto, i quattro
+campi nominati e l'esenzione delle `quote` (nel test il carattere è scritto con la sua sequenza di
+escape unicode, così il sorgente non ne contiene uno). 529 unitari verdi, `lint` e `typecheck`
+puliti, UI non toccata.
+⚠️ **La #93 diventa `v6`**: il `v5` se l'è preso la #87.
+
+**Il conteggio su produzione è fatto** (run 37467451186, workflow di sola lettura): **122 Sintesi
+`ready`, 3 col trattino lungo** in un campo scritto dal modello, `vite 8.0.0` e `vite 8.2.0` nel
+titolo e `pnpm 11.22.0` nella `migration` di un breaking change, più 9 che ce l'hanno solo dentro una
+`quote` e che restano come sono. **L'utente ha deciso di non spendere** i circa 6 centesimi della
+rigenerazione: i tre campi si correggono in posto, spazio-trattino-spazio diventa due punti più
+spazio. Le due righe sono in `docs/DECISIONI.md`.
+
+**Le tre Sintesi sono corrette**, l'utente ha lanciato l'SQL nel SQL Editor di produzione il
+2026-10-06 e il riconteggio ha dato `0 | 0 | 0 | 9`: zero nei tre campi che il prompt governa, e le 9
+`quote` intatte col loro trattino, come da progetto. Lo spazio-trattino-spazio è diventato due punti
+più spazio in tutti e tre i casi.
+⚠️ **Le pagine restano vecchie per un'ora**: sono ISR (`export const revalidate = 3600` in
+`technologies/[slug]/[version]/page.tsx`), e la cache di rotta **ignora il parametro antichache**, che
+torna `X-Vercel-Cache: HIT` anche con una query nuova. Subito dopo l'SQL le tre pagine mostravano
+ancora il trattino: non è un difetto, e il deploy del merge le ricostruisce comunque. Chi verifica
+guardi l'ora o il deploy, non il parametro.
+⚠️ Attenzione a come si legge una pagina di produzione da qui: `curl | python` decodifica in cp1252 e
+fa **sparire** il conteggio dei trattini lunghi. Va salvato il file e riletto in UTF-8.
+
+**Il workflow della lettura se ne va col merge.** `.github/workflows/query-em-dash.yml` era finito su
+`main` (`7a73745`) perché `workflow_dispatch` si risolve solo dal branch di default; la PR della #87
+porta `main` dentro il branch e lo cancella, così non serve nessun commit diretto su `main`. Il file
+della versione che correggeva da sola, e l'SQL incollato a mano, sono rimasti nello scratchpad della
+sessione, fuori dal repo.
+
+**Lo stato precedente (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
 (`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
 Prossimo lavoro: la **#87** (il trattino lungo nelle Sintesi), poi le due box della Dashboard.
 
@@ -119,12 +152,9 @@ girano a 390px e in CI sono passati), e la colonna da 14ch è scritta per sparir
 **Le decisioni già prese con l'utente, da non riaprire.** Delle tre issue scelte restano solo la
 #87 e, dopo, le box della Dashboard. La #85 e la #86 sono fatte (sopra).
 
-**#87** (trattino lungo nelle Sintesi): **solo il prompt**, cioè divieto in `title`, `keyPoints` e
-`breakingChanges` con le `quote` escluse, `PROMPT_VERSION` a **v5**, e un test unitario sul testo del
-prompt. **Zero spesa.** Il conteggio delle Sintesi già scritte **lo lancia l'utente** su produzione
-con una query che gli va preparata: `.env.local` punta al database locale, che di `ready` non ne ha
-nessuna. Che farne si decide dopo, col numero davanti. ⚠️ Se la #87 prende il `v5`, **la #93
-diventa v6**: le due issue se lo contendono.
+**#87** (trattino lungo nelle Sintesi): decisa e in corso, vedi "Da dove ripartire". Il prompt è
+fatto, il conteggio è fatto, e sulle tre Sintesi esistenti la decisione è **non spendere**: si
+correggono in posto. Resta solo da applicare la correzione e aprire la PR. **La #93 è `v6`.**
 
 **Poi, e solo dopo quelle**: le **due box della Dashboard**, che l'utente ha chiesto il 2026-10-06
 guardando `docs/Cattura.JPG` (fuori da git). Una box per i conteggi della finestra e una per la In
