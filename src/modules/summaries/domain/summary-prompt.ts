@@ -2,7 +2,7 @@ import type { SummaryRequest } from "./summary-batches";
 
 export const SUMMARY_MODEL = "claude-opus-5";
 // Bump on every change to the prompt text, so a stored Summary says which prompt produced it.
-export const PROMPT_VERSION = "v4";
+export const PROMPT_VERSION = "v5";
 
 // ADR 0007: notes are never truncated, so the limit is what the longest Release we accept costs,
 // not what the model can read. 150,000 characters are about 40k tokens and under 10 cents with the
@@ -27,7 +27,7 @@ A "quote" is the stretch of the release notes the item comes from, copied charac
 
 Never infer a breaking change the notes do not mention, even if the version number suggests one. If the notes mention none, "breakingChanges" is empty and "actionRequired" is false.
 
-Write in plain English. Wrap code, option names, commands and file names in backticks.`;
+Write in plain English. Wrap code, option names, commands and file names in backticks. Never write an em dash (—) in "title", in the "text" of a key point or in the "change" and "migration" of a breaking change: use a comma, a colon, a full stop or brackets instead. This does not apply to a "quote", which is copied character for character from the notes: leave an em dash inside a quote exactly where the notes have it.`;
 
 export type SummaryInput = { releaseId: string; technologyName: string; version: string; notes: string };
 
