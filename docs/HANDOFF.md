@@ -16,10 +16,16 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, sera tardi).** **La #64 è fatta**, sul branch
-`64-follow-moves-the-row`, **non ancora committata**: commit, push e PR aspettano il via dell'utente.
-La issue era `ready-for-human` e la scelta è stata presa con lui in chat, sulla **strada 3**: la riga
-si sposta subito, il focus la segue, **niente animazione**.
+**Da dove ripartire (2026-10-06, sera tardi).** **La #64 è chiusa**, con la **PR #106**, unita su
+`main` (`a3ca8c4`): l'issue si è chiusa da sola col `Closes #64`, e il branch
+`64-follow-moves-the-row` è cancellato in locale e su GitHub. `Deploy database` verde.
+**È verificata in produzione, dall'utente in persona**: su `/technologies` la riga passa fra le
+seguite alla pressione, senza aggiornare. La issue era `ready-for-human` e la scelta è stata presa
+con lui in chat, sulla **strada 3**: la riga si sposta subito, il focus la segue, **niente
+animazione**.
+
+**Non c'è più nessuna issue `ready-for-agent`**, quindi il lavoro seguente si sceglie fra le strade
+aperte qui sotto e vuole il via dell'utente.
 
 **Perché la strada 3 adesso.** Il 2026-10-03 era stata scelta la **strada 1** (lasciare la riga dov'è
 e rendere onesti i conteggi), fatta con la PR #91 dentro la #47. Quella sessione aveva scritto il
@@ -67,7 +73,9 @@ lasciato com'era (5 follow).
 follow, torna all'unfollow, e **"the press keeps its place when the row moves, in both directions"**,
 che preme da tastiera e pretende il focus sul toggle nella sezione nuova.
 
-**Da fare dopo il merge**: guardarlo in produzione, che è il posto dove la lamentela è nata.
+**Il giro in produzione è fatto e funziona**, ed era il posto dove la lamentela era nata. Con lui la
+segnalazione che aveva aperto la #64 il 2026-09-29 è chiusa per davvero: la strada 1 l'aveva solo
+resa onesta, questa le risponde.
 
 **Lo stato precedente (2026-10-06, sera).** **La #100 è chiusa**, con la **PR #105**, unita su `main`
 (`9b91fab`): l'issue si è chiusa da sola col `Closes #100`, e il branch `a11y-upgrade-path-wait` è
