@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "lucide-react";
+import { User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,8 +19,12 @@ const PANEL_ID = "account-panel";
 const QUOTA =
   "ml-auto flex h-[56px] items-center max-[429px]:order-3 max-[429px]:ml-0 max-[429px]:h-[40px] max-[429px]:w-full max-[429px]:border-t max-[429px]:border-rule";
 
+// A line of the panel. On a phone it is a 44px row of the full-screen sheet, with a rule under it;
+// in the panel above 640px it is the compact 24px line the bar has room for.
 const ITEM =
-  "flex min-h-[24px] items-center px-3 font-mono text-label text-text-muted no-underline hover:bg-sunken hover:text-text";
+  "flex min-h-[44px] items-center border-b border-rule px-4 font-mono text-body text-text-muted no-underline hover:bg-sunken hover:text-text sm:min-h-[24px] sm:border-0 sm:px-3 sm:text-label";
+
+const PHONE = "(max-width: 639px)";
 
 // The account panel holds what belongs to the viewer rather than to the page: who is signed in, the
 // two destinations, and the way out. The destinations are in it because a public Technology or
@@ -32,9 +36,11 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const account = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   // A panel over the page closes when the page is used: anything outside it takes the click back.
+  // On a phone there is no outside, since the sheet covers the page, and the close button is the way.
   useEffect(() => {
     if (!open) return;
     function onPointerDown({ target }: PointerEvent) {
@@ -45,9 +51,36 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
+  // The sheet covers the page, so the page behind it must not scroll under it and the keyboard must
+  // not walk out into what it hides: WCAG 2.2 AA 2.4.11 asks that a focused element is not buried by
+  // what the author put over it. Above 640px the panel is not modal and neither applies.
+  useEffect(() => {
+    if (!open || !window.matchMedia(PHONE).matches) return;
+    const was = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = was;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const first = panel.current?.querySelector<HTMLElement>("a, button");
+    first?.focus();
+  }, [open]);
+
   function close() {
     setOpen(false);
     button.current?.focus();
+  }
+
+  function keepTabInside(event: React.KeyboardEvent) {
+    if (event.key !== "Tab" || !window.matchMedia(PHONE).matches) return;
+    const inside = [...(panel.current?.querySelectorAll<HTMLElement>("a, button") ?? [])];
+    const edge = event.shiftKey ? inside[0] : inside[inside.length - 1];
+    if (document.activeElement !== edge) return;
+    event.preventDefault();
+    (event.shiftKey ? inside[inside.length - 1] : inside[0])?.focus();
   }
 
   return (
@@ -94,19 +127,52 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
         )}
         <ThemeToggle />
       </div>
-      {open && session.state === "developer" && <AccountPanel developer={session} onLeave={() => setOpen(false)} />}
+      {open && session.state === "developer" && (
+        <AccountPanel ref={panel} developer={session} onLeave={() => setOpen(false)} onClose={close} onTab={keepTabInside} />
+      )}
     </div>
   );
 }
 
-function AccountPanel({ developer, onLeave }: { developer: Developer; onLeave: () => void }) {
+// One element, two shapes. On a phone the account takes the whole screen, with its own row at the
+// top carrying who is signed in and the way out of it; above 640px the same list is the small panel
+// hanging from the bar. Two copies in the DOM would mean two `dashboard` links, so the breakpoint
+// does the work and the markup stays single.
+function AccountPanel({
+  ref,
+  developer,
+  onLeave,
+  onClose,
+  onTab,
+}: {
+  ref: React.Ref<HTMLDivElement>;
+  developer: Developer;
+  onLeave: () => void;
+  onClose: () => void;
+  onTab: (event: React.KeyboardEvent) => void;
+}) {
   return (
     <div
+      ref={ref}
       id={PANEL_ID}
-      className="absolute top-[calc(100%+8px)] right-[0px] z-20 min-w-[180px] rounded-md border border-rule bg-raised py-2 max-sm:left-[0px] max-sm:top-[calc(100%+4px)]"
+      onKeyDown={onTab}
+      className="fixed inset-[0px] z-30 flex flex-col bg-ground sm:absolute sm:inset-auto sm:top-[calc(100%+8px)] sm:right-[0px] sm:z-20 sm:block sm:min-w-[180px] sm:rounded-md sm:border sm:border-rule sm:bg-raised sm:py-2"
     >
+      <div className="flex h-[56px] shrink-0 items-center justify-between border-b border-rule px-4 sm:hidden">
+        <span className="font-mono text-label text-text-faint">{developer.handle ?? "account"}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex size-[34px] items-center justify-center rounded-md border border-rule-strong text-text hover:border-text-faint hover:bg-raised"
+        >
+          <X aria-hidden strokeWidth={1.75} className="size-4" />
+          <span className="sr-only">Close account</span>
+        </button>
+      </div>
       {developer.handle && (
-        <p className="mb-1 border-b border-rule px-3 pb-2 font-mono text-meta text-text-faint">{developer.handle}</p>
+        <p className="mb-1 hidden border-b border-rule px-3 pb-2 font-mono text-meta text-text-faint sm:block">
+          {developer.handle}
+        </p>
       )}
       <Link href="/dashboard" className={ITEM} onClick={onLeave}>
         dashboard
@@ -114,7 +180,11 @@ function AccountPanel({ developer, onLeave }: { developer: Developer; onLeave: (
       <Link href="/technologies" className={ITEM} onClick={onLeave}>
         technologies
       </Link>
-      <form action="/auth/sign-out" method="post" className="mt-1 border-t border-rule pt-1">
+      <form
+        action="/auth/sign-out"
+        method="post"
+        className="mt-auto border-t border-rule sm:mt-1 sm:border-t sm:border-rule sm:pt-1"
+      >
         <button type="submit" className={`${ITEM} w-full`}>
           sign out
         </button>

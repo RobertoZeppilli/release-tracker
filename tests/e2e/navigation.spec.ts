@@ -80,6 +80,31 @@ test("above 640px the slot stays inside the bar", async ({ page }) => {
   expect(strip.y, "on one row with the wordmark").toBeLessThan(mark.y + mark.height);
 });
 
+// On a phone the account is the page while it is open: a panel the size of a business card over a
+// page the reader cannot use is worse than taking the screen and giving it back.
+test("the account takes the whole screen at 390px, and gives it back", async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  const account = page.getByRole("button", { name: /^Account/ });
+  await account.click();
+  const sheet = page.locator("#account-panel");
+  const box = await sheet.boundingBox();
+  expect(box?.width).toBe(PHONE.width);
+  expect(box?.height).toBe(PHONE.height);
+  // The page behind it must not scroll under the sheet.
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe("hidden");
+  // The way out sits at the bottom edge, away from the two destinations and under the thumb.
+  const out = await page.getByRole("button", { name: "sign out" }).boundingBox();
+  expect(out?.y).toBeGreaterThan(PHONE.height / 2);
+
+  await page.keyboard.press("Escape");
+  await expect(sheet).toBeHidden();
+  await expect(account).toBeFocused();
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe("hidden");
+});
+
 // Behind sign-in the two destinations live in the account panel on a phone, so the bar keeps one
 // row: the strip was a second copy of what the panel already carries from every page.
 test("a signed-in page gives its sections to the account panel at 390px", async ({ page }) => {

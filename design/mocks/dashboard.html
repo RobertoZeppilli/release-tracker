@@ -73,6 +73,7 @@ svg.sig { width: 12px; height: 12px; flex: none; }
 .account-panel a, .account-panel button { display: flex; align-items: center; width: 100%; min-height: 24px; padding: 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; background: none; border: 0; cursor: pointer; }
 .account-panel a:hover, .account-panel button:hover { background: var(--sunken); color: var(--text); }
 .account-panel .out { margin-top: var(--space-1); padding-top: var(--space-1); border-top: 1px solid var(--rule); }
+.account-panel .sheet-head { display: none; }
 
 main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 
@@ -227,7 +228,14 @@ main[data-state="silent"] .for-action { display: none; }
   .topbar-inner > nav { display: none; }
   .topbar-inner { position: relative; }
   .topbar-actions { position: static; }
-  .account-panel { top: calc(100% + 4px); right: var(--space-4); left: var(--space-4); }
+  /* On a phone the account takes the whole screen and gives it back: a card the size of a business
+     card over a page that cannot be used is worse than a sheet that owns the screen while it is open. */
+  .account-panel { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; padding: 0; background: var(--ground); border: 0; border-radius: 0; }
+  .account-panel .who { display: none; }
+  .account-panel .sheet-head { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 var(--space-4); border-bottom: 1px solid var(--rule); font: 400 13px var(--mono); color: var(--text-faint); }
+  .account-panel a, .account-panel button { min-height: 44px; padding: 0 var(--space-4); font-size: 16px; border-bottom: 1px solid var(--rule); }
+  .account-panel .sheet-head button { width: 34px; min-height: 34px; padding: 0; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); color: var(--text); }
+  .account-panel .out { margin-top: auto; padding-top: 0; }
   .quota { margin-right: 0; }
   .quota .of { display: none; }
   main { padding-top: var(--space-5); padding-bottom: 120px; }
@@ -295,6 +303,7 @@ main[data-state="silent"] .for-action { display: none; }
       <details class="account">
         <summary aria-label="Account, signed in as robertozep"><span class="portrait" aria-hidden="true">R</span></summary>
         <div class="account-panel">
+          <div class="sheet-head">robertozep<button type="button" aria-label="Close account"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
           <p class="who">robertozep</p>
           <a href="dashboard.html">dashboard</a>
           <a href="technologies.html">technologies</a>

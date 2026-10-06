@@ -58,7 +58,7 @@ function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWee
           enough for two readable halves. The page ends on a block instead of thinning out row by row
           down to nothing. With only one of the two on the page the empty track collapses and the
           section keeps the full width. */}
-      <div className="mt-8 grid items-start gap-7 min-[1040px]:grid-cols-[repeat(auto-fit,minmax(29.5rem,1fr))] [&>section]:mt-0">
+      <div className="mt-7 grid items-start gap-7 min-[1040px]:mt-8 min-[1040px]:grid-cols-[repeat(auto-fit,minmax(29.5rem,1fr))] [&>section]:mt-[0px]">
         <ReleaseSection
           id="previews"
           title="previews"
