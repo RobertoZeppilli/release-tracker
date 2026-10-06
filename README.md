@@ -50,8 +50,7 @@ Frankfurt). Anteprime delle PR e produzione condividono lo stesso database.
 
    | Segreto | Valore |
    |---|---|
-   | `SUPABASE_ACCESS_TOKEN` | Supabase → Account → Access Tokens; permessi minimi, scadenza 1 anno |
-   | `SUPABASE_DB_PASSWORD` | Password del database (reimpostabile da Project Settings → Database) |
+   | `SUPABASE_DB_PASSWORD` | Password del database (reimpostabile da Project Settings → Database); le migrazioni si collegano con questa, non con un access token |
    | `SUPABASE_PROJECT_ID` | Project ref, l'ID nell'URL della dashboard |
    | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
    | `SUPABASE_SECRET_KEY` | Supabase → Project Settings → API Keys (`sb_secret_…`), per il sync del Catalogo |
