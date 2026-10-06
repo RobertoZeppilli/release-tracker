@@ -123,3 +123,50 @@ test.describe("a quote taken from markdown notes", () => {
     await expect(page.locator("#L3")).toHaveText(RAW);
   });
 });
+
+// Issue #85: the forward leg left the reader inside the notes with no way back to the diagnostic.
+test.describe("the way back from a citation", () => {
+  test("returns to the breaking change that cited, from the keyboard alone", async ({ page }) => {
+    await page.goto(`/technologies/${technology.slug}/3.0.0`);
+
+    const pointer = page.getByRole("link", { name: "release-notes:3" });
+    await pointer.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#L3")).toBeFocused();
+
+    // The pointer sits on the row above the cited line, so it is the tab stop before it: Shift+Tab,
+    // the key that already means "back", is what reaches it.
+    await page.keyboard.press("Shift+Tab");
+    const back = page.getByRole("link", { name: "back to breaking[1]" });
+    await expect(back).toBeFocused();
+    await page.keyboard.press("Enter");
+
+    await expect(page.locator("#b1")).toBeFocused();
+    await expect(page.locator("#b1")).toBeVisible();
+    await expect(page.locator("#b1")).toContainText("breaking[1]: The default export is gone");
+  });
+
+  test("a key point's citation returns to that key point, not to the breaking change", async ({ page }) => {
+    await page.goto(`/technologies/${technology.slug}/3.0.0`);
+
+    await page.getByRole("link", { name: "release-notes:4" }).click();
+    await expect(page.getByRole("link", { name: "back to breaking[1]" })).toHaveCount(0);
+
+    await page.getByRole("link", { name: "back to note[1]" }).click();
+    await expect(page.locator("#n1")).toBeFocused();
+    await expect(page.locator("#n1")).toContainText("note[1]: Node 20 or later.");
+  });
+
+  // One citation is active at a time, so there is one pointer: it moves to whatever was cited last.
+  test("only the active range carries a pointer", async ({ page }) => {
+    await page.goto(`/technologies/${technology.slug}/3.0.0`);
+
+    await page.getByRole("link", { name: "release-notes:3" }).click();
+    await expect(page.getByRole("link", { name: /^back to/ })).toHaveCount(1);
+
+    await page.getByRole("link", { name: "release-notes:4" }).click();
+    const back = page.getByRole("link", { name: /^back to/ });
+    await expect(back).toHaveCount(1);
+    await expect(back).toHaveText("back to note[1]");
+  });
+});

@@ -84,7 +84,13 @@ export function BreakingChangeItem({
   const [span] = citation ? citationSpans(lines, citation) : [];
   return (
     <article aria-labelledby={id} className="mb-6 max-w-[900px]">
-      <h3 id={id} className="grid grid-cols-[auto_1fr] gap-x-3 font-sans text-title font-medium max-[640px]:grid-cols-1">
+      {/* Focusable, not interactive: it is where the notes' back pointer lands, so a reader who
+          followed a citation returns to the diagnostic itself and not to the top of the page. */}
+      <h3
+        id={id}
+        tabIndex={-1}
+        className="grid scroll-mt-6 grid-cols-[auto_1fr] gap-x-3 font-sans text-title font-medium max-[640px]:grid-cols-1"
+      >
         <span className="whitespace-nowrap font-mono text-[16px] leading-[1.7] text-breaking">
           <Glyph Icon={OctagonAlert} />
           breaking[{number}]:
@@ -101,7 +107,7 @@ export function BreakingChangeItem({
                 {"-->"}
               </span>
               <span>
-                <CitePointer citation={citation} severity="breaking" />
+                <CitePointer citation={citation} severity="breaking" origin={{ id, label: `breaking[${number}]` }} />
               </span>
             </div>
             {span && <QuoteWell line={span.line} text={lines[span.line - 1] ?? ""} start={span.start} end={span.end} />}

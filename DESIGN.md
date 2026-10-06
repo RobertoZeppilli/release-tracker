@@ -353,7 +353,9 @@ A glyph plus severity label in the severity ink (`warning:` amber / `ok:` green)
 **Page verdict (Dashboard).** The same line summarises all followed Technologies: `warning: N need action` or `ok: nothing needs action`. It counts every Release the page shows as possible work, the Upgrade Path from the Version in use included, each Release once (CONTEXT.md, Verdetto della Dashboard). When none of them carries a verdict the line is **muted info + `note: nothing here can be judged yet`**, no ink, the same withdrawal the release page makes in its seventh state: with nothing to judge, `ok: nothing needs action` would be true of an empty set and read as reassurance. The count row below is a Mono 14px/1.7 muted sentence whose numbers are in `text` and whose counts (`3 featured`, `4 notable`, `2 previews`, `23 digest`) link to their sections. The counts carry no severity ink; the action count sits in plain words (`(2 need action)`) and stays in the narrower scope of the number it follows, the featured ones of the window, because a figure under the verdict may be tighter than the verdict but must never contradict it.
 
 ### Note Lines
-A key-points list separated by top and bottom 1px rules. Each row is a muted Mono `note:` label with the info glyph, followed by Grotesk prose that ends in a `release-notes:N` cite pointer.
+A key-points list separated by top and bottom 1px rules. Each row is a muted Mono `note[n]:` label with the info glyph in an 11.5ch column, followed by Grotesk prose that ends in a `release-notes:N` cite pointer.
+
+**The index is not decoration.** A key point is numbered for the reason a breaking change is: a citation that leads into the notes has to be able to name the diagnostic it came from on the way back (see Source View), and `note[3]` is a name the reader can see on both ends. Each row is also the anchor that return lands on, so it carries an id and `tabindex="-1"`.
 
 ### Breaking Diagnostic (signature)
 Rows in order:
@@ -374,6 +376,10 @@ A Mono 14px muted closing line after the diagnostics. The breaking count is in c
 A `<details>` panel on `raised` with a 1px rule border and 6px radius. The summary row shows a chevron (rotates 90deg, 200ms), `release-notes` and right-aligned muted meta (origin · line count). Lines are numbered by counter in a faint 6ch gutter. Headings are in `text`, body lines in `text-muted`. Following a cite pointer opens the panel, clears earlier highlights, applies `breaking-wash` or `help-wash` to the cited range (depending on the citing severity), centres the first line, and draws a 2px underline in that severity's ink beneath each cited span.
 
 **Motion:** the underline reveals left to right (clip-path, 650ms, cubic-bezier(0.16, 1, 0.3, 1), 120ms delay). This is the system's only motion moment besides the chevron. Under `prefers-reduced-motion`, the underline appears immediately and smooth scrolling is off.
+
+**The way back.** The interaction is a round trip, so the panel owes the reader the second leg: one `<-- back to breaking[1]` pointer, on a row of its own directly above the first line of the active range. The row keeps the line gutter but takes no line number of its own, so every number beside the lines being compared stays where it was; it carries the range's wash and the citing severity's ink, and the label is a Help Pointer Link turned around, with the arrow reversed and no `-->`. It **names its caller** (`breaking[1]`, `note[3]`), never a generic way up, so a reader with four breaking changes returns to the one they came from.
+
+There is exactly **one** pointer, because exactly one citation is active: it moves with the citation instead of marking every range the reader has visited. Following it is a plain `#b1` link, which scrolls, focuses the diagnostic heading (`tabindex="-1"`, so the keyboard does not stay inside the panel) and leaves Back pointing at the cited line. It sits on the row above the focused line, which makes **Shift+Tab** the key that reaches it: the key that already means back. The return **draws nothing and animates nothing**: the underline on the way in stays the only motion moment.
 
 ### Summary States
 Vocabulary: `ready` (verdict `action required`, `safe to upgrade`, or no verdict at all), `pending` / `processing`, `unavailable`, `skipped`, `failed`. Non-ready states replace the verdict with a Status-scale line and a muted explanation paragraph:
@@ -490,7 +496,7 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 
 ### Do:
 - **Do** pair every severity ink with its glyph and label word (see The Severity Pairing Rule).
-- **Do** cite every key point and breaking change with a `release-notes:N` or `N-M` pointer that highlights exactly those lines in the source view.
+- **Do** cite every key point and breaking change with a `release-notes:N` or `N-M` pointer that highlights exactly those lines in the source view, and give the highlighted range a pointer back to the diagnostic that cited it: an authored round trip owes the reader both legs.
 - **Do** set grammar, numbers and line references in Fragment Mono with tabular numerals, and explanations in Hanken Grotesk.
 - **Do** replace a caret row with an in-quote 2px `breaking` underline wherever the quote would wrap, not only at 640px and below.
 - **Do** keep the caret-draw as the single motion moment, with an immediate fallback under reduced motion.

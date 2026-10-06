@@ -37,7 +37,7 @@ test("ready with action required: verdict, title, key points and numbered breaki
 
   const points = page.getByRole("list", { name: "Key points" }).getByRole("listitem");
   await expect(points).toHaveCount(4);
-  await expect(points.nth(1)).toHaveText("note: init() returns a promise.");
+  await expect(points.nth(1)).toHaveText("note[2]: init() returns a promise.");
   await expect(points.nth(1).locator("code")).toHaveText("init()");
 
   await expect(page.getByRole("heading", { level: 2, name: "breaking changes (2)" })).toBeVisible();
