@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { expect, type Locator } from "@playwright/test";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Category } from "@/modules/catalog";
@@ -135,6 +136,10 @@ export async function seedTechnology(
       if (error) throw error;
     }
     for (const [table, column] of [
+      // A follow holds the Technology by a foreign key, so it goes first: a test that pressed the
+      // Toggle can have left one behind, and the delete below would be refused with
+      // `follows_technology_id_fkey`.
+      ["follows", "technology_id"],
       ["releases", "technology_id"],
       ["sources", "technology_id"],
       ["technologies", "id"],
@@ -175,6 +180,15 @@ export async function seedFillers(count: number): Promise<FixtureFillers> {
       }
     },
   };
+}
+
+// The Follow Toggle answers before the database does, and says so with `aria-busy` while the write is
+// on its way (`follows-provider.tsx`). A test that then asks the server what it holds, with a reload
+// or with a declaration written on the follow, waits for that to go: the button has already changed
+// its mind, the row has not. The toggle to pass is the one the press leaves behind, so waiting for it
+// also waits for the optimistic answer.
+export async function followWritten(toggle: Locator): Promise<void> {
+  await expect(toggle).not.toHaveAttribute("aria-busy", "true");
 }
 
 // A follow written from outside the browser: what another session of the same Developer would do.

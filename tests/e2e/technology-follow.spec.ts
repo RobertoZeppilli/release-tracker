@@ -2,6 +2,7 @@ import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   addFollows,
   e2eAuthSecret,
+  followWritten,
   type FixtureDeveloper,
   type FixtureFillers,
   type FixtureTechnology,
@@ -95,6 +96,8 @@ test.describe("a Developer", () => {
     await toggle(page, "Follow").click();
     await expect(toggle(page, "Unfollow")).toHaveAttribute("aria-pressed", "true");
 
+    // The reload reads the database, which the press has not reached yet.
+    await followWritten(toggle(page, "Unfollow"));
     await page.reload();
     await expect(toggle(page, "Unfollow")).toHaveAttribute("aria-pressed", "true");
 
@@ -105,6 +108,7 @@ test.describe("a Developer", () => {
 
     await toggle(page, "Unfollow").click();
     await expect(toggle(page, "Follow")).toHaveAttribute("aria-pressed", "false");
+    await followWritten(toggle(page, "Follow"));
     await page.reload();
     await expect(toggle(page, "Follow")).toBeVisible();
   });
@@ -140,7 +144,10 @@ test.describe("a Developer", () => {
     await expect(page.getByText("can't be followed again")).toBeVisible();
     await expect(page.getByRole("button", { name: /^(Follow|Unfollow) / })).toHaveCount(0);
 
-    // And there is nothing to press on the next visit, because nobody follows it any more.
+    // And there is nothing to press on the next visit, because nobody follows it any more. The
+    // Toggle itself is gone with the follow, so the write is waited for on the page, which keeps
+    // nothing busy once it has landed.
+    await expect(page.locator("[aria-busy=true]")).toHaveCount(0);
     await page.reload();
     await expect(page.getByRole("button", { name: /^(Follow|Unfollow) / })).toHaveCount(0);
     await expect(page.getByText("can't be followed again")).toHaveCount(0);

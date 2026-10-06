@@ -2,6 +2,7 @@ import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   addFollows,
   e2eAuthSecret,
+  followWritten,
   type FixtureDeveloper,
   type FixtureFillers,
   type FixtureTechnology,
@@ -78,6 +79,8 @@ test("a Developer follows a Technology, and the follow is still there after a re
   await expect(followed(page)).toHaveText(/^you follow 1 of \d+ technologies$/);
   await expect(section(page, "catalog").getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
 
+  // The reload reads the database, which the press has not reached yet.
+  await followWritten(toggle(page, "Unfollow"));
   await page.reload();
   await expect(followed(page)).toHaveText(/^you follow 1 of \d+ technologies$/);
   await expect(section(page, "following").getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
@@ -87,11 +90,15 @@ test("a Developer unfollows a Technology and it stays unfollowed after a reload"
   await page.goto("/technologies");
   await toggle(page, "Follow").click();
   await expect(followed(page)).toHaveText(/^you follow 1 of \d+ technologies$/);
+  // The Toggle refuses a second press while the first is in flight, so the unfollow below waits for
+  // the follow to be written, and the reload after it waits for the unfollow.
+  await followWritten(toggle(page, "Unfollow"));
 
   await toggle(page, "Unfollow").click();
   await expect(toggle(page, "Follow")).toHaveAttribute("aria-pressed", "false");
   await expect(followed(page)).toHaveText(/^you follow 0 of \d+ technologies$/);
 
+  await followWritten(toggle(page, "Follow"));
   await page.reload();
   await expect(followed(page)).toHaveText(/^you follow 0 of \d+ technologies$/);
   await expect(toggle(page, "Follow")).toBeVisible();

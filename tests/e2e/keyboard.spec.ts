@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   e2eAuthSecret,
+  followWritten,
   type FixtureDeveloper,
   type FixtureTechnology,
   seedDeveloper,
@@ -175,6 +176,8 @@ test("Following from the Technology page, then on to the Dashboard", async ({ pa
     "true",
   );
 
+  // The Dashboard is read on the server, which the press has not reached yet.
+  await followWritten(page.getByRole("button", { name: `Unfollow ${technology.name}` }));
   await page.goto("/dashboard");
   const spotlight = page.getByRole("link", { name: technology.name }).first();
   await tabTo(page, spotlight, "the Technology link in the Dashboard");

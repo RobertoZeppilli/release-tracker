@@ -24,6 +24,10 @@ verificate in produzione**, dall'utente in persona: lo stato di prima sta nel di
 **Non c'è più nessuna issue `ready-for-agent`**, quindi il lavoro seguente si sceglie fra le strade
 aperte qui sotto e vuole il via dell'utente.
 
+**E nella stessa sessione è caduto anche il flake sui follow**, chiesto dall'utente **senza aprire una
+issue**: la causa era una sola e la spiegazione sta nella sua sezione qui sotto. Con lui **non resta
+nessun flake noto** in E2E.
+
 **Com'è stata fatta.** Il flake era nelle attese del test, non nella pagina, e `UpgradePathBlock` e
 `UpgradePathView` **non sono stati toccati**: il diff è di 7 righe in `tests/e2e/a11y.spec.ts`. Le
 due attese ora nominano un fatto che solo la resa risolta può portare, perché la partenza del
@@ -200,29 +204,38 @@ ridiscutere:
   etichette di lunghezza diversa e i campi partivano sfalsati. Ora condividono una colonna da 14ch,
   `VERSION_LABEL_CLASS`, registrata in `DESIGN.md` sotto Upgrade Path Form e Version in Use.
 
-### ⚠️ Il fallimento E2E intermittente, finalmente con un nome
+### Il flake sui follow è chiuso, e la causa era una sola
 
-L'handoff precedente chiedeva di catturare il nome se fosse ricomparso. È ricomparso, su una corsa
-completa su due, e sono **due test sui follow**, non uno:
+Era il flake che tornava da sessioni, su una corsa completa su due, in due test:
+`current-version.spec.ts:89` ("is not touched by `?from=`") e `technologies.spec.ts:86` ("a Developer
+unfollows a Technology and it stays unfollowed after a reload"), e una volta anche
+`current-version.spec.ts:65`. **Chiuso il 2026-10-06 senza una issue**, su richiesta dell'utente.
+Nessuna riga di `src/` toccata.
 
-- `current-version.spec.ts:89` "is not touched by `?from=`, which is a single look"
-- `technologies.spec.ts:86` "a Developer unfollows a Technology and it stays unfollowed after a reload"
+**La causa**: il Follow Toggle risponde **prima** del database (la mutazione ottimistica in
+`follows-provider.tsx`), e i test premevano e poi chiedevano al server, con un `reload`, un `goto` o
+una dichiarazione scritta sulla follow, mentre la scrittura era ancora in volo. Sotto quattro worker
+la finestra si allarga, e usciva in due modi che sembravano difetti diversi:
 
-Tutti e due verdi lanciati da soli, tutti e due verdi alla seconda corsa completa (145 su 145). Il
-fallimento è sempre un follow che non risulta dove dovrebbe, sotto carico parallelo con quattro
-worker. In CI i retry sono 2, in locale 0. **Non è causato dalla #83**, che non tocca i follow.
+- la dichiarazione arriva prima della follow, aggiorna zero righe e la pagina legge
+  `error: The version in use was not saved. Try again.`;
+- il `reload` legge lo stato vecchio, oppure la scrittura atterra **dopo la fine del test** e lascia
+  una follow addosso alla Technology, che in `afterAll` diventa `follows_technology_id_fkey`.
 
-Durante la #85 è ricomparso una volta, sempre `technologies.spec.ts:86`, con l'errore in chiaro:
-`follows_technology_id_fkey`, cioè la pulizia della fixture che cancella la Technology mentre un
-follow la tiene ancora. Verde rilanciato da solo. Resta senza una issue sua.
+**Un secondo difetto, vero e indipendente**: `seedTechnology().remove()` cancellava releases, sources
+e technologies **ma non le follows**, mentre `seedFillers().remove()` le cancella da sempre. Bastava
+una follow rimasta per far fallire la pulizia. Ora le cancella per prime.
 
-### Il flake del Cammino è chiuso, quello sui follow no
+**La forma dell'attesa, da riusare**: il prodotto ha già il suo segnale, **`aria-busy` sul Toggle**,
+vivo finché la mutazione è in volo. `followWritten(toggle)` in `tests/e2e/fixtures.ts` aspetta che
+sparisca, ed è chiamato dove un test chiede al server quello che ha appena premuto
+(`current-version.spec.ts` nella sua `follow()`, `technologies.spec.ts`, `technology-follow.spec.ts`,
+`keyboard.spec.ts` prima del salto alla Dashboard). Dove il Toggle sparisce con la follow, cioè sulla
+Technology ritirata, l'attesa è sulla pagina: `[aria-busy=true]` a zero. **Non aspettare il bottone**:
+quello ha già cambiato idea, ed è il motivo per cui il test mentiva.
 
-`a11y.spec.ts` cadeva a tratti su `#path-verdict` trovato **due volte**, e la causa non era la
-pagina: il fallback del `Suspense` e il figlio che legge `?from=` contengono tutti e due quell'id
-(struttura della #83). Era la **#100**, chiusa il 2026-10-06 con la PR #105; la spiegazione e la
-forma della correzione stanno qui sopra. **Resta vivo solo il flake sui follow**, quello della
-sezione precedente, che non ha una issue sua.
+**Verifiche**: `lint` e `typecheck` puliti e **tre corse E2E complete di fila**, 151 su 151 ciascuna,
+con i retry locali a 0, cioè senza la rete di sicurezza che in CI mascherava il difetto.
 
 ### Le strade aperte
 

@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   e2eAuthSecret,
+  followWritten,
   type FixtureDeveloper,
   type FixtureTechnology,
   seedDeveloper,
@@ -48,6 +49,9 @@ async function follow(page: Page): Promise<void> {
   const toggle = page.getByRole("button", { name: `Follow ${technology.name}`, exact: true });
   await expect(toggle).toBeVisible();
   await toggle.click();
+  // Everything below is written on the follow, so the press is not enough: without this wait the
+  // declaration can reach the database first and come back as "was not saved".
+  await followWritten(page.getByRole("button", { name: `Unfollow ${technology.name}`, exact: true }));
 }
 
 async function declare(page: Page, version: string): Promise<void> {
