@@ -13,8 +13,106 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, mattina).** **La #88 e la #94 sono chiuse**, con le PR #96 e #97,
-unite e con `CI` e `Deploy database` verdi su `main`. Prima di loro erano state chiuse la #47 e la #84.
+**Da dove ripartire (2026-10-06, pomeriggio).** **La #83 è fatta ma non ancora unita**: branch
+`default-upgrade-start`, **PR #99**, in attesa di `CI` e del merge. Primo passo della sessione nuova:
+controllare che la #99 sia verde e unita (`gh pr view 99`), e solo dopo prendere la #85.
+
+**Le decisioni già prese con l'utente, da non riaprire.** Le tre issue scelte vanno fatte in
+quest'ordine, una per branch e per PR:
+
+1. **#85** (ritorno dalla citazione alla diagnostica): **un solo puntatore**, nella gutter della
+   **prima riga citata** dell'intervallo attivo, nell'inchiostro della severità che ha citato.
+   Attivarlo porta **anche il focus** sul titolo della diagnostica, non solo lo scroll. Nessun
+   secondo momento di moto. Una citazione sola è attiva per volta, quindi un puntatore solo.
+2. **#86** (generi del Catalogo): **dieci generi a grana fine**, curati **da noi** nel file
+   `catalog/<slug>.json`, non presi dalla Fonte. `language` (typescript, rust), `runtime` (nodejs,
+   deno, bun), `framework` (angular, astro, next, nuxt, react, svelte, sveltekit, vue),
+   `server framework` (express, fastify, nestjs, trpc), `database` (prisma, drizzle-orm),
+   `build tool` (vite, webpack, turborepo, pnpm), `testing` (vitest, jest, playwright, storybook),
+   `lint and formatting` (eslint, prettier, biome), `library` (axios, zod, tailwindcss, zustand,
+   redux-toolkit), `platform` (electron, terraform). ⚠️ **Nodo ancora aperto**: `library`
+   raccoglie cinque Technologies che non hanno in comune altro che non stare nelle altre nove
+   caselle, e la issue vieta il gruppo "altro". Da sciogliere con l'utente **prima** di scrivere il
+   codice: o lo si spacca (`styling`, `state management`, `validation`, `http client`), o si scrive
+   in `CONTEXT.md` perchè `library` è un genere e non un residuo.
+3. **#87** (trattino lungo nelle Sintesi): **solo il prompt**, cioè divieto in `title`, `keyPoints` e
+   `breakingChanges` con le `quote` escluse, `PROMPT_VERSION` a **v5**, e un test unitario sul testo
+   del prompt. **Zero spesa.** Il conteggio delle Sintesi già scritte **lo lancia l'utente** su
+   produzione con una query che gli va preparata: `.env.local` punta al database locale, che di
+   `ready` non ne ha nessuna. Che farne si decide dopo, col numero davanti. ⚠️ Se la #87 prende
+   il `v5`, **la #93 diventa v6**: le due issue se lo contendono.
+
+**Poi, e solo dopo le tre**: le **due box della Dashboard**, che l'utente ha chiesto il 2026-10-06
+guardando `docs/Cattura.JPG` (fuori da git). Una box per i conteggi della finestra e una per la In
+Use Line, dentro **righe etichetta a sinistra e numero a destra**, non una riga di fatti separati da
+`·` che su mobile va a capo in mezzo ai numeri. Va aperta una issue sua prima di farla. Da ricordare:
+
+- **Il "Don't" di `DESIGN.md` non va cambiato**: vieta di avvolgere le **diagnostiche** in card o
+  badge, e un pannello esiste già due volte nel sistema, la Source View e il blocco diff, tutti e
+  due con bordo 1px `rule` e raggio 6px. Le due box riusano quel trattamento.
+- **Due cose da non perdere nel rifacimento**: ogni numero è oggi un **link** alla sua sezione
+  (`#spotlight`, `#latest`, `#previews`, `#digest`), e la parentesi `(2 need action)` deve restare
+  attaccata a `featured`, per la regola fissata dalla #94 (un numero di ambito più stretto dice il
+  proprio ambito dove sta).
+- L'utente ha chiesto attenzione esplicita a **tablet e mobile**, non solo al desktop.
+
+**La #83, com'è stata fatta.** La **Versione** di partenza ricavata è **l'ultima Release stabile
+della major precedente**, scelta dall'utente fra tre: è l'unica il cui Cammino contiene sempre la
+Release che apre la major, cioè dove stanno i cambiamenti che rompono. Da non rifare e da non
+ridiscutere:
+
+- La regola sta in `CONTEXT.md` sotto **Cammino di upgrade** e **Versione in uso**, la resa in
+  `DESIGN.md` sotto "Upgrade Path Form", e il mock `design/mocks/technology.html` ha lo stato nuovo
+  nel selettore "page state".
+- `defaultUpgradeStart` è dominio puro in `src/modules/releases/domain/default-upgrade-start.ts`.
+  Sotto una sola major vale la stabile più vecchia; con una sola Release stabile **non c'è Cammino**
+  e la pagina resta la lista, invece di un cammino vuoto o di un errore.
+- **Il valore ricavato è calcolato sul server** e passato al fallback del `Suspense`, perchè il
+  Cammino sta così nell'HTML della cache ISR. Prima esisteva solo dopo l'hydration, cioè proprio il
+  Visitor arrivato da una ricerca non lo vedeva mai. Per questo la resa è stata spezzata in
+  `ui/upgrade-path.tsx` (presentazionale, `UpgradePathBlock`) e `ui/upgrade-path-view.tsx` (il client
+  che legge `?from=`): le due rese devono restare la stessa, altrimenti si vede uno sfarfallio.
+- **Un `?from=` vuoto non è più un errore**: è il modo in cui il form chiede lo Storico intero, ed
+  è dove porta il `--> show all 77 releases` in fondo al Cammino. Scelta deliberata: con un valore
+  predefinito, svuotare il campo è come si chiede tutto, e un errore lì sarebbe ostile. Il ramo
+  "valore vuoto" di `invalidMessage` resta però vivo, perchè la **Versione in uso** lo usa ancora.
+- **Fuori scope di proposito**: su una Versione malformata la pagina continua a mostrare la lista
+  piena, come prima, invece di ripiegare sul cammino ricavato. Meno pezzi in movimento e nessuna
+  copia nuova da inventare.
+- **In più, su richiesta dell'utente** (`docs/align.JPG`): `Version in use` e `Upgrade from` avevano
+  etichette di lunghezza diversa e i campi partivano sfalsati. Ora condividono una colonna da 14ch,
+  `VERSION_LABEL_CLASS`, registrata in `DESIGN.md` sotto Upgrade Path Form e Version in Use.
+
+### ⚠️ Il fallimento E2E intermittente, finalmente con un nome
+
+L'handoff precedente chiedeva di catturare il nome se fosse ricomparso. È ricomparso, su una corsa
+completa su due, e sono **due test sui follow**, non uno:
+
+- `current-version.spec.ts:89` "is not touched by `?from=`, which is a single look"
+- `technologies.spec.ts:86` "a Developer unfollows a Technology and it stays unfollowed after a reload"
+
+Tutti e due verdi lanciati da soli, tutti e due verdi alla seconda corsa completa (145 su 145). Il
+fallimento è sempre un follow che non risulta dove dovrebbe, sotto carico parallelo con quattro
+worker. In CI i retry sono 2, in locale 0. **Non è causato dalla #83**, che non tocca i follow.
+
+### Le strade aperte dopo la #83
+
+Dopo le tre issue scelte e le box della Dashboard restano: **#93** (prompt v5, o v6, con la terza
+uscita sulle note giudicabili) e **#57** (Haiku invece di Opus), tutte e due **spendono** su
+Anthropic; **#65** e **#64**, tecniche, serve solo il via; **#80** (tocca GitHub e npm, non
+Anthropic, ma genera Sintesi a valle); **#26** la landing page, ferma sul nome del prodotto; **#69**
+esplicitamente dopo il lancio.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, controlla la PR #99 e poi prendiamo la #85
+```
+
+---
+
+**Lo stato precedente, per contesto.** **La #88 e la #94 sono chiuse**, con le PR #96 e #97, unite e
+con `CI` e `Deploy database` verdi su `main`. Prima di loro erano state chiuse la #47 e la #84.
 **Anche la #94 è verificata in produzione**, sulla schermata dell'utente: `warning: 3 need action` in
 testa e `3 need action` sulla riga `In use`, con `0 featured` nella finestra, cioè il verdetto viene
 tutto dal Cammino di upgrade, che prima non guardava. Nessuna parentesi accanto allo zero `featured`,
