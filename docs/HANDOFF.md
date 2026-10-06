@@ -13,9 +13,11 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (notte fra il 2026-10-05 e il 2026-10-06).** **La #88 è chiusa** (PR #96, unita e verificata in
-produzione) e la **#94 è implementata sul branch `94-dashboard-verdict-scope`**, in attesa di PR.
-Prima di loro erano state chiuse la #47 e la #84.
+**Da dove ripartire (2026-10-06, mattina).** **La #88 e la #94 sono chiuse**, con le PR #96 e #97,
+unite e con `CI` e `Deploy database` verdi su `main`. Prima di loro erano state chiuse la #47 e la #84.
+⚠️ **Della #94 resta da guardare una cosa sola**: la Dashboard sta dietro il login, quindi la verifica
+in produzione la fa l'utente. Sulla sua schermata, quella della issue, deve leggersi `warning: 2 need
+action` invece di `ok: nothing needs action`, e `1 preview` al singolare nella riga dei conteggi.
 
 **La #88, com'è stata fatta.** Il vincolo `summaries_ready_provenance` lega la visibilità alla
 provenienza: `status = 'ready'` implica `content`, `model` e `prompt_version`. Da ricordare:
@@ -74,13 +76,15 @@ della #47 sono uniti: il **P0-1** (PR #89), il **P2-9** (PR #90), il **gruppo de
 P1-4 e P1-5 (PR #91), e il **P0-2** (PR #92, l'unica che portava `Closes #47`). Dopo di loro la #84,
 sbloccata dalla chiusura della #47, con la **PR #95**. Tutto verificato in produzione.
 
-Il primo comando della sessione nuova, scegliendo fra le tre strade qui sotto:
+Il primo comando della sessione nuova, scegliendo fra le strade elencate sopra, "Le strade aperte
+dopo la #94":
 
 ```
-leggi docs/HANDOFF.md, prendiamo la #88
+leggi docs/HANDOFF.md, prendiamo la #65
 ```
 
-**Le strade aperte, in ordine di quanto sono prendibili da soli:**
+**Le strade che erano aperte allora** (la #88 e la #94 sono state fatte dopo; vale ancora quello che
+dice della #26):
 
 1. **Lavoro autonomo: resta una sola issue `ready-for-agent` e non è bloccata**, la **#88** (una
    Sintesi `ready` senza provenienza non viene rifiutata dal database).
