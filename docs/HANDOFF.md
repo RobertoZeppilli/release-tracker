@@ -16,7 +16,63 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-06, notte fonda).** **La rinfrescata alla UI è aperta nella PR #108**,
+**Da dove ripartire (2026-10-07, notte).** **La rinfrescata alla UI è su `main`**, in due PR unite:
+la **#108** (`e900581`) e il suo seguito **#109** (`d0212a1`). Entrambi i branch sono cancellati in
+locale e su GitHub. Sulla #108 CI e `Deploy database` sono verdi; sulla #109 la CI era verde sulla PR
+e **la corsa su `main` era ancora in volo** a fine sessione, da guardare
+(`gh run list --branch main`).
+
+**Non è ancora verificato in produzione**, ed è la prima cosa da fare: **dal telefono**, perché le
+due cose che cambiano di più non si vedono in locale. Sulla Dashboard la barra deve essere una riga
+sola (le due sezioni stanno nel menu) e lo spazio sotto `latest` deve essere 48px come fra tutte le
+altre sezioni; su una pagina Tecnologia il menu del profilo deve prendere tutto lo schermo e
+restituirlo con la X o con Escape.
+
+⚠️ **La scala delle spaziature ha già fatto tre vittime.** `src/app/globals.css` azzera `--spacing` e
+definisce solo `--spacing-1..8`, quindi **tutte le utility con lo zero non esistono**: `right-0` ha
+lasciato il pannello ancorato a sinistra, fuori dallo schermo a 390px; `mt-0` dentro
+`[&>section]:mt-0` non è mai stato applicato e ha aperto **120px** di vuoto sotto `latest` al posto
+di 72; e `size-6` qui vale **32px, non 24**. Nel codice nuovo si scrivono i valori espliciti
+(`right-[0px]`, `mt-[0px]`, `size-[24px]`). **Strada aperta, proposta e non ancora decisa**:
+aggiungere `--spacing-0: 0px` a `globals.css` fa sparire la classe di problemi, ma tocca tutta la UI,
+quindi vuole la sua PR e la suite dietro.
+
+### Cosa è stato deciso in queste due PR, e perché
+
+- **Il menu del profilo** (foto GitHub, handle, `dashboard`, `technologies`, `sign out`) sta su ogni
+  pagina, pubbliche comprese, e risolve il link alla Dashboard che mancava su `/technologies/*`.
+  Sopra i 640px è un pannello appeso alla barra; **sotto, è un foglio a schermo intero** con l'uscita
+  in fondo. **È un solo elemento nel DOM**, il breakpoint lo trasforma: due copie vorrebbero dire due
+  link `dashboard` sulla pagina, e i test se ne accorgono.
+- ⚠️ **Il toggle del tema resta nella barra**, fuori dal menu: le pagine pubbliche si leggono anche
+  senza accesso e un visitatore non ha nessun menu in cui trovarlo. Non spostarlo senza risolvere
+  prima quello.
+- ⚠️ **Sotto i 640px la striscia con le due sezioni sparisce solo sulle pagine dietro l'accesso.**
+  Home e 404 la tengono, perché lì chi legge può essere un visitatore senza menu: toglierla
+  riaprirebbe il vicolo cieco della #63, e due test E2E lo sorvegliano.
+- ⚠️ **I riquadri dei conteggi non vanno allargati a tutta la colonna**: il limite di 72ch è la
+  correzione del difetto P2-9 della #47, un test E2E lo sorveglia, e a 992px l'etichetta e il suo
+  numero finiscono a un quarto di colonna di distanza. Provato e rimesso com'era, con l'utente che
+  aveva anche offerto di cambiare la regola.
+- **Spotlight dice il silenzio una volta sola** (una riga `note:` per il gruppo invece della stessa
+  frase su ogni riga), e la coda della pagina si chiude su una banda a due colonne da 1040px in su.
+- **`DESIGN.md` è stato cambiato dove la pagina lo smentiva**, non lasciato derivare: la One Raised
+  Plane Rule nomina il menu come unica superficie ammessa sopra il testo (il pannello che fluttua è
+  una scelta dell'utente, presa a ragion veduta), e la No Dead End Rule chiede una destinazione
+  sempre raggiungibile invece di una striscia in particolare.
+- ⚠️ **I mock `release.html` e `technology.html` non vanno cambiati**: mostrano il visitatore, che il
+  menu non ce l'ha. Quelli dietro l'accesso portano la barra nuova.
+- Il detector di impeccable segnala `cramped-padding` sul contenitore dell'uscita nei mock: **è un
+  falso positivo**, legge il padding del contenitore mentre la riga è alta 44px e centra il testo.
+  Insieme al raggio 3px del focus e alla "gerarchia tipografica piatta" (l'`h1` vero è `sr-only`)
+  sono le tre segnalazioni da non ridiagnosticare.
+
+**All'inizio di tutto**, l'utente aveva chiesto se usare una skill "ispirata alle web app famose"
+(tipo 21st.dev). **La risposta è stata no, e vale ancora**: quelle skill producono card, badge, ombre
+e accenti di brand, cioè l'elenco dei "Don't" di `DESIGN.md`. Si è usata `impeccable`, sul mock prima
+e sul codice poi.
+
+**Lo stato precedente (2026-10-06, notte fonda).** **La rinfrescata alla UI è aperta nella PR #108**,
 sul branch `dashboard-layout`, due commit, **non unita**: la CI era ancora in corso quando la sessione
 si è chiusa, **va guardata prima di unire** (`gh run list --branch dashboard-layout`). La PR non chiude
 nessuna issue: lavoro chiesto a voce, branch e PR comunque, come per la #107. In locale: `lint`,
@@ -215,149 +271,6 @@ che preme da tastiera e pretende il focus sul toggle nella sezione nuova.
 segnalazione che aveva aperto la #64 il 2026-09-29 è chiusa per davvero: la strada 1 l'aveva solo
 resa onesta, questa le risponde.
 
-**Lo stato precedente (2026-10-06, sera).** **La #100 è chiusa**, con la **PR #105**, unita su `main`
-(`9b91fab`): l'issue si è chiusa da sola col `Closes #100`, e il branch `a11y-upgrade-path-wait` è
-cancellato in locale e su GitHub. `Deploy database` verde. **Niente da verificare in produzione**: il
-lavoro tocca un solo file di test e nessuna riga di `src/`. **Le due box della Dashboard sono
-verificate in produzione**, dall'utente in persona: lo stato di prima sta nel diario di ottobre.
-**Non c'è più nessuna issue `ready-for-agent`**, quindi il lavoro seguente si sceglie fra le strade
-aperte qui sotto e vuole il via dell'utente.
-
-**E nella stessa sessione è caduto anche il flake sui follow**, chiesto dall'utente **senza aprire una
-issue**: la causa era una sola e la spiegazione sta nella sua sezione qui sotto. Con lui **non resta
-nessun flake noto** in E2E.
-
-**Dove sta `main` e come ci è arrivato.** La punta è **`4645504`**, e sopra la PR #105 ci sono due
-commit andati **diretti su `main`, senza branch nè PR**: `32700e5`, i documenti, che è la via normale,
-e `4645504`, il lavoro sul flake, che sono cinque file di test. Il secondo è **un'eccezione concessa a
-voce dall'utente** ("va bene così, lascia su main") dopo che gliel'ho fatto notare: `CLAUDE.md` chiede
-un branch e una PR anche per i test, quindi **non è la regola nuova**, come già per la PR #104. Le
-corse di tutti e due sono **verdi**, e quella di `4645504` (run 37488338400) è la prova che si voleva:
-è la prima che gira le attese nuove contro il build di produzione, e il riassunto di Playwright legge
-**150 passati, 1 saltato, zero flaky**, dove la corsa del merge della #100 ne contava **2** (sempre i
-due test sui follow). I retry in CI restano 2, ma qui non sono serviti.
-
-**Com'è stata fatta la #100.** Il flake era nelle attese del test, non nella pagina, e `UpgradePathBlock` e
-`UpgradePathView` **non sono stati toccati**: il diff è di 7 righe in `tests/e2e/a11y.spec.ts`. Le
-due attese ora nominano un fatto che solo la resa risolta può portare, perché la partenza del
-fallback è quella ricavata:
-
-1. `?from=1.8.9`: la frase che apre il Cammino, `Between 1.8.9 and 2.0.0 there are 2 releases`. Il
-   fallback scrive `Between 1.9.0 and 2.0.0 there is 1 release`, perché la sua partenza è `1.9.0`,
-   l'ultima stabile della major precedente. **Il verdetto non bastava**: il testo dell'`h2` è
-   `warning: 1 needs action` in tutte e due le rese, quindi la strada del `getByRole("heading")`
-   suggerita dalla issue non distingueva niente.
-2. `?from=9.9.9`: il rifiuto che nomina la Versione rifiutata,
-   `9.9.9 is newer than 2.0.0, the latest stable release.`. Lì il fallback scrive la nota della
-   partenza ricavata. **Era lo stesso difetto latente nel test accanto**, stesso file e stessa causa,
-   e l'ho corretto insieme.
-
-Fuori da `a11y.spec.ts` il doppione non si presenta: in `keyboard.spec.ts:126` e nei giri di
-`upgrade-path.spec.ts` il Cammino arriva da un submit del form, cioè da una navigazione del client
-senza fallback. **Non sono stati toccati**, ed è il motivo per cui `#path-verdict` vive ancora là.
-
-**Verifiche fatte prima del merge**: `lint` e `typecheck` puliti e **undici giri di fila** di
-`pnpm test:e2e a11y.spec.ts`, 30 su 30 ciascuno, l'ultimo a `.next` cancellata. Cancellare `.next`
-mentre il `pnpm dev` dell'utente gira sulla 3000 **non lo ha incartato**: ha ricompilato da solo e
-ha risposto 200.
-
-⚠️ **La CI del merge è stata cancellata una seconda volta, ma la causa non è quella di prima.**
-Nessuno ha pushato niente su `main` durante la corsa: la richiesta che l'ha soppiantata (sempre
-`Canceling since a higher priority waiting request for ci-refs/heads/main exists`) è **la corsa
-`pull_request` della PR #105**, che era rimasta in coda e si è messa in moto alle 14:52, cioè
-**sette minuti dopo il merge**, sullo stesso sha `cbd17dd`. Da ricordare per il prossimo merge:
-**prima di unire, guardare se la corsa della PR è finita** (`gh pr checks <N>`), perché una corsa in
-coda che arriva dopo il merge si porta via la corsa del merge. La buona notizia è che la corsa
-cancellata **aveva già fatto tutto**: `check` verde, e dentro `integration` i passi
-`test:integration`, `build` e `test:e2e` tutti riusciti (148 passati, 2 flaky ritentati, 1 saltato);
-la cancellazione ha preso solo i passi di chiusura.
-
-**La domanda lasciata aperta dallo stato di prima è chiusa**, e vale come rimedio: la corsa
-rilanciata a mano (37475231634) era stata cancellata anche lei, ma la corsa nata dal **commit dei
-documenti** su `main` subito dopo (37476164810) è **verde**, quindi `ac4732d` aveva la sua corsa. È
-la via più economica di un `gh run rerun`: un commit di documenti su `main` fa partire una corsa sua,
-e questa sessione si chiude così.
-
-**Lo stato precedente (2026-10-06, notte).** **La #86 è chiusa**, con la **PR #102**, unita su `main`
-(`d048447`), e il branch è cancellato in locale e su GitHub. `CI` e `Deploy database` verdi su `main`.
-Prossimo lavoro: la **#87** (il trattino lungo nelle Sintesi), poi le due box della Dashboard.
-
-**La #86 è verificata in produzione**, su `/technologies`: il Catalogo è `catalog (31)` diviso nei
-dieci generi, e la somma dei gruppi fa 31 (`language 1`, `runtime 3`, `framework 6`, `server framework 4`,
-`database 2`, `build tool 2`, `testing 4`, `lint and formatting 3`, `library 4`, `platform 2`: i sei
-seguiti mancano perché stanno in `following`, che non è raggruppata). Con `?filter=test` legge
-`3 of 37 match`, `catalog (3 of 31)` e lascia il solo gruppo `testing (3 of 4)`.
-⚠️ **La migrazione è andata in produzione prima del merge**, col dispatch di `deploy-database.yml`
-sul branch della PR (run 37463104730, lanciato dall'utente: il classificatore lo blocca all'agente).
-È la via da riusare per ogni migrazione futura, e funziona perché il workflow fa il checkout del ref
-che gli si dà. La dashboard di Supabase non serve.
-
-**Chiesto dall'utente a cose fatte e scartato: i generi a fisarmonica.** Non è stato scritto niente.
-Le tre ragioni, per non ridiscuterle da zero: un accordion vuole uno **stato** per gruppo (aperto o
-chiuso, se ricordarlo fra le visite, come si arriva sulla pagina); **collide col filtro**, che è la
-trappola che la issue segnalava già, perché cercare `zod` con `library` chiuso fa dire alla pagina
-`1 of 37 match` senza mostrare niente, e l'unica uscita è aprire d'ufficio i gruppi con
-corrispondenze, cioè disfare il collasso proprio quando serve; e **spegne il Ctrl+F del browser** su
-una pagina che è un elenco di nomi. In più nell'app non esiste nessun disclosure, quindi sarebbe un
-pattern nuovo per tutto il sistema. **L'alternativa raccomandata, se la pagina sembra lunga**: un
-indice dei generi in cima, dieci link ancora su una riga sotto il filtro, senza stato e senza
-toccare il filtro. Non è stata scelta: se si fa, è una issue sua.
-
-**I quattro nodi HITL della #86, decisi con l'utente. Da non riaprire:**
-
-1. **`library` resta un genere**, definito in positivo in `CONTEXT.md` (si importa nel codice, non
-   detta la forma del progetto come un `framework`, non gira da fuori come un `build tool`). Niente
-   gruppo "altro", niente spacchettamento in `styling`/`state management`/`validation`/`http client`.
-2. Nome inglese canonico: **`category`** (`kind` era già preso da `Source.kind`).
-3. Il genere compare **solo su `/technologies`**: non sulla pagina Technology, non sulla Dashboard.
-4. Col filtro, **un gruppo senza corrispondenze si nasconde**, come già fa una sezione; il titolo
-   `catalog` continua a contare su tutto il Catalogo.
-
-In più, deciso da me con la ragione scritta in `DESIGN.md`: la sezione `catalog` **tiene il suo
-titolo e il suo conteggio** (e la Limit Note sotto), e i dieci generi sono `<h3>` con lo stesso
-Section Title un livello più in basso; l'ordine dei generi non è alfabetico ma quello di
-`CONTEXT.md`, dal linguaggio alla piattaforma.
-
-**Com'è stata fatta**: `category.ts` tiene l'insieme chiuso dei dieci generi e il loro ordine, la
-migrazione `20261006112355_catalog_categories.sql` ha enum, backfill per slug e un `DO` che si ferma
-con un messaggio leggibile se una Technology resterebbe senza genere, `groupByCategory` sta nel
-dominio del picker e la resa in `plans/ui/picker-section.tsx`. Le fixture di E2E e di integrazione
-dichiarano una `category` (il fixture principale è una `library`, i filler un `platform`). Alla
-chiusura: 528 unitari, 63 di integrazione, 150 E2E, nessun flake in quella corsa.
-
-### Il flake sui follow è chiuso, e la causa era una sola
-
-Era il flake che tornava da sessioni, su una corsa completa su due, in due test:
-`current-version.spec.ts:89` ("is not touched by `?from=`") e `technologies.spec.ts:86` ("a Developer
-unfollows a Technology and it stays unfollowed after a reload"), e una volta anche
-`current-version.spec.ts:65`. **Chiuso il 2026-10-06 senza una issue**, su richiesta dell'utente.
-Nessuna riga di `src/` toccata.
-
-**La causa**: il Follow Toggle risponde **prima** del database (la mutazione ottimistica in
-`follows-provider.tsx`), e i test premevano e poi chiedevano al server, con un `reload`, un `goto` o
-una dichiarazione scritta sulla follow, mentre la scrittura era ancora in volo. Sotto quattro worker
-la finestra si allarga, e usciva in due modi che sembravano difetti diversi:
-
-- la dichiarazione arriva prima della follow, aggiorna zero righe e la pagina legge
-  `error: The version in use was not saved. Try again.`;
-- il `reload` legge lo stato vecchio, oppure la scrittura atterra **dopo la fine del test** e lascia
-  una follow addosso alla Technology, che in `afterAll` diventa `follows_technology_id_fkey`.
-
-**Un secondo difetto, vero e indipendente**: `seedTechnology().remove()` cancellava releases, sources
-e technologies **ma non le follows**, mentre `seedFillers().remove()` le cancella da sempre. Bastava
-una follow rimasta per far fallire la pulizia. Ora le cancella per prime.
-
-**La forma dell'attesa, da riusare**: il prodotto ha già il suo segnale, **`aria-busy` sul Toggle**,
-vivo finché la mutazione è in volo. `followWritten(toggle)` in `tests/e2e/fixtures.ts` aspetta che
-sparisca, ed è chiamato dove un test chiede al server quello che ha appena premuto
-(`current-version.spec.ts` nella sua `follow()`, `technologies.spec.ts`, `technology-follow.spec.ts`,
-`keyboard.spec.ts` prima del salto alla Dashboard). Dove il Toggle sparisce con la follow, cioè sulla
-Technology ritirata, l'attesa è sulla pagina: `[aria-busy=true]` a zero. **Non aspettare il bottone**:
-quello ha già cambiato idea, ed è il motivo per cui il test mentiva.
-
-**Verifiche**: `lint` e `typecheck` puliti e **tre corse E2E complete di fila**, 151 su 151 ciascuna,
-con i retry locali a 0, cioè senza la rete di sicurezza che in CI mascherava il difetto.
-
 ### Le strade aperte
 
 ⚠️ **Le issue sono sospese per scelta dell'utente** (2026-10-06): "lasciamo perdere le issue, ci
@@ -408,6 +321,7 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-06 (sera): la #100 chiusa (PR #105), e la #86 (PR #102)
 - Stato al 2026-10-06 (pomeriggio): le due box della Dashboard (PR #104)
   - ⚠️ La CI del merge si fa cancellare da una richiesta che aspetta, e si rimedia con `gh run rerun`
 - Stato al 2026-10-06 (notte sul 07): la #87 chiusa (PR #103)
