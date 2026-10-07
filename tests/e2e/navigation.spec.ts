@@ -128,3 +128,35 @@ test("the home page offers both sections, at 390px too", async ({ page }) => {
   await expect(sections.getByRole("link", { name: "technologies" })).toBeVisible();
   await expect(sections.getByRole("link", { name: "dashboard" })).toHaveAttribute("href", "/dashboard");
 });
+
+// Above 640px the panel is the one surface that floats over the page, and it has to hand the
+// keyboard what it opened. It used to focus its first `a, button`, which is the sheet's
+// `Close account`: at this width that row is `display: none`, `.focus()` on it does nothing, and the
+// focus stayed on the trigger with the next Tab landing on the theme toggle, which sits in the bar
+// and is not part of the panel.
+test("the account panel hands the keyboard its first visible line, above 640px", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  const account = page.getByRole("button", { name: /^Account/ });
+  await account.focus();
+  await page.keyboard.press("Enter");
+
+  const panel = page.locator("#account-panel");
+  await expect(panel).toBeVisible();
+  // The close button of the phone sheet is in the DOM and must not be what the focus goes to.
+  await expect(page.getByRole("button", { name: "Close account" })).toBeHidden();
+  const dashboard = panel.getByRole("link", { name: "dashboard" });
+  await expect(dashboard).toBeFocused();
+
+  // From there the walk is the panel's own lines, in the order they are read.
+  await page.keyboard.press("Tab");
+  await expect(panel.getByRole("link", { name: "technologies" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(panel.getByRole("button", { name: "sign out" })).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(account).toBeFocused();
+});
