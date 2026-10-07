@@ -16,7 +16,7 @@ colors:
   help: "#6cc4d8"
   help-wash: "rgba(108, 196, 216, 0.10)"
   ok: "#7bd88f"
-  focus: "#6cc4d8"
+  focus: "#da6b6b"
   selection: "rgba(108, 196, 216, 0.28)"
   light-ground: "#f6f6f3"
   light-raised: "#ffffff"
@@ -32,7 +32,7 @@ colors:
   light-help: "#0b6b80"
   light-help-wash: "rgba(11, 107, 128, 0.08)"
   light-ok: "#1d7a3a"
-  light-focus: "#0b6b80"
+  light-focus: "#ad4b4b"
   light-selection: "rgba(11, 107, 128, 0.18)"
 typography:
   verdict:
@@ -235,14 +235,15 @@ A light theme mirrors every role with darker severity inks on a warm off-white g
 
 ## Colors
 
-The neutrals are cool graphite. The four diagnostic inks are the only hues, and each has a fixed meaning.
+The neutrals are cool graphite. The four diagnostic inks are the only hues that carry a verdict, and each has a fixed meaning. The focus ring is the one hue that says nothing about a Release (see Focus Red).
 
 ### Primary
 - **Breaking Coral** (`breaking`; light `light-breaking`): `breaking[n]:` codes, caret rows, the `-` line in fix diffs, the breaking count in the tally, `error:` in the failed state, and the underline plus wash (`breaking-wash`) on source lines cited by a breaking change.
 
 ### Secondary
 - **Action Amber** (`action`; light `light-action`): only the `warning: action required` verdict.
-- **Help Cyan** (`help`; light `light-help`): `help:` labels, `-->` cite pointers and `-->` help pointer links (dashed underline), the note-citation wash (`help-wash`), the focus ring (`focus`) and text selection (`selection`).
+- **Help Cyan** (`help`; light `light-help`): `help:` labels, `-->` cite pointers and `-->` help pointer links (dashed underline), the note-citation wash (`help-wash`) and text selection (`selection`).
+- **Focus Red** (`focus`; light `light-focus`): the focus ring, and nothing else. It is deliberately close to Breaking Coral, and that is a decision, not a leftover: the ring is drawn by the keyboard, never by a Release, so the two never argue over the same element. Keep it out of text, glyphs and washes, where a reader would weigh it against a verdict. Measured against 1.4.11: 5.7:1 on `ground` and 5.2:1 on `raised` in the dark theme, 5.4:1 on `light-raised` and 4.7:1 on `light-sunken` in the light one. A lighter red would read better but stops passing, which is why the light value is darker than the dark one rather than the same hex.
 
 ### Tertiary
 - **Ok Green** (`ok`; light `light-ok`): the `ok: safe to upgrade` verdict and the `+` line in fix diffs.
