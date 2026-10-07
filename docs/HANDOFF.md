@@ -18,10 +18,11 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 **Da dove ripartire (2026-10-07, mezzogiorno).** **Tre rilievi del `critique` sono chiusi e due sono
 su `main`**: la **#111** (`f1cdb80`, bersagli di tocco) e la **#112** (`bc20f35`, focus del pannello),
-entrambe con CI e `Deploy database` verdi, branch cancellati. **Due PR sono aperte e verdi in locale,
-da guardare e unire**: la **#114** (`waiting-states`, il Follow che aspetta) e la **#115**
-(`row-verdict`, i due vocabolari). ⚠️ Sulla #115 **la suite E2E completa non è stata girata in
-locale**, solo i tre test nuovi e gli unitari: la CI è il primo posto da guardare.
+entrambe con CI e `Deploy database` verdi, branch cancellati. **Due PR sono aperte, verdi su tutti i check
+(`check` e `integration`), e aspettano solo di essere unite**: la **#114** (`waiting-states`, il
+Follow che aspetta) e la **#115** (`row-verdict`, i due vocabolari). Sulla #115 la suite E2E completa
+non era stata girata in locale, solo i tre test nuovi e gli unitari: **l'ha girata `integration` sulla
+CI, ed è passata**, quindi il dubbio è chiuso.
 
 **Il `critique` resta** `.impeccable/critique/2026-10-07T07-09-23Z__src-app.md`, ma **il suo elenco va
 letto con la correzione qui sotto**: due dei rilievi che dà per difetti non lo sono, misurati.
