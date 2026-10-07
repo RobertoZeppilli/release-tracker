@@ -16,7 +16,108 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-07, mezzogiorno).** **Tre rilievi del `critique` sono chiusi e due sono
+**Da dove ripartire (2026-10-07, pomeriggio).** **Sei PR unite su `main`**, tutte verdi, tutti i
+branch cancellati: la **#114** (`b413452`, il Follow che aspetta), la **#115** (`01acc99`, i due
+vocabolari), la **#117** (`0f414ad`, gli avvisi di lint lasciati dalla #115), la **#116** (`0c94494`,
+il focus rosso), la **#118** (`f203dce`, il verdetto senza verdetto) e la **#121** (`f180f85`, lo
+Stat Row). **Nessuna PR aperta.** Da guardare a inizio sessione: la CI dei due merge finali e di
+questo commit (`gh run list --branch main`).
+
+⚠️ **La #121 era nata prima che la #118 fosse unita**, e le due toccavano gli stessi tre file:
+`main` è stato portato dentro il branch (`15712f5`) e la CI ha girato sui due cambi **insieme** prima
+del merge, 552 unitari e 163 E2E, zero flaky. La lezione resta per la prossima volta: due branch che
+nascono dallo stesso `main` e toccano gli stessi file vanno riuniti **prima** del merge, anche quando
+`git merge-tree` dice che non si scontrano.
+
+⚠️ **Un flake locale visto una volta sola**: nella suite intera `keyboard.spec.ts:117` ("the Upgrade
+Path: the form is filled and submitted with the keyboard") è fallito una volta, e **non si è
+riprodotto**: passa da solo, passa nella suite rigirata e passa sulla CI. Non è stato diagnosticato,
+quindi se ricompare non è una novità.
+
+**Del `critique` restano due cose**: il **gruppo dei minori** (rilievo 6) e la **verifica dal
+telefono** in produzione, che ora comprende anche il focus rosso e la corsia ambra. I rilievi 1, 2, 3,
+4 e 5 sono chiusi. Il file resta `.impeccable/critique/2026-10-07T07-09-23Z__src-app.md`, e **il suo
+elenco va ancora letto con le correzioni** registrate qui sotto e nello stato precedente.
+
+### Le quattro decisioni dell'utente, da non riaprire
+
+1. **Il focus è rosso** (#116): `#da6b6b` nello scuro, `#ad4b4b` nel chiaro. ⚠️ **Lo stesso hex nei
+   due temi non va**: su `light-sunken` fa 2.87 e falla 1.4.11, ed è il motivo per cui il valore
+   chiaro è più scuro. Misurati: 5.67 / 5.24 / 5.83 nello scuro, 4.99 / 5.41 / 4.65 nel chiaro.
+   `DESIGN.md` ha la voce **Focus Red**, che dice perché la vicinanza a Breaking Coral è voluta:
+   l'anello lo disegna la tastiera, mai una Release. Il focus è uscito da Help Cyan e i quattro mock
+   portano il token nuovo. `theme-contrast.test.ts` ora misura l'anello su **tutti e tre i piani**,
+   non solo su `ground`, perché `outline-offset: 3px` lo disegna sul piano che circonda il controllo.
+2. **`N without a verdict`** al posto di `N to check` nel verdetto di pagina (#118), in **due**
+   superfici e non una: il Cammino di upgrade e la riga `in use` di Spotlight, perché stampavano lo
+   stesso `counts.missing`. `to check` resta al solo `unjudged`. `DESIGN.md` ha **Page verdict
+   (Upgrade Path)** sotto "Verdict Line", con la riga vincolante che il verdetto non può stampare
+   `to check`.
+3. **La virgola davanti a entrambi i conteggi trasversali** (#121): `3 releases · 1 featured ·
+   1 notable · 1 digest, 1 needs action, 1 not summarized`. I punti sono la partizione e sommano a
+   quello che la riga dichiara. Scelta fra tre forme, compresa quella che aveva il mock.
+4. **La legenda si fa leggere e la barra ha una tinta sola** (#121). La legenda è una lista col nome
+   `Bar fills`, **non più `aria-hidden`**: la mia raccomandazione era il contrario (una chiave per
+   l'occhio, dato che mappa una forma su una parola che ogni riga già stampa), l'utente ha scelto di
+   esporla e `DESIGN.md` lo dice con la ragione. ⚠️ **Non riaprirlo.** La barra porta una riga di 2px
+   in `action` sotto di sé, larga quanto la quota del gruppo che ha bisogno di intervento: una riga e
+   non un quarto segmento, perché conta Release che i segmenti hanno già contato.
+
+### Tre correzioni al critique e alla #113, misurate
+
+- ⚠️ **La legenda nel mock aveva già i glifi di forma**: era il **codice** ad aver derivato, non il
+  mock. Il rilievo e la #113 lo dicono al contrario. Corretto nel codice.
+- ⚠️ **La barra era sempre al 100% per costruzione**, non per un errore di calcolo: il cammino di
+  default copre esattamente un major, quindi `total / widest` è il totale su sé stesso. Ora la barra
+  **chiede due gruppi**, e con uno solo spariscono corsia, barra e legenda mentre le parole restano.
+- ⚠️ **`DESIGN.md` e il codice non dicono la stessa cosa sul conteggio dell'azione**: il documento
+  dice `warning: needs action`, il codice stampa il glifo più `1 needs action`. Il mock ora segue il
+  codice, perché è ciò che è costruito. **Da che parte allinearli non è deciso**, ed è un lavoro di
+  una riga.
+
+### Il prossimo lavoro, già deciso
+
+La **zona 1 della #113**, con la direzione **cambiata dall'utente il 2026-10-07**: **non** più due
+pannelli affiancati ma **un pannello solo**, con i due controlli dentro e i fatti come righe
+etichetta/valore (`in use`, `declared`, `latest`, `releases`). La scelta e il suo prezzo stanno in un
+commento sulla issue: in un riquadro solo finiscono **due azioni diverse**, dichiarare la Versione in
+uso e guardare un cammino, e vanno distinte senza l'aiuto di due pannelli, altrimenti Save e Check si
+confondono. La **zona 2 della #113 è fatta** con la #121.
+
+### Due issue nuove, aperte e in attesa
+
+Aperte il 2026-10-07 su richiesta dell'utente, entrambe `ready-for-human`, e **l'utente ha detto che
+se ne occuperà dopo i rilievi**: non prenderle come lavoro seguente senza il suo via.
+
+- **#119, ripensare la barra.** Da una pagina Technology il link `dashboard` non è visibile: esiste
+  solo dentro il pannello dell'account. ⚠️ **Non è un difetto di implementazione**, è la decisione
+  delle PR #108/#109: `SiteHeader` rende **o** il breadcrumb **o** le due destinazioni, mai entrambi,
+  e le pagine pubbliche passano `path`. Nella issue ci sono i due ripieghi più piccoli (il wordmark
+  che porta alla Dashboard quando la sessione c'è, oppure `dashboard` accanto al breadcrumb) e i
+  vincoli già pagati, dal terzo rigo della barra al vicolo cieco della #63.
+- **#120, le icone delle Tecnologie.** Tecnicamente si può: SVG nel repository (niente CDN, lo vieta
+  `CLAUDE.md`), monocromatici in `currentColor` (niente tinte di marca, lo vieta `DESIGN.md`), spazio
+  riservato vuoto dove un logo manca. ⚠️ **La prima domanda non è tecnica**: se un'icona aiuti a
+  scorrere una lista di nomi corti in Mono, dove il nome è il dato. Se la risposta è no, la issue si
+  chiude senza codice.
+
+### Due cose dell'ambiente, imparate qui
+
+- ⚠️ **Non ci sono test di componente.** `vitest.config.ts` prende solo `src/**/*.test.ts`: niente
+  jsdom, niente `.tsx` sotto test. Una decisione di resa si prova in E2E, **oppure** si tira fuori in
+  una funzione pura e si testa lì: è quello che hanno fatto `legendLevels` e `barHasAction`.
+- ⚠️ **Un'asserzione può passare a vuoto anche quando il codice è giusto.** Quella sulla legenda
+  assente col gruppo singolo passava identica sul codice vecchio, dove la legenda era un paragrafo
+  senza nome. Provata rimettendo il difetto (`Expected: 0, Received: 1`). Ogni test nuovo di questa
+  sessione è stato provato così.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, controlla la CI su main e partiamo con la zona 1 della #113
+```
+
+**Lo stato precedente (2026-10-07, mezzogiorno).** **Tre rilievi del `critique` sono chiusi e due sono
 su `main`**: la **#111** (`f1cdb80`, bersagli di tocco) e la **#112** (`bc20f35`, focus del pannello),
 entrambe con CI e `Deploy database` verdi, branch cancellati. **Due PR sono aperte, verdi su tutti i check
 (`check` e `integration`), e aspettano solo di essere unite**: la **#114** (`waiting-states`, il
@@ -114,167 +215,9 @@ Il primo comando della sessione nuova:
 leggi docs/HANDOFF.md, guarda la CI delle PR #114 e #115 e continua con i rilievi del critique
 ```
 
-**Lo stato precedente (2026-10-07, notte).** **La rinfrescata alla UI è su `main`**, in due PR unite:
-la **#108** (`e900581`) e il suo seguito **#109** (`d0212a1`). Entrambi i branch sono cancellati in
-locale e su GitHub. Sulla #108 CI e `Deploy database` sono verdi; sulla #109 la CI era verde sulla PR
-e **la corsa su `main` era ancora in volo** a fine sessione, da guardare
-(`gh run list --branch main`).
-
-**Non è ancora verificato in produzione**, ed è la prima cosa da fare: **dal telefono**, perché le
-due cose che cambiano di più non si vedono in locale. Sulla Dashboard la barra deve essere una riga
-sola (le due sezioni stanno nel menu) e lo spazio sotto `latest` deve essere 48px come fra tutte le
-altre sezioni; su una pagina Tecnologia il menu del profilo deve prendere tutto lo schermo e
-restituirlo con la X o con Escape.
-
-⚠️ **La scala delle spaziature ha già fatto tre vittime.** `src/app/globals.css` azzera `--spacing` e
-definisce solo `--spacing-1..8`, quindi **tutte le utility con lo zero non esistono**: `right-0` ha
-lasciato il pannello ancorato a sinistra, fuori dallo schermo a 390px; `mt-0` dentro
-`[&>section]:mt-0` non è mai stato applicato e ha aperto **120px** di vuoto sotto `latest` al posto
-di 72; e `size-6` qui vale **32px, non 24**. Nel codice nuovo si scrivono i valori espliciti
-(`right-[0px]`, `mt-[0px]`, `size-[24px]`). **Strada aperta, proposta e non ancora decisa**:
-aggiungere `--spacing-0: 0px` a `globals.css` fa sparire la classe di problemi, ma tocca tutta la UI,
-quindi vuole la sua PR e la suite dietro.
-
-### Cosa è stato deciso in queste due PR, e perché
-
-- **Il menu del profilo** (foto GitHub, handle, `dashboard`, `technologies`, `sign out`) sta su ogni
-  pagina, pubbliche comprese, e risolve il link alla Dashboard che mancava su `/technologies/*`.
-  Sopra i 640px è un pannello appeso alla barra; **sotto, è un foglio a schermo intero** con l'uscita
-  in fondo. **È un solo elemento nel DOM**, il breakpoint lo trasforma: due copie vorrebbero dire due
-  link `dashboard` sulla pagina, e i test se ne accorgono.
-- ⚠️ **Il toggle del tema resta nella barra**, fuori dal menu: le pagine pubbliche si leggono anche
-  senza accesso e un visitatore non ha nessun menu in cui trovarlo. Non spostarlo senza risolvere
-  prima quello.
-- ⚠️ **Sotto i 640px la striscia con le due sezioni sparisce solo sulle pagine dietro l'accesso.**
-  Home e 404 la tengono, perché lì chi legge può essere un visitatore senza menu: toglierla
-  riaprirebbe il vicolo cieco della #63, e due test E2E lo sorvegliano.
-- ⚠️ **I riquadri dei conteggi non vanno allargati a tutta la colonna**: il limite di 72ch è la
-  correzione del difetto P2-9 della #47, un test E2E lo sorveglia, e a 992px l'etichetta e il suo
-  numero finiscono a un quarto di colonna di distanza. Provato e rimesso com'era, con l'utente che
-  aveva anche offerto di cambiare la regola.
-- **Spotlight dice il silenzio una volta sola** (una riga `note:` per il gruppo invece della stessa
-  frase su ogni riga), e la coda della pagina si chiude su una banda a due colonne da 1040px in su.
-- **`DESIGN.md` è stato cambiato dove la pagina lo smentiva**, non lasciato derivare: la One Raised
-  Plane Rule nomina il menu come unica superficie ammessa sopra il testo (il pannello che fluttua è
-  una scelta dell'utente, presa a ragion veduta), e la No Dead End Rule chiede una destinazione
-  sempre raggiungibile invece di una striscia in particolare.
-- ⚠️ **I mock `release.html` e `technology.html` non vanno cambiati**: mostrano il visitatore, che il
-  menu non ce l'ha. Quelli dietro l'accesso portano la barra nuova.
-- Il detector di impeccable segnala `cramped-padding` sul contenitore dell'uscita nei mock: **è un
-  falso positivo**, legge il padding del contenitore mentre la riga è alta 44px e centra il testo.
-  Insieme al raggio 3px del focus e alla "gerarchia tipografica piatta" (l'`h1` vero è `sr-only`)
-  sono le tre segnalazioni da non ridiagnosticare.
-
-**All'inizio di tutto**, l'utente aveva chiesto se usare una skill "ispirata alle web app famose"
-(tipo 21st.dev). **La risposta è stata no, e vale ancora**: quelle skill producono card, badge, ombre
-e accenti di brand, cioè l'elenco dei "Don't" di `DESIGN.md`. Si è usata `impeccable`, sul mock prima
-e sul codice poi.
-
-**Lo stato precedente (2026-10-06, notte fonda).** **La rinfrescata alla UI è aperta nella PR #108**,
-sul branch `dashboard-layout`, due commit, **non unita**: la CI era ancora in corso quando la sessione
-si è chiusa, **va guardata prima di unire** (`gh run list --branch dashboard-layout`). La PR non chiude
-nessuna issue: lavoro chiesto a voce, branch e PR comunque, come per la #107. In locale: `lint`,
-`typecheck`, **538 unitari** e **154 E2E** verdi.
-
-L'utente era partito chiedendo se usare una skill "ispirata alle web app famose" (tipo 21st.dev).
-**La risposta è stata no, e vale ancora**: quelle skill producono card, badge, ombre e accenti di
-brand, cioè l'elenco dei "Don't" di `DESIGN.md`. Si è usata `impeccable`, che ha la disposizione nel
-suo giro, sul mock prima e sul codice poi.
-
-### Cosa è cambiato, e cosa è stato deciso di non cambiare
-
-- **Il silenzio di Spotlight costa una riga sola.** `latest major · none featured in 30 days` si
-  ripeteva identico su ogni Tecnologia senza niente in evidenza. Ora una riga `note:` lo dice una
-  volta per il gruppo e le righe tengono solo ciò che le distingue. Ogni Tecnologia resta contata
-  esattamente una volta, come vuole il contratto di direzione in `.impeccable/`.
-- **La coda non si spegne più**: `previews` e `weekly digest` affiancati da 1040px in su. Dentro mezza
-  colonna le righe si riflettono come sul telefono, con la variante `min-[1040px]` passata solo a
-  quelle due sezioni: **le soglie di `DESIGN.md` non sono state toccate**.
-- ⚠️ **I riquadri dei conteggi NON vanno allargati a tutta la colonna.** È stato provato e rimesso
-  com'era: il limite di 72ch è la correzione del difetto P2-9 della #47, un test E2E lo sorveglia, e a
-  992px l'etichetta e il suo numero finiscono a un quarto di colonna di distanza. L'utente aveva
-  offerto di cambiare la regola; la raccomandazione, motivata sul renderizzato, è stata tenerla.
-- **Il pannello del profilo** (foto GitHub, handle, `dashboard`, `technologies`, `sign out`). La prima
-  versione era una striscia sotto la barra, che non rompeva nessuna regola; **l'utente ha chiesto un
-  pannello che fluttua**, e questa è una sua decisione presa a ragion veduta: `DESIGN.md` è stato
-  aggiornato invece di restare smentito (One Raised Plane Rule e il "Don't" sulle superfici).
-- **Il toggle del tema resta nella barra**, fuori dal pannello: le pagine pubbliche si leggono anche
-  senza accesso e un visitatore non ha nessun pannello in cui trovarlo. Non spostarlo senza risolvere
-  prima quello.
-- **Sotto i 640px la striscia con le due sezioni sparisce solo sulle pagine dietro l'accesso.** Home e
-  404 la tengono: lì il lettore può essere un visitatore senza pannello, e toglierla riaprirebbe il
-  vicolo cieco della #63. Due test E2E lo sorvegliano. Sotto i 429px la quota si prende la striscia da
-  sola, a tutta larghezza, e la barra resta le due righe della #47.
-
-⚠️ **Due trappole della scala delle spaziature**, già pagate: `globals.css` azzera `--spacing` e
-definisce solo `--spacing-1..8`, quindi **`right-0`, `top-0` e simili non esistono** (il pannello
-restava ancorato a sinistra e a 390px usciva dallo schermo) e **`size-6` vale 32px, non 24**. Nei file
-nuovi si scrivono i valori espliciti, `right-[0px]` e `size-[24px]`.
-
-⚠️ **I mock `release.html` e `technology.html` non vanno cambiati**: mostrano il visitatore, che il
-pannello non ce l'ha. Quelli dietro l'accesso (`dashboard.html`, `technologies.html`) portano la
-barra nuova. In `dashboard.html` la riga `in use` sta sopra l'elenco dei breaking perché lì esiste il
-puntatore `--> migrate`, che **la Dashboard costruita non ha**: nel codice quella riga appartiene alla
-Tecnologia, che può portare due Release in evidenza, e resta dopo le celle.
-
-**Da fare dopo il merge**: guardare la Dashboard e una pagina Tecnologia in produzione, da telefono,
-perché la barra a una riga e il pannello sono esattamente ciò che non si vede in locale.
-
-**Lo stato precedente (2026-10-06, notte).** **Il ritento dei transitori è fatto**, con la **PR #107**,
-unita su `main` (`9b0fe58`), e il branch `catalog-sync-transient-retry` è cancellato in locale e su
-GitHub. **`CI` e `Deploy database` verdi** sul merge (run 37520785712, `integration` in 6m24s):
-**151 E2E, 1 saltato, zero flaky**.
-**Niente da verificare in produzione**: il lavoro tocca solo gli adattatori usati dai job server, e
-il suo effetto si vede unicamente quando una Fonte fa i capricci. La prima occasione in cui gira per
-davvero è il `catalog:sync` del prossimo deploy.
-
-**Chiesto dall'utente senza aprire una issue**, come già per il flake sui follow: `CLAUDE.md` chiede
-un branch e una PR, e questa volta li ha avuti tutti e due, quindi **non è un'eccezione come la
-#104 o `4645504`**. La PR non chiude niente e il corpo lo dice.
-
-**Non c'è nessuna issue `ready-for-agent`**, quindi il lavoro seguente si sceglie fra le strade
-aperte qui sotto e vuole il via dell'utente. **Le issue non si prendono per ora, per scelta
-dell'utente**: ci si torna quando avrà credito sul conto.
-
-### Il ritento dei transitori, e perché la diagnosi prima era mal puntata
-
-La CI su `main` è caduta sul commit dei documenti `ff92122`, e **la causa non era il commit**: GitHub
-ha risposto **504** alla terza pagina delle release di `electron`, `catalog:sync` è uscito con codice
-1 e si è portato via `build` e gli E2E, che non sono mai partiti. `check` e `test:integration` erano
-verdi. Rilanciato il solo job fallito (`gh run rerun <id> --failed`) è passato: **151 E2E, 1 saltato,
-zero flaky**.
-
-⚠️ **Da non ridiagnosticare da zero**: `sync-catalog.mts` **già** tollerava la Tecnologia che cade e
-tirava avanti con le altre, il suo commento lo dice da sempre. Il buco stava un livello sotto:
-**nessuna delle quattro chiamate HTTP** degli adattatori ritentava mai, quindi un transitorio era
-definitivo. Misurato a mano: quella pagina di `electron` risponde **200 in 4,5 secondi**, cioè sta sul
-bordo del timeout di GitHub, ed è per questo che un ritento è la cura giusta e non un cerotto.
-
-- **`retrying.ts`** (25 righe) avvolge un `fetch` e riprova secondo un calendario di attese,
-  `[1s, 4s]` per difetto. **Il calendario è la politica**: un test lo mette a zero e non aspetta
-  niente, che è il motivo per cui è un parametro e non una costante nascosta.
-- `createSourceAdapters` avvolge **una volta** il `fetch` che riceve per iniezione, e le quattro
-  chiamate (npm, le due di GitHub, il CHANGELOG) ritentano senza sapere di farlo. Nessuna logica di
-  nessun adattatore è stata toccata.
-- **Si ritenta un 5xx o una connessione che non si è mai aperta. Non un 4xx**, perché è una risposta,
-  **e nemmeno il 429**: il limite di GitHub si azzera in minuti o in un'ora, quindi riprovare dopo 4
-  secondi lo ripeterebbe soltanto e nasconderebbe perché la corsa è tornata vuota. È una scelta, non
-  una dimenticanza.
-- I quattro test nuovi passano per `createSourceAdapters` e non per la funzione nuda, così provano
-  anche che il ritento sia arrivato davvero agli adattatori.
-
-**Verifiche**: `lint` e `typecheck` puliti, **537 unitari** (533 più 4). File a 187 e 25 righe: il
-ritento è uscito da `source-adapters.ts` perché lo portava a 208 righe, oltre il limite di ~200, e la
-separazione è comunque quella giusta (la politica del trasporto non è la grammatica delle Fonti).
-
-**Decisione lasciata aperta di proposito, non un difetto.** Se dopo i tre tentativi una Tecnologia
-resta fuori, lo script esce ancora con **codice 1**, e in CI questo continua a portarsi via `build` e
-gli E2E. È un segnale voluto, ma vuol dire che una Fonte giù per davvero blocca una suite che non
-c'entra niente. È una riga da cambiare, e l'utente non l'ha ancora decisa.
-
-⚠️ **Trappola pagata in questa sessione**: il primo commit ha preso il titolo `@`, perché la sintassi
-PowerShell (`@'...'@`) è finita nel tool Bash. Il controllo del messaggio **prima** del push l'ha
-intercettata e l'`--amend` l'ha corretta. Le due shell vogliono due sintassi: heredoc in Bash.
+**Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
+chiude. Sono nate il 2026-10-06, insieme allo stato del ritento dei transitori, che è stato spostato
+in `docs/handoff/2026-10.md`.
 
 ### Lo stage, pensato con l'utente e non ancora deciso
 
@@ -358,6 +301,14 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-07 (notte): la rinfrescata alla UI su `main` (PR #108 e #109)
+  - ⚠️ La scala delle spaziature non ha lo zero: `right-0` e `mt-0` cadono, e `size-6` vale 32px
+  - Il menu del profilo, il toggle che resta nella barra e i riquadri da non allargare
+- Stato al 2026-10-06 (notte fonda): la rinfrescata aperta nella PR #108, non unita
+  - ⚠️ I mock del visitatore non vanno cambiati, e perché `in use` sta in due posti diversi
+- Stato al 2026-10-06 (notte): il ritento dei transitori (PR #107)
+  - ⚠️ La diagnosi prima era mal puntata: il buco era nelle quattro chiamate HTTP, non nello script
+  - ⚠️ La here-string di PowerShell dentro Bash ha messo `@` come titolo di un commit
 - Stato al 2026-10-06 (sera tardi): la #64 chiusa (PR #106), la riga che si sposta al follow
 - Stato al 2026-10-06 (sera): la #100 chiusa (PR #105), e la #86 (PR #102)
 - Stato al 2026-10-06 (pomeriggio): le due box della Dashboard (PR #104)
@@ -504,6 +455,10 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   La **#47** è **chiusa il 2026-10-05** con la PR #92, che la portava a termine dopo le PR #89, #90
   e #91; la **#84** è chiusa lo stesso giorno con la **PR #95**. Resta la **#26** come ultima fetta
   del PRD.
+  Aperte il 2026-10-07: **#113** (riordinare le due zone sopra le Release, `ready-for-human`: la
+  zona 2 è fatta con la PR #121, la zona 1 ha la direzione nuova in un commento), **#119** (ripensare
+  la barra) e **#120** (le icone delle Tecnologie), le ultime due `ready-for-human` e in attesa del
+  via dell'utente.
   Aperta il 2026-10-05: **#94** (il verdetto della Dashboard si contraddice, `ready-for-human`).
   Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
   Aperta dall'utente il 2026-10-04: **#88** (una Sintesi `ready` senza provenienza non viene
