@@ -9,6 +9,7 @@ export {
   SummaryStatusSchema,
 } from "./domain/initial-summary-status";
 export { publicPagesFor, type ReleaseRef } from "./domain/revalidation";
+export { type RowVerdict, rowVerdict, type Tone } from "./domain/row-verdict";
 export {
   type DetectedRelease,
   type DetectionCandidate,

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { releasePath } from "@/modules/releases";
-import { isoDate, SeverityLabel, SignificanceLabel } from "@/modules/releases/ui";
+import { releasePath, rowVerdict } from "@/modules/releases";
+import { isoDate, RowVerdictLine, SeverityLabel, SignificanceLabel } from "@/modules/releases/ui";
 import { InlineCode } from "@/modules/summaries/ui";
 import type { BehindStanding, DashboardRelease } from "../domain/build-dashboard";
 import { isoWeekKey, isoWeekOf } from "../domain/iso-week";
-import { behindLine, rowVerdict } from "./dashboard-copy";
+import { behindLine } from "./dashboard-copy";
 
 // The pieces every row of the Dashboard is made of, shared by Spotlight, Latest and Previews so
 // the same Release reads the same way wherever it appears.
@@ -57,13 +57,13 @@ export function PublishedAt({
   );
 }
 
+// The same verdict the Technology page prints, from the same function, with the Release Notes as a
+// link where there are any: the Dashboard used to collapse four states into one line that told the
+// reader to read notes a Release with `unavailable` has not got.
 export function RowVerdict({ release }: { release: DashboardRelease }) {
-  const verdict = rowVerdict(release);
-
   return (
     <p className="mt-[2px] font-mono text-diagnostic">
-      <SeverityLabel tone={verdict.tone} label={verdict.label} pending={verdict.pending} />{" "}
-      <span className={verdict.tone === "muted" ? "text-text-muted" : undefined}>{verdict.claim}</span>
+      <RowVerdictLine verdict={rowVerdict(release)} href={releasePath(release.slug, release.version)} />
     </p>
   );
 }

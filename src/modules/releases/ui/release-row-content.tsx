@@ -17,7 +17,7 @@ export function ReleaseRowContent({ slug, release }: { slug: string; release: Su
           <InlineCode text={release.summary.title} />
         </p>
       )}
-      <ReleaseVerdict release={release} />
+      <ReleaseVerdict slug={slug} release={release} />
       {breaking.length > 0 && (
         <>
           <ul aria-label={`Breaking changes in ${release.version}`} className="mt-3 text-diagnostic leading-[1.6]">

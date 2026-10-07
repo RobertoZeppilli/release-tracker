@@ -1,8 +1,9 @@
 import type { DefaultStartReason } from "../domain/default-upgrade-start";
+import type { Tone } from "../domain/row-verdict";
 import type { InvalidFrom, PathCounts, RecordedHistory } from "../domain/upgrade-path";
 import { isoDate } from "./release-rows";
 
-export type Tone = "action" | "ok" | "muted" | "breaking";
+export type { Tone };
 
 export type Verdict = { tone: Tone; label: string; claim: string };
 
