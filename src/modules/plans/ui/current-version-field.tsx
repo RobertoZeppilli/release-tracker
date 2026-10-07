@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "@/modules/auth/ui";
 import { compareVersions, parseVersion } from "@/modules/releases";
 import {
   invalidMessage,
   isoDate,
+  PANEL_CELL_CLASS,
+  PANEL_ROW_CLASS,
+  PanelNoteRow,
   SeverityLabel,
   VERSION_BUTTON_CLASS,
   VERSION_INPUT_CLASS,
-  VERSION_LABEL_CLASS,
 } from "@/modules/releases/ui";
 import type { Decline } from "../domain/current-version";
 import { useFollows } from "./follows-provider";
@@ -31,26 +34,27 @@ function message(decline: Decline, version: string, latest: string | null): stri
   return invalidMessage(decline, version, latest);
 }
 
-// Where a Developer declares the Version they are on, right under the Follow that carries it. The
-// day of the declaration is always on the line: the app never checks it, so a reader has to be able
-// to see how old it is. Clearing it is one press, because a declaration nobody keeps up is worse
-// than none (CONTEXT.md, Versione in uso).
-export function CurrentVersionField({
-  technologyId,
-  name,
-  latest,
-  className,
-}: {
-  technologyId: string;
-  name: string;
-  latest: string | null;
-  className?: string;
-}) {
+// The row is there only for a Developer who follows this Technology, a retired one included, and
+// only once the follows have answered: until then `isFollowing` is false for every Technology, which
+// is not a first state but no state at all (see `TechnologyFollow`). Nothing is reserved for it,
+// unlike the Follow: for a Visitor it never arrives, and a hole kept open for the commonest reader
+// of the page is worse than the row landing when it is known (DESIGN.md, The Reserved Space Rule).
+export function CurrentVersionField({ technologyId, name, latest }: { technologyId: string; name: string; latest: string | null }) {
+  const session = useSession();
+  const follows = useFollows();
+  if (session.state !== "developer" || !follows.known || !follows.isFollowing(technologyId)) return null;
+  return <DeclarationRow technologyId={technologyId} name={name} latest={latest} />;
+}
+
+// Where a Developer declares the Version they are on, the first row of the Upgrade Panel, right
+// above the start of the path it feeds. The day of the declaration is always under it: the app never
+// checks it, so a reader has to be able to see how old it is. Clearing it is one press, because a
+// declaration nobody keeps up is worse than none (CONTEXT.md, Versione in uso).
+function DeclarationRow({ technologyId, name, latest }: { technologyId: string; name: string; latest: string | null }) {
   const follows = useFollows();
   const declared = follows.currentVersionOf(technologyId);
   const busy = follows.isDeclaring(technologyId);
-  // What the field holds once it has been touched; until then it shows the declaration itself, which
-  // only arrives when the follows do.
+  // What the field holds once it has been touched; until then it shows the declaration itself.
   const [typed, setTyped] = useState<string | null>(null);
   const [refused, setRefused] = useState<Decline | null>(null);
   const value = typed ?? declared?.version ?? "";
@@ -78,46 +82,55 @@ export function CurrentVersionField({
         if (!busy) save();
       }}
       aria-label={`Version of ${name} in use`}
-      className={`flex flex-wrap items-center gap-3 font-mono text-diagnostic text-text-muted ${className ?? ""}`}
+      className="flex flex-col gap-2"
     >
-      <label htmlFor={FIELD_ID} className={VERSION_LABEL_CLASS}>
-        Version in use
-      </label>
-      <input
-        id={FIELD_ID}
-        name="current-version"
-        value={value}
-        onChange={(event) => {
-          setTyped(event.target.value);
-          setRefused(null);
-        }}
-        autoComplete="off"
-        spellCheck={false}
-        placeholder={latest ?? ""}
-        aria-invalid={decline ? true : undefined}
-        aria-describedby={decline || declared ? NOTE_ID : undefined}
-        className={VERSION_INPUT_CLASS}
-      />
-      <button type="submit" disabled={busy} className={VERSION_BUTTON_CLASS}>
-        Save
-      </button>
-      {declared && (
-        <button type="button" disabled={busy} onClick={clear} className={VERSION_BUTTON_CLASS}>
-          Clear
-        </button>
-      )}
-      {decline ? (
-        <p id={NOTE_ID} className="m-0 basis-full text-breaking">
-          <SeverityLabel tone="breaking" label="error:" /> {message(decline, value.trim(), latest)}
-        </p>
-      ) : declared ? (
-        <p id={NOTE_ID} className="m-0 basis-full">
-          <SeverityLabel tone="muted" label="note:" /> declared on {isoDate(declared.declaredAt)}, and the upgrade path
-          below starts from it.
-        </p>
-      ) : (
-        <span className="text-text-faint">not declared</span>
-      )}
+      <div className={PANEL_ROW_CLASS}>
+        <label htmlFor={FIELD_ID}>in use</label>
+        <span className={PANEL_CELL_CLASS}>
+          <input
+            id={FIELD_ID}
+            name="current-version"
+            aria-label="Version in use"
+            value={value}
+            onChange={(event) => {
+              setTyped(event.target.value);
+              setRefused(null);
+            }}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={latest ?? ""}
+            aria-invalid={decline ? true : undefined}
+            aria-describedby={NOTE_ID}
+            className={VERSION_INPUT_CLASS}
+          />
+          <button type="submit" disabled={busy} className={VERSION_BUTTON_CLASS}>
+            Save
+          </button>
+          {declared && (
+            <button type="button" disabled={busy} onClick={clear} className={VERSION_BUTTON_CLASS}>
+              Clear
+            </button>
+          )}
+        </span>
+      </div>
+      {/* One slot under the field, whatever it has to say: the day of the declaration, that there is
+          none, or why the last one was refused. The path starts from this version, and the `from`
+          row below shows it, so nothing has to say so in prose. */}
+      <PanelNoteRow>
+        {decline ? (
+          <span id={NOTE_ID} className="text-breaking">
+            <SeverityLabel tone="breaking" label="error:" /> {message(decline, value.trim(), latest)}
+          </span>
+        ) : declared ? (
+          <span id={NOTE_ID} className="text-text-faint">
+            declared {isoDate(declared.declaredAt)}
+          </span>
+        ) : (
+          <span id={NOTE_ID} className="text-text-faint">
+            not declared
+          </span>
+        )}
+      </PanelNoteRow>
     </form>
   );
 }

@@ -7,7 +7,7 @@ import { createPublicClient } from "@/lib/supabase";
 import { technologyMeta } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
 import { TechnologyHeader } from "@/modules/catalog/ui";
-import { TechnologyFollow, TechnologyScope } from "@/modules/plans/ui";
+import { CurrentVersionField, TechnologyFollow, TechnologyScope } from "@/modules/plans/ui";
 import { defaultUpgradeStart, groupByMajor } from "@/modules/releases";
 import { listReleases } from "@/modules/releases/server";
 import { ReleaseList, UpgradePathBlock, UpgradePathView } from "@/modules/releases/ui";
@@ -46,6 +46,9 @@ export default async function TechnologyPage({ params }: Props) {
   // The start the page falls back to when nobody gave one, derived from the Releases alone, so it is
   // part of the cached render: the Visitor who never fills the form still lands on an Upgrade Path.
   const fallback = defaultUpgradeStart(releases);
+  // The first row of the Upgrade Panel, composed here for the same reason the Follow is: declaring a
+  // Version in use belongs to `plans`, and the Upgrade Path takes it as an element.
+  const declaration = <CurrentVersionField technologyId={technology.id} name={technology.name} latest={grouped.latest} />;
 
   return (
     <>
@@ -58,12 +61,7 @@ export default async function TechnologyPage({ params }: Props) {
             technology={technology}
             latest={grouped.latest}
             follow={
-              <TechnologyFollow
-                technologyId={technology.id}
-                name={technology.name}
-                retired={technology.retired}
-                latest={grouped.latest}
-              />
+              <TechnologyFollow technologyId={technology.id} name={technology.name} retired={technology.retired} />
             }
           />
           {grouped.latest ? (
@@ -77,6 +75,7 @@ export default async function TechnologyPage({ params }: Props) {
                   retired={technology.retired}
                   releases={releases}
                   start={fallback ? { kind: "default", ...fallback } : { kind: "none" }}
+                  declaration={declaration}
                 >
                   {list}
                 </UpgradePathBlock>
@@ -89,6 +88,7 @@ export default async function TechnologyPage({ params }: Props) {
                 retired={technology.retired}
                 releases={releases}
                 fallback={fallback}
+                declaration={declaration}
               >
                 {list}
               </UpgradePathView>

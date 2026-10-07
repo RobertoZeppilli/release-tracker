@@ -1,7 +1,6 @@
 import type { DefaultStartReason } from "../domain/default-upgrade-start";
 import type { Tone } from "../domain/row-verdict";
 import type { InvalidFrom, PathCounts, RecordedHistory } from "../domain/upgrade-path";
-import { isoDate } from "./release-rows";
 
 export type { Tone };
 
@@ -81,12 +80,6 @@ function missingWords({ missing, unjudged }: PathCounts): string | null {
   const parts = [missing - unjudged > 0 && `${missing - unjudged} not summarized`, unjudged > 0 && `${unjudged} to check`];
   const words = parts.filter((part) => part !== false);
   return words.length > 0 ? words.join(" · ") : null;
-}
-
-// A declaration the app never verifies: the note names the day it was made, so the numbers under it
-// can be read for what they are worth.
-export function declaredStartNote(version: string, declaredAt: Date): string {
-  return `starting from ${version}, the version you declared in use on ${isoDate(declaredAt)}.`;
 }
 
 // A start the page chose on its own: the note says which Release it is and why that one, so the

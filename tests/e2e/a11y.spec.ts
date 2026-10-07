@@ -183,7 +183,7 @@ for (const theme of THEMES) {
       await addFollows(developer.id, [technology.id]);
       await declareCurrentVersion(developer.id, technology.id, "1.9.0");
       await page.goto(`/technologies/${technology.slug}`);
-      await expect(page.locator("#current-version-note")).toContainText("declared on");
+      await expect(page.locator("#current-version-note")).toHaveText(/declared \d{4}-\d{2}-\d{2}/);
       await scan(page, theme);
 
       await page.getByLabel("Version in use", { exact: true }).fill("9.9.9");

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { loginPath } from "@/modules/auth";
 import { useSession } from "@/modules/auth/ui";
-import { CurrentVersionField } from "./current-version-field";
 import { FollowRejectionNote } from "./follow-rejection-note";
 import { FOLLOW_LINK_CLASS, FollowToggle } from "./follow-toggle";
 import { useFollows } from "./follows-provider";
@@ -25,17 +24,7 @@ const RESERVED = `${PLACE} block h-[34px]`;
 // Toggle, limit and refusal included, because both come from the same provider, which the page's
 // `TechnologyScope` holds. Nothing shows until the session is known, rather than a Follow that might
 // be wrong.
-export function TechnologyFollow({
-  technologyId,
-  name,
-  retired,
-  latest,
-}: {
-  technologyId: string;
-  name: string;
-  retired: boolean;
-  latest: string | null;
-}) {
+export function TechnologyFollow({ technologyId, name, retired }: { technologyId: string; name: string; retired: boolean }) {
   const session = useSession();
   const pathname = usePathname();
 
@@ -52,7 +41,7 @@ export function TechnologyFollow({
     );
   }
 
-  return <FollowControl technologyId={technologyId} name={name} retired={retired} latest={latest} />;
+  return <FollowControl technologyId={technologyId} name={name} retired={retired} />;
 }
 
 // The provider has no follows from the server here: the query loads them, and until it answers
@@ -61,17 +50,7 @@ export function TechnologyFollow({
 // So the reserved box waits instead, the same one the unknown session shows, and the control arrives
 // once it has something true to say. On `/technologies` the server hands the follows over, so the
 // provider starts knowing and no row there ever waits.
-function FollowControl({
-  technologyId,
-  name,
-  retired,
-  latest,
-}: {
-  technologyId: string;
-  name: string;
-  retired: boolean;
-  latest: string | null;
-}) {
+function FollowControl({ technologyId, name, retired }: { technologyId: string; name: string; retired: boolean }) {
   const follows = useFollows();
   const following = follows.isFollowing(technologyId);
   const rejection = follows.rejectionOn(technologyId);
@@ -100,8 +79,6 @@ function FollowControl({
       </span>
       <FollowToggleLimitNote technologyId={technologyId} className={NOTE} />
       {rejection && <FollowRejectionNote id={ERROR_ID} rejection={rejection} className={NOTE} />}
-      {/* A retired Technology that is still followed declares a Version in use like any other. */}
-      {following && <CurrentVersionField technologyId={technologyId} name={name} latest={latest} className={NOTE} />}
     </>
   );
 }

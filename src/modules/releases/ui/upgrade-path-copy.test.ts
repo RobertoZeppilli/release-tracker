@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PathCounts } from "../domain/upgrade-path";
 import {
-  declaredStartNote,
   defaultStartNote,
   historySentence,
   invalidMessage,
@@ -63,14 +62,6 @@ describe("upgrade path copy", () => {
   it("explains how to fix an invalid starting Version", () => {
     expect(invalidMessage("malformed", "abc", "6.0.3")).toBe("abc is not a version. Write it as major.minor.patch, for example 6.0.3.");
     expect(invalidMessage("notOlder", "7.0.0", "6.0.3")).toBe("7.0.0 is newer than 6.0.3, the latest stable release.");
-  });
-});
-
-describe("declaredStartNote", () => {
-  it("names the Version and the day it was declared, right above the counts built on it", () => {
-    expect(declaredStartNote("6.0.0", new Date("2026-09-12T00:00:00Z"))).toBe(
-      "starting from 6.0.0, the version you declared in use on 2026-09-12.",
-    );
   });
 });
 
