@@ -7,6 +7,22 @@ export type { Tone };
 
 export type Verdict = { tone: Tone; label: string; claim: string };
 
+// The three significance levels a bar is made of, in the order it fills them (DESIGN.md, Stat Row).
+// `preview` is not one of them: the previews are listed apart from the path, so no bar carries them.
+export const BAR_LEVELS = ["featured", "notable", "digest"] as const;
+export type BarLevel = (typeof BAR_LEVELS)[number];
+
+// DESIGN.md, Stat Row: the legend lists only the levels that appear in the bars, so it never
+// explains a fill the reader cannot find in them. `needs action` is last and is not a level: it is
+// the one lane that cuts across the partition, so it is listed only when a bar carries it.
+export function legendLevels(groups: readonly PathCounts[]): BarLevel[] {
+  return BAR_LEVELS.filter((level) => groups.some((group) => group[level] > 0));
+}
+
+export function barHasAction(groups: readonly PathCounts[]): boolean {
+  return groups.some((group) => group.actionRequired > 0);
+}
+
 function count(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`;
 }

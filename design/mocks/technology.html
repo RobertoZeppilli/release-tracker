@@ -101,8 +101,11 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .stat { list-style: none; margin: var(--space-5) 0 0; padding: 0; max-width: 820px; border-top: 1px solid var(--rule); }
 .stat li { display: grid; grid-template-columns: 3ch 1ch minmax(120px, 1fr) auto; gap: var(--space-4); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--rule); font: 400 14px var(--mono); }
 .stat .major { color: var(--text); }
-.bar-track { display: block; }
-.bar { display: flex; height: 8px; gap: 2px; min-width: 28px; }
+.bar-track { display: flex; flex-direction: column; gap: 2px; min-width: 28px; }
+.bar { display: flex; height: 8px; gap: 2px; }
+/* The one hue in a bar: `action` already means action required everywhere else, and it cuts
+   across the partition instead of dividing it, so it is a rule under the bar. */
+.needs { display: block; height: 2px; background: var(--action); }
 .bar span { display: block; height: 100%; }
 .bar .b-featured { background: var(--text); }
 .bar .b-notable { background: var(--text-muted); }
@@ -110,8 +113,8 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .bar .b-digest { background: var(--rule-strong); }
 .stat .words { color: var(--text-muted); white-space: nowrap; }
 .stat .words .n-action { color: var(--action); white-space: nowrap; }
-.legend { margin: var(--space-2) 0 0; display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 12px var(--mono); color: var(--text-faint); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend { margin: var(--space-2) 0 0; padding: 0; list-style: none; display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 12px var(--mono); color: var(--text-faint); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { display: inline-block; width: 10px; height: 8px; }
 
 /* Major groups */
@@ -293,20 +296,24 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
     <ul class="stat" aria-label="Releases per major version">
       <li>
         <span class="major">v6</span><span class="pipe" aria-hidden="true">|</span>
-        <span class="bar-track" aria-hidden="true"><span class="bar" style="width:12.5%"><span class="b-featured" style="flex:1"></span><span class="b-digest" style="flex:3"></span></span></span>
-        <span class="words">4 releases · 1 featured <span class="n-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: needs action</span> · 3 digest</span>
+        <span class="bar-track" style="width:12.5%" aria-hidden="true"><span class="bar"><span class="b-featured" style="flex:1"></span><span class="b-digest" style="flex:3"></span></span><span class="needs" style="width:25%"></span></span>
+        <span class="words">4 releases · 1 featured · 3 digest, <span class="n-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>1 needs action</span></span>
       </li>
       <li>
         <span class="major">v5</span><span class="pipe" aria-hidden="true">|</span>
-        <span class="bar-track" aria-hidden="true"><span class="bar" style="width:100%"><span class="b-notable" style="flex:2"></span><span class="b-digest" style="flex:30"></span></span></span>
-        <span class="words">32 releases · 2 notable, 1 not summarized · 30 digest</span>
+        <span class="bar-track" style="width:100%" aria-hidden="true"><span class="bar"><span class="b-notable" style="flex:2"></span><span class="b-digest" style="flex:30"></span></span></span>
+        <span class="words">32 releases · 2 notable · 30 digest, 1 not summarized</span>
       </li>
     </ul>
-    <p class="legend" aria-hidden="true">
-      <span><svg class="sig" style="color:var(--text)"><use href="#s-featured"/></svg><i style="background:var(--text)"></i>featured</span>
-      <span><svg class="sig" style="color:var(--text-muted)"><use href="#s-notable"/></svg><i style="background:var(--text-muted)"></i>notable</span>
-      <span><svg class="sig" style="color:var(--text-faint)"><use href="#s-digest"/></svg><i style="background:var(--rule-strong)"></i>digest</span>
-    </p>
+    <!-- Read out as well as seen: it is the only place shape, fill and word are mapped to each
+         other, so it is a list with a name instead of three bare words. It carries only the levels
+         the bars above actually use, and `needs action` last, where the amber lane is drawn. -->
+    <ul class="legend" aria-label="Bar fills">
+      <li><svg class="sig" style="color:var(--text)" aria-hidden="true"><use href="#s-featured"/></svg><i style="background:var(--text)"></i>featured</li>
+      <li><svg class="sig" style="color:var(--text-muted)" aria-hidden="true"><use href="#s-notable"/></svg><i style="background:var(--text-muted)"></i>notable</li>
+      <li><svg class="sig" style="color:var(--text-faint)" aria-hidden="true"><use href="#s-digest"/></svg><i style="background:var(--rule-strong)"></i>digest</li>
+      <li><i style="height:2px;background:var(--action)"></i>needs action</li>
+    </ul>
   </section>
 
   <section class="group" aria-labelledby="g6">

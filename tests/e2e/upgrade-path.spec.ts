@@ -31,6 +31,14 @@ test("the path is there before anyone asks, starting from the last release of th
   await expect(page.getByRole("region", { name: "v2 3 releases" })).toBeVisible();
   await expect(page.getByRole("region", { name: /^v1/ })).toHaveCount(0);
 
+  // One group, so there is nothing to compare: a bar alone would be 100% of itself and say it of
+  // every path. The words stay and the lane goes, which is why no `|` is left in the row, and the
+  // legend goes with the bars it explains.
+  await expect(page.getByRole("list", { name: "Releases per major version" }).getByRole("listitem")).toHaveText([
+    "v23 releases · 1 featured · 1 notable · 1 digest, 1 needs action, 1 not summarized",
+  ]);
+  await expect(page.getByRole("list", { name: "Bar fills" })).toHaveCount(0);
+
   // And the whole recorded history is one pointer away.
   await page.getByRole("link", { name: "show all 7 releases" }).click();
   await expect(page).toHaveURL(`/technologies/${technology.slug}?from=`);
@@ -51,10 +59,22 @@ test("entering a Version gives the verdict for the range and leads to its Releas
       "Between 1.0.0 and 2.1.0 there are 5 releases: 1 needs action, 1 is safe to upgrade, 1 has no summary yet (check its notes) and 2 are digest fixes you can skip.",
     ),
   ).toBeVisible();
+  // The cross-cutting counts come after a comma, the partition after a dot: 1 + 1 + 1 is the 3 the
+  // row opens with, and the two numbers that count the same Releases again stay outside that sum
+  // (DESIGN.md, Stat Row). The `|` is the bar's own lane, and two majors is what earns it.
   const stats = page.getByRole("list", { name: "Releases per major version" }).getByRole("listitem");
   await expect(stats).toHaveText([
     "v1|2 releases · 1 notable · 1 digest",
-    "v2|3 releases · 1 featured · 1 notable · 1 digest · 1 needs action · 1 not summarized",
+    "v2|3 releases · 1 featured · 1 notable · 1 digest, 1 needs action, 1 not summarized",
+  ]);
+  // The legend is read out, not only seen, so it is a list with a name: it lists the levels the bars
+  // actually carry, and `needs action` last, because the amber lane cuts across them instead of
+  // dividing the bar.
+  await expect(page.getByRole("list", { name: "Bar fills" }).getByRole("listitem")).toHaveText([
+    "featured",
+    "notable",
+    "digest",
+    "needs action",
   ]);
   await expect(page.getByRole("heading", { name: "v1 2 releases after 1.0.0" })).toBeVisible();
   await expect(page.getByRole("region", { name: "previews ahead of 2.1.0" })).toContainText("2.2.0-beta.0");
