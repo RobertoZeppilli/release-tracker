@@ -11,6 +11,16 @@ const SHAPES: Record<Significance, ReactNode> = {
   ),
 };
 
+// The shape alone, for the one place that maps shapes to words instead of labelling a row: the Stat
+// Row legend, which pairs it with the fill it stands for.
+export function SignificanceGlyph({ significance }: { significance: Significance }) {
+  return (
+    <svg viewBox="0 0 12 12" className="size-3 flex-none" aria-hidden>
+      {SHAPES[significance]}
+    </svg>
+  );
+}
+
 // `labelHidden` keeps the word for assistive technology and shows the shape alone: on a section
 // where every row carries the same Significance, repeating the word on each line is noise.
 export function SignificanceLabel({
@@ -22,9 +32,7 @@ export function SignificanceLabel({
 }) {
   return (
     <span className="inline-flex items-center gap-[6px] font-mono text-label text-text-muted">
-      <svg viewBox="0 0 12 12" className="size-3 flex-none" aria-hidden>
-        {SHAPES[significance]}
-      </svg>
+      <SignificanceGlyph significance={significance} />
       <span className={labelHidden ? "sr-only" : undefined}>{significance}</span>
     </span>
   );

@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { PathCounts } from "../domain/upgrade-path";
-import { declaredStartNote, defaultStartNote, historySentence, invalidMessage, majorWords, pathSentence, pathVerdict } from "./upgrade-path-copy";
+import {
+  declaredStartNote,
+  defaultStartNote,
+  historySentence,
+  invalidMessage,
+  barHasAction,
+  legendLevels,
+  majorWords,
+  pathSentence,
+  pathVerdict,
+} from "./upgrade-path-copy";
 
 const none: PathCounts = { total: 0, featured: 0, notable: 0, digest: 0, actionRequired: 0, safe: 0, missing: 0, unjudged: 0 };
 
@@ -94,5 +104,40 @@ describe("the note over the whole recorded history", () => {
 
   it("says the silence when there is nothing recorded", () => {
     expect(historySentence({ listed: 0, stable: 0, previews: 0, majors: [] })).toBe("nothing recorded yet.");
+  });
+});
+
+// DESIGN.md, Stat Row: the legend explains the fills of the bars, so it may not name a fill the
+// reader cannot see anywhere in them.
+describe("legendLevels", () => {
+  it("names the levels in the order the bar fills them, not in the order they were counted", () => {
+    expect(legendLevels([{ ...none, total: 2, digest: 1, featured: 1 }])).toEqual(["featured", "digest"]);
+  });
+
+  it("leaves out a level no group has", () => {
+    expect(legendLevels([{ ...none, total: 1, notable: 1 }])).toEqual(["notable"]);
+  });
+
+  it("takes a level that only one group has", () => {
+    expect(legendLevels([
+      { ...none, total: 1, digest: 1 },
+      { ...none, total: 2, featured: 1, digest: 1 },
+    ])).toEqual(["featured", "digest"]);
+  });
+
+  it("names nothing when there is nothing in the bars", () => {
+    expect(legendLevels([])).toEqual([]);
+    expect(legendLevels([none])).toEqual([]);
+  });
+});
+
+describe("barHasAction", () => {
+  it("is true when any group carries a Release that needs action", () => {
+    expect(barHasAction([{ ...none, total: 1, featured: 1 }, { ...none, total: 2, digest: 2, actionRequired: 1 }])).toBe(true);
+  });
+
+  it("is false when no group does, so the legend never explains a lane that is not drawn", () => {
+    expect(barHasAction([{ ...none, total: 1, featured: 1 }])).toBe(false);
+    expect(barHasAction([])).toBe(false);
   });
 });
