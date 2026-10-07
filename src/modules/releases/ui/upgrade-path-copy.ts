@@ -27,10 +27,12 @@ function count(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`;
 }
 
-// Releases without a ready Summary are never called safe (CONTEXT.md, Cammino di upgrade).
+// Releases without a ready Summary are never called safe (CONTEXT.md, Cammino di upgrade). The
+// verdict counts all of `missing`, while the Stat Row beside it splits that number in two, so it
+// cannot borrow either half's word: `to check` belongs to `unjudged` alone (see missingWords).
 export function pathVerdict(counts: PathCounts): Verdict {
   if (counts.actionRequired > 0) return { tone: "action", label: "warning:", claim: count(counts.actionRequired, "needs action", "need action") };
-  if (counts.missing > 0) return { tone: "muted", label: "note:", claim: `${counts.missing} to check` };
+  if (counts.missing > 0) return { tone: "muted", label: "note:", claim: `${counts.missing} without a verdict` };
   if (counts.total === 0) return { tone: "ok", label: "ok:", claim: "up to date" };
   return { tone: "ok", label: "ok:", claim: "safe to upgrade" };
 }
