@@ -16,74 +16,101 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-07, mattina).** **Il giro impeccable è stato riaperto sull'app
-intera**, e il primo rilievo è già chiuso con la **PR #110**, unita su `main` (`1f464c6`), branch
-`technology-full-history` cancellato in locale e su GitHub. **`CI` e `Deploy database` sono verdi sul
-merge** (run 37589555997, 6m25s). La PR non chiude nessuna issue:
-nasce dal `critique`, ed è lavoro scelto in chat.
+**Da dove ripartire (2026-10-07, mezzogiorno).** **Tre rilievi del `critique` sono chiusi e due sono
+su `main`**: la **#111** (`f1cdb80`, bersagli di tocco) e la **#112** (`bc20f35`, focus del pannello),
+entrambe con CI e `Deploy database` verdi, branch cancellati. **Due PR sono aperte e verdi in locale,
+da guardare e unire**: la **#114** (`waiting-states`, il Follow che aspetta) e la **#115**
+(`row-verdict`, i due vocabolari). ⚠️ Sulla #115 **la suite E2E completa non è stata girata in
+locale**, solo i tre test nuovi e gli unitari: la CI è il primo posto da guardare.
 
-**Il `critique` nuovo è nel repository**, `.impeccable/critique/2026-10-07T07-09-23Z__src-app.md`,
-fatto come vuole la skill, con due valutazioni isolate in sottoagenti che non si sono viste.
-**26/40**, lo stesso numero del 2026-10-03, e il numero uguale è la cosa da capire: i **due P0 e i
-cinque P1 di allora sono chiusi tutti** (anche il P1-6 con `upgrade-start.tsx`, il P1-7 con
-`quote-markdown.ts` e il P2-8 con il `<-- back to`), l'estetica è scesa da 4 a 3 e il controllo da 3
-a 2 per i difetti di focus. Quello che resta stava **sotto** i rilievi di prima, non accanto.
+**Il `critique` resta** `.impeccable/critique/2026-10-07T07-09-23Z__src-app.md`, ma **il suo elenco va
+letto con la correzione qui sotto**: due dei rilievi che dà per difetti non lo sono, misurati.
 
-**Cosa ha fatto la #110.** `--> show all 82 releases` portava a `?from=`, dove la pagina cadeva sulla
-lista nuda e prometteva 82 Release consegnandone 57. Adesso la storia intera **tiene l'orientamento e
-non afferma niente**: riga `note: the whole recorded history, 57 releases in 4 majors.`, Stat Row dal
-major più nuovo, ritorno `<-- back to the upgrade path`, e il link che conta le Release che la lista
-stampa. **Niente verdetto, di proposito**, perché calcolato dalla Release più vecchia descriverebbe
-un aggiornamento che nessuno fa: **sta scritto in `DESIGN.md`** sotto "Upgrade Path Form", quindi non
-va ridiagnosticato. In codice: `recordedHistory()` nel dominio, `stat-rows.tsx` che estrae la Stat
-Row **senza cambiarne la resa** (una geometria sola per verdetto e storia), `history-overview.tsx`,
-e `BackPointer` accanto a `HelpPointer`. Verifiche: **544 unitari**, **156 E2E zero flaky**, lint e
-typecheck puliti.
+### Cosa è stato chiuso, e cosa la misura ha smentito
 
-### I rilievi aperti del critique, in ordine
+- **Rilievo 1, bersagli di tocco (#111).** Il difetto è **uno solo**: la lista piegata dei digest
+  della pagina Technology, passo **22.8px** su 32 link, 1.2px sotto, da `gap-y-[2px]` in
+  `release-rows.tsx:52`. Con `gap-y-1` va a 24.8px; `technology.html:154` ha preso lo stesso cambio.
+  ⚠️ **La Dashboard e il Catalogo NON sono difettosi**: coppia più vicina **122.8px** a 1280,
+  **123.5px** a 390, **59.0px** sul Catalogo. I "4.8 - 13.5px centro-centro" del critique sono lo
+  scarto **verticale** fra due link che condividono la baseline, non una distanza: il sottoagente ha
+  letto `dy` e l'ha chiamata distanza. **Non ridiagnosticarlo.**
+  ⚠️ `weekly-digest.tsx:77` ha lo stesso `gap-y-[2px]` e **non è stato toccato**: lì il passo è già
+  25.8px e passa. I 2px fuori scala restano la domanda aperta per `DESIGN.md`.
+- **Rilievo 2, focus del pannello (#112).** Causa **una sola**, che tira dietro anche il secondo
+  sintomo: `querySelector("a, button")` prendeva `Close account`, che sopra i 640px è `display: none`,
+  e `.focus()` su un elemento non reso non fa niente. Il focus restava sul trigger, e **da lì** il Tab
+  andava sul toggle del tema. Entrato il focus, il walk è corretto e il toggle si prende con
+  Shift+Tab, che è dove sta nel DOM. **Niente si è mosso nel markup**: delle tre strade che il
+  critique proponeva serviva solo la prima (`inside()` filtra su `getClientRects().length`).
+- **Rilievo 3, i due vocabolari (#115, aperta).** `rowVerdict` è sceso nel **dominio**, puro e
+  testato, e le due superfici lo rendono soltanto. `read the release notes` è **il link** che
+  `DESIGN.md` chiedeva, e anche una riga `pending:` lo porta. `Tone` è sceso con lui. ⚠️ Il test
+  unitario della Dashboard **codificava il difetto** (il caso "falls back to the notes when there
+  will be no Summary"): è così che era sopravvissuto.
 
-1. **I bersagli di tocco mancano WCAG 2.2 AA 2.5.8 su ogni lista** (P1). Sulla pagina Technology i
-   link di versione sono 40 x 15.6px con passo verticale **23.0px**, cioè 1px sotto, su 28 link, da
-   `release-rows.tsx:52` (`gap-y-[2px]`). Sulla Dashboard i link di versione stanno accanto al nome
-   della Technology con **4.8 - 13.5px** centro-centro. Il rimedio del primo (`gap-y-1`, 4px) chiude
-   anche le 54 occorrenze di 2px fuori dai token.
-2. **Il pannello del profilo sopra i 640px non consegna il focus** (P1): `site-header-bar.tsx:70-73`
-   prende `Close account`, che lì è `display: none`, e il primo Tab va sul toggle del tema, che sta
-   fuori dal pannello. **A 390px invece è tutto corretto e misurato.**
-3. **La Dashboard e la pagina Technology descrivono la stessa Release in due vocabolari** (P1):
-   `dashboard-copy.ts:36` dice `no summary · read the release notes` anche per una Release che le
-   note non le ha, e quel testo non e un link benché `DESIGN.md` lo voglia tale.
-4. **`to check` nomina due insiemi diversi** (P2), contro il commento che sta in
-   `upgrade-path-copy.ts:52-54`. Tocca il vocabolario, quindi la parola si decide prima del codice.
-5. **Lo Stat Row del cammino di default è una barra sola** (P2), perché il default copre un solo
-   major, e il conteggio trasversale usa lo stesso separatore della partizione invece della virgola.
-6. Minori: errore del login senza glifo né parola, bordo del Follow a 1.33:1, pannello che sborda di
-   24px (`sm:right-[0px]` invece di `sm:right-5`), due righe oltre i 72ch, un errore React su ogni
+### La domanda sugli skeleton, e cosa ne è uscito (#114, aperta)
+
+L'utente ha chiesto se mettere uno skeleton loader in ogni punto che aspetta. **La risposta è no, e
+va tenuta**: contraddice i `Don't` di `DESIGN.md` e, in due casi su tre, non risolveva niente.
+Misurati i tre punti:
+
+- **La foto GitHub**: spazio già riservato dal bottone da 34px col bordo. Niente da fare.
+- ⚠️ **La barra in alto NON salta.** Misurato bloccando la lettura della sessione: a 1280 e a 390
+  wordmark, striscia e toggle stanno **agli stessi pixel** prima e dopo. Il gruppo dei controlli è
+  `ml-auto`, quindi il toggle è ancorato a destra e l'Account arriva in uno spazio già vuoto.
+  **Non ridiagnosticarlo.**
+- **Il Follow**: qui c'era il difetto vero. Finché la query non risponde `isFollowing` è `false` per
+  ogni Tecnologia, e il Toggle rendeva `Follow` **su una Tecnologia già seguita**. Adesso `known` nel
+  contratto dei follow, e il controllo aspetta sulla scatola riservata.
+
+**`DESIGN.md` ha una regola nuova, The Reserved Space Rule**, scritta prima del codice: niente
+skeleton, shimmer o spinner; lo spazio si riserva **vuoto**; un valore che non si sa si **dichiara
+ignoto**, mai indovinato. La foto è l'eccezione dichiarata.
+
+### Decisioni prese in chat, da non riaprire
+
+- **Rilievo 4, la parola.** Il verdetto di pagina dirà **`N without a verdict`** al posto di
+  `N to check`, così `to check` resta al solo sottoinsieme `unjudged` che lo Stat Row già nomina.
+  **Scelta dall'utente il 2026-10-07**, non ancora scritta in codice né in `DESIGN.md` (va sotto
+  "Verdict Line"). È la prima cosa da fare del rilievo 4.
+- **Issue #113 aperta**, `ready-for-human`: riordinare le **due zone** sopra le Release della pagina
+  Technology, cerchiate dall'utente in `docs/Cattura.JPG`. Zona 1, i due form diventano due pannelli
+  come i riquadri della Dashboard; zona 2, lo Stat Row e la sua legenda, che è anche il **rilievo 5**
+  del critique. Chi prende il rilievo 5 valuti se chiudere i due lavori insieme, dentro la #113.
+
+### Cosa resta aperto del critique
+
+1. **Rilievo 4**, `to check` che nomina due insiemi (P2). La parola è decisa, vedi sopra.
+2. **Rilievo 5**, lo Stat Row a una barra sola e il separatore del conteggio trasversale (P2).
+   **Confluito nella issue #113**, insieme alla legenda che rende sempre tre livelli ed è
+   `aria-hidden`.
+3. **Il gruppo dei minori** (rilievo 6): errore del login senza glifo né parola, bordo del Follow a
+   1.33:1, `sm:right-[0px]` che sborda di 24px, due righe oltre i 72ch, un errore React a ogni
    caricamento da `layout.tsx:32`.
 
-### Due cose misurate che NON sono difetti
+⚠️ **La verifica dal telefono della rinfrescata resta da fare**, ed è descritta nello stato qui
+sotto: nessuno di questi giri la sostituisce.
 
-- **I 72px sotto `latest` da 1040px in su** sono la scelta della #109 (`min-[1040px]:mt-8` in
-  `dashboard/page.tsx:61`), dove il difetto era 120px al posto di 72. Sotto i 1040 il salto e 48px.
-- **Raggio 3px, gerarchia piatta e padding dell'uscita nel menu**: il primo è l'anello di focus, gli
-  altri due il detector non li emette nemmeno più.
+### Due limiti dell'ambiente, da sapere prima di rimisurare
 
-### Due limiti di quella passata, da sapere prima di rifarla
-
-- ⚠️ **`resize_window` non cambia il viewport** con la finestra massimizzata: risponde "successo" e
-  `window.innerWidth` resta 1536. Il mobile si misura **dentro un iframe same-origin largo 390px**,
-  dove le media query si valutano davvero su quello. Da lì vengono tutte le misure a 390px.
-- ⚠️ **In locale ogni Sintesi e `pending`** (è la #65), quindi la schermata firma della Release, i
-  caret e il viaggio di ritorno **non si possono vedere funzionare in locale**. Un giudizio fatto qui
-  copre la cornice, non il centro.
-
-⚠️ **La verifica dal telefono della rinfrescata di ieri resta da fare**, ed è descritta nello stato
-qui sotto: nessuno di questi giri la sostituisce.
+- ⚠️ **`resize_window` non cambia il viewport** con la finestra massimizzata. Il mobile si misura
+  **dentro un iframe same-origin largo 390px**, oppure, meglio, con `page.setViewportSize` dentro un
+  test Playwright: è così che sono state fatte tutte le misure di questa sessione, ed è ripetibile.
+- ⚠️ **In locale ogni Sintesi è `pending`** (è la #65), quindi la schermata firma della Release, i
+  caret e il viaggio di ritorno **non si possono vedere funzionare in locale**.
+- ⚠️ **WCAG 2.5.8 si misura su tutte le coppie**, non su quelle vicine nell'ordine di lettura: è
+  l'errore che ha prodotto i due falsi difetti del rilievo 1. Il metodo buono è in `a11y.spec.ts`,
+  sotto "target spacing in the lists".
+- ⚠️ **Un test che non si prova contro il difetto non vale niente.** In questa sessione due test sono
+  passati a vuoto prima di essere corretti: uno intercettava una rotta che non esisteva, l'altro
+  guardava prima che la sessione fosse risolta. Ogni test nuovo di questa sessione è stato provato
+  rimettendo il difetto.
 
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, controlla la CI su main e continua con i rilievi del critique
+leggi docs/HANDOFF.md, guarda la CI delle PR #114 e #115 e continua con i rilievi del critique
 ```
 
 **Lo stato precedente (2026-10-07, notte).** **La rinfrescata alla UI è su `main`**, in due PR unite:
