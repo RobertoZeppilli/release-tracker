@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { releasePath, rowVerdict } from "@/modules/releases";
-import { isoDate, RowVerdictLine, SeverityLabel, SignificanceLabel } from "@/modules/releases/ui";
+import { isoDate, RowVerdictLine, SignificanceLabel } from "@/modules/releases/ui";
 import { InlineCode } from "@/modules/summaries/ui";
 import type { BehindStanding, DashboardRelease } from "../domain/build-dashboard";
 import { isoWeekKey, isoWeekOf } from "../domain/iso-week";
