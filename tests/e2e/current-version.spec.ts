@@ -97,7 +97,7 @@ test.describe("the Version in use", () => {
 
     await page.goto(`/technologies/${technology.slug}?from=1.1.1`);
     await expect(page.getByLabel("Upgrade from")).toHaveValue("1.1.1");
-    await expect(page.getByRole("heading", { name: "note: 1 to check" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "note: 1 without a verdict" })).toBeVisible();
     // The saved declaration is untouched: the field still holds it, and so does the path once the
     // query string is gone.
     await expect(field(page)).toHaveValue("1.0.0");

@@ -114,7 +114,7 @@ export function behindLine(standing: BehindStanding): string {
       : [
           `${plural(standing.counts.total, "release")} behind ${standing.to}`,
           ...(standing.counts.actionRequired > 0 ? [needWord(standing.counts.actionRequired)] : []),
-          ...(standing.counts.missing > 0 ? [`${standing.counts.missing} to check`] : []),
+          ...(standing.counts.missing > 0 ? [`${standing.counts.missing} without a verdict`] : []),
         ];
   return `in use ${standing.version} since ${isoDate(standing.declaredAt)} · ${parts.join(" · ")}`;
 }

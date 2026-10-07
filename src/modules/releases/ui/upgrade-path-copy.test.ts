@@ -5,9 +5,11 @@ import { declaredStartNote, defaultStartNote, historySentence, invalidMessage, m
 const none: PathCounts = { total: 0, featured: 0, notable: 0, digest: 0, actionRequired: 0, safe: 0, missing: 0, unjudged: 0 };
 
 describe("upgrade path copy", () => {
+  // The page verdict counts all of `missing`, the Stat Row splits it: one number under two names is
+  // what `without a verdict` keeps apart, leaving `to check` to `unjudged` alone.
   it("does not call a Release unsummarized when it has a Summary that could not judge its notes", () => {
     const counts = { ...none, total: 2, featured: 1, notable: 1, safe: 1, missing: 1, unjudged: 1 };
-    expect(pathVerdict(counts)).toEqual({ tone: "muted", label: "note:", claim: "1 to check" });
+    expect(pathVerdict(counts)).toEqual({ tone: "muted", label: "note:", claim: "1 without a verdict" });
     expect(pathSentence("6.0.0", "6.2.0", counts)).toBe(
       "Between 6.0.0 and 6.2.0 there are 2 releases: 1 is safe to upgrade and 1 has notes too thin to judge.",
     );
@@ -30,7 +32,7 @@ describe("upgrade path copy", () => {
     expect(pathVerdict({ ...none, total: 3, notable: 2, digest: 1, safe: 1, missing: 1 })).toEqual({
       tone: "muted",
       label: "note:",
-      claim: "1 to check",
+      claim: "1 without a verdict",
     });
   });
 
