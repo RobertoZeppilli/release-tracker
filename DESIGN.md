@@ -286,6 +286,8 @@ The neutrals are cool graphite. The four diagnostic inks are the only hues, and 
 
 **The One Error Measure Rule.** Every error line is Diagnostic (Mono 14px/1.7) in `breaking`, whatever it sits under: the form message on the Upgrade Path, the refused follow under a picker row, the refused follow on a Technology page. An error is a diagnostic, and under a row of 13px facts the extra pixel is what makes it stand out instead of blending in.
 
+**The Reserved Space Rule.** Nothing on a page waits behind a placeholder that imitates it. There are no skeletons: a pulsing grey block is a card by another name, and it says that something is coming without saying what, which is the opposite of a product whose states are words. What a wait owes the reader is two things instead. The space is **reserved**, so the control arrives where it was always going to be and the page under it never moves: an empty box of the control's own size, carrying nothing. And a value that is not known yet is **declared unknown**, never guessed: a control whose state depends on an answer that has not come is `aria-busy` and not pressable until it does, because the first state of a Follow is not "not followed", it is "not known". A picture is the one thing allowed to arrive into its own reserved frame with nothing said, since the frame is the border of the control that holds it and the alternative is a second shape for a wait of a few hundred milliseconds.
+
 **The Two Registers Rule.** Anything a compiler would print (labels, codes, pointers, versions, counts, line numbers, dates) is set in Fragment Mono. Sentences a person reads are set in Hanken Grotesk. Don't mix them within one role.
 
 ## Layout
@@ -529,6 +531,7 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Do** shorten verdict copy until it fits on one line at the 1040px container, and set the claim inline-block so it wraps as a unit (see The One-Line Verdict Rule).
 - **Do** disable a Follow toggle at the limit with `aria-disabled`, keep it focusable, and describe it by the `note:` line that explains the limit.
 - **Do** drop the top bar's slot to a 40px strip under the bar at 640px and below, with the same links in the same order (see The No Dead End Rule).
+- **Do** reserve the space a control will take while its state is still unknown, and declare the unknown with `aria-busy` rather than guessing a value (see The Reserved Space Rule).
 
 ### Don't:
 - **Don't** use hue for anything but severity. There are no brand accents or decorative colour.
@@ -538,4 +541,5 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Don't** give significance (featured, notable, digest, preview) a severity ink, and don't let a bar carry meaning without its counts in words.
 - **Don't** shrink the verdict scale to fit longer copy.
 - **Don't** leave a viewer without a way to the destinations at any width. Narrow screens get the same links, on a second row, or in the account panel that every page carries for whoever is signed in. There is no hamburger: what opens is the account, and it is the viewer's own menu, not the page's navigation.
+- **Don't** fill a wait with a skeleton, a shimmer or a spinner. The space is reserved and empty, and what is not known is said (see The Reserved Space Rule).
 - **Don't** make a breadcrumb step a link for some viewers and plain text for others. The step follows the hierarchy, and sign-in handles the rest.

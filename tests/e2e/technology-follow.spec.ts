@@ -153,3 +153,42 @@ test.describe("a Developer", () => {
     await expect(page.getByText("can't be followed again")).toHaveCount(0);
   });
 });
+
+// DESIGN.md, The Reserved Space Rule. The public Technology page lets the query fetch the follows,
+// and until it answers `isFollowing` is false for every Technology: the Toggle used to render that
+// as `Follow`, on a Technology this Developer already follows. The reserved box waits instead, so
+// nothing is stated before there is something true to state, and nothing moves when it arrives.
+test("the Follow says nothing while the follows are still on the way", async ({ page }) => {
+  await developer.clearFollows();
+  await addFollows(developer.id, [technology.id]);
+  await signIn(page);
+
+  let release = () => {};
+  const held = new Promise<void>((done) => {
+    release = done;
+  });
+  // The browser reads the follows straight from the database, so holding that one request is what
+  // keeps the page in the state this test is about.
+  let asked = false;
+  await page.route(/\/rest\/v1\/follows\?select/, async (route) => {
+    asked = true;
+    await held;
+    await route.continue();
+  });
+
+  await page.goto(path());
+  // The query only starts once the browser knows who is looking, and the Account button in the bar
+  // is that moment: before it, the Toggle is waiting on the session instead and the test would be
+  // measuring the wrong wait.
+  await page.getByRole("button", { name: /^Account/ }).waitFor();
+  await expect.poll(() => asked, { message: "the follows are read over the wire" }).toBe(true);
+
+  // The control's place is kept, with neither state claimed.
+  await expect(page.getByRole("heading", { level: 1, name: technology.name })).toBeVisible();
+  await expect(toggle(page, "Follow")).toHaveCount(0);
+  await expect(toggle(page, "Unfollow")).toHaveCount(0);
+
+  release();
+  await expect(toggle(page, "Unfollow")).toBeVisible();
+  await expect(toggle(page, "Follow")).toHaveCount(0);
+});
