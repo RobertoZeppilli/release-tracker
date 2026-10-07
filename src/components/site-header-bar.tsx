@@ -26,6 +26,15 @@ const ITEM =
 
 const PHONE = "(max-width: 639px)";
 
+// One element in two shapes means the panel always holds the row of the other shape, hidden by the
+// breakpoint: above 640px its first `a, button` is the sheet's `Close account`, at `display: none`.
+// `.focus()` on something that is not rendered does nothing, so the focus would stay on the trigger
+// and the next Tab would land on the theme toggle, which sits in the bar and not in the panel.
+function inside(panel: HTMLElement | null): HTMLElement[] {
+  const items = [...(panel?.querySelectorAll<HTMLElement>("a, button") ?? [])];
+  return items.filter((item) => item.getClientRects().length > 0);
+}
+
 // The account panel holds what belongs to the viewer rather than to the page: who is signed in, the
 // two destinations, and the way out. The destinations are in it because a public Technology or
 // Release page gives the bar's slot to the breadcrumb, and without them a signed-in reader has no
@@ -65,8 +74,7 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
 
   useEffect(() => {
     if (!open) return;
-    const first = panel.current?.querySelector<HTMLElement>("a, button");
-    first?.focus();
+    inside(panel.current)[0]?.focus();
   }, [open]);
 
   function close() {
@@ -76,11 +84,11 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
 
   function keepTabInside(event: React.KeyboardEvent) {
     if (event.key !== "Tab" || !window.matchMedia(PHONE).matches) return;
-    const inside = [...(panel.current?.querySelectorAll<HTMLElement>("a, button") ?? [])];
-    const edge = event.shiftKey ? inside[0] : inside[inside.length - 1];
+    const items = inside(panel.current);
+    const edge = event.shiftKey ? items[0] : items[items.length - 1];
     if (document.activeElement !== edge) return;
     event.preventDefault();
-    (event.shiftKey ? inside[inside.length - 1] : inside[0])?.focus();
+    (event.shiftKey ? items[items.length - 1] : items[0])?.focus();
   }
 
   return (
