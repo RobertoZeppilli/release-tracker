@@ -1,5 +1,5 @@
 import type { DefaultStartReason } from "../domain/default-upgrade-start";
-import type { InvalidFrom, PathCounts } from "../domain/upgrade-path";
+import type { InvalidFrom, PathCounts, RecordedHistory } from "../domain/upgrade-path";
 import { isoDate } from "./release-rows";
 
 export type Tone = "action" | "ok" | "muted" | "breaking";
@@ -31,6 +31,14 @@ export function pathSentence(from: string, to: string, counts: PathCounts): stri
   ].filter((clause) => clause !== false);
   const list = clauses.length > 1 ? `${clauses.slice(0, -1).join(", ")} and ${clauses.at(-1)}` : clauses[0];
   return `Between ${from} and ${to} there ${counts.total === 1 ? "is 1 release" : `are ${counts.total} releases`}: ${list}.`;
+}
+
+// The note over the whole recorded history. It names what is on the screen and claims nothing about
+// an upgrade, because this view has no start to measure one from.
+export function historySentence({ stable, previews, majors }: RecordedHistory<unknown>): string {
+  if (stable === 0) return previews === 0 ? "nothing recorded yet." : `the whole recorded history, ${count(previews, "upcoming preview", "upcoming previews")}.`;
+  const history = `the whole recorded history, ${count(stable, "release", "releases")} in ${count(majors.length, "major", "majors")}`;
+  return previews === 0 ? `${history}.` : `${history}, and ${count(previews, "upcoming preview", "upcoming previews")}.`;
 }
 
 // The words beside each bar: the bar is decoration, these carry the numbers.

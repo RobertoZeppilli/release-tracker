@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PathCounts } from "../domain/upgrade-path";
-import { declaredStartNote, defaultStartNote, invalidMessage, majorWords, pathSentence, pathVerdict } from "./upgrade-path-copy";
+import { declaredStartNote, defaultStartNote, historySentence, invalidMessage, majorWords, pathSentence, pathVerdict } from "./upgrade-path-copy";
 
 const none: PathCounts = { total: 0, featured: 0, notable: 0, digest: 0, actionRequired: 0, safe: 0, missing: 0, unjudged: 0 };
 
@@ -71,5 +71,26 @@ describe("defaultStartNote", () => {
     expect(defaultStartNote("8.1.0", "oldest")).toBe(
       "starting from 8.1.0, the oldest release recorded, because no version was given.",
     );
+  });
+});
+
+describe("the note over the whole recorded history", () => {
+  const major = { major: 8, counts: none, rows: [] };
+
+  // It never says action required or safe: this view has no start, so there is no upgrade to judge.
+  it("names what is on the screen, and claims nothing about an upgrade", () => {
+    expect(historySentence({ listed: 57, stable: 57, previews: 0, majors: [major, major, major, major] })).toBe(
+      "the whole recorded history, 57 releases in 4 majors.",
+    );
+  });
+
+  it("counts the upcoming Previews apart, because the list prints them apart", () => {
+    expect(historySentence({ listed: 33, stable: 32, previews: 1, majors: [major] })).toBe(
+      "the whole recorded history, 32 releases in 1 major, and 1 upcoming preview.",
+    );
+  });
+
+  it("says the silence when there is nothing recorded", () => {
+    expect(historySentence({ listed: 0, stable: 0, previews: 0, majors: [] })).toBe("nothing recorded yet.");
   });
 });
