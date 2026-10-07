@@ -67,6 +67,29 @@ test.describe("the Release rows of the plain list", () => {
     await technology.remove();
   });
 
+  // The whole history keeps the orientation a path gives and makes none of its claims: the note says
+  // what is on the screen, the bars compare the majors, and the way back is a link, not the browser.
+  test("the whole history is counted honestly, read by major, and has a way back", async ({ page }) => {
+    await page.goto(`/technologies/${technology.slug}`);
+
+    // The link counts the Releases the list prints, so what it promises can be counted on arrival.
+    const all = page.getByRole("link", { name: "show all 3 releases" });
+    await expect(all).toBeVisible();
+    await all.click();
+    await expect(page).toHaveURL(/\?from=$/);
+
+    const history = page.getByRole("region", { name: "Recorded history" });
+    await expect(history).toContainText("note: the whole recorded history, 3 releases in 2 majors.");
+    await expect(history.getByRole("list", { name: "Releases per major version" })).toContainText("2 releases");
+    // No verdict here: there is no start, so there is no upgrade to judge.
+    await expect(history.getByRole("heading")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /^(warning|ok|note):/ })).toHaveCount(0);
+
+    await history.getByRole("link", { name: "back to the upgrade path" }).click();
+    await expect(page).toHaveURL(`/technologies/${technology.slug}`);
+    await expect(page.getByRole("region", { name: "Recorded history" })).toHaveCount(0);
+  });
+
   test("declare the verdict, what breaks and where to migrate", async ({ page }) => {
     // An empty `from` is the plain list: without it the page draws the path it derives itself.
     await page.goto(`/technologies/${technology.slug}?from=`);

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import { HelpPointer } from "@/components/help-pointer";
 import type { DefaultStartReason } from "../domain/default-upgrade-start";
-import { computeUpgradePath, type SummarizedRelease, type UpgradePath } from "../domain/upgrade-path";
+import { computeUpgradePath, recordedHistory, type SummarizedRelease, type UpgradePath } from "../domain/upgrade-path";
+import { HistoryOverview } from "./history-overview";
 import { Group, plural, ReleaseRow, Row, rowKey } from "./release-rows";
 import { ReleaseRowContent } from "./release-row-content";
 import { type FormMessage, UpgradeForm } from "./upgrade-form";
@@ -61,6 +62,9 @@ function formMessage(path: UpgradePath<SummarizedRelease>, name: string, base: s
 export function UpgradePathBlock({ slug, name, latest, retired, releases, start, children }: Props) {
   const base = `/technologies/${slug}`;
   const path = start.kind === "none" ? null : computeUpgradePath(releases, start.version);
+  // Counted on the Releases the list below prints, not on the ones recorded: a link that promises
+  // completeness has to promise the number the reader can count.
+  const history = recordedHistory(releases);
   const versions = releases.filter(({ version }) => !version.includes("-")).map(({ version }) => version);
   // An empty `?from=` is how the form says "no path": the way back to the whole history.
   const hidden = path?.type === "path" ? releases.length - path.range.length - path.previews.length : 0;
@@ -100,12 +104,15 @@ export function UpgradePathBlock({ slug, name, latest, retired, releases, start,
           )}
           {hidden > 0 && (
             <p className="mt-3">
-              <HelpPointer href={`${base}?from=`}>show all {plural(releases.length, "release")}</HelpPointer>
+              <HelpPointer href={`${base}?from=`}>show all {plural(history.listed, "release")}</HelpPointer>
             </p>
           )}
         </>
       ) : (
-        children
+        <>
+          {!path && <HistoryOverview history={history} base={base} />}
+          {children}
+        </>
       )}
     </>
   );

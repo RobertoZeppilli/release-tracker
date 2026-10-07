@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Significance } from "./significance";
-import { computeUpgradePath, type UpgradePath, upgradeStartRejection } from "./upgrade-path";
+import { computeUpgradePath, recordedHistory, type UpgradePath, upgradeStartRejection } from "./upgrade-path";
 
 function release(version: string, significance: Significance, actionRequired: boolean | null = null, unjudged = false) {
   return { version, significance, actionRequired, unjudged, publishedAt: new Date("2026-01-01T00:00:00Z") };
@@ -181,5 +181,34 @@ describe("upgradeStartRejection", () => {
     expect(upgradeStartRejection(releases, "1.x")).toBe("malformed");
     expect(upgradeStartRejection(releases, "2.0.0")).toBe("notOlder");
     expect(upgradeStartRejection([release("1.0.0-beta.0", "preview")], "0.9.0")).toBe("noStable");
+  });
+});
+
+describe("recordedHistory", () => {
+  const releases = [
+    release("5.9.0", "featured"),
+    release("6.0.0", "featured", true),
+    release("6.0.1", "digest"),
+    release("6.1.0", "notable", false),
+    release("7.0.0-beta.1", "notable"),
+    release("6.0.0-rc.1", "notable"),
+  ];
+
+  // What the link into this view promises: the Releases the list prints, which are the stable ones
+  // plus the Previews ahead of the latest. `6.0.0-rc.1` is already followed by its stable Version,
+  // so the list leaves it out and the count must leave it out too.
+  it("counts the Releases the list prints, not the ones recorded", () => {
+    const history = recordedHistory(releases);
+    expect(history).toMatchObject({ listed: 5, stable: 4, previews: 1 });
+  });
+
+  it("reads the majors newest first, with the counts a path would give them", () => {
+    const history = recordedHistory(releases);
+    expect(history.majors.map(({ major }) => major)).toEqual([6, 5]);
+    expect(history.majors[0].counts).toMatchObject({ total: 3, featured: 1, notable: 1, digest: 1, actionRequired: 1, safe: 1 });
+  });
+
+  it("holds up with nothing recorded at all", () => {
+    expect(recordedHistory([])).toEqual({ listed: 0, stable: 0, previews: 0, majors: [] });
   });
 });

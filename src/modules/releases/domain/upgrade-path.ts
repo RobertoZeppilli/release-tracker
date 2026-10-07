@@ -83,6 +83,36 @@ export function computeUpgradePath<T extends PathRelease>(releases: readonly T[]
   };
 }
 
+export type RecordedHistory<T> = {
+  // The Releases the plain list prints: the stable ones plus the Previews ahead of the latest. The
+  // link that leads into this view counts these, so what it promises is what the page below lists.
+  listed: number;
+  stable: number;
+  previews: number;
+  // Newest major first, like the list under it, and unlike a path, which is read in the direction
+  // the upgrade is performed.
+  majors: PathMajor<T>[];
+};
+
+// The whole recorded history, read without a path: the same per-major counts a path produces, and
+// no verdict. A verdict here would be computed on an upgrade from the oldest recorded Release, which
+// nobody performs: correct, and worth nothing. The note names what is on the screen instead.
+export function recordedHistory<T extends PathRelease>(releases: readonly T[]): RecordedHistory<T> {
+  const sorted = sortByVersion(releases);
+  const stable = sorted.filter(({ version }) => version.prerelease.length === 0);
+  const latest = stable.at(-1);
+  const previews = sorted.filter(({ version }) => version.prerelease.length > 0 && (!latest || compareVersions(version, latest.version) > 0));
+
+  return {
+    listed: stable.length + previews.length,
+    stable: stable.length,
+    previews: previews.length,
+    majors: [...splitByMajor(stable).entries()]
+      .sort(([a], [b]) => b - a)
+      .map(([major, members]) => ({ major, counts: countPath(members), rows: foldDigests(members) })),
+  };
+}
+
 // The Version in use is validated exactly as the start of an Upgrade Path (CONTEXT.md), so the two
 // can never drift apart: same releases, same function, only the reason is kept.
 export function upgradeStartRejection(releases: readonly PathRelease[], typed: string): InvalidFrom | null {

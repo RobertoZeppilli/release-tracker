@@ -4,12 +4,22 @@ import type { ReactNode } from "react";
 // DESIGN.md, Help Pointer Link: a faint `-->`, then the lowercase label in `help` with a 1px dashed
 // underline that turns solid on hover. Only the label carries the underline.
 export function HelpPointer({ href, children }: { href: string; children: ReactNode }) {
+  return <Pointer href={href} arrow="-->" label={children} />;
+}
+
+// The same link turned around, for the second leg of a round trip: the arrow reversed, nothing else.
+// A reader who followed a `-->` out of a reading owes nothing to learn to come back.
+export function BackPointer({ href, children }: { href: string; children: ReactNode }) {
+  return <Pointer href={href} arrow="<--" label={children} />;
+}
+
+function Pointer({ href, arrow, label }: { href: string; arrow: string; label: ReactNode }) {
   return (
     <Link href={href} className="font-mono text-label no-underline">
       <span aria-hidden className="mr-[1ch] text-text-faint [font-variant-ligatures:none]">
-        --&gt;
+        {arrow}
       </span>
-      <span className="border-b border-dashed border-current text-help hover:border-solid">{children}</span>
+      <span className="border-b border-dashed border-current text-help hover:border-solid">{label}</span>
     </Link>
   );
 }
