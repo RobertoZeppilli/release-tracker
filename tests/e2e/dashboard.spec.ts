@@ -236,3 +236,54 @@ test("reads the window and the Version in use as rows of label and number", asyn
   await expect(page.getByTestId("in-use-counts")).toContainText("version in use · 1 of 2");
   await expect(boxRow(page, "in-use-counts", "oldest declared")).toBeVisible();
 });
+
+// DESIGN.md, Neutral row verdicts. The Dashboard and the Technology page used to answer this in two
+// vocabularies: the Dashboard collapsed `skipped`, `unavailable` and `failed` into one line reading
+// `no summary · read the release notes`, so a Release with no notes at all was told to read them.
+// `unavailable` is exactly "no notes" (`initialSummaryStatus`), and one function now answers both.
+test.describe("a Release with no notes reads the same on both surfaces", () => {
+  let noteless: FixtureTechnology;
+
+  test.beforeAll(async () => {
+    noteless = await seedTechnology([
+      { version: "7.0.0", significance: "featured", origin: "detected", status: "unavailable", notes: null, publishedAt: daysAgo(2) },
+    ]);
+  });
+
+  test.afterAll(async () => {
+    await developer.clearFollows();
+    await noteless.remove();
+  });
+
+  test("the Dashboard names what is missing and offers nothing to read", async ({ page }) => {
+    await addFollows(developer.id, [noteless.id]);
+    await signIn(page);
+    await page.goto("/dashboard");
+
+    const row = page.getByRole("listitem").filter({ hasText: noteless.name }).first();
+    await expect(row).toContainText("note: no release notes to summarize");
+    await expect(row).not.toContainText("read the release notes");
+    await expect(row.getByRole("link", { name: "read the release notes" })).toHaveCount(0);
+  });
+
+  test("the Technology page says the same words", async ({ page }) => {
+    await page.goto(`/technologies/${noteless.slug}`);
+    await expect(page.getByText("note: no release notes to summarize")).toBeVisible();
+  });
+
+  // The other half of the rule: where notes do exist, the row offers them as a link rather than as
+  // a sentence naming an action it does not give.
+  test("a queued Summary offers the notes as a link", async ({ page }) => {
+    await developer.clearFollows();
+    await addFollows(developer.id, [queued.id]);
+    await signIn(page);
+    await page.goto("/dashboard");
+
+    const row = page.getByRole("listitem").filter({ hasText: queued.name }).first();
+    await expect(row).toContainText("pending: summary queued");
+    await expect(row.getByRole("link", { name: "read the release notes" })).toHaveAttribute(
+      "href",
+      `/technologies/${queued.slug}/5.0.0`,
+    );
+  });
+});

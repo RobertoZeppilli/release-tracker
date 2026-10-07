@@ -1,4 +1,5 @@
 export { isoDate, plural } from "./release-rows";
+export { ReleaseVerdict, RowVerdictLine } from "./release-verdict";
 export { SeverityLabel } from "./severity-label";
 export { SignificanceLabel } from "./significance-glyph";
 export { invalidMessage, type Tone } from "./upgrade-path-copy";

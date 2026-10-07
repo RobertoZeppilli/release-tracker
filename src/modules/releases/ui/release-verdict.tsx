@@ -1,33 +1,34 @@
+import Link from "next/link";
+import { releasePath } from "../domain/release-page";
+import { rowVerdict, type RowVerdict } from "../domain/row-verdict";
 import type { SummarizedRelease } from "../domain/upgrade-path";
-import { plural } from "./release-rows";
 import { SeverityLabel } from "./severity-label";
 
-// One line per featured or notable Release row: its verdict, or why there is none yet.
-export function ReleaseVerdict({ release }: { release: SummarizedRelease }) {
-  return <p className="mt-[2px] font-mono text-label">{content(release)}</p>;
+// One line per featured or notable Release row: its verdict, or why there is none yet. What it says
+// comes from `rowVerdict` in the domain, the one answer the Dashboard reads too.
+export function ReleaseVerdict({ slug, release }: { slug: string; release: SummarizedRelease }) {
+  return (
+    <p className="mt-[2px] font-mono text-label">
+      <RowVerdictLine verdict={rowVerdict(release)} href={releasePath(slug, release.version)} />
+    </p>
+  );
 }
 
-function content({ actionRequired, unjudged, summaryStatus, summary }: SummarizedRelease) {
-  // DESIGN.md, Release Row: an action row says how many breaking changes it carries, so the count
-  // is read on the row instead of on the Release page.
-  if (actionRequired === true) {
-    const count = summary ? ` · ${plural(summary.breakingChanges.length, "breaking change")}` : "";
-    return <SeverityLabel tone="action" label={`warning: action required${count}`} />;
-  }
-  if (actionRequired === false) return <SeverityLabel tone="ok" label="ok: safe to upgrade" />;
-  // There is a Summary here, and the row says so: what it has not got is a verdict.
-  if (unjudged) return <SeverityLabel tone="muted" label="note: not enough notes to judge" />;
-  switch (summaryStatus) {
-    case "pending":
-    case "processing":
-      return <SeverityLabel tone="muted" pending label="pending: summary queued, check the notes" />;
-    case "skipped":
-      return <SeverityLabel tone="muted" label="note: no summary for this older release, check the notes" />;
-    case "unavailable":
-      return <SeverityLabel tone="muted" label="note: no release notes to summarize" />;
-    case "failed":
-      return <SeverityLabel tone="muted" label="note: summary unavailable, check the notes" />;
-    default:
-      return <SeverityLabel tone="muted" label="note: no summary, check the notes" />;
-  }
+// DESIGN.md, Neutral row verdicts: a neutral status is followed by `· read the release notes` as an
+// underlined link, and nothing follows it where there are none to read.
+export function RowVerdictLine({ verdict, href }: { verdict: RowVerdict; href: string }) {
+  return (
+    <>
+      <SeverityLabel tone={verdict.tone} label={verdict.label} pending={verdict.pending} />{" "}
+      <span className={verdict.tone === "muted" ? "text-text-muted" : undefined}>{verdict.claim}</span>
+      {verdict.notes && (
+        <>
+          <span className="text-text-muted"> · </span>
+          <Link href={href} className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current">
+            read the release notes
+          </Link>
+        </>
+      )}
+    </>
+  );
 }

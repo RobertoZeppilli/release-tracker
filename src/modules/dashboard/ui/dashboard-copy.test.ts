@@ -6,7 +6,6 @@ import {
   inUseRows,
   pageVerdict,
   quietNote,
-  rowVerdict,
   weekRange,
   windowCaption,
   windowRows,
@@ -57,49 +56,6 @@ const content = {
   title: "Actions and the use API arrive.",
   keyPoints: [{ text: "one" }, { text: "two" }, { text: "three" }],
 };
-
-describe("rowVerdict", () => {
-  it("names the breaking changes when the Summary asks for work", () => {
-    const summary = { ...content, actionRequired: true, breakingChanges: [{ change: "a", migration: "b" }] };
-
-    expect(rowVerdict(release({ summary }))).toEqual({
-      tone: "action",
-      label: "warning:",
-      claim: "action required · 1 breaking change",
-    });
-  });
-
-  it("calls a Release safe only on a ready Summary that says so", () => {
-    const summary = { ...content, actionRequired: false, breakingChanges: [] };
-
-    expect(rowVerdict(release({ summary }))).toEqual({ tone: "ok", label: "ok:", claim: "safe to upgrade" });
-  });
-
-  it("says a Summary is there but could not judge, which is not the same as no Summary", () => {
-    const summary = { ...content, actionRequired: false, breakingChanges: [] };
-    const row = release({ summary, actionRequired: null, unjudged: true });
-
-    expect(rowVerdict(row)).toEqual({ tone: "muted", label: "note:", claim: "not enough notes to judge" });
-    expect(rowVerdict(release({ summary: null }))).toEqual({ tone: "muted", label: "note:", claim: "no summary · read the release notes" });
-  });
-
-  it("says the Summary is queued while it is still coming", () => {
-    expect(rowVerdict(release({ summaryStatus: "pending" }))).toEqual({
-      tone: "muted",
-      label: "pending:",
-      claim: "summary queued",
-      pending: true,
-    });
-  });
-
-  it("falls back to the notes when there will be no Summary", () => {
-    expect(rowVerdict(release({ summaryStatus: "unavailable" }))).toEqual({
-      tone: "muted",
-      label: "note:",
-      claim: "no summary · read the release notes",
-    });
-  });
-});
 
 describe("weekRange", () => {
   it("names the month once when the week stays inside it", () => {
