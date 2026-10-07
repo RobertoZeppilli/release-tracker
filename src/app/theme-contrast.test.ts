@@ -85,9 +85,11 @@ describe.each(THEMES)("$name theme", ({ selector }) => {
 
   // A button and a field are identified by their border alone, and the `digest` segment of the stat
   // bar carries a count: all three are `rule-strong`, so it answers to SC 1.4.11 on every plane.
+  // The ring is offset 3px, so it is drawn on whatever plane surrounds the control, not only on the
+  // page: a panel is `raised` and a hovered row is `sunken`. It answers to SC 1.4.11 on all three.
   it("shows the focus ring and the borders that identify a control", () => {
-    expect(contrast(ink("focus"), plane("ground")), "focus on ground").toBeGreaterThanOrEqual(NON_TEXT);
     for (const surface of PLANES) {
+      expect(contrast(ink("focus"), plane(surface)), `focus on ${surface}`).toBeGreaterThanOrEqual(NON_TEXT);
       expect(contrast(ink("rule-strong"), plane(surface)), `rule-strong on ${surface}`).toBeGreaterThanOrEqual(NON_TEXT);
     }
   });
