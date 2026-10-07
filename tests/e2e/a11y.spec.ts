@@ -260,3 +260,67 @@ test.describe("target size in the top bar", () => {
     expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
   });
 });
+
+// WCAG 2.2 AA 2.5.8 again, on the lists rather than on the bar. A version link is 40 x 15px, so it
+// only ever passes on the spacing exception: the 24px circle centred on each one must reach no
+// other target. The folded digest list of the Technology page failed it by 1.2px (22.8px pitch, from
+// a 2px row gap), and nothing else on these three pages comes close, so the assertion is the whole
+// rule over every pair and not a gap read off one element.
+test.describe("target spacing in the lists", () => {
+  const MINIMUM = 24;
+
+  type Target = { label: string; x: number; y: number };
+
+  async function targets(page: Page): Promise<Target[]> {
+    return page.$$eval('a[href^="/technologies/"]', (nodes) =>
+      nodes.map((node) => {
+        const box = node.getBoundingClientRect();
+        return {
+          label: (node.textContent ?? "").trim().slice(0, 24),
+          x: box.x + box.width / 2,
+          y: box.y + box.height / 2,
+        };
+      }),
+    );
+  }
+
+  async function expectSpaced(page: Page, atLeast: number): Promise<void> {
+    const found = await targets(page);
+    expect(found.length, "there are targets to measure").toBeGreaterThanOrEqual(atLeast);
+    const tight = [];
+    for (let i = 0; i < found.length; i += 1) {
+      for (let j = i + 1; j < found.length; j += 1) {
+        const distance = Math.hypot(found[j].x - found[i].x, found[j].y - found[i].y);
+        if (distance < MINIMUM) tight.push(`${found[i].label} to ${found[j].label}: ${distance.toFixed(1)}px`);
+      }
+    }
+    expect(tight, `pairs closer than ${MINIMUM}px centre to centre`).toEqual([]);
+  }
+
+  // The folded list needs a major with digest Releases in it, which the imported Catalog has and a
+  // fixture of four Releases does not.
+  test("the folded digest list of a Technology page", async ({ page }) => {
+    await page.goto("/technologies/vite");
+    const folds = page.locator("details summary");
+    for (let i = 0; i < (await folds.count()); i += 1) await folds.nth(i).click();
+    await expectSpaced(page, 2);
+  });
+
+  test("the Dashboard, where a version link sits beside a Technology name", async ({ page }) => {
+    await signIn(page);
+    await developer.clearFollows();
+    await addFollows(developer.id, [technology.id]);
+    await page.goto("/dashboard");
+    await expectSpaced(page, 2);
+  });
+
+  // The Catalog splits its sections on the client once the follows answer, so the names arrive after
+  // the first paint: the wait is for the list, not for the page.
+  test("the Catalog, at 390px", async ({ page }) => {
+    await signIn(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/technologies");
+    await page.locator('a[href^="/technologies/"]').first().waitFor();
+    await expectSpaced(page, 2);
+  });
+});

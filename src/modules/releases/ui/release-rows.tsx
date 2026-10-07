@@ -49,7 +49,7 @@ export function DigestRow({ slug, releases }: { slug: string; releases: ListedRe
             className="size-4 justify-self-end transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-open:rotate-90 motion-reduce:transition-none"
           />
         </summary>
-        <ul className="mb-3 grid grid-cols-[repeat(auto-fill,minmax(22ch,1fr))] gap-x-4 gap-y-[2px] pl-[calc(11ch+var(--spacing-4))] font-mono text-label max-[640px]:pl-[0]">
+        <ul className="mb-3 grid grid-cols-[repeat(auto-fill,minmax(22ch,1fr))] gap-x-4 gap-y-1 pl-[calc(11ch+var(--spacing-4))] font-mono text-label max-[640px]:pl-[0]">
           {releases.map((release) => (
             <li key={release.version}>
               <Link href={releasePath(slug, release.version)} className={`text-text ${VERSION_LINK}`}>
