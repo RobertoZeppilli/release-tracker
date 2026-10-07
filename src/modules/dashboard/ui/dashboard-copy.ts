@@ -2,7 +2,6 @@ import { isoDate, plural, type Tone } from "@/modules/releases/ui";
 import type {
   BehindStanding,
   DashboardCounts,
-  DashboardRelease,
   DashboardVerdict,
   InUseTotals,
 } from "../domain/build-dashboard";

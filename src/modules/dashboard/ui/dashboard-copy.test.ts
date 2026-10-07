@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { BehindStanding, DashboardRelease } from "../domain/build-dashboard";
+import type { BehindStanding } from "../domain/build-dashboard";
 import {
   behindLine,
   inUseCaption,
@@ -34,28 +34,6 @@ describe("pageVerdict", () => {
     });
   });
 });
-
-function release(options: Partial<DashboardRelease> = {}): DashboardRelease {
-  const row: DashboardRelease = {
-    slug: "react",
-    version: "19.0.0",
-    significance: "featured",
-    publishedAt: new Date("2024-12-05T00:00:00Z"),
-    summaryStatus: "ready",
-    actionRequired: null,
-    unjudged: false,
-    summary: null,
-    ...options,
-  };
-  // A test that states a verdict keeps it, including `null`: the derivation is only the default.
-  const stated = "actionRequired" in options;
-  return { ...row, actionRequired: stated ? row.actionRequired : row.summary ? row.summary.actionRequired : null };
-}
-
-const content = {
-  title: "Actions and the use API arrive.",
-  keyPoints: [{ text: "one" }, { text: "two" }, { text: "three" }],
-};
 
 describe("weekRange", () => {
   it("names the month once when the week stays inside it", () => {
