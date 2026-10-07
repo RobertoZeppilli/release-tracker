@@ -17,6 +17,9 @@ const ERROR_ID = "follow-error";
 // sorted by Tailwind, not by the order they are written in, and `ml-auto` wins wherever it appears.
 const PLACE = "sm:ml-auto";
 const NOTE = "mt-2 basis-full";
+// The box the control will fill, carrying nothing: the space is reserved so what arrives lands where
+// it was always going to (DESIGN.md, The Reserved Space Rule).
+const RESERVED = `${PLACE} block h-[34px]`;
 
 // A Visitor is offered the login with this page as the way back; a Developer gets the picker's own
 // Toggle, limit and refusal included, because both come from the same provider, which the page's
@@ -36,7 +39,7 @@ export function TechnologyFollow({
   const session = useSession();
   const pathname = usePathname();
 
-  if (session.state === "unknown") return <span aria-hidden className={`${PLACE} block h-[34px]`} />;
+  if (session.state === "unknown") return <span aria-hidden className={RESERVED} />;
 
   if (session.state === "visitor") {
     // Nobody can follow a retired Technology, so the login would lead to a button that is not there.
@@ -52,8 +55,12 @@ export function TechnologyFollow({
   return <FollowControl technologyId={technologyId} name={name} retired={retired} latest={latest} />;
 }
 
-// The provider has no follows from the server here: the query loads them, and until it answers the
-// Toggle reads as not followed. It is the honest first state, and the only one a cached page can hold.
+// The provider has no follows from the server here: the query loads them, and until it answers
+// `isFollowing` is false for every Technology. That is not the first state of the Toggle, it is no
+// state at all, and rendering it would put `Follow` on a Technology this Developer already follows.
+// So the reserved box waits instead, the same one the unknown session shows, and the control arrives
+// once it has something true to say. On `/technologies` the server hands the follows over, so the
+// provider starts knowing and no row there ever waits.
 function FollowControl({
   technologyId,
   name,
@@ -74,6 +81,8 @@ function FollowControl({
   // rendering, the way React adjusts state on a changed input: no effect, no second paint.
   const [wasFollowed, setWasFollowed] = useState(false);
   if (retired && following && !wasFollowed) setWasFollowed(true);
+
+  if (!follows.known) return <span aria-hidden className={RESERVED} />;
 
   if (retired && !following) {
     if (!wasFollowed) return null;

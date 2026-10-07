@@ -13,6 +13,11 @@ import { type FollowRejection, rejectionOf } from "../domain/follow-rejection";
 import { FOLLOWS_KEY, fetchFollows, writeCurrentVersion, writeFollow } from "./follows-store";
 
 export type Follows = {
+  // Whether the follows are in hand. A page that lets the query fetch them has none for a moment,
+  // and `isFollowing` answers false for every Technology until it does: that is not knowing, and a
+  // control that reads it must say so rather than state the wrong half (DESIGN.md, The Reserved
+  // Space Rule). Nobody signed in has nothing to know, so there the answer is in hand at once.
+  known: boolean;
   count: number;
   atLimit: boolean;
   isFollowing: (technologyId: string) => boolean;
@@ -70,7 +75,7 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
   // A tick and not a flag, because pressing the same row twice has to count twice: the row goes
   // back where it came from, and the focus is lost again on the way.
   const [press, setPress] = useState<{ technologyId: string; tick: number } | null>(null);
-  const { data: follows = [] } = useQuery({
+  const { data: follows = [], isSuccess } = useQuery({
     queryKey: FOLLOWS_KEY,
     queryFn: fetchFollows,
     enabled: developerId !== null,
@@ -114,6 +119,7 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
   const following = new Map(follows.map((row) => [row.technologyId, row]));
 
   const value: Follows = {
+    known: developerId === null || isSuccess,
     count: following.size,
     atLimit: following.size >= FREE_FOLLOW_LIMIT,
     isFollowing: (technologyId) => following.has(technologyId),
