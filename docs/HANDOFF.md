@@ -16,7 +16,77 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-07, notte).** **La rinfrescata alla UI è su `main`**, in due PR unite:
+**Da dove ripartire (2026-10-07, mattina).** **Il giro impeccable è stato riaperto sull'app
+intera**, e il primo rilievo è già chiuso con la **PR #110**, unita su `main` (`1f464c6`), branch
+`technology-full-history` cancellato in locale e su GitHub. **`CI` e `Deploy database` sono verdi sul
+merge** (run 37589555997, 6m25s). La PR non chiude nessuna issue:
+nasce dal `critique`, ed è lavoro scelto in chat.
+
+**Il `critique` nuovo è nel repository**, `.impeccable/critique/2026-10-07T07-09-23Z__src-app.md`,
+fatto come vuole la skill, con due valutazioni isolate in sottoagenti che non si sono viste.
+**26/40**, lo stesso numero del 2026-10-03, e il numero uguale è la cosa da capire: i **due P0 e i
+cinque P1 di allora sono chiusi tutti** (anche il P1-6 con `upgrade-start.tsx`, il P1-7 con
+`quote-markdown.ts` e il P2-8 con il `<-- back to`), l'estetica è scesa da 4 a 3 e il controllo da 3
+a 2 per i difetti di focus. Quello che resta stava **sotto** i rilievi di prima, non accanto.
+
+**Cosa ha fatto la #110.** `--> show all 82 releases` portava a `?from=`, dove la pagina cadeva sulla
+lista nuda e prometteva 82 Release consegnandone 57. Adesso la storia intera **tiene l'orientamento e
+non afferma niente**: riga `note: the whole recorded history, 57 releases in 4 majors.`, Stat Row dal
+major più nuovo, ritorno `<-- back to the upgrade path`, e il link che conta le Release che la lista
+stampa. **Niente verdetto, di proposito**, perché calcolato dalla Release più vecchia descriverebbe
+un aggiornamento che nessuno fa: **sta scritto in `DESIGN.md`** sotto "Upgrade Path Form", quindi non
+va ridiagnosticato. In codice: `recordedHistory()` nel dominio, `stat-rows.tsx` che estrae la Stat
+Row **senza cambiarne la resa** (una geometria sola per verdetto e storia), `history-overview.tsx`,
+e `BackPointer` accanto a `HelpPointer`. Verifiche: **544 unitari**, **156 E2E zero flaky**, lint e
+typecheck puliti.
+
+### I rilievi aperti del critique, in ordine
+
+1. **I bersagli di tocco mancano WCAG 2.2 AA 2.5.8 su ogni lista** (P1). Sulla pagina Technology i
+   link di versione sono 40 x 15.6px con passo verticale **23.0px**, cioè 1px sotto, su 28 link, da
+   `release-rows.tsx:52` (`gap-y-[2px]`). Sulla Dashboard i link di versione stanno accanto al nome
+   della Technology con **4.8 - 13.5px** centro-centro. Il rimedio del primo (`gap-y-1`, 4px) chiude
+   anche le 54 occorrenze di 2px fuori dai token.
+2. **Il pannello del profilo sopra i 640px non consegna il focus** (P1): `site-header-bar.tsx:70-73`
+   prende `Close account`, che lì è `display: none`, e il primo Tab va sul toggle del tema, che sta
+   fuori dal pannello. **A 390px invece è tutto corretto e misurato.**
+3. **La Dashboard e la pagina Technology descrivono la stessa Release in due vocabolari** (P1):
+   `dashboard-copy.ts:36` dice `no summary · read the release notes` anche per una Release che le
+   note non le ha, e quel testo non e un link benché `DESIGN.md` lo voglia tale.
+4. **`to check` nomina due insiemi diversi** (P2), contro il commento che sta in
+   `upgrade-path-copy.ts:52-54`. Tocca il vocabolario, quindi la parola si decide prima del codice.
+5. **Lo Stat Row del cammino di default è una barra sola** (P2), perché il default copre un solo
+   major, e il conteggio trasversale usa lo stesso separatore della partizione invece della virgola.
+6. Minori: errore del login senza glifo né parola, bordo del Follow a 1.33:1, pannello che sborda di
+   24px (`sm:right-[0px]` invece di `sm:right-5`), due righe oltre i 72ch, un errore React su ogni
+   caricamento da `layout.tsx:32`.
+
+### Due cose misurate che NON sono difetti
+
+- **I 72px sotto `latest` da 1040px in su** sono la scelta della #109 (`min-[1040px]:mt-8` in
+  `dashboard/page.tsx:61`), dove il difetto era 120px al posto di 72. Sotto i 1040 il salto e 48px.
+- **Raggio 3px, gerarchia piatta e padding dell'uscita nel menu**: il primo è l'anello di focus, gli
+  altri due il detector non li emette nemmeno più.
+
+### Due limiti di quella passata, da sapere prima di rifarla
+
+- ⚠️ **`resize_window` non cambia il viewport** con la finestra massimizzata: risponde "successo" e
+  `window.innerWidth` resta 1536. Il mobile si misura **dentro un iframe same-origin largo 390px**,
+  dove le media query si valutano davvero su quello. Da lì vengono tutte le misure a 390px.
+- ⚠️ **In locale ogni Sintesi e `pending`** (è la #65), quindi la schermata firma della Release, i
+  caret e il viaggio di ritorno **non si possono vedere funzionare in locale**. Un giudizio fatto qui
+  copre la cornice, non il centro.
+
+⚠️ **La verifica dal telefono della rinfrescata di ieri resta da fare**, ed è descritta nello stato
+qui sotto: nessuno di questi giri la sostituisce.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, controlla la CI su main e continua con i rilievi del critique
+```
+
+**Lo stato precedente (2026-10-07, notte).** **La rinfrescata alla UI è su `main`**, in due PR unite:
 la **#108** (`e900581`) e il suo seguito **#109** (`d0212a1`). Entrambi i branch sono cancellati in
 locale e su GitHub. Sulla #108 CI e `Deploy database` sono verdi; sulla #109 la CI era verde sulla PR
 e **la corsa su `main` era ancora in volo** a fine sessione, da guardare
@@ -210,67 +280,6 @@ Rilevamento** (due ambienti alle 02:00 raddoppiano il traffico verso GitHub e np
 **`CRON_SECRET` suo**. Quando si farà è roba da **ADR**, non solo da issue: rovescia una riga
 dell'ADR 0005, cioè che i preview condividono il database di produzione.
 
-**Lo stato precedente (2026-10-06, sera tardi).** **La #64 è chiusa**, con la **PR #106**, unita su
-`main` (`a3ca8c4`): l'issue si è chiusa da sola col `Closes #64`, e il branch
-`64-follow-moves-the-row` è cancellato in locale e su GitHub. `Deploy database` verde.
-**È verificata in produzione, dall'utente in persona**: su `/technologies` la riga passa fra le
-seguite alla pressione, senza aggiornare. La issue era `ready-for-human` e la scelta è stata presa
-con lui in chat, sulla **strada 3**: la riga si sposta subito, il focus la segue, **niente
-animazione**.
-
-**Non c'è più nessuna issue `ready-for-agent`**, quindi il lavoro seguente si sceglie fra le strade
-aperte qui sotto e vuole il via dell'utente.
-
-**Perché la strada 3 adesso.** Il 2026-10-03 era stata scelta la **strada 1** (lasciare la riga dov'è
-e rendere onesti i conteggi), fatta con la PR #91 dentro la #47. Quella sessione aveva scritto il
-criterio per il passo dopo: *se dopo i conteggi onesti la lamentela sopravvive, il passo seguente è
-la strada 3, non la 2*. La lamentela è sopravvissuta, con queste parole dell'utente: "si ma devo
-comunque aggiornare per vederla nei seguiti". Quindi il criterio era già deciso e non è stato
-ridiscusso: si è discussa solo **la forma**, perché la strada 3 tocca una regola di sistema
-(`DESIGN.md` dichiara **un solo momento di moto**, la sottolineatura dei caret, e lo mette fra i
-"Do"). L'utente ha scelto lo **spostamento istantaneo senza moto**, scartando la variante col
-richiamo che si accende sulla riga arrivata.
-
-**Il capovolgimento è registrato dove stava la decisione di prima**: `DESIGN.md`, "Picker Sections
-(Technologies)", che adesso racconta i due passi e il perché del secondo. Era il criterio più scomodo
-della issue, e la strada 1 lo aveva evitato perché non rovesciava niente.
-
-**Com'è stata fatta.** Il dominio non è stato toccato: `liveSections` sapeva già dove ogni riga
-appartiene, e serviva solo passarlo alla resa invece che ai soli conteggi.
-
-- `technology-picker.tsx` rende `live.following` e `live.catalog`. **`retired` resta lo scatto del
-  server**: una ritirata lasciata andare non appartiene più a nessuna sezione e deve restare lì a
-  dirlo, quindi è l'unica riga che ancora non si muove (e l'unica che passa ancora `belong`).
-- **Il focus è quello che paga lo spostamento.** Il toggle è un nodo nuovo nella sezione nuova, e il
-  browser lascia il focus sul body: `pressedAt` nel provider (un **tick**, non un flag, perché
-  premere due volte la stessa riga deve contare due volte) dice al toggle che la pressione era sua, e
-  lui se lo riprende. Se lo riprende anche **quando il database rifiuta** e la riga torna indietro,
-  che era un buco della forma vecchia. Non ruba niente a un focus che sta ancora da qualche parte,
-  quindi la pagina Technology e la scorciatoia della Dashboard vuota non cambiano.
-- **La nota "si sposta alla prossima visita" è sparita**, con tutta la variante `note` della Row
-  Status Line: diceva una cosa che adesso fa la riga stessa. Restava una sola variante, quindi la
-  geometria è rientrata in `follow-rejection-note.tsx` e `row-status-line.tsx` è cancellato. In
-  `DESIGN.md` il titolo torna **"Row Error Line"**, con scritto perché la variante è uscita.
-- Il mock `technologies.html` si comporta come la pagina: dipinge le liste dai follow invece di
-  rattoppare le righe dove stanno, e rimette il focus. Lo stato `moved` del selettore "page state"
-  **non esiste più**: non c'è più niente di statico da mostrare, lo si vede premendo un toggle.
-- Il diff è **-41 righe**: lo spostamento ha tolto più codice di quanto ne abbia aggiunto, perché
-  conteggi e righe non devono più essere tenuti d'accordo a mano.
-
-**Verifiche fatte**: `lint` e `typecheck` puliti, **533 unitari**, **63 di integrazione**, **152 E2E**
-(151 prima, più quello nuovo) **con zero flaky**. Nel browser, mock e app nei **due temi**: la riga
-passa in `following`, `following (6)` / `catalog (31)` / `framework (5)` d'accordo fra loro, il focus
-resta sul toggle spostato e il giro di ritorno rimette tutto com'era. Il database locale è stato
-lasciato com'era (5 follow).
-
-**Tre test E2E in `technologies.spec.ts`** tengono fermo il comportamento: la riga si sposta al
-follow, torna all'unfollow, e **"the press keeps its place when the row moves, in both directions"**,
-che preme da tastiera e pretende il focus sul toggle nella sezione nuova.
-
-**Il giro in produzione è fatto e funziona**, ed era il posto dove la lamentela era nata. Con lui la
-segnalazione che aveva aperto la #64 il 2026-09-29 è chiusa per davvero: la strada 1 l'aveva solo
-resa onesta, questa le risponde.
-
 ### Le strade aperte
 
 ⚠️ **Le issue sono sospese per scelta dell'utente** (2026-10-06): "lasciamo perdere le issue, ci
@@ -321,6 +330,7 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-06 (sera tardi): la #64 chiusa (PR #106), la riga che si sposta al follow
 - Stato al 2026-10-06 (sera): la #100 chiusa (PR #105), e la #86 (PR #102)
 - Stato al 2026-10-06 (pomeriggio): le due box della Dashboard (PR #104)
   - ⚠️ La CI del merge si fa cancellare da una richiesta che aspetta, e si rimedia con `gh run rerun`
