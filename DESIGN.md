@@ -361,6 +361,8 @@ A glyph plus severity label in the severity ink (`warning:` amber / `ok:` green)
 
 **Page verdict (Dashboard).** The same line summarises all followed Technologies: `warning: N need action` or `ok: nothing needs action`. It counts every Release the page shows as possible work, the Upgrade Path from the Version in use included, each Release once (CONTEXT.md, Verdetto della Dashboard). When none of them carries a verdict the line is **muted info + `note: nothing here can be judged yet`**, no ink, the same withdrawal the release page makes in its seventh state: with nothing to judge, `ok: nothing needs action` would be true of an empty set and read as reassurance. Under it the counts are read in a Count Box, one row per significance, each row linking to its section. They carry no severity ink; the action count sits in plain words (`(2 need action)`) inside the `featured` row and stays in the narrower scope of the number it follows, the featured ones of the window, because a figure under the verdict may be tighter than the verdict but must never contradict it.
 
+**Page verdict (Upgrade Path).** `warning: N need action` first, then `note: N without a verdict`, then `ok: up to date` or `ok: safe to upgrade`. The muted count is an umbrella on purpose: it covers all of `missing`, while the Stat Row under it splits that same number into `N not summarized` and `N to check` (see Stat Row). **`to check` names the `unjudged` subset and nothing else, so the verdict may never print it**: with missing 4 and unjudged 1 the page reads `note: 4 without a verdict` over `3 not summarized · 1 to check`, numbers that add up instead of one number carried through three names. The Dashboard's `in use` line counts the same set and uses the same word.
+
 ### Note Lines
 A key-points list separated by top and bottom 1px rules. Each row is a muted Mono `note[n]:` label with the info glyph in an 11.5ch column, followed by Grotesk prose that ends in a `release-notes:N` cite pointer.
 
@@ -470,7 +472,7 @@ When not one entry has a featured Release or an In Use Line, the rows are replac
 ### In Use Line
 Where the Version in use shows up on the Dashboard, in two places, both Mono 13px `text-muted` and both naming the day of the declaration:
 1. The second Count Box, beside the window counts: the caption `version in use · 3 of 7`, then `releases behind 16`, `need action 3` (only when there is any) and `oldest declared 2026-09-12`. The oldest declaration is the one named, because a total is only as fresh as the stalest thing under it.
-2. In Spotlight, one line at the end of a Technology's entry (8px above): `in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action`, or `· already on 6.0.3` when there is nothing after it. Releases with no ready summary count apart, as `· 2 to check`.
+2. In Spotlight, one line at the end of a Technology's entry (8px above): `in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action`, or `· already on 6.0.3` when there is nothing after it. Releases with no ready summary count apart, as `· 2 without a verdict`, the word the Upgrade Path verdict uses for the same set (see Verdict Line).
 
 Both lines are absent for a Developer who declared nothing, and the page then reads exactly as it did before there was anything to declare. Neither carries ink, and neither adds a link: the Technology name of the row already leads to its upgrade path.
 

@@ -69,7 +69,7 @@ describe("behindLine", () => {
 
   it("counts what has no Summary apart, as neither safe nor needing action", () => {
     expect(behindLine(standing({ total: 2, missing: 2 }))).toBe(
-      "in use 6.0.0 since 2026-09-12 · 2 releases behind 6.2.1 · 2 to check",
+      "in use 6.0.0 since 2026-09-12 · 2 releases behind 6.2.1 · 2 without a verdict",
     );
   });
 
