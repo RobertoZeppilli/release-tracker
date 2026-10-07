@@ -57,7 +57,9 @@ async function follow(page: Page): Promise<void> {
 async function declare(page: Page, version: string): Promise<void> {
   await field(page).fill(version);
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.locator("#current-version-note")).toContainText("declared on");
+  // The date, not the word alone: `not declared` contains `declared`, so a looser assertion would
+  // pass on the state this helper is waiting to leave.
+  await expect(page.locator("#current-version-note")).toHaveText(new RegExp(`declared ${TODAY.source}`));
 }
 
 test.describe("the Version in use", () => {
@@ -74,14 +76,17 @@ test.describe("the Version in use", () => {
     await field(page).fill("1.0.0");
     await page.getByRole("button", { name: "Save", exact: true }).click();
 
-    // The day of the declaration is on the screen, next to the counts built on it.
-    await expect(page.locator("#current-version-note")).toHaveText(
-      new RegExp(`declared on ${TODAY.source}, and the upgrade path below starts from it`),
-    );
+    // The day of the declaration is on the screen, in the panel row that carries the version and
+    // right above the `from` that repeats it. The prose that used to say so under the `from` field
+    // is gone with it: two lines named the same version and the same day 100px apart (issue #113).
+    await expect(page.locator("#current-version-note")).toHaveText(new RegExp(`declared ${TODAY.source}`));
     await expect(page.getByLabel("Upgrade from")).toHaveValue("1.0.0");
-    await expect(page.getByLabel("Upgrade from")).toHaveAccessibleDescription(
-      new RegExp(`starting from 1\.0\.0, the version you declared in use on ${TODAY.source}\.`),
-    );
+    await expect(page.getByLabel("Upgrade from")).toHaveAccessibleDescription("");
+    // Both controls are rows of one panel (issue #113): the declaration is no longer a line under
+    // the header facts, and this fails if it goes back there.
+    const panel = page.getByRole("region", { name: "upgrade path" });
+    await expect(panel.getByLabel("Version in use", { exact: true })).toBeVisible();
+    await expect(panel.getByLabel("Upgrade from")).toBeVisible();
     await expect(page.getByRole("heading", { name: "warning: 1 needs action" })).toBeVisible();
 
     // And it is still the start on the next visit, without anything in the URL.

@@ -1,6 +1,7 @@
 import Form from "next/form";
 import type { ReactNode } from "react";
 import { SeverityLabel } from "./severity-label";
+import { PANEL_CELL_CLASS, PANEL_ROW_CLASS, PanelNoteRow } from "./upgrade-panel";
 
 export type FormMessage = { tone: "breaking" | "muted"; label: string; body: ReactNode };
 
@@ -10,14 +11,13 @@ export type FormMessage = { tone: "breaking" | "muted"; label: string; body: Rea
 export const VERSION_BUTTON_CLASS =
   "inline-flex h-[34px] cursor-pointer items-center rounded-md border border-rule-strong bg-transparent px-3 font-sans text-diagnostic font-medium text-text hover:border-text-faint hover:bg-raised disabled:cursor-not-allowed disabled:border-rule disabled:text-text-faint";
 
-// The two version controls sit one under the other on the Technology page, so their labels share a
-// column wide enough for the longer of the two and the fields line up on one left edge.
-export const VERSION_LABEL_CLASS = "inline-block w-[14ch] max-[640px]:w-auto";
-
 export const VERSION_INPUT_CLASS =
   "h-[38px] w-[14ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text placeholder:text-text-faint hover:border-text-faint aria-invalid:border-breaking";
 
-// A plain GET form: `?from=<version>` lands in the URL, so the path can be shared and reloaded.
+// A plain GET form: `?from=<version>` lands in the URL, so the path can be shared and reloaded. One
+// row of the Upgrade Panel: the label is `from`, the row's share of the panel's grammar, while the
+// field keeps `Upgrade from` as its accessible name, which stands on its own wherever a screen
+// reader lists the fields of this page. The visible word is inside that name, as WCAG 2.5.3 asks.
 export function UpgradeForm({
   action,
   latest,
@@ -32,37 +32,40 @@ export function UpgradeForm({
   message: FormMessage | null;
 }) {
   return (
-    <Form action={action} className="mt-6 flex flex-wrap items-center gap-3 font-mono text-diagnostic text-text-muted">
-      <label htmlFor="from" className={VERSION_LABEL_CLASS}>
-        Upgrade from
-      </label>
-      <input
-        key={value}
-        id="from"
-        name="from"
-        defaultValue={value}
-        list="versions"
-        autoComplete="off"
-        spellCheck={false}
-        placeholder={latest}
-        aria-invalid={message?.tone === "breaking" ? true : undefined}
-        aria-describedby={message ? "from-message" : undefined}
-        className={VERSION_INPUT_CLASS}
-      />
-      <datalist id="versions">
-        {versions.map((version) => (
-          <option key={version} value={version} />
-        ))}
-      </datalist>
-      <span>to</span>
-      <span className="text-text">{latest}</span>
-      <button type="submit" className={VERSION_BUTTON_CLASS}>
-        Check
-      </button>
+    <Form action={action} className="flex flex-col gap-2">
+      <div className={PANEL_ROW_CLASS}>
+        <label htmlFor="from">from</label>
+        <span className={PANEL_CELL_CLASS}>
+          <input
+            key={value}
+            id="from"
+            name="from"
+            aria-label="Upgrade from"
+            defaultValue={value}
+            list="versions"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={latest}
+            aria-invalid={message?.tone === "breaking" ? true : undefined}
+            aria-describedby={message ? "from-message" : undefined}
+            className={VERSION_INPUT_CLASS}
+          />
+          <datalist id="versions">
+            {versions.map((version) => (
+              <option key={version} value={version} />
+            ))}
+          </datalist>
+          <button type="submit" className={VERSION_BUTTON_CLASS}>
+            Check
+          </button>
+        </span>
+      </div>
       {message && (
-        <p id="from-message" className={`m-0 basis-full ${message.tone === "breaking" ? "text-breaking" : "text-text-muted"}`}>
-          <SeverityLabel tone={message.tone} label={message.label} /> {message.body}
-        </p>
+        <PanelNoteRow>
+          <span id="from-message" className={message.tone === "breaking" ? "text-breaking" : "text-text-muted"}>
+            <SeverityLabel tone={message.tone} label={message.label} /> {message.body}
+          </span>
+        </PanelNoteRow>
       )}
     </Form>
   );

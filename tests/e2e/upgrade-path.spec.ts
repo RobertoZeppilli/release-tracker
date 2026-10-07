@@ -47,6 +47,20 @@ test("the path is there before anyone asks, starting from the last release of th
   await expect(page.getByRole("heading", { name: /needs action|up to date/ })).toHaveCount(0);
 });
 
+// Issue #113: the two controls and the facts they work on are one panel, and no fact of it is left
+// inside a sentence. A Visitor gets the path half of it and nothing else: declaring a Version in use
+// exists only behind the login, so the `in use` row is not there to be found.
+test("the panel carries the path and its facts, and the declaration only behind the login", async ({ page }) => {
+  await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
+
+  const panel = page.getByRole("region", { name: "upgrade path" });
+  await expect(panel.getByLabel("Upgrade from")).toBeVisible();
+  // The destination is a row of the panel, not the `to 2.1.0` that used to sit inside the control.
+  await expect(panel).toHaveText(/latest\s*2\.1\.0/);
+  await expect(panel.getByLabel("Version in use")).toHaveCount(0);
+  await expect(panel.getByRole("button", { name: "Save" })).toHaveCount(0);
+});
+
 test("entering a Version gives the verdict for the range and leads to its Releases", async ({ page }) => {
   await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
   await page.getByLabel("Upgrade from").fill("1.0.0");

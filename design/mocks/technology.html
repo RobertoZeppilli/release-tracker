@@ -65,24 +65,33 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .tech-facts strong { color: var(--text); font-weight: 400; }
 .tech-head .follow { margin-left: auto; }
 
-/* Upgrade path form */
-.range-form { margin-top: var(--space-6); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; font: 400 14px var(--mono); color: var(--text-muted); }
-.range-form label, .in-use label { color: var(--text-muted); display: inline-block; width: 14ch; }
-.range-form input { width: 11ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
-.range-form input:hover { border-color: var(--text-faint); }
-.range-form input[aria-invalid="true"] { border-color: var(--breaking); }
-.range-form .to { color: var(--text); }
+/* Upgrade panel: one box for the two controls and the facts they work on. The treatment is the
+   Count Box of the Dashboard, with the value column left-aligned behind a 9ch label column, because
+   two of these values are a field and its buttons and not a number. */
+.panel { margin-top: var(--space-6); max-width: var(--measure); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--raised); padding: var(--space-3) var(--space-4); }
+.panel .caption { margin: 0; font: 400 12px/1.6 var(--mono); color: var(--text-faint); }
+.panel .rows { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
+.panel form { display: flex; flex-direction: column; gap: var(--space-2); }
+.panel .row { margin: 0; display: grid; grid-template-columns: 9ch 1fr; align-items: baseline; column-gap: var(--space-3); row-gap: var(--space-2); font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
+.panel .cell { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.panel .v { color: var(--text); }
+.panel input { width: 14ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.panel input:hover { border-color: var(--text-faint); }
+.panel input[aria-invalid="true"] { border-color: var(--breaking); }
+.panel .clear { display: none; }
+.panel .declared, .panel .undeclared { color: var(--text-faint); }
+.panel .declared { display: none; }
+/* The lines that belong to the row above them: they keep the value column and have no label. */
 .field-error a { color: inherit; }
-.field-error { flex-basis: 100%; margin: 0; font: 400 14px/1.7 var(--mono); color: var(--breaking); display: none; }
-.field-note { flex-basis: 100%; margin: 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); display: none; }
-.field-note .label, .in-use .label { color: var(--text-muted); }
-
-/* Version in use: the same field and button as the range form, one line under the header */
-.in-use { display: none; flex-basis: 100%; margin-top: var(--space-2); align-items: center; gap: var(--space-3); flex-wrap: wrap; font: 400 14px var(--mono); color: var(--text-muted); }
-.in-use input { width: 11ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
-.in-use input:hover { border-color: var(--text-faint); }
-.in-use .undeclared { color: var(--text-faint); }
-.in-use .clear { display: none; }
+.panel .field-error { color: var(--breaking); display: none; }
+.panel .field-note { color: var(--text-muted); display: none; }
+.panel .label { color: var(--text-muted); }
+/* A line under a row gives the indent up on a phone and takes the width: a sentence in a column 9ch
+   narrower than the panel wraps a line more for nothing. */
+@media (max-width: 640px) {
+  .panel .row.sub { grid-template-columns: 1fr; }
+  .panel .row.sub .gutter { display: none; }
+}
 
 /* Range verdict */
 .verdict { margin-top: var(--space-6); }
@@ -172,12 +181,13 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 main[data-state="retired"] .retired-note { display: block; }
 main[data-state="retired"] .tech-head .follow { display: none; }
 main[data-state="retired"] .previews { display: none; }
-main[data-state="invalid"] .field-error { display: block; }
+main[data-state="invalid"] .field-error { display: grid; }
+.panel .in-use { display: none; }
 main[data-state="following"] .in-use, main[data-state="in-use"] .in-use { display: flex; }
-main[data-state="in-use"] .in-use .clear { display: inline-flex; }
-main[data-state="in-use"] .in-use .declared-note, main[data-state="in-use"] .field-note { display: block; }
-main[data-state="in-use"] .in-use .undeclared { display: none; }
-main[data-state="derived"] .derived-note { display: block; }
+main[data-state="in-use"] .clear { display: inline-flex; }
+main[data-state="in-use"] .declared { display: inline; }
+main[data-state="in-use"] .undeclared { display: none; }
+main[data-state="derived"] .derived-note { display: grid; }
 main[data-state="derived"] .show-all, main[data-state="range"] .show-all,
 main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { display: block; }
 
@@ -263,31 +273,47 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       <span class="follow-label">Follow</span>
     </a>
-
-    <form class="in-use" action="#" method="get" id="in-use-form" aria-label="Version of Vite in use">
-      <label for="current-version">Version in use</label>
-      <input id="current-version" name="current-version" value="6.0.0" placeholder="6.0.3" autocomplete="off" spellcheck="false" aria-describedby="current-version-note">
-      <button class="btn" type="submit">Save</button>
-      <button class="btn clear" type="button">Clear</button>
-      <span class="undeclared">not declared</span>
-      <p class="field-note declared-note" id="current-version-note"><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> declared on 2026-09-12, and the upgrade path below starts from it.</p>
-    </form>
   </div>
 
   <div class="retired-note" role="note">
     <p><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> Vite is no longer tracked. Releases up to 6.0.3 stay readable, but new versions are not detected.</p>
   </div>
 
+  <!-- The two controls and the facts they work on, in one panel. The page state selector decides
+       which of the two readers is on the screen: the `in use` row exists only behind the login, for
+       a Developer who follows this Technology, and never for the Visitor the other states show. -->
+  <section class="panel" aria-labelledby="upgrade-panel">
+    <p class="caption" id="upgrade-panel">upgrade path</p>
+    <div class="rows">
+
+    <form class="in-use" action="#" method="get" id="in-use-form" aria-label="Version of Vite in use">
+      <div class="row">
+        <label for="current-version">in use</label>
+        <span class="cell">
+          <input id="current-version" name="current-version" aria-label="Version in use" value="6.0.0" placeholder="6.0.3" autocomplete="off" spellcheck="false" aria-describedby="current-version-note">
+          <button class="btn" type="submit">Save</button>
+          <button class="btn clear" type="button">Clear</button>
+        </span>
+      </div>
+      <p class="row sub"><span class="gutter" aria-hidden="true"></span><span id="current-version-note"><span class="declared">declared 2026-09-12</span><span class="undeclared">not declared</span></span></p>
+    </form>
+
   <form class="range-form" action="#" method="get" id="range-form">
-    <label for="from">Upgrade from</label>
-    <input id="from" name="from" value="5.2.0" list="versions" autocomplete="off" spellcheck="false" aria-describedby="from-error">
+    <div class="row">
+    <label for="from">from</label>
+    <span class="cell">
+    <input id="from" name="from" aria-label="Upgrade from" value="5.2.0" list="versions" autocomplete="off" spellcheck="false">
     <datalist id="versions"><option value="5.2.0"><option value="5.2.1"><option value="5.2.2"><option value="5.2.3"><option value="5.2.4"><option value="5.2.5"><option value="5.2.6"><option value="5.2.7"><option value="5.2.8"><option value="5.2.9"><option value="5.2.10"><option value="5.2.11"><option value="5.2.12"><option value="5.2.13"><option value="5.2.14"><option value="5.3.0"><option value="5.3.1"><option value="5.3.2"><option value="5.3.3"><option value="5.3.4"><option value="5.3.5"><option value="5.4.0"><option value="5.4.1"><option value="5.4.2"><option value="5.4.3"><option value="5.4.4"><option value="5.4.5"><option value="5.4.6"><option value="5.4.7"><option value="5.4.8"><option value="5.4.9"><option value="5.4.10"><option value="5.4.11"><option value="6.0.0"><option value="6.0.1"><option value="6.0.2"><option value="6.0.3"></datalist>
-    <span>to</span><span class="to">6.0.3</span>
     <button class="btn" type="submit">Check</button>
-    <p class="field-note" id="from-note"><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 6.0.0, the version you declared in use on 2026-09-12.</p>
-    <p class="field-note derived-note" id="from-derived"><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 5.4.11, the last release of the previous major, because no version was given.</p>
-    <p class="field-error" id="from-error"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href="#">5.4.0</a> or <a href="#">5.4.11</a>? The path below is still from 5.2.0.</p>
+    </span>
+    </div>
+    <p class="row sub field-note derived-note" id="from-derived"><span class="gutter" aria-hidden="true"></span><span><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 5.4.11, the last release of the previous major, because no version was given.</span></p>
+    <p class="row sub field-error" id="from-error"><span class="gutter" aria-hidden="true"></span><span><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href="#">5.4.0</a> or <a href="#">5.4.11</a>? The path below is still from 5.2.0.</span></p>
   </form>
+
+      <p class="row"><span>latest</span><span class="v">6.0.3</span></p>
+    </div>
+  </section>
 
   <section class="verdict" aria-labelledby="range-verdict">
     <p class="verdict-line" id="range-verdict"><span class="sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span class="claim">1 needs action</span></p>
@@ -474,7 +500,11 @@ document.getElementById("state-select").addEventListener("change", (event) => {
   main.dataset.state = state;
   fromInput.value = FROM[state] ?? "5.2.0";
   fromInput.setAttribute("aria-invalid", String(state === "invalid"));
-  fromInput.setAttribute("aria-describedby", { "in-use": "from-note", derived: "from-derived" }[state] ?? "from-error");
+  // A declared start has no line of its own any more: the `in use` row above carries the version and
+  // the day, so only a derived start and a refusal describe the field.
+  const describes = { derived: "from-derived", invalid: "from-error" }[state];
+  if (describes) fromInput.setAttribute("aria-describedby", describes);
+  else fromInput.removeAttribute("aria-describedby");
   // The control only exists for a Developer who follows the Technology.
   followLabel.textContent = state === "following" || state === "in-use" ? "Following" : "Follow";
   currentVersion.value = state === "in-use" ? "6.0.0" : "";
