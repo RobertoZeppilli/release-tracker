@@ -205,7 +205,7 @@ test.describe("the top bar stays two rows on a phone", () => {
   }
 
   // The two phones the review measured. Above the step the quota is back in the bar, where the three
-  // items fit on one line and the strip is the navigation alone.
+  // items fit on one line and the strip is the sections alone.
   for (const width of [375, 390]) {
     test(`puts the quota in the strip at ${width}px`, async ({ page }) => {
       await dashboardAt(page, width);
@@ -219,4 +219,32 @@ test.describe("the top bar stays two rows on a phone", () => {
     const quota = await page.getByLabel("Followed technologies").boundingBox();
     expect(quota?.y).toBeLessThan(56);
   });
+
+  // Below 430px the strip carries both the sections and the quota, on one line. Before issue #119
+  // the sections were in the account panel and the quota had the strip to itself; now they share it,
+  // sections at the left edge and quota at the right, and that sharing is what keeps the bar at two
+  // rows. 320px is the narrowest width the suite measures.
+  for (const width of [320, 375, 390]) {
+    test(`shares the strip between the sections and the quota at ${width}px`, async ({ page }) => {
+      await dashboardAt(page, width);
+      const sections = await page.getByRole("navigation", { name: "Sections" }).boundingBox();
+      const quota = await page.getByLabel("Followed technologies").boundingBox();
+      expect(sections, "the sections").not.toBeNull();
+      expect(quota, "the quota").not.toBeNull();
+      if (!sections || !quota) return;
+
+      expect(sections.y, "the sections are in the strip, not the bar").toBeGreaterThanOrEqual(56);
+      // The middle of each, not the top: the quota is a link centred in the 40px line, so its own
+      // box starts lower than the strip it sits in.
+      const middle = (box: { y: number; height: number }) => box.y + box.height / 2;
+      expect(Math.abs(middle(quota) - middle(sections)), "the quota shares the line").toBeLessThan(1);
+      expect(quota.x, "and sits to the right of the sections").toBeGreaterThanOrEqual(sections.x + sections.width - 1);
+
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
+      expect(scrollWidth, "the shared strip adds no horizontal overflow").toBeLessThanOrEqual(clientWidth);
+    });
+  }
 });

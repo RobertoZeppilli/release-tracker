@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { HelpPointer } from "@/components/help-pointer";
-import { SiteHeader, TECHNOLOGIES_CRUMB } from "@/components/site-header";
+import { PageBreadcrumb, TECHNOLOGIES_CRUMB } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
 import { createPublicClient } from "@/lib/supabase";
 import { githubRepo, type StoredTechnology } from "@/modules/catalog";
@@ -73,8 +74,11 @@ export default async function ReleasePage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader path={[TECHNOLOGIES_CRUMB, { label: technology.slug, href: `/technologies/${technology.slug}` }, release.version]} />
+      <SiteHeader />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
+        <PageBreadcrumb
+          path={[TECHNOLOGIES_CRUMB, { label: technology.slug, href: `/technologies/${technology.slug}` }, release.version]}
+        />
         <ReleaseHeader technologyName={technology.name} release={release} source={source} />
         {technology.retired && <RetiredNote name={technology.name} latest={null} />}
         <CitationProvider>

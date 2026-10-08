@@ -100,9 +100,9 @@ test("the login keeps its prose inside the measure", async ({ page }) => {
   expect(widest, "the width of the line in characters").toBeLessThanOrEqual(72);
 });
 
-// The account strip under the bar: what belongs to the viewer rather than to the page. It opens
-// from the picture at the right of the bar, and on a public page it is where the way back to the
-// Dashboard lives, since the breadcrumb takes the slot the navigation would have used.
+// The account panel: what belongs to the viewer rather than to the page. It opens from the picture
+// at the right of the bar, and since issue #119 it holds the way out and nothing else, because the
+// two destinations are in the bar on every page.
 async function openAccount(page: Page): Promise<void> {
   await page.getByRole("button", { name: /^Account/ }).click();
 }
@@ -134,15 +134,28 @@ test.describe("a Developer", () => {
     await expect(page.getByRole("button", { name: "sign out" })).toBeVisible();
   });
 
-  // The Technology and Release pages give the slot to the breadcrumb, so the two destinations are
-  // not in the bar there. The way to the Dashboard is in the account strip instead of nowhere.
-  test("reaches the Dashboard from a public page, where the navigation is not in the bar", async ({ page }) => {
+  // The reclaim of issue #119: from a Technology page the `dashboard` link existed only inside the
+  // account panel, so it took one click to reveal and another to follow, and a reader who did not
+  // know the picture hid links saw none. One visible gesture, with nothing opened first.
+  test("reaches the Dashboard from a public page in one visible gesture", async ({ page }) => {
     await signIn(page);
     await page.goto("/technologies/vite");
-    await expect(page.getByRole("navigation", { name: "Sections" })).toHaveCount(0);
 
-    await openAccount(page);
-    await page.getByRole("link", { name: "dashboard" }).click();
+    const sections = page.getByRole("navigation", { name: "Sections" });
+    await expect(sections.getByRole("link", { name: "dashboard" })).toBeVisible();
+    await sections.getByRole("link", { name: "dashboard" }).click();
     await expect(page).toHaveURL("/dashboard");
+  });
+
+  // A visitor sees the same two links and is not told they are off limits: both sit behind sign-in,
+  // and following one lands on sign-in with the destination kept, exactly as the `technologies`
+  // breadcrumb step already did. The header cannot branch on the viewer anyway, since the session
+  // arrives after the first paint.
+  test("is sent to sign in, and back, when following a section as a visitor", async ({ page }) => {
+    await page.goto("/technologies/vite");
+
+    const sections = page.getByRole("navigation", { name: "Sections" });
+    await sections.getByRole("link", { name: "dashboard" }).click();
+    await expect(page).toHaveURL(`/login?next=${encodeURIComponent("/dashboard")}`);
   });
 });

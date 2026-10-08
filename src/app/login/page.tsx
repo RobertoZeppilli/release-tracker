@@ -1,6 +1,7 @@
 import { LogIn, TerminalSquare } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { PageBreadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { serverEnv } from "@/env/server";
 import { safeRedirectPath } from "@/modules/auth";
@@ -38,8 +39,9 @@ export default async function LoginPage({ searchParams }: Props) {
 
   return (
     <>
-      <SiteHeader path={["sign in"]} />
+      <SiteHeader />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
+        <PageBreadcrumb path={["sign in"]} />
         <h1 className="font-sans text-headline font-semibold">Sign in</h1>
         <p className="mt-3 max-w-prose font-sans text-body text-text-muted">
           Following technologies and the dashboard are yours alone, so they need an account. Release
