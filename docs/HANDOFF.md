@@ -15,7 +15,72 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-08, sera).** Siamo **dentro la #26**, sul ramo `26-landing-page`.
+**Da dove ripartire (2026-10-08, notte).** Siamo ancora **dentro la #26**, sul ramo
+`26-landing-page`, e **il codice della landing è scritto**. Due commit locali, `5261aa6` (documenti
+e mock, del giro prima) e quello di questo giro, **non pushati e senza PR**: il ramo esiste solo in
+locale. ⚠️ **Push e PR aspettano la conferma dell'utente.**
+
+**Cos'è stato scritto.** Un modulo nuovo, `src/modules/landing/`, con il `domain` che tiene il
+contenuto reale e la `ui` che tiene i quattro componenti di `DESIGN.md`:
+
+1. **`domain/specimen.ts`**: le righe 43-50 delle note di React 19.0.0 ai loro numeri veri, la
+   citazione (riga 47, il virgolettato e il tratto citato) e i conti. `citedSpan` dice dove cade il
+   tratto citato dentro il virgolettato, in caratteri, che è quello con cui la caret row si impagina.
+   **`domain/vocabulary.ts`**: i quattro livelli di Rilevanza detti a parole, presi da `CONTEXT.md`.
+2. **`ui/`**: `heading-block`, `bench` (con `source-view`, `cite-well`, `caret-draw`, `stage-rail`),
+   `short-specimens`, `vocabulary-legend` (id `significance`), `closing-block`, `landing-note`
+   (il `note:` + prosa, che serve a tre blocchi), `sign-in-button`.
+3. **`src/app/page.tsx`**: la landing, **senza `revalidate` e senza API dinamiche**, cioè
+   prerenderizzata una volta per deploy. L'unico numero che legge, la taglia del Catalogo, viene da
+   `readCatalogDirectory()`, cioè dalla cartella `catalog/`: letta a build time, niente database.
+
+**Il marchio e i metadati**: `verdict:` nella barra (era `release-tracker`), `SITE_NAME = "Verdict"`
+in `src/lib/metadata.ts`, il titolo del layout è un **template `%s · Verdict`** e la landing è
+l'unica con `absolute`. **`src/app/icon.svg`** è la caret row `^^^` come path, inchiostri fissi;
+⚠️ **il `favicon.ico` di Next è stato cancellato**, era il logo di Next e in molti browser vince
+sull'SVG. La home è **dentro la sitemap** come prima voce e il `noindex` è sparito.
+
+⚠️ **Tre cose già risolte, da non ripagare.**
+1. **Il numero di riga della riga citata** era `text-faint` sopra il `breaking-wash`, e axe lo boccia
+   in tema scuro. La pagina Release non se l'era mai posto perché lì i numeri sono un **counter CSS**,
+   che axe non vede; qui sono testo vero, quindi la riga citata alza anche il suo numero.
+2. **Il disegno della caret row non sta in uno `useState`**: lo stato è un attributo `data-draw`
+   scritto sull'elemento da `CaretDraw` (`armed` → `drawn`). Il markup che arriva dal server non ne
+   ha nessuno, quindi **senza JavaScript i caret ci sono già**; tenerlo in React vorrebbe dire
+   renderizzare il clip prima di poterlo animare, cioè l'unico ordine che li nasconde per sempre.
+   La regola di lint `react-hooks/immutability` vieta anche di scriverlo dentro un hook che riceve
+   la ref: per questo `CaretDraw` è un fratello del pozzetto e lo trova per id.
+3. **URL canonico e sitemap**: Next risolve `/` su `metadataBase` **senza barra finale**, e la
+   sitemap adesso scrive lo stesso indirizzo (`new URL(...).origin`), non una seconda grafia.
+
+**`DESIGN.md` corretto in due punti** che il mock aveva già smentito: il Brand Mark **non** si ripete
+a 20px sopra l'`h1` (sarebbe un kicker), e le due azioni stanno in **tre** posti, non due: blocco di
+testa, fondo del banco, chiusura. `docs/DECISIONI.md` ha tre righe nuove: Home `/`, Titolo delle
+pagine, Favicon.
+
+**I numeri**: **562 unitari** (8 nuovi, tutti sul dominio della landing: il virgolettato è davvero un
+pezzo della riga 47, il tratto citato è un pezzo del virgolettato, la caret row è disegnabile a ogni
+larghezza in cui viene mostrata, e la legenda copre tutti i livelli dello schema), **186 E2E verdi**,
+cioè tutta la suite, `pnpm lint`, `pnpm typecheck` e `pnpm build` verdi. **Nessun overflow
+orizzontale** a 320, 390, 640, 1024 e 1440. **Core Web Vitals misurati in laboratorio** sulla build
+di produzione: LCP 1240 ms desktop e 188 ms mobile, **CLS 0 e 0,0015**, cioè dentro la fascia buona;
+⚠️ è localhost senza throttling, **la misura vera è quella in produzione**, e resta da fare.
+
+**Gli scatti del codice** stanno in `.impeccable/review/app-landing-*.png` (desktop, light, mobile,
+cite, fold) e **non sono ancora in git**: l'utente decide se committarli accanto a quelli del mock.
+
+### Cosa resta della #26
+
+1. **La verifica in produzione**: Core Web Vitals veri e una lettura dal telefono.
+2. Il commit, il push e la PR, che aspettano la conferma dell'utente.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md e chiudi la #26
+```
+
+**Lo stato di partenza di questo giro (2026-10-08, sera).** Siamo **dentro la #26**, sul ramo `26-landing-page`.
 Tutto quello che segue è in **un commit solo**, `5261aa6`, **non pushato** e senza PR: il ramo esiste
 solo in locale. La CI del giro precedente è finita **verde** e `f8dcdfc` è stato pushato, quindi su
 `main` locale e remoto combaciano.
@@ -76,25 +141,11 @@ accorciato il quote a `Using propTypes will now be silently ignored.` e quote e 
 
 **I quattro mock esistenti** hanno il wordmark nuovo (`verdict:`, che punta a `landing.html`).
 
-### Cosa resta della #26, ed è tutto il codice
+### Quello che questo giro chiedeva, e che adesso è fatto
 
-1. **La pagina**: `src/app/page.tsx` è ancora il **provino dei token** della #2, con
-   `robots: { index: false }`. Va sostituita dalla landing, va tolto il `noindex` e va rimessa nella
-   sitemap.
-2. **Il marchio nell'app**: `src/components/site-header-bar.tsx` scrive ancora `release-tracker`
-   (Mono 14px), e `src/app/layout.tsx` ha `title: "release-tracker"`. Servono anche la **favicon**
-   (la caret row come SVG) e i metadati OG.
-3. **I test**: unitari per quello che scende nel dominio, E2E per la landing (stadi presenti senza
-   JavaScript, le due azioni, il vocabolario, reduced motion), più `pnpm lint`, `typecheck`, `build`.
-4. **Il resto dei criteri**: Core Web Vitals in fascia "good" e il controllo di accessibilità.
+La pagina al posto del provino dei token, il marchio nell'app, la favicon, i metadati, i test
+unitari e E2E, i Core Web Vitals e il controllo di accessibilità: tutto nello stato in testa.
 
-⚠️ **Il push e la PR aspettano la conferma dell'utente**, come il commit l'ha aspettata.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md e continua la #26: il codice della landing, dal mock design/mocks/landing.html
-```
 
 **Lo stato precedente (2026-10-08, pomeriggio).** La **#120 è chiusa**: **PR #128 unita** in
 `bdc712a`, e la issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso.** I rami sono

@@ -1,7 +1,7 @@
 export { isoDate, plural } from "./release-rows";
 export { ReleaseVerdict, RowVerdictLine } from "./release-verdict";
 export { SeverityLabel } from "./severity-label";
-export { SignificanceLabel } from "./significance-glyph";
+export { SignificanceGlyph, SignificanceLabel } from "./significance-glyph";
 export { invalidMessage, type Tone } from "./upgrade-path-copy";
 export { type ExternalSource, ReleaseHeader } from "./release-header";
 export { ReleaseList } from "./release-list";

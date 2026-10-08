@@ -212,3 +212,17 @@
     }
   }
 }
+
+/* The landing's bench performs the same caret draw, but its quote sits below the fold, so the run
+   waits for the stage instead of animating on mount (DESIGN.md, The Bench). The clip lives under
+   `data-draw`, which only the client sets: with JavaScript off, or before it runs, the carets are
+   simply there, and under reduced motion the client never arms them. */
+@layer components {
+  [data-draw="armed"] .caret-run {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  [data-draw="drawn"] .caret-run {
+    animation: caret 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}

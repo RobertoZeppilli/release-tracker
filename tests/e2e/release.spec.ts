@@ -23,7 +23,8 @@ test("a Release page is reached from its Technology page and shows the header", 
   await page.getByRole("link", { name: "2.0.0", exact: true }).click();
 
   await expect(page).toHaveURL(`/technologies/${technology.slug}/2.0.0`);
-  await expect(page).toHaveTitle(`${technology.name} 2.0.0 release`);
+  // Every page but the landing reads `<page> · Verdict`: the product name is in the template.
+  await expect(page).toHaveTitle(`${technology.name} 2.0.0 release · Verdict`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${technology.name} 2.0.0`);
   await expect(page.getByText("2026-01-13", { exact: true })).toBeVisible();
   await expect(page.getByText("featured", { exact: true })).toBeVisible();
