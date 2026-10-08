@@ -16,7 +16,103 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-07, sera).** **La #113 è chiusa**: la **PR #122** (`9d278b9`, squash) è
+**Da dove ripartire (2026-10-08, mattina).** **La PR #123 è unita** (`aefd17e`, squash), branch
+locale e remoto cancellati, `main` locale aggiornato: `CI` e `Deploy database` **verdi sul merge**,
+e verdi anche sulla PR prima di unirla. **Nessuna PR aperta.** Da guardare a inizio sessione: solo
+che non ci sia nulla di rosso (`gh run list --branch main`).
+
+È il **gruppo dei minori** del critique (rilievo 6), cinque fix e nessuna direzione nuova:
+
+1. **L'errore del login** ha glifo e parola, `SeverityLabel` con `tone="breaking"` e `label="error:"`.
+   ⚠️ **I quattro messaggi di `ERRORS` aprono in minuscolo**, perché sono la frase dopo l'etichetta e
+   non una frase a sé; `provider` resta maiuscolo perché apre con `GitHub`.
+2. **Il Follow tiene `border-rule-strong` in tutti e tre gli stati.** Fra spento e premuto scende il
+   testo, non il bordo.
+3. **Il pannello dell'account ha `sm:right-5`** e non più `sm:right-[0px]`.
+4. **La riga faint del login ha `max-w-measure`.**
+5. **Il link di provenienza della pagina Release è un Help Pointer** (`--> view on github`).
+
+### Le tre cose che hanno corretto l'elenco del critique, misurate
+
+- ⚠️ **Il bordo del Follow era `DESIGN.md` ad averlo sbagliato, non il codice.** La riga di "Toggle
+  (Follow)" diceva esplicitamente che da premuto *"the border drops to `rule`"*: il codice la stava
+  seguendo. Riscritta con la ragione e le due misure (**1.33:1** nello scuro, **1.27:1** nel chiaro),
+  e con la riga che **lo stato al limite conta anche lui**, perché resta raggiungibile da tastiera e
+  quindi è ancora un controllo. Chi rimette `rule` lì dentro riapre un rilievo chiuso.
+- ⚠️ **Delle "due righe oltre i 72ch" ne restava una.** `#from-message` misura **51ch** a 1280px, da
+  quando il pannello della #122 gli ha dato `max-w-measure` e la colonna del valore: i 90ch del
+  rilievo sono di prima del pannello. La riga del login era vera, **88.0ch**, ora **72.0** esatti.
+- ⚠️ **La quota in barra non è stata toccata, ed è una scelta.** Il rilievo la chiama un link senza
+  grammatica di link, ma **tutti e sei i link della barra sono `no-underline`** (wordmark,
+  `dashboard`, `technologies`, le righe del pannello, `sign in`): sottolineare solo lei la
+  renderebbe l'anomalia invece di sanarne una. Cambiarlo vuol dire cambiare la grammatica della
+  barra intera, che è una decisione di `DESIGN.md` e non un fix.
+
+### Due cose decise scrivendole
+
+- **`Pointer` rende un `<a>` per gli href assoluti** (`help-pointer.tsx`), `Link` per i relativi: il
+  link di provenienza esce dall'app, e per quello `Link` non ha né prefetch né navigazione client da
+  offrire. Gli Help Pointer interni non cambiano di una virgola.
+- **Il `View on GitHub` del bottone dell'intestazione non è stato toccato**: è un bottone con bordo
+  `rule-strong` e icona, già dentro il sistema. Il rilievo parlava della **riga di provenienza** in
+  fondo alla pagina, dove un link stava a fianco di un fatto statico nello stesso Mono faint. Sono
+  due superfici, e `release.spec.ts` le asserisce entrambe.
+
+### Due trappole dell'ambiente, pagate qui
+
+- ⚠️ **`pnpm test:e2e -- --grep "…"` ignora il filtro e gira la suite intera.** Esce 0, quindi sembra
+  che il filtro abbia funzionato: in realtà sono passati venti minuti e 170 test. Il giro corto è
+  **`pnpm exec playwright test --grep "…"`**.
+- ⚠️ **`getByRole("alert")` prende anche l'annunciatore di rotta di Next** (`#__next-route-announcer__`,
+  `role="alert"`): un'asserzione così è **verde da sola e rossa nella suite**, con `strict mode
+  violation`. Va scoped, e nel test del login lo è a `main`. Costata un giro intero.
+- ⚠️ **Due run di Playwright insieme si spengono il server a vicenda.** Un `webServer` lo avvia il
+  primo e lo abbatte alla fine, mentre il secondo sta ancora girando: si riconosce da
+  `ERR_CONNECTION_REFUSED` su pagine che esistono. Un run alla volta.
+
+### I numeri, e i due flaky visti qui
+
+**551 unitari** invariati (nessuna funzione pura nuova: sono tutte decisioni di resa) e **170 E2E**,
+dei quali **5 nuovi**, ognuno **provato rimettendo il difetto**: col codice vecchio cadono tutti e
+cinque, col nuovo passano tutti e cinque.
+
+⚠️ **In locale la suite intera ha dato due rossi che la CI non ha**: `technology.spec.ts:72` e
+`upgrade-path.spec.ts:64`, due `toHaveURL` sul `?from=` scaduti a 5s. Rigirati da soli fanno 12 su
+12, ed erano verdi nel giro precedente con lo stesso codice. Sono flaky del dev server sotto carico,
+e la CI gira sul build di produzione con due retry: **non sono una novità se ricompaiono**, e vanno
+insieme al flaky di `keyboard.spec.ts:117` già annotato.
+
+### Cosa resta del critique
+
+Il rilievo 6 **non si chiude con questo merge**. Restano tre cose, tutte in attesa del via
+dell'utente:
+
+1. **Un errore React a ogni caricamento di pagina**, 22 occorrenze misurate, da `layout.tsx:32`: lo
+   script che scrive `data-theme` prima del primo paint. Il tema funziona e l'avviso è di sviluppo,
+   ma sporca la console a ogni navigazione e nasconde il prossimo avviso vero. ⚠️ **Non si risolve
+   togliendo lo script**: il commento sopra dice perché sta lì (un attributo che React non possiede
+   è uno che non può resettare), quindi cambia la forma, non il posto.
+2. **Due voci di copy**, che sono decisioni e non fix: il **Count Box** mescola due vocabolari
+   (`featured`, `notable`, `digest` sono parole di Significance, `previews` è il nome di una sezione)
+   e la proposta su `DESIGN.md` di `5 of your 10 slots` al posto di `you follow 5 of 10 technologies`,
+   dove sopra una pagina che dichiara 37 technologies il 10 non si legge come una quota.
+3. ⚠️ **La verifica dal telefono** in produzione, che nessuno di questi giri sostituisce: comprende
+   il focus rosso, la corsia ambra, il pannello di upgrade e adesso i cinque minori.
+
+Resta aperta anche la riga da allineare fra `DESIGN.md` e il codice sul conteggio dell'azione
+(`warning: needs action` contro `1 needs action`): un lavoro di una riga, e **da che parte allinearli
+non è deciso**.
+
+Restano aperte e **in attesa del via dell'utente** la **#119** (il link `dashboard` invisibile da una
+pagina Technology) e la **#120** (le icone delle Tecnologie), descritte nello stato qui sotto.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, controlla la CI su main e partiamo con l'errore React di layout.tsx
+```
+
+**Lo stato precedente (2026-10-07, sera).** **La #113 è chiusa**: la **PR #122** (`9d278b9`, squash) è
 su `main`, branch cancellato, `CI` e `Deploy database` **verdi sul merge**, e GitHub ha chiuso la
 issue. Era la **zona 1**, l'ultima: la zona 2 l'aveva chiusa la #121. **Nessuna PR aperta.** Da
 guardare a inizio sessione: solo che non ci sia nulla di rosso (`gh run list --branch main`).
@@ -109,107 +205,6 @@ Il primo comando della sessione nuova:
 leggi docs/HANDOFF.md, controlla la CI su main e partiamo col gruppo dei minori del critique
 ```
 
-**Lo stato precedente (2026-10-07, pomeriggio).** **Sei PR unite su `main`**, tutte verdi, tutti i
-branch cancellati: la **#114** (`b413452`, il Follow che aspetta), la **#115** (`01acc99`, i due
-vocabolari), la **#117** (`0f414ad`, gli avvisi di lint lasciati dalla #115), la **#116** (`0c94494`,
-il focus rosso), la **#118** (`f203dce`, il verdetto senza verdetto) e la **#121** (`f180f85`, lo
-Stat Row). **Nessuna PR aperta.** Da guardare a inizio sessione: la CI dei due merge finali e di
-questo commit (`gh run list --branch main`).
-
-⚠️ **La #121 era nata prima che la #118 fosse unita**, e le due toccavano gli stessi tre file:
-`main` è stato portato dentro il branch (`15712f5`) e la CI ha girato sui due cambi **insieme** prima
-del merge, 552 unitari e 163 E2E, zero flaky. La lezione resta per la prossima volta: due branch che
-nascono dallo stesso `main` e toccano gli stessi file vanno riuniti **prima** del merge, anche quando
-`git merge-tree` dice che non si scontrano.
-
-⚠️ **Un flake locale visto una volta sola**: nella suite intera `keyboard.spec.ts:117` ("the Upgrade
-Path: the form is filled and submitted with the keyboard") è fallito una volta, e **non si è
-riprodotto**: passa da solo, passa nella suite rigirata e passa sulla CI. Non è stato diagnosticato,
-quindi se ricompare non è una novità.
-
-**Del `critique` restano due cose**: il **gruppo dei minori** (rilievo 6) e la **verifica dal
-telefono** in produzione, che ora comprende anche il focus rosso e la corsia ambra. I rilievi 1, 2, 3,
-4 e 5 sono chiusi. Il file resta `.impeccable/critique/2026-10-07T07-09-23Z__src-app.md`, e **il suo
-elenco va ancora letto con le correzioni** registrate qui sotto e nello stato precedente.
-
-### Le quattro decisioni dell'utente, da non riaprire
-
-1. **Il focus è rosso** (#116): `#da6b6b` nello scuro, `#ad4b4b` nel chiaro. ⚠️ **Lo stesso hex nei
-   due temi non va**: su `light-sunken` fa 2.87 e falla 1.4.11, ed è il motivo per cui il valore
-   chiaro è più scuro. Misurati: 5.67 / 5.24 / 5.83 nello scuro, 4.99 / 5.41 / 4.65 nel chiaro.
-   `DESIGN.md` ha la voce **Focus Red**, che dice perché la vicinanza a Breaking Coral è voluta:
-   l'anello lo disegna la tastiera, mai una Release. Il focus è uscito da Help Cyan e i quattro mock
-   portano il token nuovo. `theme-contrast.test.ts` ora misura l'anello su **tutti e tre i piani**,
-   non solo su `ground`, perché `outline-offset: 3px` lo disegna sul piano che circonda il controllo.
-2. **`N without a verdict`** al posto di `N to check` nel verdetto di pagina (#118), in **due**
-   superfici e non una: il Cammino di upgrade e la riga `in use` di Spotlight, perché stampavano lo
-   stesso `counts.missing`. `to check` resta al solo `unjudged`. `DESIGN.md` ha **Page verdict
-   (Upgrade Path)** sotto "Verdict Line", con la riga vincolante che il verdetto non può stampare
-   `to check`.
-3. **La virgola davanti a entrambi i conteggi trasversali** (#121): `3 releases · 1 featured ·
-   1 notable · 1 digest, 1 needs action, 1 not summarized`. I punti sono la partizione e sommano a
-   quello che la riga dichiara. Scelta fra tre forme, compresa quella che aveva il mock.
-4. **La legenda si fa leggere e la barra ha una tinta sola** (#121). La legenda è una lista col nome
-   `Bar fills`, **non più `aria-hidden`**: la mia raccomandazione era il contrario (una chiave per
-   l'occhio, dato che mappa una forma su una parola che ogni riga già stampa), l'utente ha scelto di
-   esporla e `DESIGN.md` lo dice con la ragione. ⚠️ **Non riaprirlo.** La barra porta una riga di 2px
-   in `action` sotto di sé, larga quanto la quota del gruppo che ha bisogno di intervento: una riga e
-   non un quarto segmento, perché conta Release che i segmenti hanno già contato.
-
-### Tre correzioni al critique e alla #113, misurate
-
-- ⚠️ **La legenda nel mock aveva già i glifi di forma**: era il **codice** ad aver derivato, non il
-  mock. Il rilievo e la #113 lo dicono al contrario. Corretto nel codice.
-- ⚠️ **La barra era sempre al 100% per costruzione**, non per un errore di calcolo: il cammino di
-  default copre esattamente un major, quindi `total / widest` è il totale su sé stesso. Ora la barra
-  **chiede due gruppi**, e con uno solo spariscono corsia, barra e legenda mentre le parole restano.
-- ⚠️ **`DESIGN.md` e il codice non dicono la stessa cosa sul conteggio dell'azione**: il documento
-  dice `warning: needs action`, il codice stampa il glifo più `1 needs action`. Il mock ora segue il
-  codice, perché è ciò che è costruito. **Da che parte allinearli non è deciso**, ed è un lavoro di
-  una riga.
-
-### Il prossimo lavoro, già deciso
-
-La **zona 1 della #113**, con la direzione **cambiata dall'utente il 2026-10-07**: **non** più due
-pannelli affiancati ma **un pannello solo**, con i due controlli dentro e i fatti come righe
-etichetta/valore (`in use`, `declared`, `latest`, `releases`). La scelta e il suo prezzo stanno in un
-commento sulla issue: in un riquadro solo finiscono **due azioni diverse**, dichiarare la Versione in
-uso e guardare un cammino, e vanno distinte senza l'aiuto di due pannelli, altrimenti Save e Check si
-confondono. La **zona 2 della #113 è fatta** con la #121.
-
-### Due issue nuove, aperte e in attesa
-
-Aperte il 2026-10-07 su richiesta dell'utente, entrambe `ready-for-human`, e **l'utente ha detto che
-se ne occuperà dopo i rilievi**: non prenderle come lavoro seguente senza il suo via.
-
-- **#119, ripensare la barra.** Da una pagina Technology il link `dashboard` non è visibile: esiste
-  solo dentro il pannello dell'account. ⚠️ **Non è un difetto di implementazione**, è la decisione
-  delle PR #108/#109: `SiteHeader` rende **o** il breadcrumb **o** le due destinazioni, mai entrambi,
-  e le pagine pubbliche passano `path`. Nella issue ci sono i due ripieghi più piccoli (il wordmark
-  che porta alla Dashboard quando la sessione c'è, oppure `dashboard` accanto al breadcrumb) e i
-  vincoli già pagati, dal terzo rigo della barra al vicolo cieco della #63.
-- **#120, le icone delle Tecnologie.** Tecnicamente si può: SVG nel repository (niente CDN, lo vieta
-  `CLAUDE.md`), monocromatici in `currentColor` (niente tinte di marca, lo vieta `DESIGN.md`), spazio
-  riservato vuoto dove un logo manca. ⚠️ **La prima domanda non è tecnica**: se un'icona aiuti a
-  scorrere una lista di nomi corti in Mono, dove il nome è il dato. Se la risposta è no, la issue si
-  chiude senza codice.
-
-### Due cose dell'ambiente, imparate qui
-
-- ⚠️ **Non ci sono test di componente.** `vitest.config.ts` prende solo `src/**/*.test.ts`: niente
-  jsdom, niente `.tsx` sotto test. Una decisione di resa si prova in E2E, **oppure** si tira fuori in
-  una funzione pura e si testa lì: è quello che hanno fatto `legendLevels` e `barHasAction`.
-- ⚠️ **Un'asserzione può passare a vuoto anche quando il codice è giusto.** Quella sulla legenda
-  assente col gruppo singolo passava identica sul codice vecchio, dove la legenda era un paragrafo
-  senza nome. Provata rimettendo il difetto (`Expected: 0, Received: 1`). Ogni test nuovo di questa
-  sessione è stato provato così.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md, controlla la CI su main e partiamo con la zona 1 della #113
-```
-
 **Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
 chiude. Sono nate il 2026-10-06, insieme allo stato del ritento dei transitori, che è stato spostato
 in `docs/handoff/2026-10.md`.
@@ -296,6 +291,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-07 (pomeriggio): sei PR unite, il focus rosso e lo Stat Row
+  - Il focus è rosso in entrambi i temi, con hex diversi: lo stesso valore falliva 1.4.11 nel chiaro
+  - ⚠️ La legenda dello Stat Row aveva già i glifi nel mock: era il codice ad aver derivato
+  - ⚠️ La barra era al 100% per costruzione, non per un errore di calcolo: ora chiede due gruppi
+  - ⚠️ Due branch nati dallo stesso `main` sugli stessi file vanno riuniti prima del merge
 - Stato al 2026-10-07 (mezzogiorno): tre rilievi del `critique` chiusi, le PR #114 e #115 aperte
   - ⚠️ Due dei rilievi dati per difetti non lo erano, misurati: i bersagli di tocco e la barra in alto
   - La risposta sugli skeleton è no, e ha prodotto The Reserved Space Rule
