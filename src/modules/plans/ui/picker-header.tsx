@@ -1,6 +1,7 @@
 "use client";
 
 import { Info } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { useFollows } from "./follows-provider";
 
@@ -42,6 +43,26 @@ export function PickerFilter({
   total: number;
 }) {
   const filtering = query.trim() !== "";
+  const field = useRef<HTMLInputElement>(null);
+
+  // `/` is the filter's shortcut, the one this audience reaches for first. It is announced to
+  // assistive technology by `aria-keyshortcuts` and to the eye by the hint beside the count, and it
+  // is only a shortcut when nothing else is listening: a `/` typed into a field, or with a modifier
+  // held, belongs to whoever has the focus.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) return;
+      // `instanceof` and not a cast: the target of a window event is whatever the page put there.
+      const target = event.target;
+      if (target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))) return;
+      event.preventDefault();
+      field.current?.focus();
+      field.current?.select();
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <p
@@ -52,8 +73,10 @@ export function PickerFilter({
         filter
       </label>
       <input
+        ref={field}
         id="filter"
         type="search"
+        aria-keyshortcuts="/"
         value={query}
         onChange={(event) => onQuery(event.target.value)}
         placeholder="name or description"
@@ -72,6 +95,12 @@ export function PickerFilter({
             <span className="text-text">{total}</span> technologies
           </>
         )}
+      </span>
+      {/* The hint is the shortcut's visible half, and it is a fact and not a control: faint Meta,
+          no border, nothing to press. It goes at 640px and below, where the keyboard it talks
+          about is usually not there. */}
+      <span aria-hidden className="text-meta text-text-faint max-sm:hidden">
+        press / to filter
       </span>
     </p>
   );
