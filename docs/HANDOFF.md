@@ -16,7 +16,58 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-08, mattina).** **La PR #123 è unita** (`aefd17e`, squash), branch
+**Da dove ripartire (2026-10-08, sera).** **Il critique è chiuso.** Il ramo è
+`close-critique-tail`, **non unito e non spinto** al momento della scrittura: tre voci chiuse, una
+sola con codice. `pnpm typecheck`, `pnpm lint` e i **551 unitari** verdi; `technologies.spec.ts`
+**12 su 12**, e provato rimettendo il difetto (col codice vecchio cadono 5 test su 12).
+
+1. **La quota di `/technologies` nomina il Piano.** La riga Status adesso dice
+   `note: you follow 7 of your 10 free follows`, e **a 640px e sotto** `note: 7 of your 10`. Il
+   `your` è il segnale di quota e il motivo per cui la variante stretta tiene lui e lascia cadere il
+   resto: ⚠️ **a 390px la frase intera si spezza in due righe**, misurato, perché accanto a `note:`
+   ci sono circa 17ch. Il caso peggiore, `10 of your 10`, è misurato e sta su una riga.
+   **Il conteggio parlato (`sr-only`) resta la frase larga a ogni larghezza**: non ha una misura da
+   rispettare, quindi al lettore con screen reader la quota arriva per intero anche dal telefono.
+   La Dashboard vuota **non è stata toccata**, e ha ragione: il suo paragrafo dice già
+   `The Free plan follows up to 10` due righe sopra.
+   ⚠️ **`slots` del critique non è stata usata**: in `DESIGN.md` lo "slot" è già lo spazio della barra
+   in alto e quello del verdetto. Un secondo significato per la stessa parola costava più
+   dell'ambiguità che chiudeva.
+2. **La riga `needs action` è allineata, e ha vinto il codice.** `DESIGN.md` diceva
+   `warning: needs action`, il codice rende glifo ambra + `1 needs action`: resta il codice, perché
+   la riga dello Stat Row è fatta di conteggi e un `needs action` senza numero sarebbe l'unica parte
+   muta; inoltre è il **secondo** conteggio delle stesse Release, e un conteggio senza cifra non si
+   legge come tale. La parola `warning:` resta l'etichetta del verdetto. **Nessun codice e nessun
+   test toccati**, solo due righe di `DESIGN.md` (Stat Row e la sua legenda, che resta senza numero
+   perché spiega un riempimento).
+3. **L'errore React dello script del tema è chiuso come non-difetto**, scritto in
+   `docs/DECISIONI.md` (Architettura del codice) con la misura del 2026-10-08 e **le due strade già
+   pagate**: `next/script` `beforeInteractive` non mette lo script nella `head` dell'HTML servito, e
+   il tema da cookie butta l'ISR. Chi riprende non deve ripagare quella prova.
+
+### Cosa resta, e non è del critique
+
+1. ⚠️ **La verifica dal telefono in produzione**, che nessuna di queste sessioni sostituisce:
+   comprende il focus rosso, la corsia ambra, il pannello di upgrade, i cinque minori e ora la riga
+   della quota a 390px. È l'unica cosa aperta del giro del critique, ed è dell'utente.
+2. Restano aperte e **in attesa del via dell'utente** la **#119** (il link `dashboard` invisibile da
+   una pagina Technology) e la **#120** (le icone delle Tecnologie), più tutte le strade elencate in
+   "Le strade aperte" qui sotto.
+
+### Una cosa dell'ambiente, notata qui
+
+⚠️ **`docs/Cattura.JPG` risultava cancellato dal disco** a metà sessione, con `main` partito pulito e
+senza che nessun comando di questa sessione tocchi `docs/`. È stato **ripristinato** con
+`git checkout -- docs/Cattura.JPG` e non è entrato in nessun commit. Se ricompare, è qualcosa fuori
+dalla sessione a toccarlo.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
+```
+
+**Lo stato precedente (2026-10-08, mattina).** **La PR #123 è unita** (`aefd17e`, squash), branch
 locale e remoto cancellati, `main` locale aggiornato: `CI` e `Deploy database` **verdi sul merge**,
 e verdi anche sulla PR prima di unirla. **Nessuna PR aperta.** Da guardare a inizio sessione: solo
 che non ci sia nulla di rosso (`gh run list --branch main`).
@@ -133,99 +184,6 @@ Il primo comando della sessione nuova:
 leggi docs/HANDOFF.md, controlla la CI su main e dimmi cosa resta del critique
 ```
 
-**Lo stato precedente (2026-10-07, sera).** **La #113 è chiusa**: la **PR #122** (`9d278b9`, squash) è
-su `main`, branch cancellato, `CI` e `Deploy database` **verdi sul merge**, e GitHub ha chiuso la
-issue. Era la **zona 1**, l'ultima: la zona 2 l'aveva chiusa la #121. **Nessuna PR aperta.** Da
-guardare a inizio sessione: solo che non ci sia nulla di rosso (`gh run list --branch main`).
-
-Sopra le Release della pagina Technology adesso c'è **un pannello solo**, col trattamento dei
-riquadri della Dashboard, e ogni controllo sta **sulla riga del fatto che cambia**:
-
-```
-upgrade path
-  in use    [19.2.8]  Save  Clear
-            declared 2026-10-07
-  from      [19.2.8]  Check
-  latest    19.3.0
-```
-
-⚠️ **La Versione in uso ha traslocato**: non è più una riga sotto i fatti dell'intestazione. La
-pagina la passa al Cammino **come elemento**, come già fa col Follow, e non per eleganza: il campo
-importa da `@/modules/releases/ui`, quindi se fosse il Cammino a importare `plans` i due moduli si
-chiuderebbero in un ciclo. Chi tocca `technology-follow.tsx` non ci troverà più il campo.
-
-**I numeri**: **551 unitari** (uno in meno, è sparito col `declaredStartNote`) e la suite E2E
-intera verde, girata in locale a 164 prima dei due test nuovi e poi dalla CI con tutti e 166. I due
-test nuovi sono stati **provati rimettendo il difetto**, come ogni test nuovo di queste sessioni:
-quello su `latest 2.1.0` fallisce se la riga sparisce, quello sul campo dentro il pannello fallisce
-se la dichiarazione torna fuori dal riquadro.
-
-### Le due scelte dell'utente, da non riaprire
-
-1. **Il controllo sta sulla riga del fatto che cambia**, scelto fra tre forme (le altre due: due
-   bande con didascalia divise da un filo, oppure i fatti in alto e i due controlli in fondo). È così
-   che Save e Check si distinguono senza due riquadri, che era il prezzo dichiarato del pannello
-   unico.
-2. **Via la riga `releases`, resta `latest`.** Il conteggio lo dicono già il verdetto subito sotto e
-   lo Stat Row; `latest` invece si guadagna il posto, perché sostituisce il `to 19.3.0` che stava
-   dentro il controllo. Lo schizzo sulla issue le aveva entrambe: la riga in meno è una scelta, non
-   una dimenticanza.
-
-### Quattro cose decise scrivendole, con la ragione
-
-- **Colonna delle etichette da 9ch**, non più 14ch: i 14 erano la larghezza della frase
-  `Version in use`, che non esiste più. Righe allineate sulla **linea di base** e non al centro,
-  perché a 390px `Clear` va a capo sotto il campo e col centro l'etichetta finiva accanto al bottone.
-- ⚠️ **Etichette visibili corte, nomi accessibili lunghi**: si vede `in use` e `from`, il nome
-  accessibile resta `Version in use` e `Upgrade from`. WCAG 2.5.3 lo permette perché la parola
-  visibile è dentro il nome, e **questo è anche il motivo per cui i test E2E vecchi continuano a
-  trovare i campi**: chi accorcia quei nomi rompe mezza suite senza capire perché.
-- ⚠️ **Niente spazio riservato per la riga `in use`**, ed è un'eccezione dichiarata a The Reserved
-  Space Rule, scritta in `DESIGN.md`: per un visitatore quella riga non arriva mai, e un buco tenuto
-  aperto per il lettore più comune di una pagina in cache è peggio della riga che atterra quando c'è
-  qualcosa di vero da dire.
-- **Una riga di prosa in meno**: la nota `starting from 19.2.8, the version you declared in use on
-  2026-10-02` è sparita con `declaredStartNote` e col suo test, e `PathStart` non si porta più dietro
-  `declaredAt`. Diceva Versione e giorno che la riga `in use` porta due righe più su. Il giorno della
-  dichiarazione **non si è perso**: sta nello slot sotto il campo, che dice `declared 2026-10-07`,
-  `not declared` o l'errore, ed è la descrizione accessibile del campo in tutti e tre i casi.
-
-### Due trappole dell'ambiente, pagate qui
-
-- ⚠️ **`browser.newPage({ viewportSize })` non esiste**: l'opzione si chiama `viewport`, e
-  `viewportSize` è il metodo di `Page`. Con quella sbagliata Playwright non protesta, apre a 1280 e
-  **ogni misura a 390px è falsa**: le prime schermate del mock a "390" erano a 1280, e il pannello
-  sembrava sbordare. Si riconosce da `document.documentElement.scrollWidth` che resta 1280.
-- ⚠️ **Gli strumenti Chrome non aprono `file://`**: il mock si guarda con Playwright, non col
-  browser. Uno script di tre righe che apre il file, sceglie lo stato col selettore e fotografa
-  `.panel` è il giro più corto, e va messo nella radice del progetto perché `playwright` si risolva.
-
-### Due note per chi riprende
-
-- **Il dev server sulla 3000 è vivo**, lasciato dalla sessione precedente e riusato da questa: non ne
-  è stato aperto un secondo. Se non serve, va chiuso.
-- **A 390px `Clear` va a capo sotto il campo.** Non sborda e non è un difetto, ma è l'unico punto
-  dove il pannello si piega: se dal telefono sembra orfano, si sistema in una riga.
-
-### Cosa resta del critique
-
-1. **Il gruppo dei minori** (rilievo 6), l'ultimo: errore del login senza glifo né parola, bordo del
-   Follow a 1.33:1, `sm:right-[0px]` che sborda di 24px, due righe oltre i 72ch, un errore React a
-   ogni caricamento da `layout.tsx:32`. Il file resta
-   `.impeccable/critique/2026-10-07T07-09-23Z__src-app.md`, **e il suo elenco va letto con le
-   correzioni** registrate negli stati qui sotto.
-2. ⚠️ **La verifica dal telefono** in produzione, che nessuno di questi giri sostituisce: comprende
-   il focus rosso, la corsia ambra e adesso anche il pannello.
-
-Restano aperte e **in attesa del via dell'utente** la **#119** (il link `dashboard` invisibile da una
-pagina Technology) e la **#120** (le icone delle Tecnologie), descritte nello stato qui sotto.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md, controlla la CI su main e partiamo col gruppo dei minori del critique
-```
-
 **Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
 chiude. Sono nate il 2026-10-06, insieme allo stato del ritento dei transitori, che è stato spostato
 in `docs/handoff/2026-10.md`.
@@ -312,6 +270,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-07 (sera): la #113 chiusa, il pannello unico sopra le Release (PR #122)
+  - ⚠️ La Versione in uso ha traslocato: la passa la pagina al Cammino, altrimenti i due moduli fanno ciclo
+  - Il controllo sulla riga del fatto che cambia, e la riga `releases` via: due scelte dell'utente
+  - ⚠️ Etichette visibili corte e nomi accessibili lunghi: accorciarli rompe mezza suite E2E
+  - ⚠️ `viewport` e non `viewportSize`, altrimenti ogni misura a 390px è falsa
 - Stato al 2026-10-07 (pomeriggio): sei PR unite, il focus rosso e lo Stat Row
   - Il focus è rosso in entrambi i temi, con hex diversi: lo stesso valore falliva 1.4.11 nel chiaro
   - ⚠️ La legenda dello Stat Row aveva già i glifi nel mock: era il codice ad aver derivato
