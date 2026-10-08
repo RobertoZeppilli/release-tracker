@@ -15,10 +15,10 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-08, notte).** Siamo ancora **dentro la #26**, sul ramo
-`26-landing-page`, e **il codice della landing è scritto**. Due commit locali, `5261aa6` (documenti
-e mock, del giro prima) e quello di questo giro, **non pushati e senza PR**: il ramo esiste solo in
-locale. ⚠️ **Push e PR aspettano la conferma dell'utente.**
+**Da dove ripartire (2026-10-08, notte).** La **#26 è finita e aspetta solo di essere unita**: il
+ramo `26-landing-page` è pushato con due commit, `5261aa6` (documenti e mock) e `85a7eef` (il
+codice), e la **PR #129** è aperta con `Closes #26`. ⚠️ **Il primo controllo della sessione nuova è
+l'esito della CI** (`gh run list --branch 26-landing-page --limit 3`) e il commento di CodeRabbit.
 
 **Cos'è stato scritto.** Un modulo nuovo, `src/modules/landing/`, con il `domain` che tiene il
 contenuto reale e la `ui` che tiene i quattro componenti di `DESIGN.md`:
@@ -64,15 +64,19 @@ larghezza in cui viene mostrata, e la legenda copre tutti i livelli dello schema
 cioè tutta la suite, `pnpm lint`, `pnpm typecheck` e `pnpm build` verdi. **Nessun overflow
 orizzontale** a 320, 390, 640, 1024 e 1440. **Core Web Vitals misurati in laboratorio** sulla build
 di produzione: LCP 1240 ms desktop e 188 ms mobile, **CLS 0 e 0,0015**, cioè dentro la fascia buona;
-⚠️ è localhost senza throttling, **la misura vera è quella in produzione**, e resta da fare.
+⚠️ è localhost senza throttling, **la misura vera è quella in produzione**, e sta nella **#130**.
 
 **Gli scatti del codice** stanno in `.impeccable/review/app-landing-*.png` (desktop, light, mobile,
-cite, fold) e **non sono ancora in git**: l'utente decide se committarli accanto a quelli del mock.
+cite, fold), committati accanto a quelli del mock.
 
 ### Cosa resta della #26
 
-1. **La verifica in produzione**: Core Web Vitals veri e una lettura dal telefono.
-2. Il commit, il push e la PR, che aspettano la conferma dell'utente.
+Il commit è `85a7eef`, il ramo è pushato e la **PR #129** è aperta con `Closes #26`. Restano
+l'esito della CI, la revisione di CodeRabbit, e poi **merge e cancellazione del ramo, che sono
+dell'utente**: la modalità auto li nega all'agente.
+
+⚠️ La misura dei Core Web Vitals in produzione e la lettura dal telefono **non sono più qui**: sono
+la **#130**, che le fa su tutta l'app e non sulla sola landing.
 
 Il primo comando della sessione nuova:
 
@@ -206,8 +210,8 @@ dentro una riga del picker prende **anche i due svg del Toggle**, quindi il Marc
 
 ### Cosa resta
 
-1. ⚠️ **La verifica dal telefono in produzione**, l'unica cosa aperta del giro del critique, ed è
-   dell'utente. Ora comprende anche il Marchio nella riga a 390px.
+1. ⚠️ **La verifica dal telefono in produzione** è diventata la **#130** l'8 ottobre 2026, insieme
+   alla misura dei Core Web Vitals veri, e si fa su tutta l'app. Resta dell'utente.
 2. Nel mock della Dashboard c'è una riga **`Python`, che non è nel Catalogo**: discrepanza
    preesistente, non toccata. Ora mostra lo spazio vuoto, e illustra bene la regola.
 3. Le strade di "Le strade aperte", tutte in attesa del via dell'utente.
