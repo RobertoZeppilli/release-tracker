@@ -15,8 +15,17 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-08, dopo la #57).** Siamo **dentro la #57**, sul ramo
-`57-haiku-summaries`, con il lavoro **finito e verde** ma **nessun commit**: la PR si apre adesso.
+**Da dove ripartire (2026-10-08, dopo la #57).** La **#57 è chiusa**: **PR #134 unita** in
+`dc862f7`, e la issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso**, e `main`
+locale e remoto combaciano. Il `Deploy database` del merge è **verde** (nessuna migrazione da
+applicare). ⚠️ **Due rami esistono ancora**, locali e remoti, `57-haiku-summaries` e
+`26-landing-page`: la cancellazione resta dell'utente, la modalità auto la nega all'agente.
+
+⚠️ **Il lavoro seguente è deciso: la #93**, corretta il 2026-10-08 e da leggere prima di cominciare.
+Il titolo diceva "Prompt v5" ed è adesso **`v7`**, perché il `v5` è arrivato con la #87 e il `v6` con
+la #57. Nel corpo le due decisioni sulla spesa **non sono più appese**: si rigenera **tutto** il
+Catalogo (a 8 centesimi la selezione costa in codice più di quanto risparmia) e quella è **l'unica
+rigenerazione**. Un criterio nuovo chiede il set di valutazione sul `v7` **prima** di rigenerare.
 
 **Le Sintesi si generano con Claude Haiku 5.5**, scelta dell'utente sui numeri del set di
 valutazione. ⚠️ **La issue era datata e va letta sapendolo**: proponeva Haiku **4.5**, e tutta la sua
@@ -90,7 +99,7 @@ entrambi), **63 di integrazione**, **186 E2E verdi**, cioè tutta la suite, più
    rigenerazione, il submit a mano della #54 (era ~25 centesimi su Opus, ora mezzo centesimo), le
    Sintesi della #80. Ogni altra issue aperta (#65, #126, #130, #131, #132, #133, #69) non tocca
    Anthropic.
-4. La cancellazione del ramo `26-landing-page`, locale e remoto, che resta dell'utente.
+4. La cancellazione dei rami `57-haiku-summaries` e `26-landing-page`, locali e remoti, che resta dell'utente.
 
 **Lo stato precedente (2026-10-08, notte).** La **#26 è chiusa**: **PR #129 unita** in `78aba60`, e la
 issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso**, e `main` locale e remoto
@@ -368,8 +377,9 @@ lui. Quello che si è fatto dopo quella frase è nato dalle sue richieste dirett
 
 Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e **non ce n'è
 nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via dell'utente. Sono tutte
-`ready-for-human`: **#93** (prompt **v6**, con la terza uscita sulle note giudicabili) e **#57**
-(Haiku invece di Opus) **spendono** su Anthropic; **#65**, tecnica, serve solo il via, e adesso va
+`ready-for-human`. ⚠️ **Questo capoverso è del 2026-10-06 e due righe sono invecchiate**: la **#57**
+è **chiusa** il 2026-10-08, e la **#93** adesso è il prompt **v7** e costa **8 centesimi**, non più
+qualche dollaro, perché le Sintesi si generano con Haiku 5.5. La #93 **spende** su Anthropic, poco; **#65**, tecnica, serve solo il via, e adesso va
 letta insieme allo stage (vedi lo Stato: la strada 1 potrebbe non servire più); **#80** (tocca GitHub
 e npm, non Anthropic, ma genera Sintesi a valle, quindi **a costo zero solo scegliendo la strada 1 o
 la 3** della issue); **#26** la landing page, ferma sul nome del prodotto; **#69** esplicitamente
