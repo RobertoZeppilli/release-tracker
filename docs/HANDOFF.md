@@ -16,7 +16,54 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-08, sera).** **Il critique è chiuso.** Il ramo è
+**Da dove ripartire (2026-10-08, notte).** La **PR #124 è unita** (il critique chiuso come lista di
+difetti). Il ramo nuovo è `accelerators-and-glossary`, **non unito** al momento della scrittura. Qui
+si sono affrontati **i due assi più bassi del critique**, quelli che non erano mai diventati rilievi:
+"Aiuto e documentazione" (1 su 5) e "Flessibilità ed efficienza" (2 su 5).
+
+1. **Il glossario della Rilevanza va sulla landing (#26), non nell'app.** `featured` · `notable` ·
+   `digest` · `preview` si vedono in tutta l'interfaccia e non sono definiti a parole da nessuna
+   parte. ⚠️ **Scelta dell'utente fra tre strade**, scritta in `docs/DECISIONI.md`: le altre due
+   erano un blocco con ancora `#significance` su `/technologies` e una definizione dentro ogni
+   intestazione di sezione. Dentro l'app la parola resta accoppiata al **glifo**, che è il minimo di
+   WCAG, e non alla definizione. **Nessun codice**: il vocabolario è adesso un **criterio di
+   accettazione della #26**, aggiunto al corpo della issue con un commento che ne porta la
+   provenienza. ⚠️ Finché la #26 non è fatta, un visitatore non loggato non ha nessun posto dove
+   leggere quelle quattro parole, e le incontra già sulle pagine pubbliche.
+2. **`/` mette a fuoco il filtro di `/technologies`**, e seleziona quello che c'è già, così il tasto
+   dopo sostituisce. ⚠️ **È l'unico tasto che l'app si prende**, e solo mentre nessun altro ascolta:
+   dentro un campo, o con un modificatore premuto, resta di chi ha il fuoco. Annunciata due volte,
+   perché una non bastava: `aria-keyshortcuts="/"` sul campo e `press / to filter` in Meta faint
+   accanto al conteggio, che **sparisce a 640px e sotto**, dove la tastiera di cui parla di solito
+   non c'è. Regola scritta in `DESIGN.md` (Follow Status and Filter) e nel mock.
+3. **Il follow multiplo è la #126**, `ready-for-human`, aperta il 2026-10-08: vuole un modello di
+   selezione, una scrittura in blocco, il limite Free applicato **al gruppo** e una cache ottimistica
+   di gruppo. È una fetta, e la issue porta gli otto criteri.
+4. **Le sezioni richiudibili della Dashboard sono rifiutate per iscritto**: vogliono uno stato per
+   lettore che non esiste, e il Count Box già porta a ogni sezione con un ancoraggio. Aggiungere
+   stato senza togliere niente.
+
+**I numeri**: **551 unitari** invariati (la scorciatoia è resa, non una funzione pura),
+`technologies.spec.ts` **13 su 13** col test nuovo, **provato rimettendo il difetto**: senza il
+listener cade. ⚠️ Due inciampi del test, da non ripagare: l'`h1` di `/technologies` è `sr-only` e
+**non si può cliccare** per spostare il fuoco (serve un bersaglio statico visibile: la regione
+`Follow status`), e `event.target as HTMLElement` **non passa il lint** del progetto, va ristretto
+con `instanceof`.
+
+### Cosa resta
+
+1. ⚠️ **La verifica dal telefono in produzione**, l'unica cosa aperta del giro del critique, ed è
+   dell'utente. Ora comprende anche la riga della quota a 390px; la scorciatoia `/` no, perché il suo
+   suggerimento sparisce proprio lì.
+2. Le strade di "Le strade aperte" qui sotto, **#119** e **#120** comprese, tutte in attesa del via.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
+```
+
+**Lo stato precedente (2026-10-08, sera).** **Il critique è chiuso.** Il ramo è
 `close-critique-tail`, **non unito e non spinto** al momento della scrittura: tre voci chiuse, una
 sola con codice. `pnpm typecheck`, `pnpm lint` e i **551 unitari** verdi; `technologies.spec.ts`
 **12 su 12**, e provato rimettendo il difetto (col codice vecchio cadono 5 test su 12).
@@ -65,123 +112,6 @@ Il primo comando della sessione nuova:
 
 ```
 leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
-```
-
-**Lo stato precedente (2026-10-08, mattina).** **La PR #123 è unita** (`aefd17e`, squash), branch
-locale e remoto cancellati, `main` locale aggiornato: `CI` e `Deploy database` **verdi sul merge**,
-e verdi anche sulla PR prima di unirla. **Nessuna PR aperta.** Da guardare a inizio sessione: solo
-che non ci sia nulla di rosso (`gh run list --branch main`).
-
-È il **gruppo dei minori** del critique (rilievo 6), cinque fix e nessuna direzione nuova:
-
-1. **L'errore del login** ha glifo e parola, `SeverityLabel` con `tone="breaking"` e `label="error:"`.
-   ⚠️ **I quattro messaggi di `ERRORS` aprono in minuscolo**, perché sono la frase dopo l'etichetta e
-   non una frase a sé; `provider` resta maiuscolo perché apre con `GitHub`.
-2. **Il Follow tiene `border-rule-strong` in tutti e tre gli stati.** Fra spento e premuto scende il
-   testo, non il bordo.
-3. **Il pannello dell'account ha `sm:right-5`** e non più `sm:right-[0px]`.
-4. **La riga faint del login ha `max-w-measure`.**
-5. **Il link di provenienza della pagina Release è un Help Pointer** (`--> view on github`).
-
-### Le tre cose che hanno corretto l'elenco del critique, misurate
-
-- ⚠️ **Il bordo del Follow era `DESIGN.md` ad averlo sbagliato, non il codice.** La riga di "Toggle
-  (Follow)" diceva esplicitamente che da premuto *"the border drops to `rule`"*: il codice la stava
-  seguendo. Riscritta con la ragione e le due misure (**1.33:1** nello scuro, **1.27:1** nel chiaro),
-  e con la riga che **lo stato al limite conta anche lui**, perché resta raggiungibile da tastiera e
-  quindi è ancora un controllo. Chi rimette `rule` lì dentro riapre un rilievo chiuso.
-- ⚠️ **Delle "due righe oltre i 72ch" ne restava una.** `#from-message` misura **51ch** a 1280px, da
-  quando il pannello della #122 gli ha dato `max-w-measure` e la colonna del valore: i 90ch del
-  rilievo sono di prima del pannello. La riga del login era vera, **88.0ch**, ora **72.0** esatti.
-- ⚠️ **La quota in barra non è stata toccata, ed è una scelta.** Il rilievo la chiama un link senza
-  grammatica di link, ma **tutti e sei i link della barra sono `no-underline`** (wordmark,
-  `dashboard`, `technologies`, le righe del pannello, `sign in`): sottolineare solo lei la
-  renderebbe l'anomalia invece di sanarne una. Cambiarlo vuol dire cambiare la grammatica della
-  barra intera, che è una decisione di `DESIGN.md` e non un fix.
-
-### Due cose decise scrivendole
-
-- **`Pointer` rende un `<a>` per gli href assoluti** (`help-pointer.tsx`), `Link` per i relativi: il
-  link di provenienza esce dall'app, e per quello `Link` non ha né prefetch né navigazione client da
-  offrire. Gli Help Pointer interni non cambiano di una virgola.
-- **Il `View on GitHub` del bottone dell'intestazione non è stato toccato**: è un bottone con bordo
-  `rule-strong` e icona, già dentro il sistema. Il rilievo parlava della **riga di provenienza** in
-  fondo alla pagina, dove un link stava a fianco di un fatto statico nello stesso Mono faint. Sono
-  due superfici, e `release.spec.ts` le asserisce entrambe.
-
-### Due trappole dell'ambiente, pagate qui
-
-- ⚠️ **`pnpm test:e2e -- --grep "…"` ignora il filtro e gira la suite intera.** Esce 0, quindi sembra
-  che il filtro abbia funzionato: in realtà sono passati venti minuti e 170 test. Il giro corto è
-  **`pnpm exec playwright test --grep "…"`**.
-- ⚠️ **`getByRole("alert")` prende anche l'annunciatore di rotta di Next** (`#__next-route-announcer__`,
-  `role="alert"`): un'asserzione così è **verde da sola e rossa nella suite**, con `strict mode
-  violation`. Va scoped, e nel test del login lo è a `main`. Costata un giro intero.
-- ⚠️ **Due run di Playwright insieme si spengono il server a vicenda.** Un `webServer` lo avvia il
-  primo e lo abbatte alla fine, mentre il secondo sta ancora girando: si riconosce da
-  `ERR_CONNECTION_REFUSED` su pagine che esistono. Un run alla volta.
-
-### I numeri, e i due flaky visti qui
-
-**551 unitari** invariati (nessuna funzione pura nuova: sono tutte decisioni di resa) e **170 E2E**,
-dei quali **5 nuovi**, ognuno **provato rimettendo il difetto**: col codice vecchio cadono tutti e
-cinque, col nuovo passano tutti e cinque.
-
-⚠️ **In locale la suite intera ha dato due rossi che la CI non ha**: `technology.spec.ts:72` e
-`upgrade-path.spec.ts:64`, due `toHaveURL` sul `?from=` scaduti a 5s. Rigirati da soli fanno 12 su
-12, ed erano verdi nel giro precedente con lo stesso codice. Sono flaky del dev server sotto carico,
-e la CI gira sul build di produzione con due retry: **non sono una novità se ricompaiono**, e vanno
-insieme al flaky di `keyboard.spec.ts:117` già annotato.
-
-### Cosa resta del critique
-
-Il rilievo 6 **non si chiude con questo merge**. Restano tre cose, tutte in attesa del via
-dell'utente:
-
-1. **L'errore React di `layout.tsx:32`**, lo script che scrive `data-theme` prima del primo paint.
-   ⚠️ **Il rilievo lo descrive male, misurato il 2026-10-08**: non sono 22 occorrenze a ogni
-   caricamento su tutte le rotte. La console è **pulita** su `/`, `/login`, `/technologies`,
-   `/technologies/vite` **e sulla 404**; l'avviso arriva **solo sulla pagina d'errore**, una volta
-   per caricamento e una per `Try again`, cioè dove un boundary rirende la radice sul client. È un
-   avviso di sviluppo e non si vede in produzione: **vale quanto costa chiuderlo, e per ora costa
-   più di quanto vale** (vedi il vicolo cieco qui sotto).
-2. **Una voce di copy**, e non due: la proposta su `DESIGN.md` di `5 of your 10 slots` al posto di
-   `you follow 5 of 10 technologies`, dove sopra una pagina che dichiara 37 technologies il 10 non
-   si legge come una quota. ⚠️ **Il Count Box non mescola due vocabolari**: `CONTEXT.md:295` elenca
-   la Rilevanza come `featured · notable · digest · preview`, e il Count Box usa tutte e quattro
-   quelle parole (`preview` al singolare, `previews` al plurale), con le sezioni solo negli
-   ancoraggi. Il rilievo è sbagliato e la voce è chiusa senza codice.
-3. ⚠️ **La verifica dal telefono** in produzione, che nessuno di questi giri sostituisce: comprende
-   il focus rosso, la corsia ambra, il pannello di upgrade e adesso i cinque minori.
-
-### Il vicolo cieco dell'errore React, già pagato
-
-⚠️ **`next/script` con `strategy="beforeInteractive"` non è la soluzione, provato e misurato su un
-build di produzione vero** (`pnpm build` + `pnpm start`, non solo in sviluppo). La documentazione di
-Next dice che uno script `beforeInteractive` è *"always injected inside the `head`"*, e con uno
-script **inline nell'App Router di Next 16.3.5 non è vero**: finisce in `self.__next_s`, una coda che
-esegue il bootstrap client **dopo** l'HTML della pagina. Si riconosce guardando l'HTML servito:
-`curl -s localhost:3000/ | grep dataset.theme` lo trova **dopo** `</head>`.
-
-Il prezzo sarebbe scambiare un avviso di sola console in sviluppo con un **lampo scuro su un tema
-chiaro salvato** per ogni visitatore, cioè la cosa che il codice attuale esiste per evitare. Chi
-riprende il lavoro non deve rifare questa prova: serve una strada che tenga lo script nella `head`
-dell'HTML servito **senza** che React veda un elemento `<script>` nell'albero. La via del cookie
-(tema server-side, `data-theme` come prop) la chiuderebbe, ma leggere un cookie nella radice rende
-dinamico tutto il sito e **butta via l'ISR** (`revalidate = 3600`): è una decisione da ADR, non un
-fix da rilievo minore.
-
-Resta aperta anche la riga da allineare fra `DESIGN.md` e il codice sul conteggio dell'azione
-(`warning: needs action` contro `1 needs action`): un lavoro di una riga, e **da che parte allinearli
-non è deciso**.
-
-Restano aperte e **in attesa del via dell'utente** la **#119** (il link `dashboard` invisibile da una
-pagina Technology) e la **#120** (le icone delle Tecnologie), descritte nello stato qui sotto.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md, controlla la CI su main e dimmi cosa resta del critique
 ```
 
 **Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
@@ -270,6 +200,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-08 (mattina): i cinque minori del critique uniti (PR #123)
+  - ⚠️ Il bordo del Follow era `DESIGN.md` ad averlo sbagliato, non il codice
+  - ⚠️ `pnpm test:e2e -- --grep` ignora il filtro: il giro corto è `pnpm exec playwright test --grep`
+  - ⚠️ `getByRole("alert")` prende anche l'annunciatore di rotta di Next, e va scoped
 - Stato al 2026-10-07 (sera): la #113 chiusa, il pannello unico sopra le Release (PR #122)
   - ⚠️ La Versione in uso ha traslocato: la passa la pagina al Cammino, altrimenti i due moduli fanno ciclo
   - Il controllo sulla riga del fatto che cambia, e la riga `releases` via: due scelte dell'utente

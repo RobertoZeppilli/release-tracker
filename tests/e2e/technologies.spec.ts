@@ -321,3 +321,28 @@ test("a filtered address that matches nothing says so, like typing it does", asy
   await page.getByRole("searchbox", { name: "filter" }).fill("");
   await expect(page).toHaveURL("/technologies?stray=1");
 });
+
+test("the filter answers to `/`, and leaves the key alone to whoever is typing", async ({ page }) => {
+  await page.goto("/technologies");
+  const field = page.getByRole("searchbox", { name: "filter" });
+  // The `h1` is `sr-only`, so somewhere else on the page is the follow status: static text, nothing to press.
+  const elsewhere = page.getByRole("region", { name: "Follow status" });
+  await expect(field).toHaveAttribute("aria-keyshortcuts", "/");
+
+  // From anywhere on the page, the key lands in the field and nothing is typed into it.
+  await elsewhere.click();
+  await page.keyboard.press("/");
+  await expect(field).toBeFocused();
+  await expect(field).toHaveValue("");
+
+  // Inside the field the key is a character again, and the filter is free to look for one.
+  await field.fill("vi");
+  await page.keyboard.press("/");
+  await expect(field).toHaveValue("vi/");
+
+  // A second press from outside selects what is there, so the next keystroke replaces it.
+  await elsewhere.click();
+  await page.keyboard.press("/");
+  await page.keyboard.type("z");
+  await expect(field).toHaveValue("z");
+});
