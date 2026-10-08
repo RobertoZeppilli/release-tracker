@@ -160,11 +160,14 @@ function AccountPanel({
   onTab: (event: React.KeyboardEvent) => void;
 }) {
   return (
+    // `sm:right-5` and not `right-0`: the bar is the positioning box and carries `sm:px-5`, so a zero
+    // right would align the panel to the box edge and hang 24px past the gutter every other element
+    // on the page respects (DESIGN.md, Account panel).
     <div
       ref={ref}
       id={PANEL_ID}
       onKeyDown={onTab}
-      className="fixed inset-[0px] z-30 flex flex-col bg-ground sm:absolute sm:inset-auto sm:top-[calc(100%+8px)] sm:right-[0px] sm:z-20 sm:block sm:min-w-[180px] sm:rounded-md sm:border sm:border-rule sm:bg-raised sm:py-2"
+      className="fixed inset-[0px] z-30 flex flex-col bg-ground sm:absolute sm:inset-auto sm:top-[calc(100%+8px)] sm:right-5 sm:z-20 sm:block sm:min-w-[180px] sm:rounded-md sm:border sm:border-rule sm:bg-raised sm:py-2"
     >
       <div className="flex h-[56px] shrink-0 items-center justify-between border-b border-rule px-4 sm:hidden">
         <span className="font-mono text-label text-text-faint">{developer.handle ?? "account"}</span>
