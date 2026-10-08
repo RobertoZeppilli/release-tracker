@@ -26,17 +26,19 @@ si sono affrontati **i due assi più bassi del critique**, quelli che non erano 
    parte. ⚠️ **Scelta dell'utente fra tre strade**, scritta in `docs/DECISIONI.md`: le altre due
    erano un blocco con ancora `#significance` su `/technologies` e una definizione dentro ogni
    intestazione di sezione. Dentro l'app la parola resta accoppiata al **glifo**, che è il minimo di
-   WCAG, e non alla definizione. **Nessun codice**: quando si farà la #26, il vocabolario è un suo
-   criterio di accettazione.
+   WCAG, e non alla definizione. **Nessun codice**: il vocabolario è adesso un **criterio di
+   accettazione della #26**, aggiunto al corpo della issue con un commento che ne porta la
+   provenienza. ⚠️ Finché la #26 non è fatta, un visitatore non loggato non ha nessun posto dove
+   leggere quelle quattro parole, e le incontra già sulle pagine pubbliche.
 2. **`/` mette a fuoco il filtro di `/technologies`**, e seleziona quello che c'è già, così il tasto
    dopo sostituisce. ⚠️ **È l'unico tasto che l'app si prende**, e solo mentre nessun altro ascolta:
    dentro un campo, o con un modificatore premuto, resta di chi ha il fuoco. Annunciata due volte,
    perché una non bastava: `aria-keyshortcuts="/"` sul campo e `press / to filter` in Meta faint
    accanto al conteggio, che **sparisce a 640px e sotto**, dove la tastiera di cui parla di solito
    non c'è. Regola scritta in `DESIGN.md` (Follow Status and Filter) e nel mock.
-3. **Il follow multiplo è rimandato a una issue**, non fatto: vuole un modello di selezione, una
-   scrittura in blocco, il limite Free applicato al gruppo e una cache ottimistica di gruppo. È una
-   fetta.
+3. **Il follow multiplo è la #126**, `ready-for-human`, aperta il 2026-10-08: vuole un modello di
+   selezione, una scrittura in blocco, il limite Free applicato **al gruppo** e una cache ottimistica
+   di gruppo. È una fetta, e la issue porta gli otto criteri.
 4. **Le sezioni richiudibili della Dashboard sono rifiutate per iscritto**: vogliono uno stato per
    lettore che non esiste, e il Count Box già porta a ogni sezione con un ancoraggio. Aggiungere
    stato senza togliere niente.
