@@ -5,7 +5,9 @@ import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { useFollows } from "./follows-provider";
 
 // The count is the one number the page keeps live: it follows the optimistic cache, while the
-// sections stay as the visit found them.
+// sections stay as the visit found them. `your N free follows` and not `of N technologies`: the page
+// declares 37 technologies a few lines below, so a bare 10 reads as another total instead of the
+// Plan's allowance (DESIGN.md, Follow Status and Filter).
 export function FollowStatus() {
   const { count } = useFollows();
 
@@ -16,13 +18,13 @@ export function FollowStatus() {
       {/* Only the spoken sentence is live. The two visible ones say the same thing twice, once wide
           and once narrow, and a live region around all three made one toggle arrive three times. */}
       <span aria-live="polite" className="sr-only" data-testid="follow-status">
-        you follow {count} of {FREE_FOLLOW_LIMIT} technologies
+        you follow {count} of your {FREE_FOLLOW_LIMIT} free follows
       </span>
       <span aria-hidden className="max-sm:hidden">
-        you follow <span className="text-text">{count}</span> of {FREE_FOLLOW_LIMIT} technologies
+        you follow <span className="text-text">{count}</span> of your {FREE_FOLLOW_LIMIT} free follows
       </span>
       <span aria-hidden className="sm:hidden">
-        <span className="text-text">{count}</span> of {FREE_FOLLOW_LIMIT} followed
+        <span className="text-text">{count}</span> of your {FREE_FOLLOW_LIMIT}
       </span>
     </p>
   );
