@@ -15,10 +15,13 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-08, notte).** La **#26 è finita e aspetta solo di essere unita**: il
-ramo `26-landing-page` è pushato con due commit, `5261aa6` (documenti e mock) e `85a7eef` (il
-codice), e la **PR #129** è aperta con `Closes #26`. ⚠️ **Il primo controllo della sessione nuova è
-l'esito della CI** (`gh run list --branch 26-landing-page --limit 3`) e il commento di CodeRabbit.
+**Da dove ripartire (2026-10-08, notte).** La **#26 è chiusa**: **PR #129 unita** in `78aba60`, e la
+issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso**, e `main` locale e remoto
+combaciano. La **CI del merge è verde**, e il `Deploy database` pure (nessuna migrazione da
+applicare). ⚠️ Il ramo `26-landing-page` **esiste ancora**, locale e remoto: la cancellazione resta
+dell'utente, la modalità auto la nega all'agente.
+⚠️ **Questo documento è stato pushato dopo** che la CI aveva chiuso, apposta: un push su `main`
+annulla la CI in corso, ed è la trappola che il giro scorso aveva già pagato.
 
 **Cos'è stato scritto.** Un modulo nuovo, `src/modules/landing/`, con il `domain` che tiene il
 contenuto reale e la `ui` che tiene i quattro componenti di `DESIGN.md`:
@@ -69,19 +72,41 @@ di produzione: LCP 1240 ms desktop e 188 ms mobile, **CLS 0 e 0,0015**, cioè de
 **Gli scatti del codice** stanno in `.impeccable/review/app-landing-*.png` (desktop, light, mobile,
 cite, fold), committati accanto a quelli del mock.
 
-### Cosa resta della #26
+### Cosa resta
 
-Il commit è `85a7eef`, il ramo è pushato e la **PR #129** è aperta con `Closes #26`. Restano
-l'esito della CI, la revisione di CodeRabbit, e poi **merge e cancellazione del ramo, che sono
-dell'utente**: la modalità auto li nega all'agente.
+1. ⚠️ **La #130**, aperta l'8 ottobre 2026: i **Core Web Vitals veri in produzione** e la **lettura
+   dal telefono**, su tutta l'app e non sulla sola landing. Erano due punti appesi a giri diversi di
+   questo documento, adesso stanno in un posto solo. È `ready-for-human`.
+2. La cancellazione del ramo `26-landing-page`, locale e remoto, che è dell'utente.
+3. Le strade di "Le strade aperte", tutte in attesa del via dell'utente.
 
-⚠️ La misura dei Core Web Vitals in produzione e la lettura dal telefono **non sono più qui**: sono
-la **#130**, che le fa su tutta l'app e non sulla sola landing.
+### Quattro issue nuove dell'8 ottobre 2026, tutte `ready-for-human`
+
+Nate da richieste dell'utente, e **nessuna è stata iniziata**. Vanno lette prima di riaprirle,
+perché ciascuna porta già dentro gli ostacoli trovati guardando il codice.
+
+- **#130**: Core Web Vitals in produzione e lettura dal telefono, su tutta l'app.
+- **#131, le traduzioni** (inglese, italiano, francese, spagnolo, tedesco). ⚠️ Tre ostacoli già
+  accertati: **il footer non esiste in nessuna pagina dell'app**, quindi il selettore non ha il posto
+  che l'utente immaginava; **il menu profilo esiste solo da firmati**, mentre Technology e Release si
+  leggono da visitatori, che è il motivo per cui il tema è rimasto nella barra; e **un cookie di
+  lingua butterebbe l'ISR** esattamente come quello del tema (decisione già pagata in
+  `docs/DECISIONI.md`), quindi la strada è la lingua nell'URL, che però tocca canonici, sitemap e
+  `robots.txt`. Restano fuori: le **Note di rilascio**, che non si traducono mai, e le **traduzioni
+  delle Sintesi**, già fuori dall'MVP e vietate dalla regola della spesa.
+- **#132, le pagine legali e la trasparenza**. Il pezzo di codice vero che ne esce: **la
+  cancellazione dell'account non esiste**, c'è solo `sign out`, e un'informativa che la promette
+  senza un bottone che la esegue è una promessa falsa. Anche qui serve il footer.
+- **#133, tornare in cima da una pagina lunga**. ⚠️ Il bottone flottante classico sbatte contro
+  **The One Raised Plane Rule**, il divieto di ombre e il rischio di coprire l'ultima riga delle note
+  su un telefono: le due strade sono un ritorno tipografico col `BackPointer` che già esiste, oppure
+  il bottone con la deroga scritta. Le altre comodità sono elencate lì come **candidate non
+  approvate**.
 
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md e chiudi la #26
+leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
 ```
 
 **Lo stato di partenza di questo giro (2026-10-08, sera).** Siamo **dentro la #26**, sul ramo `26-landing-page`.
