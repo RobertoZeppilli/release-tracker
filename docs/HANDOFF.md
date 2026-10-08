@@ -16,11 +16,13 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-08, mezzogiorno).** La **#119 è fatta**, sul ramo `119-bar-rethink`,
-**da unire**: la PR non è ancora aperta al momento della scrittura. La **PR #125 risulta già unita**
-e la sua CI su `main` è **verde** (`check` e `integration`), quindi da quel giro non resta niente.
-⚠️ Il ramo `accelerators-and-glossary` è **ancora lì**, locale e remoto: la cancellazione è stata
-negata dalla modalità auto ed è rimasta all'utente.
+**Da dove ripartire (2026-10-08, mezzogiorno).** La **#119 è chiusa**: **PR #127 unita** in
+`a85d6053`, con `CI` e `Deploy database` **verdi** su `main` (nessuna migrazione da applicare). Unita
+anche la **PR #125**, quindi da quel giro non resta niente e **non c'è niente in sospeso**.
+⚠️ **Il merge e la cancellazione dei rami sono dell'utente**: la modalità auto li nega entrambi
+all'agente (`Merge Without Review` e `Git Destructive`). Restano da cancellare i rami locali già
+uniti, `119-bar-rethink` e `accelerators-and-glossary` compresi, e `accelerators-and-glossary` è
+ancora anche sul remoto.
 
 **Cos'è cambiato, ed è la strada 3 della issue** (ripensare la barra, non tappare il link): lo slot
 della barra non ha più due inquilini.
@@ -66,7 +68,7 @@ della strip si confrontano **per il centro verticale**, non per il bordo alto.
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md e dimmi se la PR della #119 è passata
+leggi docs/HANDOFF.md e dimmi che strade sono aperte
 ```
 
 **Lo stato precedente (2026-10-08, notte).** La **PR #124 è unita** (il critique chiuso come lista di
