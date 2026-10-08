@@ -67,6 +67,39 @@ test.describe("the local way in", () => {
   });
 });
 
+// The Severity Pairing Rule: the one inked line on this screen was colour alone, the only one in the
+// app, on the screen where a message has to be unambiguous. The glyph is `aria-hidden`, so what the
+// assertion can see of it is the `<svg>` the label carries with it.
+test("a refused sign in says so with a glyph and a label, not with colour alone", async ({ page }) => {
+  await page.goto("/login?error=denied");
+  // Scoped to `main`: Next's route announcer is a `role="alert"` of its own, and it joins the page as
+  // soon as a client navigation has happened once, so an unscoped role query is green alone and red
+  // in the suite.
+  const alert = page.locator("main").getByRole("alert");
+  await expect(alert).toContainText("error:");
+  await expect(alert).toContainText("the sign in was cancelled");
+  expect(await alert.locator("svg").count(), "the severity glyph").toBe(1);
+});
+
+// `max-w-measure` is the 72ch prose cap. This line had none and ran to 88ch at 1280px: the token
+// works wherever it is, and the two long lines of the critique were the elements without it.
+test("the login keeps its prose inside the measure", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/login");
+  const line = page.getByText("Asks GitHub only for your public profile");
+  const widest = await line.evaluate((node) => {
+    const style = getComputedStyle(node);
+    const probe = document.createElement("span");
+    probe.style.cssText = `position:absolute;visibility:hidden;white-space:pre;font-family:${style.fontFamily};font-size:${style.fontSize};font-weight:${style.fontWeight}`;
+    probe.textContent = "0";
+    document.body.append(probe);
+    const ch = probe.getBoundingClientRect().width;
+    probe.remove();
+    return node.getBoundingClientRect().width / ch;
+  });
+  expect(widest, "the width of the line in characters").toBeLessThanOrEqual(72);
+});
+
 // The account strip under the bar: what belongs to the viewer rather than to the page. It opens
 // from the picture at the right of the bar, and on a public page it is where the way back to the
 // Dashboard lives, since the breadcrumb takes the slot the navigation would have used.

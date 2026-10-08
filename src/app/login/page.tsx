@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { serverEnv } from "@/env/server";
 import { safeRedirectPath } from "@/modules/auth";
 import { getDeveloper } from "@/modules/auth/server";
+import { SeverityLabel } from "@/modules/releases/ui";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -12,11 +13,13 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+// Lower case openings: the message is the claim after the `error:` label, not a sentence on its own
+// (The Severity Pairing Rule in DESIGN.md).
 const ERRORS: Record<string, string> = {
-  denied: "The sign in was cancelled. Nothing changed.",
-  exchange: "That sign in link is no longer valid. Try again.",
+  denied: "the sign in was cancelled. Nothing changed.",
+  exchange: "that sign in link is no longer valid. Try again.",
   provider: "GitHub is unreachable right now. Try again in a moment.",
-  dev: "The local developer could not sign in. Run `pnpm dev:login` and try again.",
+  dev: "the local developer could not sign in. Run `pnpm dev:login` and try again.",
 };
 
 const BUTTON =
@@ -43,8 +46,8 @@ export default async function LoginPage({ searchParams }: Props) {
           and technology pages stay public and need no sign in.
         </p>
         {message ? (
-          <p role="alert" className="mt-4 font-mono text-status text-breaking">
-            {message}
+          <p role="alert" className="mt-4 max-w-measure font-mono text-status text-breaking">
+            <SeverityLabel tone="breaking" label="error:" /> <span className="inline-block">{message}</span>
           </p>
         ) : null}
         <form action="/auth/sign-in" method="post" className="mt-6">
@@ -54,7 +57,7 @@ export default async function LoginPage({ searchParams }: Props) {
             Continue with GitHub
           </button>
         </form>
-        <p className="mt-4 font-mono text-meta text-text-faint">
+        <p className="mt-4 max-w-measure font-mono text-meta text-text-faint">
           Asks GitHub only for your public profile and email address. No access to any repository.
         </p>
         {localDeveloper && (

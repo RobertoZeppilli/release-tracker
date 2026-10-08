@@ -341,7 +341,7 @@ Corners are gently squared: 6px for buttons, the source panel and fix diffs, and
 - **Default:** Grotesk 500 14px, 12px horizontal padding, with an optional 16px stroke icon (stroke 2) and an 8px gap.
 - **Hover / Focus:** fill changes to `raised` and the border to `text-faint`. Focus uses the global 2px cyan ring, offset 3px, 3px radius.
 - **Icon button:** a 34px square (theme toggle).
-- **Toggle (Follow):** a `button` with `aria-pressed`. Off: plus icon + `Follow`. On: check icon + `Following`, the border drops to `rule` and the text to `text-muted` (back to `text` on hover). The accessible name switches between `Follow X` and `Unfollow X`.
+- **Toggle (Follow):** a `button` with `aria-pressed`. Off: plus icon + `Follow`. On: check icon + `Following`, the text drops to `text-muted` (back to `text` on hover) while the border stays `rule-strong`. The border is the only thing identifying this control, so every state keeps a border that passes SC 1.4.11, the limit state included: it stays focusable, so it is still a control. The quiet half of the pressed look is carried by the text alone. `rule` was the first answer and it measured 1.33:1 in the dark theme and 1.27:1 in the light one, the one control border in the system outside the rule. The accessible name switches between `Follow X` and `Unfollow X`.
 - **Toggle at the limit (disabled):** when 10 of 10 are followed, every unpressed toggle gets `aria-disabled="true"` (never the `disabled` attribute), so it stays focusable and is described by the limit note (`aria-describedby`). The border drops to `rule`, the text to `text-faint`, the cursor is `not-allowed` and hover changes nothing. Clicks are ignored. Pressed toggles stay live so the user can unfollow.
 
 ### Navigation

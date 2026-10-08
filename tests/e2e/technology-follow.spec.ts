@@ -113,6 +113,38 @@ test.describe("a Developer", () => {
     await expect(toggle(page, "Follow")).toBeVisible();
   });
 
+  // WCAG 1.4.11: the border is the only thing identifying this button, so every state has to keep one
+  // that passes. `rule` measured 1.33:1 and was the one control border in the system outside the
+  // rule; what drops between off and on is the text. The limit state counts too, because it stays
+  // focusable and is therefore still a control.
+  test("keeps the border that identifies it in every state", async ({ page }) => {
+    await page.goto(path());
+    const strong = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--rule-strong").trim(),
+    );
+    const border = (button: Locator) => button.evaluate((node) => getComputedStyle(node).borderTopColor);
+    const asColor = async (value: string) =>
+      page.evaluate((raw) => {
+        const probe = document.createElement("span");
+        probe.style.color = raw;
+        document.body.append(probe);
+        const resolved = getComputedStyle(probe).color;
+        probe.remove();
+        return resolved;
+      }, value);
+    const expected = await asColor(strong);
+
+    expect(await border(toggle(page, "Follow")), "the off state").toBe(expected);
+    await toggle(page, "Follow").click();
+    expect(await border(toggle(page, "Unfollow")), "the on state").toBe(expected);
+
+    await followWritten(toggle(page, "Unfollow"));
+    await developer.clearFollows();
+    await addFollows(developer.id, fillers.ids);
+    await page.reload();
+    expect(await border(toggle(page, "Follow")), "the limit state").toBe(expected);
+  });
+
   test("at ten of ten the Follow is blocked, still reachable, and says why", async ({ page }) => {
     await addFollows(developer.id, fillers.ids);
     await page.goto(path());

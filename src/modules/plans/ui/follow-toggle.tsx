@@ -6,9 +6,12 @@ import { useFollows } from "./follows-provider";
 
 const BASE =
   "inline-flex h-[34px] items-center gap-2 rounded-md border px-3 font-sans text-body whitespace-nowrap";
+// Every state keeps `border-rule-strong`: the border is the only thing that identifies this control,
+// so it answers to SC 1.4.11 whether the button is pressed or at the limit, where it stays focusable.
+// What drops between off and on is the text, not the outline.
 const OFF = "border-rule-strong text-text hover:border-text-faint hover:bg-raised";
-const ON = "border-rule text-text-muted hover:text-text hover:bg-raised";
-const BLOCKED = "border-rule text-text-faint cursor-not-allowed";
+const ON = "border-rule-strong text-text-muted hover:text-text hover:bg-raised";
+const BLOCKED = "border-rule-strong text-text-faint cursor-not-allowed";
 
 export const LIMIT_NOTE_ID = "limit-note";
 

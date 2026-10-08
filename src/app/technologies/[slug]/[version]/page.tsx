@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { HelpPointer } from "@/components/help-pointer";
 import { SiteHeader, TECHNOLOGIES_CRUMB } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
 import { createPublicClient } from "@/lib/supabase";
@@ -52,9 +53,12 @@ function externalSource(technology: StoredTechnology, version: string): External
   return null;
 }
 
+// Lower case, because it is a Help Pointer label and not a button: the provenance row is the one
+// place on the page where a link sits beside a static fact in the same faint Mono, so it has to
+// declare itself the way the system declares every other link (DESIGN.md, Help Pointer Link).
 function notesLinkLabel(url: string): string {
   const { hostname } = new URL(url);
-  return hostname === "github.com" ? "View on GitHub" : `View on ${hostname}`;
+  return hostname === "github.com" ? "view on github" : `view on ${hostname}`;
 }
 
 export default async function ReleasePage({ params }: Props) {
@@ -78,8 +82,10 @@ export default async function ReleasePage({ params }: Props) {
           <SummaryStatusBlock release={release} hasGitHub={githubRepo(technology.sources) !== null} />
           {lines && release.notes && <ReleaseNotesSource lines={lines} url={release.notes.url} />}
         </CitationProvider>
-        <p className="mt-7 flex flex-wrap gap-4 font-mono text-meta text-text-faint">
-          {release.notes?.url && <a href={release.notes.url}>{notesLinkLabel(release.notes.url)}</a>}
+        <p className="mt-7 flex flex-wrap items-baseline gap-4 font-mono text-meta text-text-faint">
+          {release.notes?.url && (
+            <HelpPointer href={release.notes.url}>{notesLinkLabel(release.notes.url)}</HelpPointer>
+          )}
           <span>
             {release.origin} {release.recordedAt.toISOString().slice(0, 10)}
             {detection && ` via ${detection.kind}`}

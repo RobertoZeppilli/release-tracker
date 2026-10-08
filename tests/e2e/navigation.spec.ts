@@ -80,6 +80,28 @@ test("above 640px the slot stays inside the bar", async ({ page }) => {
   expect(strip.y, "on one row with the wordmark").toBeLessThan(mark.y + mark.height);
 });
 
+// The one surface on the page that floats, and it was the one missing the only vertical edge the page
+// has: `right-0` aligns to the positioning box, which carries the gutter as padding, so the panel hung
+// 24px past it. A direct relative of the zero-spacing trap, paid for three times now.
+test("the account panel is right-aligned to the page's own gutter", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await page.getByRole("button", { name: /^Account/ }).click();
+  const panel = await page.locator("#account-panel").boundingBox();
+  // The gutter is padding, not an edge, so it has to be taken off `main`: the content column ends
+  // where the padding begins, and that is the line the panel owes its right edge to.
+  const gutter = await page.locator("main").evaluate((node) => {
+    const box = node.getBoundingClientRect();
+    return box.right - Number.parseFloat(getComputedStyle(node).paddingRight);
+  });
+  expect(panel, "the account panel").not.toBeNull();
+  expect(Math.round((panel?.x ?? 0) + (panel?.width ?? 0)), "the right edge of the panel").toBe(
+    Math.round(gutter),
+  );
+});
+
 // On a phone the account is the page while it is open: a panel the size of a business card over a
 // page the reader cannot use is worse than taking the screen and giving it back.
 test("the account takes the whole screen at 390px, and gives it back", async ({ page }) => {

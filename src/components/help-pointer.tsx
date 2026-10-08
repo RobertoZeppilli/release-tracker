@@ -14,12 +14,14 @@ export function BackPointer({ href, children }: { href: string; children: ReactN
 }
 
 function Pointer({ href, arrow, label }: { href: string; arrow: string; label: ReactNode }) {
+  // An absolute href leaves the app, and `Link` has no prefetch or client navigation to offer for it.
+  const Tag = href.startsWith("http") ? "a" : Link;
   return (
-    <Link href={href} className="font-mono text-label no-underline">
+    <Tag href={href} className="font-mono text-label no-underline">
       <span aria-hidden className="mr-[1ch] text-text-faint [font-variant-ligatures:none]">
         {arrow}
       </span>
       <span className="border-b border-dashed border-current text-help hover:border-solid">{label}</span>
-    </Link>
+    </Tag>
   );
 }
