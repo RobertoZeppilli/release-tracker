@@ -108,9 +108,11 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
     >
       <Link
         href="/"
-        className="flex h-[56px] shrink-0 items-center font-mono text-[14px] whitespace-nowrap no-underline [font-variant-ligatures:none]"
+        className="flex h-[56px] shrink-0 items-center font-mono text-[14px] tracking-[-0.02em] whitespace-nowrap no-underline [font-variant-ligatures:none]"
       >
-        release-tracker
+        {/* DESIGN.md, Brand Mark: `verdict:` with the colon, in `text`, never in a severity ink.
+            The colon is the opening of a sentence the app finishes. */}
+        verdict:
       </Link>
       {children}
       <span aria-hidden className={BREAK} />

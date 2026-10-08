@@ -1,5 +1,5 @@
 ---
-name: release-tracker
+name: verdict
 description: Releases read like compiler diagnostics. One verdict, cited breaking changes, a help line for each migration.
 colors:
   ground: "#0f1115"
@@ -212,9 +212,23 @@ components:
   row-note:
     textColor: "{colors.text-muted}"
     typography: "{typography.label}"
+  brand-mark:
+    textColor: "{colors.text}"
+    typography: "{typography.label}"
+    letterSpacing: "-0.02em"
+  stage-rail:
+    textColor: "{colors.text-faint}"
+    typography: "{typography.label}"
+    padding: "8px 0"
+  stage-current:
+    textColor: "{colors.text}"
+  vocabulary-row:
+    padding: "12px 0"
+  short-specimen:
+    padding: "16px 0"
 ---
 
-# Design System: release-tracker
+# Design System: Verdict
 
 ## Overview
 
@@ -232,6 +246,8 @@ A light theme mirrors every role with darker severity inks on a warm off-white g
 - Flat surfaces: three tonal layers (ground, raised, sunken) and 1px rules. No shadows.
 - One motion moment: the caret underline draws beneath cited spans.
 - The Summary and the source notes use different registers: grammar plus prose above, a numbered listing below.
+
+**The landing page is inside this register, not beside it.** "Dense and working-scale, not a marketing page" is a rule about the app, and the one page whose job is to persuade keeps it: the landing argues by putting the work on the screen, a real Release and its real notes, and it owns no furniture the app does not have. No cards, no metric row, no logo wall, no gradient, no testimonial. What it adds is the Brand Mark, the four significance words written out in prose, and two visible actions.
 
 ## Colors
 
@@ -333,6 +349,18 @@ The system is flat with no shadows. Depth comes from three tonal layers: `sunken
 ## Shapes
 
 Corners are gently squared: 6px for buttons, the source panel and fix diffs, and 4px for inline code and quote/caret wells. A quote row and its caret row sit in one well, rounded 4px, with 6px of padding above and below. The focus outline is 2px `focus`, offset 3px, with a 3px radius. Pointer links use a dashed 1px underline that turns solid on hover; on a `-->` help pointer only the label carries it. The `-->` pointer and caret row are typographic shapes, not drawn graphics.
+
+## Brand Mark
+
+The wordmark is the product's own grammar: **`verdict:`** in Fragment Mono 400, lowercase, `-0.02em`, in `text`, colon included and nothing after it. The colon is not decoration. Every line this product cares about opens with one (`ok:`, `warning:`, `breaking[n]:`, `note:`, `help:`), so the mark is the opening of a sentence the app finishes, and the space it leaves after the colon is where the answer goes.
+
+It is Mono 14px in the site header, where it is also the home link, and that is the only place it is set: a second, larger mark over the landing's `h1` is a kicker, which this document forbids, and the header already carries it on that page. It appears once more in the page foot, at Meta size, as the line that names what read the notes. It carries no glyph beside it, no box around it, no second word and no tagline: a claim belongs to the landing's heading, which can be read and corrected, not to a mark that repeats on every page.
+
+**The mark never takes a severity ink**, in either theme. Hue means severity (The Severity-Only Colour Rule), and a mark drawn in `ok` or `breaking` would deliver a verdict on every page it sits on, pages that have nothing to judge included. The mark is `text` on `ground`, and the only state it has is the focus ring it gets as a link.
+
+**The icon is the caret row.** Where a wordmark cannot be read, at 16px and 32px in a tab or a bookmark, the mark becomes three carets, `^^^`, drawn as an SVG path (not text) in `text` on a `ground` square with a 6px radius, so it holds its contrast on light and dark browser chrome alike. The caret row is the system's own way of pointing at the exact text a claim rests on, and it is the one thing on the page that moves; three carets at 16px read as a shape rather than as letters, which is what an icon has to do.
+
+Rejected, and for reasons that outlive the choice: the **octagon**, because in this system it already means a breaking change, and a mark that says "rupture" over every page breaks The Severity Pairing Rule by wearing a severity shape with no severity to report; the **`-->` pointer**, because it means "the cited line is over there" and a logo points nowhere; and any **coloured** or boxed treatment, which the colour rule forbids before taste gets a say.
 
 ## Components
 
@@ -534,6 +562,32 @@ The closing `retired` section starts with a note line: the info glyph + Mono 14p
 ### No-Match State (Technologies)
 When the filter matches nothing, all three sections are hidden and a polite live section takes their place, 48px below the filter: a Mono 14px muted note line `note: no technology matches "qwik"` (the query in `text`), then one muted Grotesk sentence (`The catalog is curated, and requests for new technologies aren't open yet.`). No form, no link, no ink.
 
+### The Bench (signature, landing)
+
+The landing is one real Release on a bench, examined in four stages that never leave the page: `source`, `cite`, `verdict`, `help`. The specimen is React 19.0.0, its notes are the ones GitHub serves, and the line the page cites is line 47 of them. Nothing on the landing is a mock-up of a Release: a page that argues for cited judgments cannot make its own claims uncheckable.
+
+**The rail is anchors, not tabs.** A Mono 13px row of the four stage words sits under the heading, the current one in `text` and the rest in `text-faint`, each a link to the stage below it. All four stages exist in the DOM, in reading order, at every width: the rail moves the reader, it does not reveal content. A visitor with JavaScript off, a crawler, and a reader who never scrolls all get the whole page.
+
+**The one motion moment is the system's own.** As the `cite` stage comes into view the caret underline draws beneath the quoted span, the same draw the Release page performs, exponential ease-out, once. Under `prefers-reduced-motion: reduce` the underline is simply there. No stage animates in, nothing parallaxes, and the page has no second effect: the bench is the demonstration, and a page that jiggles while demonstrating precision argues against itself.
+
+The stages carry the page's hierarchy: `source` is a Source View at the 72ch measure with the real notes and their real line numbers; `cite` is the quote row and caret row that name line 47; `verdict` is a Verdict Line, `warning: action required`, at Verdict scale, with its count row; `help` is the `= help:` line and the Help Pointer Link that leads to the public Release page for React 19.0.0. The two actions of the page, a Help Pointer Link and `Sign in with GitHub`, sit together in three places and nowhere else: the heading block, the end of the bench, and the foot. The pointer names a different destination in the last one, the Catalog rather than the Release, because by then the reader has been shown the Release twice.
+
+### Short Specimen (landing)
+
+Under the bench, two more real Releases, one row each, 16px of vertical padding and a 1px `rule` between them: the Technology Mark and name, the version, and one Mono 13px line that names what the notes of that Release actually are. Vite 6.0.0 ships a changelog of 28 lines where the two breaking ones are marked by a single `!`; TypeScript 5.7.2 ships a release whose body is a link to a blog post.
+
+They are the honest half of the argument and they are not decoration: they show the product meeting notes that are badly shaped and notes that are missing, which is the state the Summary calls `unavailable`. A landing that shows only its best case teaches a visitor to distrust the first ordinary Release they open.
+
+### Vocabulary Legend (landing)
+
+The four significance words, defined in words, with the id `significance` so the app can point here. One row each, 12px glyph and the word in Mono 13px `text` in a 14ch column, then a Grotesk sentence in `text-muted` taken from CONTEXT.md, rows divided by 1px `rule`, no boxes and no colour: significance is a shape (The Neutral Significance Rule).
+
+It exists because the app shows these four words everywhere and defines them nowhere, which is why the help axis of the 2026-10-07 critique scores 1 out of 5. The definition lives on the landing by decision (`docs/DECISIONI.md`): inside the app the word stays paired with its glyph, which is what WCAG asks, and a definition in every section heading would repeat four sentences on every visit.
+
+### Counter-Position Note (landing)
+
+What the product is not, in the register the product already has: a `note:` line in `text-muted` with the info glyph, then Grotesk prose at the measure. Dependabot and Renovate open a pull request when a version moves; a newsletter says a release was interesting; this product says whether this Release asks something of you, and cites the line it read. No comparison table, no competitor logo, and no claim about another tool's quality: naming what a neighbour does well is the only way the sentence stays true, and the only way it stays persuasive to someone who already uses one.
+
 ### Inline Code
 Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 
@@ -555,6 +609,8 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Do** disable a Follow toggle at the limit with `aria-disabled`, keep it focusable, and describe it by the `note:` line that explains the limit.
 - **Do** drop the top bar's slot to a 40px strip under the bar at 640px and below, with the same links in the same order (see The No Dead End Rule).
 - **Don't** hide a destination behind something that has to be opened. The account panel held `dashboard` for a while, and from a public page that made the Dashboard two actions away and invisible until the first one (issue #119).
+- **Do** keep the Brand Mark in `text`, colon included, and never in a severity ink (see Brand Mark).
+- **Do** argue on the landing with a real Release, its real notes and the line number it cites, and show a Release whose notes are thin beside the one whose notes are rich.
 - **Do** reserve the space a control will take while its state is still unknown, and declare the unknown with `aria-busy` rather than guessing a value (see The Reserved Space Rule).
 
 ### Don't:
@@ -566,4 +622,6 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Don't** shrink the verdict scale to fit longer copy.
 - **Don't** leave a viewer without a way to the destinations at any width. Narrow screens get the same links, on a second row, or in the account panel that every page carries for whoever is signed in. There is no hamburger: what opens is the account, and it is the viewer's own menu, not the page's navigation.
 - **Don't** fill a wait with a skeleton, a shimmer or a spinner. The space is reserved and empty, and what is not known is said (see The Reserved Space Rule).
+- **Don't** persuade with furniture the app does not own: no cards, no metric row, no logo wall, no testimonial, no comparison table, no kicker above a heading. The landing persuades by showing the work.
+- **Don't** invent a Release, a count, a customer or a number anywhere, the landing included. Every figure on it is countable in a public file.
 - **Don't** make a breadcrumb step a link for some viewers and plain text for others. The step follows the hierarchy, and sign-in handles the rest.

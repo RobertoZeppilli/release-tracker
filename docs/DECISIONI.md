@@ -12,7 +12,38 @@ Release che contano.
 
 - Interfaccia, **Sintesi** e codice in **inglese**. Il glossario è in italiano con una tabella di
   nomi inglesi canonici.
-- Nome del progetto ancora da decidere (`release-tracker` è provvisorio).
+- Il prodotto si chiama **Verdict**. Deciso il 2026-10-08, chiudendo la #26. `release-tracker`
+  resta il nome del repository e della cartella, e non va più letto come un nome provvisorio del
+  prodotto.
+
+### Il nome: Verdict
+
+Il prodotto fa una cosa sola, dare un verdetto su una **Release**, e il nome dice quella cosa. Non
+nomina il mezzo (il monitoraggio) né la materia prima (le note di rilascio): nomina l'uscita.
+Risuona con il centro del design system, dove il componente di firma è la `Verdict Line`, e con la
+voce dell'interfaccia, che parla per `ok:`, `warning:` e `breaking[n]:`.
+
+**Scartato VeriLog**, l'altro nome in lizza, e non per gusto: **Verilog è un linguaggio di
+descrizione hardware, standard IEEE 1364**, noto al pubblico esatto di questo prodotto. La ricerca
+sarebbe persa in partenza contro decenni di documentazione e corsi, la prima frase di ogni
+presentazione si spenderebbe a negare l'omonimia, e il suffisso `...Log` promette l'aggregazione di
+log, che non è il mestiere di qui.
+
+**La collisione col dominio è reale, ed è nostra, non dell'utente.** La parola "Verdict" non compare
+mai nell'interfaccia: a schermo si leggono `ok:`, `warning:` e `note:`, mai l'etichetta. Vive invece
+nel codice (`SummaryVerdictSchema`, `DashboardVerdict`, `pageVerdict`, `rowVerdict`) e in
+`DESIGN.md` (`Verdict Line`). Da qui la convenzione, fissata in `CONTEXT.md`: **Verdict** con la
+maiuscola e senza articolo è il prodotto, il **Verdetto** è il giudizio su una Release. Nessun
+identificatore del codice cambia, e nessuno nuovo prende il nome del prodotto.
+
+**Il dominio non è deciso e non si compra adesso.** Verificato il 2026-10-08 via RDAP e DNS:
+`verdict.dev`, `verdict.io`, `verdict.sh`, `verdict.app`, `verdict.tools`, `verdict.run`,
+`verdict.cloud`, `verdict.tech`, `getverdict.com` e `useverdict.com` sono registrati; `verdict.co`
+è parcheggiato su Efty, cioè in vendita a un prezzo da trattare. Liberi quel giorno:
+`verdict.build`, `verdict.codes`, `verdict.page` e `verdictdev.com`. La scelta aspetta il lancio,
+perché un dominio è una spesa: il nome del prodotto non dipende dal dominio esatto, e il repository
+resta dov'è. Esiste un pacchetto npm `verdict` e un utente GitHub `Verdict`: nessuno dei due
+interferisce, perché qui non si pubblica un pacchetto e il repository sta sotto l'account personale.
 
 ## Modello del dominio
 
@@ -91,7 +122,9 @@ Release che contano.
 | Sitemap | Generata dal Catalogo e dalle Release, **Tecnologie ritirate comprese**, perché le loro pagine restano raggiungibili. Rigenerata con ISR e marcata stale insieme alle pagine da `revalidateReleasePages`. |
 | `robots.txt` | Esclude le pagine con login. `/technologies$` con l'ancora, altrimenti un prefisso nudo escluderebbe anche tutte le pagine delle Tecnologie sotto di lui. |
 | Icone delle Tecnologie (#120) | Un **Marchio** monocromatico di 16px accanto al nome nella riga del Catalogo e di 24px accanto al titolo della pagina Technology. I glifi arrivano da [simple-icons](https://github.com/simple-icons/simple-icons) (licenza **CC0**), sono copiati nel repository da `pnpm icons:sync` e serviti dall'app: **nessuna chiamata a un CDN dal client**. I **marchi restano dei loro proprietari** e l'uso qui è nominativo e descrittivo: identificano la Tecnologia di cui la riga parla, nella forma e non nel colore, senza suggerire nessun rapporto con noi. Fuori: i loghi a colori (vietati da `DESIGN.md`) e le righe di Release, dove un glifo vuol già dire Rilevanza. Una Tecnologia senza glifo lascia il suo spazio vuoto. |
-| Home `/` | `noindex` e fuori dalla sitemap **finché è il campionario dei token** (#2): un risultato di ricerca fatto di campioni di colore è peggio di nessun risultato. La landing (#26) la riporta dentro. |
+| Home `/` | È la **landing** (#26), indicizzata e prima voce della sitemap. Lo era stata `noindex` e fuori dalla sitemap finché è stata il campionario dei token (#2): un risultato di ricerca fatto di campioni di colore è peggio di nessun risultato. La pagina è **prerenderizzata una volta per deploy**, senza `revalidate` e senza API dinamiche, ed è il modo più economico di tenere i Core Web Vitals nella fascia buona; l'unico numero che legge, la taglia del Catalogo, viene dalla cartella `catalog/`, cioè dal file su cui lavora `catalog:sync`. |
+| Titolo delle pagine | Il layout porta `%s · Verdict`, così ogni pagina dice il prodotto; la landing è l'unica con `absolute`, perché il suo titolo il nome ce l'ha già. |
+| Favicon | La **caret row** `^^^` come `src/app/icon.svg`, inchiostri fissi e non legati al tema, perché la barra del browser non è nostra (vedi Brand Mark in `DESIGN.md`). Il `favicon.ico` arrivato con l'impalcatura di Next è stato **cancellato**: era il logo di Next e in molti browser vince sull'SVG. |
 
 ## Piani e pagamenti
 
@@ -154,7 +187,7 @@ scraping dei blog.
 
 ## Aperto
 
-- Nome del progetto.
+- Il dominio di **Verdict**, che si sceglierà al lancio (vedi "Il nome: Verdict").
 
 Il design dell'MVP è chiuso: fanno fede `DESIGN.md` e i mock approvati in `design/mocks/`. PRD
 pubblicato come issue [#1](https://github.com/RobertoZeppilli/release-tracker/issues/1).

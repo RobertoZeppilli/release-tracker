@@ -85,14 +85,6 @@ test("the sitemap serves the Catalog as absolute addresses", async ({ request })
   expect(body).toMatch(/<loc>http:\/\/localhost:3000\/technologies\/vite\/\d+\.\d+\.\d+<\/loc>/);
 });
 
-test("the home page stays out of the index and the sitemap until the landing page exists", async ({ page, request }) => {
-  await page.goto("/");
-  await expect(page.locator('head meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-
-  const body = await (await request.get("/sitemap.xml")).text();
-  expect(body).not.toContain("<loc>http://localhost:3000</loc>");
-});
-
 test("a Technology page says what the Catalog says and what the page holds", async ({ page }) => {
   await page.goto("/technologies/vite");
 

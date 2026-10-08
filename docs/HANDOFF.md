@@ -15,7 +15,143 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-08, pomeriggio).** La **#120 è chiusa**: **PR #128 unita** in
+**Da dove ripartire (2026-10-08, notte).** La **#26 è finita e aspetta solo di essere unita**: il
+ramo `26-landing-page` è pushato con due commit, `5261aa6` (documenti e mock) e `85a7eef` (il
+codice), e la **PR #129** è aperta con `Closes #26`. ⚠️ **Il primo controllo della sessione nuova è
+l'esito della CI** (`gh run list --branch 26-landing-page --limit 3`) e il commento di CodeRabbit.
+
+**Cos'è stato scritto.** Un modulo nuovo, `src/modules/landing/`, con il `domain` che tiene il
+contenuto reale e la `ui` che tiene i quattro componenti di `DESIGN.md`:
+
+1. **`domain/specimen.ts`**: le righe 43-50 delle note di React 19.0.0 ai loro numeri veri, la
+   citazione (riga 47, il virgolettato e il tratto citato) e i conti. `citedSpan` dice dove cade il
+   tratto citato dentro il virgolettato, in caratteri, che è quello con cui la caret row si impagina.
+   **`domain/vocabulary.ts`**: i quattro livelli di Rilevanza detti a parole, presi da `CONTEXT.md`.
+2. **`ui/`**: `heading-block`, `bench` (con `source-view`, `cite-well`, `caret-draw`, `stage-rail`),
+   `short-specimens`, `vocabulary-legend` (id `significance`), `closing-block`, `landing-note`
+   (il `note:` + prosa, che serve a tre blocchi), `sign-in-button`.
+3. **`src/app/page.tsx`**: la landing, **senza `revalidate` e senza API dinamiche**, cioè
+   prerenderizzata una volta per deploy. L'unico numero che legge, la taglia del Catalogo, viene da
+   `readCatalogDirectory()`, cioè dalla cartella `catalog/`: letta a build time, niente database.
+
+**Il marchio e i metadati**: `verdict:` nella barra (era `release-tracker`), `SITE_NAME = "Verdict"`
+in `src/lib/metadata.ts`, il titolo del layout è un **template `%s · Verdict`** e la landing è
+l'unica con `absolute`. **`src/app/icon.svg`** è la caret row `^^^` come path, inchiostri fissi;
+⚠️ **il `favicon.ico` di Next è stato cancellato**, era il logo di Next e in molti browser vince
+sull'SVG. La home è **dentro la sitemap** come prima voce e il `noindex` è sparito.
+
+⚠️ **Tre cose già risolte, da non ripagare.**
+1. **Il numero di riga della riga citata** era `text-faint` sopra il `breaking-wash`, e axe lo boccia
+   in tema scuro. La pagina Release non se l'era mai posto perché lì i numeri sono un **counter CSS**,
+   che axe non vede; qui sono testo vero, quindi la riga citata alza anche il suo numero.
+2. **Il disegno della caret row non sta in uno `useState`**: lo stato è un attributo `data-draw`
+   scritto sull'elemento da `CaretDraw` (`armed` → `drawn`). Il markup che arriva dal server non ne
+   ha nessuno, quindi **senza JavaScript i caret ci sono già**; tenerlo in React vorrebbe dire
+   renderizzare il clip prima di poterlo animare, cioè l'unico ordine che li nasconde per sempre.
+   La regola di lint `react-hooks/immutability` vieta anche di scriverlo dentro un hook che riceve
+   la ref: per questo `CaretDraw` è un fratello del pozzetto e lo trova per id.
+3. **URL canonico e sitemap**: Next risolve `/` su `metadataBase` **senza barra finale**, e la
+   sitemap adesso scrive lo stesso indirizzo (`new URL(...).origin`), non una seconda grafia.
+
+**`DESIGN.md` corretto in due punti** che il mock aveva già smentito: il Brand Mark **non** si ripete
+a 20px sopra l'`h1` (sarebbe un kicker), e le due azioni stanno in **tre** posti, non due: blocco di
+testa, fondo del banco, chiusura. `docs/DECISIONI.md` ha tre righe nuove: Home `/`, Titolo delle
+pagine, Favicon.
+
+**I numeri**: **562 unitari** (8 nuovi, tutti sul dominio della landing: il virgolettato è davvero un
+pezzo della riga 47, il tratto citato è un pezzo del virgolettato, la caret row è disegnabile a ogni
+larghezza in cui viene mostrata, e la legenda copre tutti i livelli dello schema), **186 E2E verdi**,
+cioè tutta la suite, `pnpm lint`, `pnpm typecheck` e `pnpm build` verdi. **Nessun overflow
+orizzontale** a 320, 390, 640, 1024 e 1440. **Core Web Vitals misurati in laboratorio** sulla build
+di produzione: LCP 1240 ms desktop e 188 ms mobile, **CLS 0 e 0,0015**, cioè dentro la fascia buona;
+⚠️ è localhost senza throttling, **la misura vera è quella in produzione**, e sta nella **#130**.
+
+**Gli scatti del codice** stanno in `.impeccable/review/app-landing-*.png` (desktop, light, mobile,
+cite, fold), committati accanto a quelli del mock.
+
+### Cosa resta della #26
+
+Il commit è `85a7eef`, il ramo è pushato e la **PR #129** è aperta con `Closes #26`. Restano
+l'esito della CI, la revisione di CodeRabbit, e poi **merge e cancellazione del ramo, che sono
+dell'utente**: la modalità auto li nega all'agente.
+
+⚠️ La misura dei Core Web Vitals in produzione e la lettura dal telefono **non sono più qui**: sono
+la **#130**, che le fa su tutta l'app e non sulla sola landing.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md e chiudi la #26
+```
+
+**Lo stato di partenza di questo giro (2026-10-08, sera).** Siamo **dentro la #26**, sul ramo `26-landing-page`.
+Tutto quello che segue è in **un commit solo**, `5261aa6`, **non pushato** e senza PR: il ramo esiste
+solo in locale. La CI del giro precedente è finita **verde** e `f8dcdfc` è stato pushato, quindi su
+`main` locale e remoto combaciano.
+
+**Il prodotto ha un nome: Verdict.** Scelto fra i due che piacevano all'utente, con **VeriLog
+scartato** perché Verilog è un linguaggio di descrizione hardware (IEEE 1364) noto al pubblico esatto
+del prodotto: ricerca persa in partenza e prima frase spesa a negare l'omonimia. Registrato in
+`docs/DECISIONI.md` ("Il nome: Verdict", con le ragioni e le alternative), `PRODUCT.md` (nome e
+**Brand Commitments**) e `CONTEXT.md` (titolo, riga nella tabella dei nomi, ambiguità risolta).
+⚠️ **La convenzione è vincolante**: **Verdict** senza articolo è il prodotto, il **Verdetto** è il
+giudizio su una Release, e nessun identificatore nuovo prende il nome del prodotto (`pageVerdict`,
+`rowVerdict`, `DashboardVerdict`, `SummaryVerdictSchema` restano quelli). `release-tracker` è solo il
+repository.
+
+⚠️ **Il dominio non è deciso e non si compra adesso** (regola della spesa). Verificato il 2026-10-08
+con RDAP e DNS: presi `verdict.dev`, `.io`, `.sh`, `.app`, `.tools`, `.run`, `.cloud`, `.tech`,
+`getverdict.com`, `useverdict.com`; `verdict.co` è parcheggiato su Efty, cioè in vendita. **Liberi
+quel giorno**: `verdict.build`, `verdict.codes`, `verdict.page`, `verdictdev.com`. ⚠️ Attenzione al
+metodo: `rdap.org` **non copre** `.sh`, `.io`, `.co`, `.so`, quindi lì un 404 non vuol dire libero e
+va controllato con `nslookup -type=NS`.
+
+**La struttura della landing è scelta con l'utente, fra tre tirate dal `concept-seed`**
+(`--scope surface --mode persuade`, chiave `48f9f1bc`, mani 4-2-1): ha vinto **il banco di esame**.
+Una sola Release vera esaminata per stadi (`source` → `cite` → `verdict` → `help`) che restano tutti
+nel DOM; lo scroll non rivela niente, muove solo il lettore, e l'unico moto è la caret che si disegna.
+⚠️ **Scartata "la pagina che si diagnostica"** per una ragione da non riaprire: usava `breaking[n]:`
+per accusare lo stato dell'arte, e questo insegna al primo contatto un vocabolario che l'app poi
+smentisce (l'inchiostro `breaking` significa gravità, Severity-Only Colour Rule).
+
+**Prima del codice, i documenti, come chiede il criterio della issue:**
+1. **`DESIGN.md`**: la sezione **Brand Mark** (logotipo `verdict:` in Fragment Mono, mai in un
+   inchiostro di severità, icona = la caret row `^^^` come path SVG su quadrato `ground`), quattro
+   componenti nuovi (**The Bench**, **Short Specimen**, **Vocabulary Legend**, **Counter-Position
+   Note**), due righe nei Do e due nei Don't, un paragrafo in Overview che spiega perché la landing
+   sta **dentro** il registro di lavoro, e i token dei componenti nel frontmatter. Titolo e `name:`
+   adesso dicono **Verdict**.
+2. **`CONTEXT.md`**: i **quattro livelli di Rilevanza detti a parole** sotto la voce Rilevanza,
+   perché è da lì che la landing li copia e perché il critique dà 1 su 5 ad "Aiuto e documentazione"
+   proprio per questo.
+
+**Il mock è scritto e verificato**: `design/mocks/landing.html`, ed è la fonte dell'aspetto come gli
+altri quattro. **Nessun contenuto inventato**, e ogni numero è contabile in un file pubblico:
+React 19.0.0 (2024-12-05) ha **13 breaking changes** e **8 notable** in **271 righe** di note, e la
+riga citata è davvero la **47** (`Removed: propTypes`); Vite 6.0.0 ha un changelog di **28 righe**
+dove le due breaking sono marcate solo da un `!`; **TypeScript 5.7.2** ha un corpo di release che è
+**solo un link a un blog**, cioè il caso di "note non giudicabili" di `CONTEXT.md`. Le due Release
+magre non sono decorazione: sono la metà onesta dell'argomento.
+
+⚠️ **Due difetti già trovati e corretti nel mock, da non ripagare**: il marchio a 20px sopra l'`h1`
+era un **kicker**, che la craft floor della skill vieta esplicitamente (il marchio sta nell'header e
+basta); e la citazione **andava a capo** con la caret row ancora visibile, cioè carets sotto le
+parole sbagliate. La regola di `DESIGN.md` è che il testo citato deve stare su una riga sola: si è
+accorciato il quote a `Using propTypes will now be silently ignored.` e quote e caret row stanno
+**in un solo pozzetto**. Misurato a 320, 390, 640, 1024 e 1440: **nessun overflow orizzontale**
+(`node .impeccable/shoot-landing.mjs`, che scrive in `.impeccable/review/landing-*.png`).
+⚠️ Quello script importa Playwright **per percorso dentro `node_modules/.pnpm`**: un `from
+"playwright"` non risolve dalla cartella `.impeccable/`.
+
+**I quattro mock esistenti** hanno il wordmark nuovo (`verdict:`, che punta a `landing.html`).
+
+### Quello che questo giro chiedeva, e che adesso è fatto
+
+La pagina al posto del provino dei token, il marchio nell'app, la favicon, i metadati, i test
+unitari e E2E, i Core Web Vitals e il controllo di accessibilità: tutto nello stato in testa.
+
+
+**Lo stato precedente (2026-10-08, pomeriggio).** La **#120 è chiusa**: **PR #128 unita** in
 `bdc712a`, e la issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso.** I rami sono
 stati **cancellati tutti**, locali e remoti: restano `main` e nient'altro (erano 17 locali e 38
 remoti). ⚠️ **La cancellazione resta dell'utente**: la modalità auto la nega all'agente
@@ -74,8 +210,8 @@ dentro una riga del picker prende **anche i due svg del Toggle**, quindi il Marc
 
 ### Cosa resta
 
-1. ⚠️ **La verifica dal telefono in produzione**, l'unica cosa aperta del giro del critique, ed è
-   dell'utente. Ora comprende anche il Marchio nella riga a 390px.
+1. ⚠️ **La verifica dal telefono in produzione** è diventata la **#130** l'8 ottobre 2026, insieme
+   alla misura dei Core Web Vitals veri, e si fa su tutta l'app. Resta dell'utente.
 2. Nel mock della Dashboard c'è una riga **`Python`, che non è nel Catalogo**: discrepanza
    preesistente, non toccata. Ora mostra lo spazio vuoto, e illustra bene la regola.
 3. Le strade di "Le strade aperte", tutte in attesa del via dell'utente.
@@ -86,60 +222,6 @@ Il primo comando della sessione nuova:
 leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
 ```
 
-**Lo stato precedente (2026-10-08, mezzogiorno).** La **#119 è chiusa**: **PR #127 unita** in
-`a85d6053`, con `CI` e `Deploy database` **verdi** su `main` (nessuna migrazione da applicare). Unita
-anche la **PR #125**, quindi da quel giro non resta niente e **non c'è niente in sospeso**.
-⚠️ **Il merge e la cancellazione dei rami sono dell'utente**: la modalità auto li nega entrambi
-all'agente (`Merge Without Review` e `Git Destructive`). Restano da cancellare i rami locali già
-uniti, `119-bar-rethink` e `accelerators-and-glossary` compresi, e `accelerators-and-glossary` è
-ancora anche sul remoto.
-
-**Cos'è cambiato, ed è la strada 3 della issue** (ripensare la barra, non tappare il link): lo slot
-della barra non ha più due inquilini.
-
-1. **Le due destinazioni sono nello slot su ogni pagina**, pubbliche comprese, e `section` dice solo
-   quale è corrente. **Il breadcrumb ha traslocato nel contenuto**, sopra l'`h1`, a 24px
-   (`src/components/breadcrumb.tsx`, nuovo, con `PageBreadcrumb` e `TECHNOLOGIES_CRUMB`).
-   ⚠️ **Scelta mia, non della issue**: le due destinazioni si vedono **anche da un visitatore**, che
-   cliccando atterra sul login e viene riportato indietro. Era il secondo criterio di accettazione a
-   chiedere il contrario, e l'ho scostato perché `DESIGN.md` vieta già a questo header di ramificare
-   sulla sessione: arriva dopo il primo paint, e cambiare forma quando arriva rimonterebbe la
-   pagina. La stessa regola valeva già per il crumb `technologies`.
-2. **Il pannello dell'account ha perso le due destinazioni**: gli restano l'handle e `sign out`. Due
-   copie vorrebbero dire due link `dashboard` sulla stessa pagina, e i test se ne accorgono.
-3. ⚠️ **Il vincolo che la issue non elencava**: sotto 430px la strip era **tutta della quota**. Ora
-   la condividono, sezioni a sinistra e quota a destra, e il capo riga è forzato da un elemento
-   `BREAK` a larghezza piena e altezza zero in `site-header-bar.tsx`: senza, il punto in cui flex va
-   a capo dipende da quanto è larga la cifra della quota, e la terza riga torna. Misurato: l'header
-   resta **al massimo 97px** a 320, 375, 390, 414 e 429px.
-4. **`DESIGN.md` è stato riscritto prima del codice**, come chiedeva il criterio: la sezione
-   Navigation intera, la riga sul gap della strip, la responsive della Release, una riga nuova nella
-   checklist (`Don't hide a destination behind something that has to be opened`) e la **No Dead End
-   Rule**, che adesso chiede **un gesto visibile** e non più una o due azioni.
-5. ⚠️ **I quattro mock sono stati aggiornati**, `release.html` e `technology.html` compresi. La
-   regola di ottobre diceva di non toccare quei due, ma il motivo era il pannello, che il visitatore
-   non ha: qui cambia la barra **anche** per il visitatore. In tutti e quattro l'etichetta della nav
-   è adesso `Sections`, come nel codice e nei test (nei due dietro l'accesso era `Main`).
-
-**I numeri**: **551 unitari** invariati (nessun modulo `domain` toccato), **176 E2E verdi**, cioè
-tutta la suite. `pnpm typecheck` e `pnpm lint` verdi. **Provato rimettendo il difetto**, con i nove
-file sorgente riportati a `HEAD`: **cadono tutti e 10** i test nuovi o riscritti, e solo quelli.
-⚠️ Un inciampo della misura, da non ripagare: `getByLabel("Followed technologies")` prende il **link**
-dentro la strip, centrato nei 40px, non il contenitore, quindi la sua `y` è 66 e non 56. Due box
-della strip si confrontano **per il centro verticale**, non per il bordo alto.
-
-### Cosa resta
-
-1. ⚠️ **La verifica dal telefono in produzione**, l'unica cosa aperta del giro del critique, ed è
-   dell'utente. Ora comprende anche la barra nuova: a 390px la strip porta sezioni e quota insieme.
-2. **La #120** (le icone delle Tecnologie) e le altre strade di "Le strade aperte", tutte in attesa
-   del via.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md e dimmi che strade sono aperte
-```
 **Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
 chiude. Sono nate il 2026-10-06, insieme allo stato del ritento dei transitori, che è stato spostato
 in `docs/handoff/2026-10.md`.
@@ -226,6 +308,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-08 (mezzogiorno): la barra ripensata, le due destinazioni su ogni pagina (#119, PR #127)
+  - ⚠️ Il breadcrumb ha traslocato nel contenuto, e l'header non ramifica mai sulla sessione
+  - ⚠️ Sotto 430px la strip va spezzata da un elemento `BREAK`, o torna la terza riga
 - Stato al 2026-10-08 (notte): la #124 unita, le scorciatoie e il glossario della Rilevanza
   - Il glossario della Rilevanza va sulla landing (#26), non nell'app: scelta fra tre strade
   - ⚠️ L'`h1` di `/technologies` è `sr-only` e non si può cliccare per spostare il fuoco

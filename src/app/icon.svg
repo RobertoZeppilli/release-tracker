@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Verdict">
+  <!-- DESIGN.md, Brand Mark: where a wordmark cannot be read the mark is the caret row, `^^^`, drawn
+       as a path and not as text, in `text` on a `ground` square with the 6px radius of the system.
+       Both inks are fixed here rather than following the theme: a browser tab is chrome we do not
+       own, and the square carries its own contrast on a light tab as on a dark one. -->
+  <rect width="32" height="32" rx="6" fill="#0f1115"/>
+  <path d="M5 20 8.5 15 12 20M12.5 20 16 15 19.5 20M20 20 23.5 15 27 20"
+        fill="none" stroke="#e7e9ec" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

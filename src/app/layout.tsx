@@ -18,7 +18,9 @@ const hankenGrotesk = Hanken_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
-  title: "release-tracker",
+  // `template` so every page reads `<page> · Verdict` and the landing, which has its own claim for
+  // a title, keeps it whole through `default`.
+  title: { default: "Verdict, understand before you upgrade", template: "%s · Verdict" },
   description: "Releases of the technologies you follow, summarized like compiler diagnostics.",
 };
 

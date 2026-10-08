@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-// The working name, in the Open Graph `site_name` and nowhere else yet: the product name is still
-// open (`docs/DECISIONI.md`) and the landing page decides it.
-const SITE_NAME = "release-tracker";
+// The product's name (docs/DECISIONI.md). Without the article and without the colon the Brand Mark
+// carries: `release-tracker` is only the name of the repository.
+const SITE_NAME = "Verdict";
 
 export type PageMeta = {
   title: string;

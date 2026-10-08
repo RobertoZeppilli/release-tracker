@@ -49,7 +49,7 @@ test("at 390px the slot is a strip under the bar, and the page never gets wider 
   await page.setViewportSize(PHONE);
   await page.goto(`/technologies/${technology.slug}/2.0.0`);
 
-  const wordmark = page.getByRole("link", { name: "release-tracker" });
+  const wordmark = page.getByRole("link", { name: "verdict:" });
   const sections = page.getByRole("navigation", { name: "Sections" });
   const mark = await wordmark.boundingBox();
   const strip = await sections.boundingBox();
@@ -72,7 +72,7 @@ test("above 640px the slot stays inside the bar", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`/technologies/${technology.slug}/2.0.0`);
 
-  const mark = await page.getByRole("link", { name: "release-tracker" }).boundingBox();
+  const mark = await page.getByRole("link", { name: "verdict:" }).boundingBox();
   const strip = await page.getByRole("navigation", { name: "Sections" }).boundingBox();
   expect(mark).not.toBeNull();
   expect(strip).not.toBeNull();
@@ -161,8 +161,8 @@ test("a signed-in page keeps its sections in the strip at 390px, and the panel h
   await expect(page.getByRole("link", { name: "dashboard" })).toHaveCount(1);
 });
 
-// The token specimen the home page still shows (#26 replaces it) had a header of its own with no
-// links at all: from there the app was unreachable.
+// The token specimen that used to stand in for the landing had a header of its own with no links
+// at all: from there the app was unreachable.
 test("the home page offers both sections, at 390px too", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto("/");
