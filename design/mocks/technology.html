@@ -51,6 +51,10 @@ svg.sig { width: 12px; height: 12px; flex: none; }
 .path { list-style: none; margin: 0; padding: 0; font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); }
 .path a { text-decoration: none; }
 .path a:hover, .path [aria-current] { color: var(--text); }
+.nav { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); }
+.nav a { text-decoration: none; }
+.nav a:hover, .nav [aria-current] { color: var(--text); }
+.crumb { margin: 0 0 var(--space-5); }
 .topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
 .btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
 .btn:hover { background: var(--raised); border-color: var(--text-faint); }
@@ -246,11 +250,11 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
 <header class="topbar">
   <div class="topbar-inner">
     <a class="wordmark" href="#">release-tracker</a>
-    <nav aria-label="Breadcrumb">
-      <ol class="path">
-        <li><a href="#">technologies</a></li><li aria-hidden="true">/</li>
-        <li><span aria-current="page">vite</span></li>
-      </ol>
+    <nav aria-label="Sections">
+      <ul class="nav">
+        <li><a href="dashboard.html">dashboard</a></li>
+        <li><a href="technologies.html">technologies</a></li>
+      </ul>
     </nav>
     <div class="topbar-actions">
       <button class="btn btn-icon" type="button" id="theme" aria-label="Switch to light theme">
@@ -262,6 +266,12 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
 </header>
 
 <main id="content" data-state="range">
+  <nav class="crumb" aria-label="Breadcrumb">
+    <ol class="path">
+      <li><a href="#">technologies</a></li><li aria-hidden="true">/</li>
+      <li><span aria-current="page">vite</span></li>
+    </ol>
+  </nav>
   <div class="tech-head">
     <h1>Vite</h1>
     <div class="tech-facts">

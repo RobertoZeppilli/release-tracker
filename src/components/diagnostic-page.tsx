@@ -20,7 +20,7 @@ export function DiagnosticPage({
 }) {
   return (
     <>
-      <SiteHeader nav />
+      <SiteHeader />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
         <h1 className="font-mono text-status">
           <span className={tone === "breaking" ? "text-breaking" : "text-text-muted"}>

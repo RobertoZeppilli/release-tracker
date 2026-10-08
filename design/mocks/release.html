@@ -74,6 +74,10 @@ svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; str
 .topbar-inner { height: 56px; display: flex; align-items: center; gap: var(--space-5); }
 .wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; }
 .path { list-style: none; margin: 0; padding: 0; font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.nav { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); }
+.nav a { text-decoration: none; }
+.nav a:hover, .nav [aria-current] { color: var(--text); }
+.crumb { margin: 0 0 var(--space-5); }
 .path a { text-decoration: none; }
 .path a:hover, .path [aria-current] { color: var(--text); }
 .topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
@@ -250,12 +254,11 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
 <header class="topbar">
   <div class="topbar-inner">
     <a class="wordmark" href="#">release-tracker</a>
-    <nav aria-label="Breadcrumb">
-      <ol class="path">
-        <li><a href="#">technologies</a></li><li aria-hidden="true">/</li>
-        <li><a href="#">vite</a></li><li aria-hidden="true">/</li>
-        <li><span aria-current="page">6.0.0</span></li>
-      </ol>
+    <nav aria-label="Sections">
+      <ul class="nav">
+        <li><a href="dashboard.html">dashboard</a></li>
+        <li><a href="technologies.html">technologies</a></li>
+      </ul>
     </nav>
     <div class="topbar-actions">
       <button class="btn btn-icon" type="button" id="theme" aria-label="Switch to light theme">
@@ -270,6 +273,13 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
 </header>
 
 <main id="content" data-state="ready-action">
+  <nav class="crumb" aria-label="Breadcrumb">
+    <ol class="path">
+      <li><a href="#">technologies</a></li><li aria-hidden="true">/</li>
+      <li><a href="#">vite</a></li><li aria-hidden="true">/</li>
+      <li><span aria-current="page">6.0.0</span></li>
+    </ol>
+  </nav>
   <div class="release-head">
     <h1>Vite <span class="mono">6.0.0</span></h1>
     <div class="facts">

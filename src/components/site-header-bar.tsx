@@ -11,13 +11,19 @@ import { ThemeToggle } from "./theme-toggle";
 
 const PANEL_ID = "account-panel";
 
-// The quota in the bar at 430px and up, in a strip of its own below it under that, where the three
-// items did not fit on one line. It carries the strip's rule with it, and it takes the whole width
-// so the row forms at 429px rather than wherever the wordmark happens to stop: the sections left the
-// strip for the account panel, and without the width the quota would sit in the bar wearing the
-// strip's height and rule. A quota only ever reaches a page behind sign-in.
+// The quota in the bar at 430px and up, at the right edge of the strip below it under that, where
+// the three items did not fit on one line. It carries the strip's rule with it and sits beside the
+// sections, which hold the left edge: a strip of its own would be the third row the two-row rule
+// forbids. A quota only ever reaches a page behind sign-in.
 const QUOTA =
-  "ml-auto flex h-[56px] items-center max-[429px]:order-3 max-[429px]:ml-0 max-[429px]:h-[40px] max-[429px]:w-full max-[429px]:border-t max-[429px]:border-rule";
+  "ml-auto flex h-[56px] items-center max-[429px]:order-4 max-[429px]:h-[40px] max-[429px]:border-t max-[429px]:border-rule";
+
+// The line break of the strip below 430px, so the row forms there rather than wherever the wordmark
+// and the quota happen to stop. The four items no longer fit on one line at that width and flex
+// would wrap on its own, but where it wrapped would depend on how wide the quota's number reads: a
+// zero-height full-width item puts the break between the actions and the strip at every width under
+// the step. Above it the slot carries `w-full` and forms the row by itself.
+const BREAK = "hidden max-[429px]:order-2 max-[429px]:block max-[429px]:w-full";
 
 // A line of the panel. On a phone it is a 44px row of the full-screen sheet, with a rule under it;
 // in the panel above 640px it is the compact 24px line the bar has room for.
@@ -35,11 +41,12 @@ function inside(panel: HTMLElement | null): HTMLElement[] {
   return items.filter((item) => item.getClientRects().length > 0);
 }
 
-// The account panel holds what belongs to the viewer rather than to the page: who is signed in, the
-// two destinations, and the way out. The destinations are in it because a public Technology or
-// Release page gives the bar's slot to the breadcrumb, and without them a signed-in reader has no
-// way back from there. The theme toggle stays in the bar: those pages are readable signed out, and a
-// visitor has no panel to find it in.
+// The account panel holds what belongs to the viewer rather than to the page: who is signed in and
+// the way out. It held the two destinations too, because a public Technology or Release page gave
+// the bar's slot to the breadcrumb; the breadcrumb now sits in the content, so the slot carries them
+// on every page, in the open, and a copy here would be a second `dashboard` link (issue #119). The
+// theme toggle stays in the bar: those pages are readable signed out, and a visitor has no panel to
+// find it in.
 export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?: ReactNode }) {
   const session = useSession();
   const [open, setOpen] = useState(false);
@@ -106,6 +113,7 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
         release-tracker
       </Link>
       {children}
+      <span aria-hidden className={BREAK} />
       {quota && <span className={QUOTA}>{quota}</span>}
       <div
         className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "max-[429px]:ml-auto" : "ml-auto"}`}
@@ -136,26 +144,24 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
         <ThemeToggle />
       </div>
       {open && session.state === "developer" && (
-        <AccountPanel ref={panel} developer={session} onLeave={() => setOpen(false)} onClose={close} onTab={keepTabInside} />
+        <AccountPanel ref={panel} developer={session} onClose={close} onTab={keepTabInside} />
       )}
     </div>
   );
 }
 
 // One element, two shapes. On a phone the account takes the whole screen, with its own row at the
-// top carrying who is signed in and the way out of it; above 640px the same list is the small panel
-// hanging from the bar. Two copies in the DOM would mean two `dashboard` links, so the breakpoint
-// does the work and the markup stays single.
+// top carrying who is signed in and the way out of it; above 640px the same lines are the small
+// panel hanging from the bar. Two copies in the DOM would mean two `sign out` buttons on the page,
+// so the breakpoint does the work and the markup stays single.
 function AccountPanel({
   ref,
   developer,
-  onLeave,
   onClose,
   onTab,
 }: {
   ref: React.Ref<HTMLDivElement>;
   developer: Developer;
-  onLeave: () => void;
   onClose: () => void;
   onTab: (event: React.KeyboardEvent) => void;
 }) {
@@ -185,12 +191,6 @@ function AccountPanel({
           {developer.handle}
         </p>
       )}
-      <Link href="/dashboard" className={ITEM} onClick={onLeave}>
-        dashboard
-      </Link>
-      <Link href="/technologies" className={ITEM} onClick={onLeave}>
-        technologies
-      </Link>
       <form
         action="/auth/sign-out"
         method="post"

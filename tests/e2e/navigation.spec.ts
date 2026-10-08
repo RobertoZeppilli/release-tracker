@@ -3,7 +3,8 @@ import { e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDevel
 
 // The guard of issue #63: no page is a dead end. Below 640px the navigation used to be hidden, so a
 // phone reading a Release page had the wordmark and nothing else. The checks below walk the way out
-// at 390px, where the slot is a strip under the bar rather than a row inside it.
+// at 390px, where the slot is a strip under the bar rather than a row inside it. Since issue #119
+// the slot holds the two sections on every page and the breadcrumb sits in the content.
 
 const PHONE = { width: 390, height: 844 };
 
@@ -49,9 +50,9 @@ test("at 390px the slot is a strip under the bar, and the page never gets wider 
   await page.goto(`/technologies/${technology.slug}/2.0.0`);
 
   const wordmark = page.getByRole("link", { name: "release-tracker" });
-  const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+  const sections = page.getByRole("navigation", { name: "Sections" });
   const mark = await wordmark.boundingBox();
-  const strip = await breadcrumb.boundingBox();
+  const strip = await sections.boundingBox();
   expect(mark).not.toBeNull();
   expect(strip).not.toBeNull();
   if (!mark || !strip) return;
@@ -72,12 +73,30 @@ test("above 640px the slot stays inside the bar", async ({ page }) => {
   await page.goto(`/technologies/${technology.slug}/2.0.0`);
 
   const mark = await page.getByRole("link", { name: "release-tracker" }).boundingBox();
-  const strip = await page.getByRole("navigation", { name: "Breadcrumb" }).boundingBox();
+  const strip = await page.getByRole("navigation", { name: "Sections" }).boundingBox();
   expect(mark).not.toBeNull();
   expect(strip).not.toBeNull();
   if (!mark || !strip) return;
-  expect(strip.x, "the breadcrumb sits to the right of the wordmark").toBeGreaterThan(mark.x + mark.width - 1);
+  expect(strip.x, "the sections sit to the right of the wordmark").toBeGreaterThan(mark.x + mark.width - 1);
   expect(strip.y, "on one row with the wordmark").toBeLessThan(mark.y + mark.height);
+});
+
+// Where the page sits left the bar for the content, so the two things that used to fight over one
+// slot are both visible at once: the sections in the bar, the breadcrumb under it (issue #119).
+test("the breadcrumb is in the content, below the header, on a Release page", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`/technologies/${technology.slug}/2.0.0`);
+
+  const header = await page.locator("header").boundingBox();
+  const crumb = await page.getByRole("navigation", { name: "Breadcrumb" }).boundingBox();
+  const heading = await page.getByRole("heading", { level: 1 }).boundingBox();
+  expect(header).not.toBeNull();
+  expect(crumb).not.toBeNull();
+  expect(heading).not.toBeNull();
+  if (!header || !crumb || !heading) return;
+
+  expect(crumb.y, "the breadcrumb starts below the header").toBeGreaterThanOrEqual(header.y + header.height);
+  expect(crumb.y, "and above the page title").toBeLessThan(heading.y);
 });
 
 // The one surface on the page that floats, and it was the one missing the only vertical edge the page
@@ -117,7 +136,7 @@ test("the account takes the whole screen at 390px, and gives it back", async ({ 
   expect(box?.height).toBe(PHONE.height);
   // The page behind it must not scroll under the sheet.
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe("hidden");
-  // The way out sits at the bottom edge, away from the two destinations and under the thumb.
+  // The way out sits at the bottom edge, under the thumb.
   const out = await page.getByRole("button", { name: "sign out" }).boundingBox();
   expect(out?.y).toBeGreaterThan(PHONE.height / 2);
 
@@ -127,16 +146,19 @@ test("the account takes the whole screen at 390px, and gives it back", async ({ 
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe("hidden");
 });
 
-// Behind sign-in the two destinations live in the account panel on a phone, so the bar keeps one
-// row: the strip was a second copy of what the panel already carries from every page.
-test("a signed-in page gives its sections to the account panel at 390px", async ({ page }) => {
+// The sections are in the strip on every page now, the ones behind sign-in included, and the panel
+// no longer carries a copy: two copies would be two `dashboard` links on the same page (issue #119).
+test("a signed-in page keeps its sections in the strip at 390px, and the panel holds none", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await signIn(page);
   await page.goto("/dashboard");
 
-  await expect(page.getByRole("navigation", { name: "Sections" })).toBeHidden();
+  const sections = page.getByRole("navigation", { name: "Sections" });
+  await expect(sections.getByRole("link", { name: "technologies" })).toBeVisible();
+
   await page.getByRole("button", { name: /^Account/ }).click();
-  await expect(page.getByRole("link", { name: "technologies", exact: true })).toBeVisible();
+  await expect(page.locator("#account-panel").getByRole("link", { name: "dashboard" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "dashboard" })).toHaveCount(1);
 });
 
 // The token specimen the home page still shows (#26 replaces it) had a header of its own with no
@@ -155,7 +177,8 @@ test("the home page offers both sections, at 390px too", async ({ page }) => {
 // keyboard what it opened. It used to focus its first `a, button`, which is the sheet's
 // `Close account`: at this width that row is `display: none`, `.focus()` on it does nothing, and the
 // focus stayed on the trigger with the next Tab landing on the theme toggle, which sits in the bar
-// and is not part of the panel.
+// and is not part of the panel. Since issue #119 the first visible line is `sign out`, the only one
+// the panel still has.
 test("the account panel hands the keyboard its first visible line, above 640px", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await signIn(page);
@@ -169,13 +192,6 @@ test("the account panel hands the keyboard its first visible line, above 640px",
   await expect(panel).toBeVisible();
   // The close button of the phone sheet is in the DOM and must not be what the focus goes to.
   await expect(page.getByRole("button", { name: "Close account" })).toBeHidden();
-  const dashboard = panel.getByRole("link", { name: "dashboard" });
-  await expect(dashboard).toBeFocused();
-
-  // From there the walk is the panel's own lines, in the order they are read.
-  await page.keyboard.press("Tab");
-  await expect(panel.getByRole("link", { name: "technologies" })).toBeFocused();
-  await page.keyboard.press("Tab");
   await expect(panel.getByRole("button", { name: "sign out" })).toBeFocused();
 
   await page.keyboard.press("Escape");

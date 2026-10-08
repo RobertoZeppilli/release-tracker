@@ -18,7 +18,7 @@ export default async function TechnologiesPage() {
 
   return (
     <FollowsProvider developerId={developer.id} follows={follows}>
-      <SiteHeader nav="technologies" quota={<FollowQuota />} />
+      <SiteHeader section="technologies" quota={<FollowQuota />} />
       <main id="content" className="mx-auto max-w-content px-4 pt-6 pb-8 sm:px-5">
         <h1 className="sr-only">Technologies</h1>
         <TechnologyPicker sections={sections} />

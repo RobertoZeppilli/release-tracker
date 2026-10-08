@@ -32,7 +32,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <FollowsProvider developerId={developer.id} follows={follows}>
-      <SiteHeader nav="dashboard" quota={<FollowQuota />} />
+      <SiteHeader section="dashboard" quota={<FollowQuota />} />
       <main id="content" className="mx-auto max-w-content px-4 pt-6 pb-8 sm:px-5">
         <h1 className="sr-only">Dashboard</h1>
         {followed.length === 0 ? <EmptyState db={db} /> : <FollowedStack dashboard={dashboard} openWeeks={openWeeks} />}

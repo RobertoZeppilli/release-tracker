@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
-import { SiteHeader, TECHNOLOGIES_CRUMB } from "@/components/site-header";
+import { PageBreadcrumb, TECHNOLOGIES_CRUMB } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
 import { createPublicClient } from "@/lib/supabase";
 import { technologyMeta } from "@/modules/catalog";
@@ -52,8 +53,9 @@ export default async function TechnologyPage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader path={[TECHNOLOGIES_CRUMB, technology.slug]} />
+      <SiteHeader />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
+        <PageBreadcrumb path={[TECHNOLOGIES_CRUMB, technology.slug]} />
         {/* One scope for the whole page: the Follow in the header and the Upgrade Path below it read
             the same follows, so a declared Version in use can start the path. */}
         <TechnologyScope technologyId={technology.id}>

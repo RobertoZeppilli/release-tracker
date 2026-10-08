@@ -62,7 +62,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function TokensPage() {
   return (
     <>
-      <SiteHeader nav />
+      <SiteHeader />
       <main id="content" className="mx-auto flex max-w-content flex-col gap-7 px-4 py-6 sm:px-5">
         <h1 className="font-mono text-status text-text-muted">note: design tokens</h1>
 
