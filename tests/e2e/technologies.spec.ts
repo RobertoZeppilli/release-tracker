@@ -68,7 +68,7 @@ test.beforeEach(async ({ page }) => {
 
 test("a Developer follows a Technology, and the follow is still there after a reload", async ({ page }) => {
   await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(/^you follow 0 of \d+ technologies$/);
+  await expect(followed(page)).toHaveText(/^you follow 0 of your \d+ free follows$/);
   await expect(
     section(page, "catalog").getByRole("link", { name: technology.name, exact: true }),
   ).toHaveAttribute("href", `/technologies/${technology.slug}`);
@@ -77,35 +77,35 @@ test("a Developer follows a Technology, and the follow is still there after a re
   // The row answers at once, and it has already moved: the section that holds it is the one it
   // belongs to, without a reload (issue #64).
   await expect(toggle(page, "Unfollow")).toHaveAttribute("aria-pressed", "true");
-  await expect(followed(page)).toHaveText(/^you follow 1 of \d+ technologies$/);
+  await expect(followed(page)).toHaveText(/^you follow 1 of your \d+ free follows$/);
   await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
   await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
 
   // The reload reads the database, which the press has not reached yet.
   await followWritten(toggle(page, "Unfollow"));
   await page.reload();
-  await expect(followed(page)).toHaveText(/^you follow 1 of \d+ technologies$/);
+  await expect(followed(page)).toHaveText(/^you follow 1 of your \d+ free follows$/);
   await expect(section(page, "following").getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
 });
 
 test("a Developer unfollows a Technology and it stays unfollowed after a reload", async ({ page }) => {
   await page.goto("/technologies");
   await toggle(page, "Follow").click();
-  await expect(followed(page)).toHaveText(/^you follow 1 of \d+ technologies$/);
+  await expect(followed(page)).toHaveText(/^you follow 1 of your \d+ free follows$/);
   // The Toggle refuses a second press while the first is in flight, so the unfollow below waits for
   // the follow to be written, and the reload after it waits for the unfollow.
   await followWritten(toggle(page, "Unfollow"));
 
   await toggle(page, "Unfollow").click();
   await expect(toggle(page, "Follow")).toHaveAttribute("aria-pressed", "false");
-  await expect(followed(page)).toHaveText(/^you follow 0 of \d+ technologies$/);
+  await expect(followed(page)).toHaveText(/^you follow 0 of your \d+ free follows$/);
   // The trip the other way: back in the Catalog, and out of `following`, on the same press.
   await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
   await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
 
   await followWritten(toggle(page, "Follow"));
   await page.reload();
-  await expect(followed(page)).toHaveText(/^you follow 0 of \d+ technologies$/);
+  await expect(followed(page)).toHaveText(/^you follow 0 of your \d+ free follows$/);
   await expect(toggle(page, "Follow")).toBeVisible();
 });
 
@@ -209,7 +209,7 @@ test("the filter narrows the rows, counts the matches and says when nothing matc
 test("at ten of ten the other toggles are blocked, still reachable, and say why", async ({ page }) => {
   await addFollows(developer.id, fillers.ids);
   await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT} of ${FREE_LIMIT} technologies`);
+  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT} of your ${FREE_LIMIT} free follows`);
 
   const note = page.locator("#limit-note");
   await expect(note).toBeVisible();
@@ -226,11 +226,11 @@ test("at ten of ten the other toggles are blocked, still reachable, and say why"
   // `force` because Playwright refuses to click an `aria-disabled` button, which is the point.
   await blocked.click({ force: true });
   await expect(blocked).toHaveAttribute("aria-pressed", "false");
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT} of ${FREE_LIMIT} technologies`);
+  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT} of your ${FREE_LIMIT} free follows`);
 
   // Room again: the note goes with the block.
   await section(page, "following").getByRole("button", { name: /^Unfollow / }).first().click();
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of ${FREE_LIMIT} technologies`);
+  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of your ${FREE_LIMIT} free follows`);
   await expect(note).toBeHidden();
   await expect(blocked).not.toHaveAttribute("aria-disabled", "true");
 });
@@ -238,7 +238,7 @@ test("at ten of ten the other toggles are blocked, still reachable, and say why"
 test("a follow the database refuses puts the row back and says what to do", async ({ page }) => {
   await addFollows(developer.id, fillers.ids.slice(0, FREE_LIMIT - 1));
   await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of ${FREE_LIMIT} technologies`);
+  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of your ${FREE_LIMIT} free follows`);
 
   // The tenth arrives from another session, so this page still believes there is room.
   await addFollows(developer.id, fillers.ids.slice(FREE_LIMIT - 1));
@@ -253,7 +253,7 @@ test("a follow the database refuses puts the row back and says what to do", asyn
   const back = toggle(page, "Follow");
   await expect(back).toHaveAttribute("aria-pressed", "false");
   await expect(back).toHaveAttribute("aria-describedby", new RegExp(`err-${technology.slug}`));
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of ${FREE_LIMIT} technologies`);
+  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of your ${FREE_LIMIT} free follows`);
 });
 
 test("a retired Technology can only be unfollowed, and the row says so", async ({ page }) => {
@@ -269,7 +269,7 @@ test("a retired Technology can only be unfollowed, and the row says so", async (
   await row.getByRole("button", { name: `Unfollow ${leaving.name}` }).click();
   await expect(row).toContainText("can't be followed again");
   await expect(row.getByRole("button")).toHaveCount(0);
-  await expect(followed(page)).toHaveText(`you follow 0 of ${FREE_LIMIT} technologies`);
+  await expect(followed(page)).toHaveText(`you follow 0 of your ${FREE_LIMIT} free follows`);
 
   // And it is gone on the next visit, because nobody follows it any more.
   await page.reload();
