@@ -15,8 +15,74 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
+**Da dove ripartire (2026-10-08, pomeriggio).** La **#120 è chiusa**: **PR #128 unita** in
+`bdc712a`, e la issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso.** I rami sono
+stati **cancellati tutti**, locali e remoti: restano `main` e nient'altro (erano 17 locali e 38
+remoti). ⚠️ **La cancellazione resta dell'utente**: la modalità auto la nega all'agente
+(`Irreversible Local Destruction`) **anche quando l'utente la chiede a parole** dentro la sessione.
+Quello che l'agente può fare è preparare la lista verificata e passargli i due comandi.
 
-**Da dove ripartire (2026-10-08, mezzogiorno).** La **#119 è chiusa**: **PR #127 unita** in
+**Cos'è cambiato**: le Tecnologie hanno un **Marchio**, e la issue chiedeva prima di tutto una
+risposta di prodotto.
+
+1. **La risposta è sì, ma solo dove il soggetto è la Tecnologia**: 16px nella riga del Catalogo
+   (quindi anche nel picker della Dashboard vuota, che è lo stesso componente) e 24px accanto al
+   titolo della pagina Technology. **Niente sulle righe di Release**, dove un glifo monocromatico
+   vuol già dire Rilevanza. ⚠️ **Scelta dell'utente fra quattro strade**: aveva chiesto anche la
+   riga della Dashboard, poi l'ha lasciata fuori.
+2. ⚠️ **Il nome resta sempre scritto, ed è un rifiuto motivato.** L'utente ha proposto di mostrare
+   **solo l'icona** dove c'è e il nome solo dove manca. Rifiutato per iscritto e per tre ragioni, la
+   prima delle quali non è di gusto: il link e il Toggle annunciano "React" mentre a schermo non
+   c'è nessuna parola "React", e questo **fallisce WCAG 2.5.3 Label in Name**, che il progetto
+   dichiara; il filtro cerca per nome, quindi mostrerebbe righe senza la stringa digitata; e una
+   lista mista (34 glifi e 3 parole nella stessa colonna) si scorre più piano di una omogenea.
+   L'utente ha accettato la strada consigliata.
+3. **La provenienza è `pnpm icons:sync`** (`scripts/sync-technology-marks.mts`): legge
+   `simple-icons`, **devDependency**, e genera due file, `src/modules/catalog/ui/technology-marks.ts`
+   per l'app e `design/mocks/technology-marks.js` per i mock, che sono chiavati **per nome** perché i
+   mock costruiscono le righe dai nomi. Una sola fonte, così un mock non può divergere. Le eccezioni
+   di slug stanno nello script: `next`→`nextdotjs`, `nodejs`→`nodedotjs`, `vue`→`vuedotjs`,
+   `drizzle-orm`→`drizzle`, `redux-toolkit`→`redux`.
+4. **34 Marchi su 37.** Playwright e Zustand non ce l'hanno in simple-icons; ⚠️ **SvelteKit è senza
+   di proposito**, perché l'unico che esiste per lei è quello di Svelte, e due righe della stessa
+   lista con la stessa forma togliono proprio quello che il Marchio doveva dare. Le tre righe tengono
+   il box **vuoto**: ogni nome parte dalla stessa x e nessuna riga cambia altezza.
+5. **`DESIGN.md` scritto prima del codice**, come chiedeva il criterio: la sezione **Technology
+   Mark**, la colonna del nome in Layout (`calc(16ch + 24px)`), le due descrizioni dei componenti e
+   una riga per ciascuna lista Do / Don't. `docs/DECISIONI.md` registra la licenza **CC0** e che i
+   **marchi restano dei loro proprietari**, con uso nominativo e descrittivo.
+
+**I numeri**: **554 unitari** (3 nuovi, sui dati generati: copertura del Catalogo, nessun path
+orfano, e un path che contiene **solo geometria** e niente da scaricare), **180 E2E verdi**, cioè
+tutta la suite. `pnpm typecheck` e `pnpm lint` verdi. **CI e `Deploy database` verdi su `main`**
+(nessuna migrazione). **Peso misurato su due build vere**, come chiedeva il criterio: **+39,4 KB raw
+e +18,3 KB gzip** sui chunk client (1.391.332 → 1.430.738 e 390.506 → 408.853). Sta in un chunk
+cacheato, e la pagina Technology non paga niente lato client, perché lì il Marchio è reso dal server.
+⚠️ **Next 16 non stampa più il First Load JS** nella tabella del build: il peso si misura sommando
+`.next/static/chunks/**/*.js`, gzip compreso, su due build.
+
+**Provato rimettendo il difetto**, coi due file sorgente riportati a `HEAD`: **cadono tutti e 4** i
+test nuovi. ⚠️ Due inciampi della misura, da non ripagare: il quarto test, al primo giro, **passava
+anche senza il Marchio** (due righe hanno la stessa altezza comunque), e va riscritto finché non
+distingue il difetto, confrontando il Marchio col **centro verticale** del nome; e `.locator("svg")`
+dentro una riga del picker prende **anche i due svg del Toggle**, quindi il Marchio è
+`.locator("svg").first()`.
+
+### Cosa resta
+
+1. ⚠️ **La verifica dal telefono in produzione**, l'unica cosa aperta del giro del critique, ed è
+   dell'utente. Ora comprende anche il Marchio nella riga a 390px.
+2. Nel mock della Dashboard c'è una riga **`Python`, che non è nel Catalogo**: discrepanza
+   preesistente, non toccata. Ora mostra lo spazio vuoto, e illustra bene la regola.
+3. Le strade di "Le strade aperte", tutte in attesa del via dell'utente.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md e dimmi che strade sono aperte
+```
+
+**Lo stato precedente (2026-10-08, mezzogiorno).** La **#119 è chiusa**: **PR #127 unita** in
 `a85d6053`, con `CI` e `Deploy database` **verdi** su `main` (nessuna migrazione da applicare). Unita
 anche la **PR #125**, quindi da quel giro non resta niente e **non c'è niente in sospeso**.
 ⚠️ **Il merge e la cancellazione dei rami sono dell'utente**: la modalità auto li nega entrambi
@@ -70,54 +136,6 @@ Il primo comando della sessione nuova:
 ```
 leggi docs/HANDOFF.md e dimmi che strade sono aperte
 ```
-
-**Lo stato precedente (2026-10-08, notte).** La **PR #124 è unita** (il critique chiuso come lista di
-difetti). Il ramo nuovo è `accelerators-and-glossary`, **non unito** al momento della scrittura. Qui
-si sono affrontati **i due assi più bassi del critique**, quelli che non erano mai diventati rilievi:
-"Aiuto e documentazione" (1 su 5) e "Flessibilità ed efficienza" (2 su 5).
-
-1. **Il glossario della Rilevanza va sulla landing (#26), non nell'app.** `featured` · `notable` ·
-   `digest` · `preview` si vedono in tutta l'interfaccia e non sono definiti a parole da nessuna
-   parte. ⚠️ **Scelta dell'utente fra tre strade**, scritta in `docs/DECISIONI.md`: le altre due
-   erano un blocco con ancora `#significance` su `/technologies` e una definizione dentro ogni
-   intestazione di sezione. Dentro l'app la parola resta accoppiata al **glifo**, che è il minimo di
-   WCAG, e non alla definizione. **Nessun codice**: il vocabolario è adesso un **criterio di
-   accettazione della #26**, aggiunto al corpo della issue con un commento che ne porta la
-   provenienza. ⚠️ Finché la #26 non è fatta, un visitatore non loggato non ha nessun posto dove
-   leggere quelle quattro parole, e le incontra già sulle pagine pubbliche.
-2. **`/` mette a fuoco il filtro di `/technologies`**, e seleziona quello che c'è già, così il tasto
-   dopo sostituisce. ⚠️ **È l'unico tasto che l'app si prende**, e solo mentre nessun altro ascolta:
-   dentro un campo, o con un modificatore premuto, resta di chi ha il fuoco. Annunciata due volte,
-   perché una non bastava: `aria-keyshortcuts="/"` sul campo e `press / to filter` in Meta faint
-   accanto al conteggio, che **sparisce a 640px e sotto**, dove la tastiera di cui parla di solito
-   non c'è. Regola scritta in `DESIGN.md` (Follow Status and Filter) e nel mock.
-3. **Il follow multiplo è la #126**, `ready-for-human`, aperta il 2026-10-08: vuole un modello di
-   selezione, una scrittura in blocco, il limite Free applicato **al gruppo** e una cache ottimistica
-   di gruppo. È una fetta, e la issue porta gli otto criteri.
-4. **Le sezioni richiudibili della Dashboard sono rifiutate per iscritto**: vogliono uno stato per
-   lettore che non esiste, e il Count Box già porta a ogni sezione con un ancoraggio. Aggiungere
-   stato senza togliere niente.
-
-**I numeri**: **551 unitari** invariati (la scorciatoia è resa, non una funzione pura),
-`technologies.spec.ts` **13 su 13** col test nuovo, **provato rimettendo il difetto**: senza il
-listener cade. ⚠️ Due inciampi del test, da non ripagare: l'`h1` di `/technologies` è `sr-only` e
-**non si può cliccare** per spostare il fuoco (serve un bersaglio statico visibile: la regione
-`Follow status`), e `event.target as HTMLElement` **non passa il lint** del progetto, va ristretto
-con `instanceof`.
-
-### Cosa resta
-
-1. ⚠️ **La verifica dal telefono in produzione**, l'unica cosa aperta del giro del critique, ed è
-   dell'utente. Ora comprende anche la riga della quota a 390px; la scorciatoia `/` no, perché il suo
-   suggerimento sparisce proprio lì.
-2. Le strade di "Le strade aperte" qui sotto, **#119** e **#120** comprese, tutte in attesa del via.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
-```
-
 **Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
 chiude. Sono nate il 2026-10-06, insieme allo stato del ritento dei transitori, che è stato spostato
 in `docs/handoff/2026-10.md`.
@@ -204,6 +222,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-08 (notte): la #124 unita, le scorciatoie e il glossario della Rilevanza
+  - Il glossario della Rilevanza va sulla landing (#26), non nell'app: scelta fra tre strade
+  - ⚠️ L'`h1` di `/technologies` è `sr-only` e non si può cliccare per spostare il fuoco
+  - ⚠️ `event.target as HTMLElement` non passa il lint: va ristretto con `instanceof`
 - Stato al 2026-10-08 (sera): il critique chiuso, la quota che nomina il Piano
   - ⚠️ `slots` del critique non è stata usata: in `DESIGN.md` lo slot ha già due significati
   - La riga `needs action` è allineata, e ha vinto il codice
@@ -382,8 +404,8 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   del PRD.
   Aperte il 2026-10-07: **#113** (riordinare le due zone sopra le Release, `ready-for-human`: la
   zona 2 è fatta con la PR #121, la zona 1 ha la direzione nuova in un commento), **#119** (ripensare
-  la barra) e **#120** (le icone delle Tecnologie), le ultime due `ready-for-human` e in attesa del
-  via dell'utente.
+  la barra) e **#120** (le icone delle Tecnologie). Le ultime due sono **chiuse** il 2026-10-08, con
+  la PR #127 e la PR #128; resta aperta la #113.
   Aperta il 2026-10-05: **#94** (il verdetto della Dashboard si contraddice, `ready-for-human`).
   Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
   Aperta dall'utente il 2026-10-04: **#88** (una Sintesi `ready` senza provenienza non viene
