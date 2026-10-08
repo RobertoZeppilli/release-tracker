@@ -51,11 +51,21 @@ grounded only in the release notes.
 - Summary states: pending, processing, ready, unavailable, skipped, failed.
 - Retired Technologies stay readable.
 - Sign-in: GitHub only. UI and Summaries in English.
-- Undecided: product name (`release-tracker` is provisional).
+- Product name: **Verdict** (decided 2026-10-08). `release-tracker` is only the repository name.
 
 ## Brand Commitments
 
-None yet. No name, logo, palette or voice has been established.
+- **Name: Verdict.** Capitalised, never translated, never preceded by an article. The product's one
+  job is to deliver a verdict on a Release, and the name says that job. Rationale and the rejected
+  alternative are in `docs/DECISIONI.md`.
+- **Wordmark: `verdict:`** set lowercase in Fragment Mono, colon included. The colon is the
+  product's own grammar (`ok:`, `warning:`, `breaking[n]:`), and the space after it is where the
+  answer goes.
+- **No brand colour.** Hue means severity and nothing else (`DESIGN.md`, Severity-Only Colour Rule),
+  so the mark is drawn in `text` on `ground` and never in a severity ink.
+- **Voice: diagnostic, not promotional.** The product states what changed and whether action is
+  required; it never reassures beyond the release notes.
+- Palette, type and every component live in `DESIGN.md` under "Compiler Diagnostic".
 
 ## Evidence on Hand
 

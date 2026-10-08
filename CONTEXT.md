@@ -1,7 +1,11 @@
-# Release tracker — dominio
+# Verdict — dominio
 
 Le parole con cui si parla del tracciamento delle release delle tecnologie che uno sviluppatore
 segue, e di come vengono smistate nella sua dashboard.
+
+**Verdict** è il nome del prodotto, deciso il 2026-10-08 (`docs/DECISIONI.md`, "Il nome: Verdict").
+Si scrive con la maiuscola, senza articolo e senza traduzione: "Verdict mostra", non "il Verdict".
+`release-tracker` resta soltanto il nome del repository e della cartella di lavoro.
 
 ## Release
 
@@ -126,6 +130,18 @@ Il peso di una **Release** per chi segue la **Tecnologia**: _In evidenza_, _Novi
 _Anteprima_ (beta e release candidate).
 Si ricava dalla **Versione** con la **Strategia di classificazione** della tecnologia e può
 essere corretta a mano.
+I quattro livelli, detti a parole, perché è così che la landing li definisce (issue #26) e perché
+dentro l'app la parola si vede sempre senza spiegazione:
+- _In evidenza_ (`featured`): la **Release** in cui la **Tecnologia** cambia direzione. Quale sia
+  lo dice la sua **Strategia di classificazione**: una major nuova dove vale SemVer, una x.y nuova
+  per chi pubblica le novità lì. Apre la **Dashboard** ed è la sola **Rilevanza** che entra nel
+  **Verdetto della Dashboard** oltre al **Cammino di upgrade**.
+- _Novità_ (`notable`): lavoro nuovo senza cambio di direzione, cioè una minor dove vale SemVer e
+  le major dispari di Node. Da leggere, raramente urgente.
+- _Digest_ (`digest`): quello che la regola tratta come ordinario, le patch in testa. Non
+  interrompe: si legge raggruppato per settimana ISO nel **Digest settimanale**.
+- _Anteprima_ (`preview`): una beta o una release candidate (vedi **Anteprima**). Solo la prima di
+  una nuova major riceve una **Sintesi**; canary, nightly e alpha non sono **Release**.
 _Evitare_: priorità, severità, tipo SemVer.
 
 **Note di rilascio**:
@@ -314,9 +330,14 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Sviluppatore | `Developer` | |
 | Visitatore | `Visitor` | |
 | Piano | `Plan` | `free` · `pro` · `team` |
+| Prodotto | `Verdict` | mai tradotto, mai con l'articolo |
 
 ## Ambiguità risolte
 
+- **Verdict** è il prodotto; il **Verdetto** è il giudizio su una **Release**, e in codice vive come
+  `pageVerdict`, `rowVerdict`, `DashboardVerdict` e `SummaryVerdictSchema`. La parola "Verdict" non
+  compare mai nell'interfaccia, dove il verdetto si legge come `ok:`, `warning:` o `note:`: solo il
+  marchio in testa alla pagina la scrive. Nessun identificatore nuovo prende il nome del prodotto.
 - "Novità" è il nome della sezione (`Latest`); il valore di **Rilevanza** che la alimenta è
   `notable`. Non usare `new` né come valore né come sezione.
 - "Utente" copriva sia lo **Sviluppatore** sia il **Visitatore**. In codice `user` indica solo
