@@ -54,8 +54,12 @@ risposta di prodotto.
 
 **I numeri**: **554 unitari** (3 nuovi, sui dati generati: copertura del Catalogo, nessun path
 orfano, e un path che contiene **solo geometria** e niente da scaricare), **180 E2E verdi**, cioè
-tutta la suite. `pnpm typecheck` e `pnpm lint` verdi. **CI e `Deploy database` verdi su `main`**
-(nessuna migrazione). **Peso misurato su due build vere**, come chiedeva il criterio: **+39,4 KB raw
+tutta la suite. `pnpm typecheck` e `pnpm lint` verdi. Su `main` il **`Deploy database` è verde** due
+volte (nessuna migrazione da applicare). ⚠️ **La `CI` del merge è stata annullata** dal push di
+questo documento, ed è la trappola già scritta qui sotto: un push su `main` annulla la CI in corso.
+Il giro che la sostituisce gira sullo stesso albero, **ma non era ancora chiuso** quando questa riga
+è stata scritta: **il primo controllo della sessione nuova è il suo esito** (`gh run list --branch
+main --limit 3`). La PR #128 era verde su tutto prima del merge, CodeRabbit compreso. **Peso misurato su due build vere**, come chiedeva il criterio: **+39,4 KB raw
 e +18,3 KB gzip** sui chunk client (1.391.332 → 1.430.738 e 390.506 → 408.853). Sta in un chunk
 cacheato, e la pagina Technology non paga niente lato client, perché lì il Marchio è reso dal server.
 ⚠️ **Next 16 non stampa più il First Load JS** nella tabella del build: il peso si misura sommando
@@ -79,7 +83,7 @@ dentro una riga del picker prende **anche i due svg del Toggle**, quindi il Marc
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md e dimmi che strade sono aperte
+leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
 ```
 
 **Lo stato precedente (2026-10-08, mezzogiorno).** La **#119 è chiusa**: **PR #127 unita** in
