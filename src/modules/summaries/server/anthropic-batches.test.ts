@@ -10,9 +10,11 @@ const request: SummaryRequest = { releaseId: "rel-1", model: "claude-opus-5", sy
 const answered = { type: "text", text: '{"title":"ok"}' };
 
 // A client that answers with the results it is given, so the adapter is the only thing under test.
+type SentRequests = Parameters<BatchesClient["create"]>[0]["requests"];
+
 function client(results: Individual[], status = "ended") {
-  const created: unknown[] = [];
-  const batches: BatchesClient & { created: unknown[] } = {
+  const created: SentRequests = [];
+  const batches: BatchesClient & { created: SentRequests } = {
     created,
     async create(body) {
       created.push(...body.requests);
@@ -61,6 +63,19 @@ describe("anthropicSummaryBatches", () => {
     ]);
   });
 
+  // Haiku 4.5 and the models before it wanted `thinking: { budget_tokens }` and refused `effort`;
+  // every model the app can use today is the other way round (#57), so the shape is pinned here.
+  it("configures the thinking with the effort, and never with a token budget", async () => {
+    const batches = client([]);
+    await anthropicSummaryBatches(batches).submit([{ ...request, model: "claude-haiku-5-5" }]);
+
+    const [sent] = batches.created;
+    expect(sent?.params.output_config).toMatchObject({ effort: "medium" });
+    expect(sent?.params.output_config).toHaveProperty("format");
+    expect(sent?.params).not.toHaveProperty("thinking");
+    expect(sent?.params).not.toHaveProperty("budget_tokens");
+  });
+
   it("turns a billing error on submit into CreditExhaustedError", async () => {
     const batches = client([]);
     batches.create = () => {
@@ -76,6 +91,14 @@ describe("anthropicSummaryBatches", () => {
 
   it("returns the text of a succeeded request", async () => {
     expect(await collectOne(answeredWith("end_turn"))).toEqual({ type: "succeeded", text: '{"title":"ok"}' });
+  });
+
+  it("carries the tokens the batch billed, when it reports them", async () => {
+    const message = { stop_reason: "end_turn", content: [answered], usage: { input_tokens: 12, output_tokens: 3 } };
+
+    expect(await collectOne(one({ type: "succeeded", message }))).toMatchObject({
+      usage: { inputTokens: 12, outputTokens: 3 },
+    });
   });
 
   it("reads a billing error inside the batch as an exhausted credit", async () => {

@@ -1,9 +1,16 @@
 # Set di valutazione delle Sintesi
 
-Serve a rispondere a una domanda sola: **questa versione del prompt produce Sintesi di cui ci si può
-fidare?** Si rilancia con `pnpm summary:eval` (`--dry` elenca i casi senza chiamare Anthropic né
-spendere), e ogni giro lascia un report in `reports/`, confrontabile con quelli delle versioni
-precedenti del prompt.
+Serve a rispondere a una domanda sola: **questa versione del prompt, su questo modello, produce
+Sintesi di cui ci si può fidare?** Si rilancia con `pnpm summary:eval` (`--dry` elenca i casi senza
+chiamare Anthropic né spendere), e ogni giro lascia un report in `reports/`, confrontabile con
+quelli dei giri precedenti.
+
+`--model <id>` lancia il set su un modello diverso da quello dell'app, che è il modo di confrontare
+due modelli sullo stesso prompt (#57). Il report porta prompt e modello nel nome, quindi i giri
+stanno uno accanto all'altro invece di sovrascriversi, e registra anche i **token fatturati**, così
+il costo si calcola sui numeri veri. **Toccare `SUMMARY_MODEL` senza aver lanciato il set è vietato**
+dall'ADR 0007: i due requisiti che il set misura, le citazioni verbatim e l'Intervento richiesto, non
+fanno fallire niente quando il modello li sbaglia.
 
 ## Com'è fatto
 
@@ -33,5 +40,6 @@ restano senza citazione.
 
 ## Costo
 
-Un giro sono 14 Release, ~114.000 caratteri di Note: qualche decina di centesimi con lo sconto della
-Batch API. **Non lanciarlo senza avvisare l'utente.**
+Un giro sono 14 Release, ~114.000 caratteri di Note, cioè attorno a 73.000 token in ingresso e
+24.000 in uscita. Con lo sconto della Batch API: **circa 1 centesimo su Haiku 5.5**, misurato il
+2026-10-08, e 49 centesimi se si rilancia su Opus 5. **Non lanciarlo senza avvisare l'utente.**

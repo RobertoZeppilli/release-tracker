@@ -1,8 +1,8 @@
 import type { SummaryRequest } from "./summary-batches";
 
-export const SUMMARY_MODEL = "claude-opus-5";
+export const SUMMARY_MODEL = "claude-haiku-5-5";
 // Bump on every change to the prompt text, so a stored Summary says which prompt produced it.
-export const PROMPT_VERSION = "v5";
+export const PROMPT_VERSION = "v6";
 
 // ADR 0007: notes are never truncated, so the limit is what the longest Release we accept costs,
 // not what the model can read. 150,000 characters are about 40k tokens and under 10 cents with the
@@ -19,11 +19,11 @@ Reply with a JSON object with these fields:
   included. Count them before answering and rewrite the sentence shorter if it is over; a longer title
   is thrown away with the whole summary.
 - "keyPoints": the notable changes, most important first. Hard limit: at least 3 items and at most 5.
-  Count them before answering; items beyond the fifth are thrown away. Each item has "text" (one short sentence) and may have "quote".
-- "breakingChanges": every change the notes state or clearly describe as breaking, removed or incompatible, so that users must change code, configuration or runtime to upgrade. Each item has "change" (what changes, one short sentence), "migration" (how to migrate, from the notes; if the notes give no migration, say what to check) and may have "quote".
+  Count them before answering; items beyond the fifth are thrown away. Each item has "text" (one short sentence) and a "quote" whenever one line of the notes states it.
+- "breakingChanges": every change the notes state or clearly describe as breaking, removed or incompatible, so that users must change code, configuration or runtime to upgrade. Each item has "change" (what changes, one short sentence), "migration" (how to migrate, from the notes; if the notes give no migration, say what to check) and a "quote" of the line that states the change.
 - "actionRequired": true exactly when "breakingChanges" is not empty.
 
-A "quote" is the stretch of the release notes the item comes from, copied character for character, on one or a few consecutive lines. Copy it exactly as it appears, including punctuation, capitalisation and backticks, and keep it short: the sentence or clause that states the change, not the whole section. Leave "quote" out when no single stretch of the notes states the item. Never adjust, shorten with an ellipsis or rewrite a quote to fit: a quote that does not appear verbatim in the notes is dropped.
+A "quote" is the stretch of the release notes the item comes from, copied character for character, on one or a few consecutive lines. Copy it exactly as it appears, including punctuation, capitalisation and backticks, and keep it short: the sentence or clause that states the change, not the whole section. Every item the notes state in one place must carry a "quote": the reader checks an item against the line it came from, and an item without one cannot be checked. Leave "quote" out only when the item has no single source, for instance when it gathers entries scattered through the notes. Before you answer, read your items again: for each one you left without a "quote", look once more for the line it came from and copy that line in. Never adjust, shorten with an ellipsis or rewrite a quote to fit: a quote that does not appear verbatim in the notes is dropped.
 
 Never infer a breaking change the notes do not mention, even if the version number suggests one. If the notes mention none, "breakingChanges" is empty and "actionRequired" is false.
 

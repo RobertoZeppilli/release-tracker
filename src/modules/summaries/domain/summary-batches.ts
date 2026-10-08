@@ -1,8 +1,13 @@
 // One Message Batches request per Release; `releaseId` is its custom id.
 export type SummaryRequest = { releaseId: string; model: string; system: string; prompt: string };
 
+// What the batch billed for one Release. Optional because only the real API reports it, and
+// nothing in the pipeline decides anything on it: it is there to price a model on measured tokens
+// instead of an estimate (#57).
+export type SummaryUsage = { inputTokens: number; outputTokens: number };
+
 export type SummaryResult =
-  | { type: "succeeded"; text: string }
+  | { type: "succeeded"; text: string; usage?: SummaryUsage }
   | { type: "errored" | "expired" | "canceled"; message: string }
   // The credit ran out while the batch was running: see CreditExhaustedError.
   | { type: "credit_exhausted"; message: string };

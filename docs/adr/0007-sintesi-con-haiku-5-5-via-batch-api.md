@@ -1,0 +1,82 @@
+# Sintesi con Claude Haiku 5.5 tramite Batch API
+
+Le Sintesi si generano con **Claude Haiku 5.5** attraverso la Message Batches API: il cron
+giornaliero prende in carico le Release in attesa e invia un unico batch, un'esecuzione successiva
+ne raccoglie i risultati e li valida con Zod. Il batch elimina il rischio di timeout sul piano
+Vercel Hobby, al prezzo di qualche ora di ritardo sulle Sintesi, irrilevante con un Rilevamento
+giornaliero.
+
+**Il modello è il più economico, non il più capace, e la ragione è misurata** (issue #57,
+2026-10-08). Fino a quel giorno si usava Claude Opus 5, motivato dal fatto che il modello più
+capace costava pochi dollari al mese. La motivazione cadeva su due lati: quello che la Sintesi fa
+davvero è leggere delle Note e riportarne i punti con le citazioni, cioè estrazione e non ricerca;
+e il set di valutazione (14 Release reali, le attese scritte a mano, `pnpm summary:eval`) dice che
+sulle due cose che contano Haiku 5.5 col prompt `v6` non perde niente:
+
+| | Opus 5, prompt v4 | Haiku 5.5, prompt v6 |
+|---|---|---|
+| Intervento richiesto azzeccato | 14 su 14 | 14 su 14 |
+| Breaking changes mancanti | 0 | 0 |
+| Breaking changes inattese | 3 | 0 |
+| Citazioni inventate | 0 | 0 |
+| Voci senza puntatore alle righe | 4 su 81 | 3 su 76 |
+| Costo del giro | $0,486 | $0,0097 |
+
+Il confronto **non è pulito e non va letto come "Haiku batte Opus"**: fra le due colonne sono
+cambiati sia il modello sia il prompt, e Opus col `v6` non è stato misurato, perché costa 50 volte
+tanto per rispondere a una domanda che non cambia la decisione. Quello che le due colonne dicono è
+l'unica cosa che serviva: il modello economico, col prompt di oggi, fa un lavoro almeno pari a
+quello che si pagava prima.
+
+**Le citazioni dipendono dal prompt, non solo dal modello.** Con il prompt `v5`, scritto per un
+modello che le dava comunque, Haiku lasciava **20 voci su 79 senza puntatore**, una su quattro: le
+Sintesi restavano giuste e diventavano poco verificabili. Il `v6` chiede la citazione per ogni voce
+che le Note enunciano in un punto solo, dice al modello perché (una voce senza puntatore non si può
+controllare) e aggiunge un passo di ricontrollo prima della risposta. Le 3 voci rimaste scoperte
+sono il pavimento della forma, non un difetto del modello: stanno su `vite 8.2.2` e
+`tailwindcss 4.2.4`, due Release le cui Note sono un rimando al changelog, mentre lo schema chiede
+comunque almeno 3 punti chiave.
+
+**Non si cerca lo zero**, ed è una scelta: `locateCitation` verifica che la citazione esista
+verbatim nelle Note, non che quella riga enunci la voce a cui è attaccata. Una citazione inventata
+viene scartata e si vede; una riga vera attaccata alla voce sbagliata passa e porta il lettore al
+posto sbagliato. Chiedere un puntatore anche dove non esiste trasformerebbe un'assenza visibile in
+un errore invisibile.
+
+## Consequences
+
+Un credito API esaurito non è un errore della Sintesi: le Release restano in attesa e la prima
+esecuzione dopo la ricarica le riprende. Avvisare l'amministratore è compito della Console di
+Anthropic, che manda le email di credito basso e può ricaricare da sola; un canale di avviso nostro
+costerebbe un modulo e un token per duplicare quella notifica.
+
+Note di rilascio oltre la soglia di sicurezza non si troncano: la Sintesi va in stato Fallita con il
+motivo. La soglia è di **150.000 caratteri** e misura quanto siamo disposti a spendere per una
+singola Sintesi, non quanto il modello riesce a leggere: sono circa 40k token, cioè meno di un
+centesimo con lo sconto batch, e la finestra di Haiku 5.5 è di 1M token. Sul Catalogo a 37
+Tecnologie il 99° percentile delle Note sta a 53.592 caratteri e la Release più lunga in assoluto a
+108.842, quindi la soglia lascia fuori solo ciò che sarebbe fuori scala. Una Release che la supera
+resta Fallita e la sua pagina lo dice mostrando le Note intere: meglio nessuna Sintesi che una
+fondata su un pezzo di Note, perché il pezzo non letto potrebbe contenere proprio il breaking
+change. La soglia ha adesso una seconda ragione: **Haiku 5.5 costa $0,10 per milione di token in
+ingresso fino a 100k token di prompt e cinque volte tanto oltre**, e 150.000 caratteri stanno
+comodamente sotto quel gradino, quindi nessuna Sintesi può finire nella fascia cara.
+
+**Un cambio di modello si misura prima, mai a occhio.** I due requisiti della Sintesi che nessuno
+schema sa imporre, le citazioni verbatim e l'Intervento richiesto vero esattamente quando ci sono
+breaking changes, non fanno fallire niente quando il modello li sbaglia: producono Sintesi povere di
+puntatori, o una Sintesi Fallita dopo averla pagata. Per questo il set di valutazione va lanciato
+prima di toccare `SUMMARY_MODEL`, e adesso non ci sono scuse: un giro costa un centesimo.
+`pnpm summary:eval --model <id>` lancia il set su un modello diverso da quello dell'app, e il report
+in `eval/summaries/reports/` porta il modello nel nome, così i giri si confrontano.
+
+**Le Sintesi scritte da Opus 5 restano leggibili per quello che sono**: `summaries.model` registra
+chi le ha scritte e `summaries.prompt_version` con quale prompt, quindi due generazioni convivono
+senza ambiguità nella pagina della Release.
+
+**Le 126 Sintesi dell'arretrato non si rigenerano qui**, ed è una scelta dell'utente del 2026-10-08:
+si rigenerano **una volta sola** dentro la #93, che cambia a sua volta il prompt. Rigenerarle due
+volte costerebbe il doppio senza che la prima volta serva a niente, perché le Sintesi di Opus non
+sono peggiori di quelle che la #57 produrrebbe: sono quelle che si leggono oggi. Fino a quel merge il
+Catalogo porta Sintesi `claude-opus-5` a prompt `v4`, e le Release nuove nascono `claude-haiku-5-5` a
+prompt `v6`.

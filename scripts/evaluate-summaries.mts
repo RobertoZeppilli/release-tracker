@@ -11,14 +11,21 @@ import {
   SUMMARY_MODEL,
   type SummaryContent,
   type SummaryEvaluation,
+  type SummaryUsage,
 } from "@/modules/summaries";
 import { createSummaryBatches } from "@/modules/summaries/server";
 
 // The evaluation set of issue #14: every case through the real Message Batches API in one batch,
 // compared against what a human said the Summary must say. Costs a few tens of cents a run.
 // `pnpm summary:eval` · `pnpm summary:eval --dry` prints the set without calling Anthropic.
+// `--model <id>` runs the set on another model than the one the app uses, which is how two
+// models are compared on the same prompt (#57): the report keeps the model in its name, so the
+// runs sit side by side in `reports/`.
 const SET_DIR = "eval/summaries";
 const dry = process.argv.includes("--dry");
+const modelArgument = process.argv[process.argv.indexOf("--model") + 1];
+const model = process.argv.includes("--model") ? (modelArgument ?? "") : SUMMARY_MODEL;
+if (!model.startsWith("claude-")) throw new Error(`--model wants a model id, got ${JSON.stringify(modelArgument)}`);
 
 const ExpectedBreakingChangeSchema = z.object({
   id: z.string(),
@@ -60,11 +67,11 @@ const requests = cases.map((item) => {
     notes: item.text,
   });
   if (!prepared.ok) throw new Error(`${item.slug} ${item.version}: ${prepared.reason}`);
-  return prepared.request;
+  return { ...prepared.request, model };
 });
 
 const characters = cases.reduce((total, item) => total + item.text.length, 0);
-console.log(`${cases.length} cases, ${characters} characters of notes, prompt ${PROMPT_VERSION}, model ${SUMMARY_MODEL}`);
+console.log(`${cases.length} cases, ${characters} characters of notes, prompt ${PROMPT_VERSION}, model ${model}`);
 if (dry) {
   for (const item of cases) console.log(`  ${item.slug} ${item.version}: ${item.text.length} characters — ${item.note}`);
   process.exit(0);
@@ -95,6 +102,8 @@ type CaseReport = {
   reason?: string;
   // The Summary itself: a report you cannot read the Summary back from only says how it scored.
   content?: SummaryContent;
+  // What the batch billed, so a model is priced on measured tokens and not on an estimate (#57).
+  usage?: SummaryUsage;
   evaluation?: SummaryEvaluation;
 };
 
@@ -104,12 +113,13 @@ const reports: CaseReport[] = cases.map((item) => {
   if (result === undefined) return { ...head, outcome: "no-output", reason: "missing from the batch" };
   if (result.type !== "succeeded") return { ...head, outcome: "no-output", reason: `${result.type}: ${result.message}` };
   const parsed = parseSummaryOutput(result.text);
-  if (!parsed.ok) return { ...head, outcome: "invalid-output", reason: parsed.reason };
+  if (!parsed.ok) return { ...head, outcome: "invalid-output", reason: parsed.reason, usage: result.usage };
   const expected: ExpectedSummary = item.expected;
   return {
     ...head,
     outcome: "evaluated",
     content: parsed.content,
+    usage: result.usage,
     evaluation: evaluateSummary({ expected, content: parsed.content, notes: item.text }),
   };
 });
@@ -125,10 +135,13 @@ const totals = {
   inventedQuotes: evaluated.flatMap((report) => report.evaluation?.inventedQuotes ?? []).length,
   quoted: evaluated.reduce((sum, report) => sum + (report.evaluation?.quoted ?? 0), 0),
   unquoted: evaluated.reduce((sum, report) => sum + (report.evaluation?.unquoted ?? 0), 0),
+  inputTokens: reports.reduce((sum, report) => sum + (report.usage?.inputTokens ?? 0), 0),
+  outputTokens: reports.reduce((sum, report) => sum + (report.usage?.outputTokens ?? 0), 0),
 };
 
-const report = { promptVersion: PROMPT_VERSION, model: SUMMARY_MODEL, batchId, startedAt, totals, cases: reports };
-const path = join(SET_DIR, "reports", `${PROMPT_VERSION}-${startedAt.toISOString().replaceAll(/[:.]/g, "-")}.json`);
+const report = { promptVersion: PROMPT_VERSION, model, batchId, startedAt, totals, cases: reports };
+const stamp = startedAt.toISOString().replaceAll(/[:.]/g, "-");
+const path = join(SET_DIR, "reports", `${PROMPT_VERSION}-${model}-${stamp}.json`);
 await mkdir(dirname(path), { recursive: true });
 await writeFile(path, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
