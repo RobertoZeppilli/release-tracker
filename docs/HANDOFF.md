@@ -16,7 +16,60 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 
 ## Stato
 
-**Da dove ripartire (2026-10-08, notte).** La **PR #124 è unita** (il critique chiuso come lista di
+**Da dove ripartire (2026-10-08, mezzogiorno).** La **#119 è fatta**, sul ramo `119-bar-rethink`,
+**da unire**: la PR non è ancora aperta al momento della scrittura. La **PR #125 risulta già unita**
+e la sua CI su `main` è **verde** (`check` e `integration`), quindi da quel giro non resta niente.
+⚠️ Il ramo `accelerators-and-glossary` è **ancora lì**, locale e remoto: la cancellazione è stata
+negata dalla modalità auto ed è rimasta all'utente.
+
+**Cos'è cambiato, ed è la strada 3 della issue** (ripensare la barra, non tappare il link): lo slot
+della barra non ha più due inquilini.
+
+1. **Le due destinazioni sono nello slot su ogni pagina**, pubbliche comprese, e `section` dice solo
+   quale è corrente. **Il breadcrumb ha traslocato nel contenuto**, sopra l'`h1`, a 24px
+   (`src/components/breadcrumb.tsx`, nuovo, con `PageBreadcrumb` e `TECHNOLOGIES_CRUMB`).
+   ⚠️ **Scelta mia, non della issue**: le due destinazioni si vedono **anche da un visitatore**, che
+   cliccando atterra sul login e viene riportato indietro. Era il secondo criterio di accettazione a
+   chiedere il contrario, e l'ho scostato perché `DESIGN.md` vieta già a questo header di ramificare
+   sulla sessione: arriva dopo il primo paint, e cambiare forma quando arriva rimonterebbe la
+   pagina. La stessa regola valeva già per il crumb `technologies`.
+2. **Il pannello dell'account ha perso le due destinazioni**: gli restano l'handle e `sign out`. Due
+   copie vorrebbero dire due link `dashboard` sulla stessa pagina, e i test se ne accorgono.
+3. ⚠️ **Il vincolo che la issue non elencava**: sotto 430px la strip era **tutta della quota**. Ora
+   la condividono, sezioni a sinistra e quota a destra, e il capo riga è forzato da un elemento
+   `BREAK` a larghezza piena e altezza zero in `site-header-bar.tsx`: senza, il punto in cui flex va
+   a capo dipende da quanto è larga la cifra della quota, e la terza riga torna. Misurato: l'header
+   resta **al massimo 97px** a 320, 375, 390, 414 e 429px.
+4. **`DESIGN.md` è stato riscritto prima del codice**, come chiedeva il criterio: la sezione
+   Navigation intera, la riga sul gap della strip, la responsive della Release, una riga nuova nella
+   checklist (`Don't hide a destination behind something that has to be opened`) e la **No Dead End
+   Rule**, che adesso chiede **un gesto visibile** e non più una o due azioni.
+5. ⚠️ **I quattro mock sono stati aggiornati**, `release.html` e `technology.html` compresi. La
+   regola di ottobre diceva di non toccare quei due, ma il motivo era il pannello, che il visitatore
+   non ha: qui cambia la barra **anche** per il visitatore. In tutti e quattro l'etichetta della nav
+   è adesso `Sections`, come nel codice e nei test (nei due dietro l'accesso era `Main`).
+
+**I numeri**: **551 unitari** invariati (nessun modulo `domain` toccato), **176 E2E verdi**, cioè
+tutta la suite. `pnpm typecheck` e `pnpm lint` verdi. **Provato rimettendo il difetto**, con i nove
+file sorgente riportati a `HEAD`: **cadono tutti e 10** i test nuovi o riscritti, e solo quelli.
+⚠️ Un inciampo della misura, da non ripagare: `getByLabel("Followed technologies")` prende il **link**
+dentro la strip, centrato nei 40px, non il contenitore, quindi la sua `y` è 66 e non 56. Due box
+della strip si confrontano **per il centro verticale**, non per il bordo alto.
+
+### Cosa resta
+
+1. ⚠️ **La verifica dal telefono in produzione**, l'unica cosa aperta del giro del critique, ed è
+   dell'utente. Ora comprende anche la barra nuova: a 390px la strip porta sezioni e quota insieme.
+2. **La #120** (le icone delle Tecnologie) e le altre strade di "Le strade aperte", tutte in attesa
+   del via.
+
+Il primo comando della sessione nuova:
+
+```
+leggi docs/HANDOFF.md e dimmi se la PR della #119 è passata
+```
+
+**Lo stato precedente (2026-10-08, notte).** La **PR #124 è unita** (il critique chiuso come lista di
 difetti). Il ramo nuovo è `accelerators-and-glossary`, **non unito** al momento della scrittura. Qui
 si sono affrontati **i due assi più bassi del critique**, quelli che non erano mai diventati rilievi:
 "Aiuto e documentazione" (1 su 5) e "Flessibilità ed efficienza" (2 su 5).
@@ -56,57 +109,6 @@ con `instanceof`.
    dell'utente. Ora comprende anche la riga della quota a 390px; la scorciatoia `/` no, perché il suo
    suggerimento sparisce proprio lì.
 2. Le strade di "Le strade aperte" qui sotto, **#119** e **#120** comprese, tutte in attesa del via.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
-```
-
-**Lo stato precedente (2026-10-08, sera).** **Il critique è chiuso.** Il ramo è
-`close-critique-tail`, **non unito e non spinto** al momento della scrittura: tre voci chiuse, una
-sola con codice. `pnpm typecheck`, `pnpm lint` e i **551 unitari** verdi; `technologies.spec.ts`
-**12 su 12**, e provato rimettendo il difetto (col codice vecchio cadono 5 test su 12).
-
-1. **La quota di `/technologies` nomina il Piano.** La riga Status adesso dice
-   `note: you follow 7 of your 10 free follows`, e **a 640px e sotto** `note: 7 of your 10`. Il
-   `your` è il segnale di quota e il motivo per cui la variante stretta tiene lui e lascia cadere il
-   resto: ⚠️ **a 390px la frase intera si spezza in due righe**, misurato, perché accanto a `note:`
-   ci sono circa 17ch. Il caso peggiore, `10 of your 10`, è misurato e sta su una riga.
-   **Il conteggio parlato (`sr-only`) resta la frase larga a ogni larghezza**: non ha una misura da
-   rispettare, quindi al lettore con screen reader la quota arriva per intero anche dal telefono.
-   La Dashboard vuota **non è stata toccata**, e ha ragione: il suo paragrafo dice già
-   `The Free plan follows up to 10` due righe sopra.
-   ⚠️ **`slots` del critique non è stata usata**: in `DESIGN.md` lo "slot" è già lo spazio della barra
-   in alto e quello del verdetto. Un secondo significato per la stessa parola costava più
-   dell'ambiguità che chiudeva.
-2. **La riga `needs action` è allineata, e ha vinto il codice.** `DESIGN.md` diceva
-   `warning: needs action`, il codice rende glifo ambra + `1 needs action`: resta il codice, perché
-   la riga dello Stat Row è fatta di conteggi e un `needs action` senza numero sarebbe l'unica parte
-   muta; inoltre è il **secondo** conteggio delle stesse Release, e un conteggio senza cifra non si
-   legge come tale. La parola `warning:` resta l'etichetta del verdetto. **Nessun codice e nessun
-   test toccati**, solo due righe di `DESIGN.md` (Stat Row e la sua legenda, che resta senza numero
-   perché spiega un riempimento).
-3. **L'errore React dello script del tema è chiuso come non-difetto**, scritto in
-   `docs/DECISIONI.md` (Architettura del codice) con la misura del 2026-10-08 e **le due strade già
-   pagate**: `next/script` `beforeInteractive` non mette lo script nella `head` dell'HTML servito, e
-   il tema da cookie butta l'ISR. Chi riprende non deve ripagare quella prova.
-
-### Cosa resta, e non è del critique
-
-1. ⚠️ **La verifica dal telefono in produzione**, che nessuna di queste sessioni sostituisce:
-   comprende il focus rosso, la corsia ambra, il pannello di upgrade, i cinque minori e ora la riga
-   della quota a 390px. È l'unica cosa aperta del giro del critique, ed è dell'utente.
-2. Restano aperte e **in attesa del via dell'utente** la **#119** (il link `dashboard` invisibile da
-   una pagina Technology) e la **#120** (le icone delle Tecnologie), più tutte le strade elencate in
-   "Le strade aperte" qui sotto.
-
-### Una cosa dell'ambiente, notata qui
-
-⚠️ **`docs/Cattura.JPG` risultava cancellato dal disco** a metà sessione, con `main` partito pulito e
-senza che nessun comando di questa sessione tocchi `docs/`. È stato **ripristinato** con
-`git checkout -- docs/Cattura.JPG` e non è entrato in nessun commit. Se ricompare, è qualcosa fuori
-dalla sessione a toccarlo.
 
 Il primo comando della sessione nuova:
 
@@ -200,6 +202,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-08 (sera): il critique chiuso, la quota che nomina il Piano
+  - ⚠️ `slots` del critique non è stata usata: in `DESIGN.md` lo slot ha già due significati
+  - La riga `needs action` è allineata, e ha vinto il codice
+  - L'errore React dello script del tema è chiuso come non-difetto, con le due strade già pagate
 - Stato al 2026-10-08 (mattina): i cinque minori del critique uniti (PR #123)
   - ⚠️ Il bordo del Follow era `DESIGN.md` ad averlo sbagliato, non il codice
   - ⚠️ `pnpm test:e2e -- --grep` ignora il filtro: il giro corto è `pnpm exec playwright test --grep`
