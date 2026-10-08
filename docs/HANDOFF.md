@@ -87,17 +87,38 @@ insieme al flaky di `keyboard.spec.ts:117` già annotato.
 Il rilievo 6 **non si chiude con questo merge**. Restano tre cose, tutte in attesa del via
 dell'utente:
 
-1. **Un errore React a ogni caricamento di pagina**, 22 occorrenze misurate, da `layout.tsx:32`: lo
-   script che scrive `data-theme` prima del primo paint. Il tema funziona e l'avviso è di sviluppo,
-   ma sporca la console a ogni navigazione e nasconde il prossimo avviso vero. ⚠️ **Non si risolve
-   togliendo lo script**: il commento sopra dice perché sta lì (un attributo che React non possiede
-   è uno che non può resettare), quindi cambia la forma, non il posto.
-2. **Due voci di copy**, che sono decisioni e non fix: il **Count Box** mescola due vocabolari
-   (`featured`, `notable`, `digest` sono parole di Significance, `previews` è il nome di una sezione)
-   e la proposta su `DESIGN.md` di `5 of your 10 slots` al posto di `you follow 5 of 10 technologies`,
-   dove sopra una pagina che dichiara 37 technologies il 10 non si legge come una quota.
+1. **L'errore React di `layout.tsx:32`**, lo script che scrive `data-theme` prima del primo paint.
+   ⚠️ **Il rilievo lo descrive male, misurato il 2026-10-08**: non sono 22 occorrenze a ogni
+   caricamento su tutte le rotte. La console è **pulita** su `/`, `/login`, `/technologies`,
+   `/technologies/vite` **e sulla 404**; l'avviso arriva **solo sulla pagina d'errore**, una volta
+   per caricamento e una per `Try again`, cioè dove un boundary rirende la radice sul client. È un
+   avviso di sviluppo e non si vede in produzione: **vale quanto costa chiuderlo, e per ora costa
+   più di quanto vale** (vedi il vicolo cieco qui sotto).
+2. **Una voce di copy**, e non due: la proposta su `DESIGN.md` di `5 of your 10 slots` al posto di
+   `you follow 5 of 10 technologies`, dove sopra una pagina che dichiara 37 technologies il 10 non
+   si legge come una quota. ⚠️ **Il Count Box non mescola due vocabolari**: `CONTEXT.md:295` elenca
+   la Rilevanza come `featured · notable · digest · preview`, e il Count Box usa tutte e quattro
+   quelle parole (`preview` al singolare, `previews` al plurale), con le sezioni solo negli
+   ancoraggi. Il rilievo è sbagliato e la voce è chiusa senza codice.
 3. ⚠️ **La verifica dal telefono** in produzione, che nessuno di questi giri sostituisce: comprende
    il focus rosso, la corsia ambra, il pannello di upgrade e adesso i cinque minori.
+
+### Il vicolo cieco dell'errore React, già pagato
+
+⚠️ **`next/script` con `strategy="beforeInteractive"` non è la soluzione, provato e misurato su un
+build di produzione vero** (`pnpm build` + `pnpm start`, non solo in sviluppo). La documentazione di
+Next dice che uno script `beforeInteractive` è *"always injected inside the `head`"*, e con uno
+script **inline nell'App Router di Next 16.3.5 non è vero**: finisce in `self.__next_s`, una coda che
+esegue il bootstrap client **dopo** l'HTML della pagina. Si riconosce guardando l'HTML servito:
+`curl -s localhost:3000/ | grep dataset.theme` lo trova **dopo** `</head>`.
+
+Il prezzo sarebbe scambiare un avviso di sola console in sviluppo con un **lampo scuro su un tema
+chiaro salvato** per ogni visitatore, cioè la cosa che il codice attuale esiste per evitare. Chi
+riprende il lavoro non deve rifare questa prova: serve una strada che tenga lo script nella `head`
+dell'HTML servito **senza** che React veda un elemento `<script>` nell'albero. La via del cookie
+(tema server-side, `data-theme` come prop) la chiuderebbe, ma leggere un cookie nella radice rende
+dinamico tutto il sito e **butta via l'ISR** (`revalidate = 3600`): è una decisione da ADR, non un
+fix da rilievo minore.
 
 Resta aperta anche la riga da allineare fra `DESIGN.md` e il codice sul conteggio dell'azione
 (`warning: needs action` contro `1 needs action`): un lavoro di una riga, e **da che parte allinearli
@@ -109,7 +130,7 @@ pagina Technology) e la **#120** (le icone delle Tecnologie), descritte nello st
 Il primo comando della sessione nuova:
 
 ```
-leggi docs/HANDOFF.md, controlla la CI su main e partiamo con l'errore React di layout.tsx
+leggi docs/HANDOFF.md, controlla la CI su main e dimmi cosa resta del critique
 ```
 
 **Lo stato precedente (2026-10-07, sera).** **La #113 è chiusa**: la **PR #122** (`9d278b9`, squash) è
