@@ -90,6 +90,7 @@ Release che contano.
 | URL canonico | Il percorso della rotta, senza query: `?from=` è una lettura della stessa pagina, non una pagina sua. |
 | Sitemap | Generata dal Catalogo e dalle Release, **Tecnologie ritirate comprese**, perché le loro pagine restano raggiungibili. Rigenerata con ISR e marcata stale insieme alle pagine da `revalidateReleasePages`. |
 | `robots.txt` | Esclude le pagine con login. `/technologies$` con l'ancora, altrimenti un prefisso nudo escluderebbe anche tutte le pagine delle Tecnologie sotto di lui. |
+| Icone delle Tecnologie (#120) | Un **Marchio** monocromatico di 16px accanto al nome nella riga del Catalogo e di 24px accanto al titolo della pagina Technology. I glifi arrivano da [simple-icons](https://github.com/simple-icons/simple-icons) (licenza **CC0**), sono copiati nel repository da `pnpm icons:sync` e serviti dall'app: **nessuna chiamata a un CDN dal client**. I **marchi restano dei loro proprietari** e l'uso qui è nominativo e descrittivo: identificano la Tecnologia di cui la riga parla, nella forma e non nel colore, senza suggerire nessun rapporto con noi. Fuori: i loghi a colori (vietati da `DESIGN.md`) e le righe di Release, dove un glifo vuol già dire Rilevanza. Una Tecnologia senza glifo lascia il suo spazio vuoto. |
 | Home `/` | `noindex` e fuori dalla sitemap **finché è il campionario dei token** (#2): un risultato di ricerca fatto di campioni di colore è peggio di nessun risultato. La landing (#26) la riporta dentro. |
 
 ## Piani e pagamenti
