@@ -11,6 +11,7 @@ export {
   type SummaryBatches,
   type SummaryRequest,
   type SummaryResult,
+  type SummaryUsage,
 } from "./domain/summary-batches";
 export {
   type BreakingChange,

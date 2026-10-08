@@ -9,7 +9,7 @@ import {
 } from "../domain/summary-batches";
 import { SummaryContentSchema } from "../domain/summary-content";
 
-// A Summary is a small JSON object, but Opus 5 thinks before writing it and thinking counts here.
+// A Summary is a small JSON object, but the model thinks before writing it and thinking counts here.
 const MAX_TOKENS = 8_000;
 // Reading release notes and quoting them back is extraction, not research: `high` buys nothing.
 const EFFORT = "medium";
@@ -22,7 +22,11 @@ type BatchRequest = Anthropic.Messages.Batches.BatchCreateParams["requests"][num
 // Only what the adapter reads of a batch result: the SDK's own types are assignable to these,
 // which `createSummaryBatches` proves, so the tests can answer with plain objects.
 type BatchError = { error: { error: { type: string; message: string } } };
-type BatchMessage = { content: readonly { type: string }[]; stop_reason: string | null };
+type BatchMessage = {
+  content: readonly { type: string }[];
+  stop_reason: string | null;
+  usage?: { input_tokens: number; output_tokens: number };
+};
 export type BatchResult =
   | ({ type: "errored" } & BatchError)
   | { type: "succeeded"; message: BatchMessage }
@@ -96,7 +100,9 @@ function succeededResult(message: BatchMessage): SummaryResult {
   }
   const text = message.content.map(blockText).join("");
   if (text.trim() === "") return { type: "errored", message: "the model answered without any text" };
-  return { type: "succeeded", text };
+  const usage = message.usage;
+  if (usage === undefined) return { type: "succeeded", text };
+  return { type: "succeeded", text, usage: { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens } };
 }
 
 function blockText(block: { type: string }): string {

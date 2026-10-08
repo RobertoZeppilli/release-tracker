@@ -1,0 +1,738 @@
+{
+  "promptVersion": "v6",
+  "model": "claude-haiku-5-5",
+  "batchId": "msgbatch_01SYmsjpr1fD1oPxwc88bN2w",
+  "startedAt": "2026-10-08T13:17:32.931Z",
+  "totals": {
+    "cases": 14,
+    "evaluated": 14,
+    "unusable": 0,
+    "actionRequiredMatches": 14,
+    "missing": 0,
+    "unexpected": 0,
+    "inventedQuotes": 0,
+    "quoted": 73,
+    "unquoted": 3,
+    "inputTokens": 72827,
+    "outputTokens": 24228
+  },
+  "cases": [
+    {
+      "slug": "react",
+      "version": "19.0.0",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": true,
+        "title": "Adds Actions, form actions and new hooks, but removes long-deprecated APIs such as `propTypes` and `ReactDOM.render`.",
+        "keyPoints": [
+          {
+            "text": "`startTransition` now accepts async functions, so Actions can run side effects such as `fetch()` inside a Transition.",
+            "quote": "Actions: `startTransition` can now accept async functions."
+          },
+          {
+            "text": "`useActionState` is a new hook for ordering Actions and reading their state, and `useOptimistic` shows optimistic state during a Transition.",
+            "quote": "`useActionState`: is a new hook to order Actions inside of a Transition"
+          },
+          {
+            "text": "`<form> action` manages forms automatically and integrates with the new `useFormStatus` hook.",
+            "quote": "`<form> action` prop: Form Actions allow you to manage forms automatically and integrate with `useFormStatus`."
+          },
+          {
+            "text": "Refs can be passed as props, so `forwardRef` is no longer needed.",
+            "quote": "`ref` as a prop: Refs can now be used as props, removing the need for `forwardRef`."
+          },
+          {
+            "text": "`react-test-renderer` now logs a deprecation warning and uses concurrent rendering for web usage.",
+            "quote": "In React 19, react-test-renderer logs a deprecation warning and has switched to concurrent rendering for web usage."
+          }
+        ],
+        "breakingChanges": [
+          {
+            "change": "`propTypes` are silently ignored.",
+            "migration": "Migrate to TypeScript or another type-checking solution.",
+            "quote": "Removed: `propTypes`: Using `propTypes` will now be silently ignored."
+          },
+          {
+            "change": "`ReactDOM.render` and `ReactDOM.hydrate` are removed.",
+            "migration": "Use `ReactDOM.createRoot` and `ReactDOM.hydrateRoot` instead.",
+            "quote": "Removed: `ReactDOM`.`render`, `ReactDOM`.`hydrate`: These have been removed"
+          },
+          {
+            "change": "Errors not caught by an Error Boundary are reported to `window.reportError` instead of being re-thrown.",
+            "migration": "Use `onUncaughtError` and `onCaughtError` on `createRoot` and `hydrateRoot` to customize error handling.",
+            "quote": "Errors in render are not re-thrown: Errors that are not caught by an Error Boundary are now reported to window.reportError."
+          },
+          {
+            "change": "The new JSX transform is required.",
+            "migration": "Configure your compiler or bundler to use the new JSX transform.",
+            "quote": "New JSX Transform is now required"
+          },
+          {
+            "change": "String refs are removed.",
+            "migration": "Migrate string refs to ref callbacks.",
+            "quote": "Removed: string refs: Any usage of string refs need to be migrated to ref callbacks."
+          },
+          {
+            "change": "Legacy Context for class components (`contextTypes` and `getChildContext`) is removed.",
+            "migration": "Use the `contextType` API instead.",
+            "quote": "Removed: `contextTypes` and `getChildContext`: Legacy Context for class components has been removed"
+          },
+          {
+            "change": "`defaultProps` is no longer supported for function components.",
+            "migration": "Use ES6 default parameters instead. Class components still support `defaultProps`.",
+            "quote": "Removed: `defaultProps` for functions: ES6 default parameters can be used in place."
+          },
+          {
+            "change": "`React.createFactory` is removed.",
+            "migration": "Migrate `createFactory` usage to JSX components.",
+            "quote": "Removed: `React.createFactory`: Now that JSX is broadly supported, all `createFactory` usage can be migrated to JSX components."
+          },
+          {
+            "change": "`react-dom/test-utils` is removed, and `act` has moved to `react`.",
+            "migration": "Import `act` from `react` and check your tests for other removed utilities.",
+            "quote": "Removed: `react-dom/test-utils`: We’ve moved `act` from `react-dom/test-utils` to react."
+          },
+          {
+            "change": "`unmountComponentAtNode` is removed.",
+            "migration": "Call `root.unmount()` instead.",
+            "quote": "Removed: `unmountComponentAtNode`: Removed in favor of `root.unmount()`."
+          },
+          {
+            "change": "`ReactDOM.findDOMNode` is removed.",
+            "migration": "Replace it with DOM Refs.",
+            "quote": "Removed: `ReactDOM`.`findDOMNode`: You can replace `ReactDOM`.`findDOMNode` with DOM Refs."
+          },
+          {
+            "change": "`react-test-renderer/shallow` is removed.",
+            "migration": "Use `react-shallow-renderer` directly, or move your tests to @testing-library/react.",
+            "quote": "Removed: `react-test-renderer/shallow`: This has been a re-export of"
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 20207,
+        "outputTokens": 4691
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [
+          "proptypes",
+          "string-refs",
+          "reactdom-render",
+          "finddomnode"
+        ],
+        "missing": [],
+        "tolerated": [
+          "defaultprops",
+          "legacy-context",
+          "createfactory",
+          "test-renderer-shallow",
+          "test-utils",
+          "unmount",
+          "jsx-transform"
+        ],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 17,
+        "unquoted": 0,
+        "titleLength": 117
+      }
+    },
+    {
+      "slug": "react",
+      "version": "19.2.0",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "React 19.2 adds Activity, useEffectEvent, and partial pre-rendering resume APIs, with no breaking changes listed.",
+        "keyPoints": [
+          {
+            "text": "Adds `<Activity>` to hide and restore the UI and internal state of its children.",
+            "quote": "A new API to hide and restore the UI and internal state of its children."
+          },
+          {
+            "text": "Adds `useEffectEvent` to extract non-reactive logic out of Effects.",
+            "quote": "is a React Hook that lets you extract non-reactive logic into an"
+          },
+          {
+            "text": "Adds resume APIs for partial pre-rendering with Web Streams and Node Streams.",
+            "quote": "Added resume APIs for partial pre-rendering with Web Streams:"
+          },
+          {
+            "text": "React DOM now batches Suspense boundary reveals, matching client side rendering.",
+            "quote": "React DOM now batches suspense boundary reveals, matching the behavior of client side rendering."
+          },
+          {
+            "text": "React Performance tracks appear on the browser Performance panel timeline.",
+            "quote": "appear on the Performance panel’s timeline in your browser developer tools"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 4504,
+        "outputTokens": 1719
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 113
+      }
+    },
+    {
+      "slug": "react",
+      "version": "19.2.7",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "React 19.2.7 fixes missing FormData entries in Server Actions that regressed in 19.2.6.",
+        "keyPoints": [
+          {
+            "text": "Restores missing `FormData` entries in Server Actions.",
+            "quote": "Fixed missing `FormData` entries in Server Actions which regressed in 19.2.6"
+          },
+          {
+            "text": "The bug was a regression introduced in 19.2.6.",
+            "quote": "which regressed in 19.2.6"
+          },
+          {
+            "text": "The fix is in the React Server Components area.",
+            "quote": "React Server Components"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 1777,
+        "outputTokens": 757
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 3,
+        "unquoted": 0,
+        "titleLength": 87
+      }
+    },
+    {
+      "slug": "typescript",
+      "version": "6.0.3",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "The notes give no changes, only links to the blog post and the 6.0.3 fixed issues list.",
+        "keyPoints": [
+          {
+            "text": "Full details of this release are in the announcement blog post.",
+            "quote": "For release notes, check out the [release announcement blog post](https://devblogs.microsoft.com/typescript/announcing-typescript-6-0/)."
+          },
+          {
+            "text": "Issues fixed in 6.0.3 are listed in a GitHub query.",
+            "quote": "[fixed issues query for TypeScript 6.0.3 (Stable)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+6.0.3%22)."
+          },
+          {
+            "text": "Earlier 6.0 releases have their own fixed issues queries.",
+            "quote": "[fixed issues query for TypeScript 6.0.0 (Beta)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+6.0.0%22)."
+          },
+          {
+            "text": "The package is published on npm.",
+            "quote": "[npm](https://www.npmjs.com/package/typescript)"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 2135,
+        "outputTokens": 1339
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 4,
+        "unquoted": 0,
+        "titleLength": 87
+      }
+    },
+    {
+      "slug": "vite",
+      "version": "8.3.0-beta.0",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "Adds a top-level `tsconfig` option and new server close hooks; the notes list no breaking changes.",
+        "keyPoints": [
+          {
+            "text": "Adds a top-level `tsconfig` option.",
+            "quote": "add top-level `tsconfig` option"
+          },
+          {
+            "text": "Adds `closeServer` and `closePreviewServer` plugin hooks.",
+            "quote": "add closeServer and closePreviewServer hooks"
+          },
+          {
+            "text": "Accepts Rolldown watch options in `server.watch`.",
+            "quote": "accept Rolldown watch options in `server.watch`"
+          },
+          {
+            "text": "Uses `import.meta.ROLLDOWN_FILE_URL_*` for assets in JS.",
+            "quote": "use `import.meta.ROLLDOWN_FILE_URL_*` for assets in JS"
+          },
+          {
+            "text": "Minifies the style tag in CSS output.",
+            "quote": "**css:** minify style tag"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 4623,
+        "outputTokens": 1313
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 98
+      }
+    },
+    {
+      "slug": "vite",
+      "version": "8.2.2",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "The notes only link to the changelog, so no key or breaking changes are stated here.",
+        "keyPoints": [
+          {
+            "text": "The release notes give no details and only point to the `CHANGELOG.md` for this version.",
+            "quote": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.2.2/packages/vite/CHANGELOG.md) for details."
+          },
+          {
+            "text": "The notable changes for this release must be read in the linked changelog.",
+            "quote": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.2.2/packages/vite/CHANGELOG.md) for details."
+          },
+          {
+            "text": "No specific feature, fix or change is described in these notes."
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 1769,
+        "outputTokens": 823
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 2,
+        "unquoted": 1,
+        "titleLength": 84
+      }
+    },
+    {
+      "slug": "eslint",
+      "version": "10.11.0",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "ESLint 10.11.0 brings new reports and fixes in `object-shorthand` and `no-unsafe-finally`; no breaking changes listed.",
+        "keyPoints": [
+          {
+            "text": "`no-unsafe-finally` now reports unsafe labeled `continue` statements.",
+            "quote": "feat: report unsafe labeled `continue` in `no-unsafe-finally` rule (#21316) (electrohyun)"
+          },
+          {
+            "text": "`new-cap` only exempts built-ins that reference the global.",
+            "quote": "feat: only exempt `new-cap` built-ins that reference the global (#21290) (sethamus)"
+          },
+          {
+            "text": "`object-shorthand` now handles quoted properties for `ignoreConstructors`.",
+            "quote": "feat: object-shorthand handle quoted properties for `ignoreConstructors` (#21271) (Pavel)"
+          },
+          {
+            "text": "`object-shorthand` no longer reports `__proto__` properties.",
+            "quote": "fix: don't report `__proto__` properties in `object-shorthand` (#21310) (xbinaryx)"
+          },
+          {
+            "text": "`prefer-object-spread` now ignores `__proto__` properties.",
+            "quote": "fix: ignore `__proto__` properties in `prefer-object-spread` (#21311) (xbinaryx)"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 3352,
+        "outputTokens": 2257
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 118
+      }
+    },
+    {
+      "slug": "eslint",
+      "version": "10.9.1",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "ESLint 10.9.1 is a small patch fixing a false positive in no-loss-of-precision for trailing decimal points.",
+        "keyPoints": [
+          {
+            "text": "The `no-loss-of-precision` rule no longer reports a false positive for numbers with a trailing decimal point.",
+            "quote": "fix: no-loss-of-precision false positive with trailing decimal point (#21251)"
+          },
+          {
+            "text": "The docs now describe deprecation steps for end-of-life package versions.",
+            "quote": "docs: add deprecation steps for EOL package versions (#21248)"
+          },
+          {
+            "text": "Ecosystem plugins are updated to newer versions.",
+            "quote": "chore: update ecosystem plugins (#21249)"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 1998,
+        "outputTokens": 860
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 3,
+        "unquoted": 0,
+        "titleLength": 107
+      }
+    },
+    {
+      "slug": "tailwindcss",
+      "version": "4.3.0",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "Adds new scrollbar, zoom and tab utilities and @variant stacking, with several plugin and canonicalization fixes.",
+        "keyPoints": [
+          {
+            "text": "Adds a `@container-size` utility.",
+            "quote": "Add `@container-size` utility"
+          },
+          {
+            "text": "Adds `zoom-*` utilities for zooming elements.",
+            "quote": "Add `zoom-*` utilities"
+          },
+          {
+            "text": "`@variant` now accepts stacked variants such as `hover:focus`.",
+            "quote": "Allow using `@variant` with stacked variants (e.g. `@variant hover:focus { … }`)"
+          },
+          {
+            "text": "Fixes relative `@import` and `@plugin` paths resolving from the wrong directory with `@tailwindcss/vite`.",
+            "quote": "Fix relative `@import` and `@plugin` paths resolving from the wrong directory when using `@tailwindcss/vite`"
+          },
+          {
+            "text": "Canonicalization now migrates arbitrary `:has()` variants to the `has-[…]` form.",
+            "quote": "Canonicalization: migrate arbitrary `:has()` variants from `[&:has(…)]` to `has-[…]`"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 3360,
+        "outputTokens": 1235
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 113
+      }
+    },
+    {
+      "slug": "tailwindcss",
+      "version": "4.2.4",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "Patch 4.2.4 fixes `@import` and `@plugin` resolution with Vite aliases in `@tailwindcss/vite`; no breaking changes.",
+        "keyPoints": [
+          {
+            "text": "Fixes resolution of `@import` and `@plugin` paths that use Vite aliases in `@tailwindcss/vite`.",
+            "quote": "Ensure imports in `@import` and `@plugin` still resolve correctly when using Vite aliases in `@tailwindcss/vite`"
+          },
+          {
+            "text": "The notes list no other changes, so this is a narrow fix-only release."
+          },
+          {
+            "text": "Projects that do not use Vite aliases with `@tailwindcss/vite` have no listed change to act on."
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 1801,
+        "outputTokens": 1050
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 1,
+        "unquoted": 2,
+        "titleLength": 115
+      }
+    },
+    {
+      "slug": "zod",
+      "version": "4.6.0",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": true,
+        "title": "Zod 4.6 adds fast .validate(), z.iban() and z.withParser(), but changes emoji, enum options and JSON Schema output.",
+        "keyPoints": [
+          {
+            "text": "Adds `.validate()`, a boolean check that skips building a ZodError and can be up to 35x faster on compiled schemas.",
+            "quote": "without constructing a `ZodError`, which makes rejection cheap"
+          },
+          {
+            "text": "Adds `z.withParser()` to install a parser generated at build time, for environments that block `new Function`.",
+            "quote": "installs a parser generated elsewhere, for environments without `new Function`"
+          },
+          {
+            "text": "Adds `z.iban()`, which checks the electronic IBAN format and its mod-97 checksum.",
+            "quote": "an IBAN in electronic format, with a valid ISO 7064 MOD 97-10 checksum"
+          },
+          {
+            "text": "`fromJSONSchema()` now enforces six validation keywords it used to ignore.",
+            "quote": "Six additional JSON Schema keywords are now supported in `z.fromJSONSchema()`."
+          },
+          {
+            "text": "Recursive schemas no longer retain the parsed input after a parse, which fixes a 4.5 out-of-memory regression.",
+            "quote": "releases the parsed input, fixing a 4.5 out-of-memory regression"
+          }
+        ],
+        "breakingChanges": [
+          {
+            "change": "Error maps now run when `result.error` is first read, not at parse time, so swapping `z.config()` between the parse and the read changes the messages.",
+            "migration": "Read `result.error` before changing `z.config()`, and do not rely on error map side effects that only happen at parse time.",
+            "quote": "Because `safeParse()` now builds its error lazily, error maps — global, locale, and per-schema `error` — run when `result.error` is first read, not at parse time."
+          },
+          {
+            "change": "`z.emoji()` now rejects strings made only of emoji components, such as \"123\", \"#\" or a lone zero-width joiner.",
+            "migration": "Check any code that relied on `z.emoji()` accepting component-only strings, and handle those inputs explicitly.",
+            "quote": "`z.emoji()` rejects component-only strings"
+          },
+          {
+            "change": "Numeric enum `.options` no longer include the reverse mapping keys, so it lists only the member values.",
+            "migration": "Check code that reads `.options` from a numeric enum and expected the old list with the reverse mapping keys.",
+            "quote": "Numeric enum options no longer include the reverse mappings"
+          },
+          {
+            "change": "The email pattern changed, so `z.regexes.email` has no capture groups, `issue.pattern` on a failed `z.email()` differs, and the emitted JSON Schema `pattern` has no lookahead.",
+            "migration": "Check code that reads capture groups from `z.regexes.email`, matches on `issue.pattern`, or consumes the `pattern` from `z.toJSONSchema()`.",
+            "quote": "The pattern string is user-visible, and every copy of it changes"
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 14777,
+        "outputTokens": 3536
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [
+          "emoji",
+          "enum-options",
+          "error-maps"
+        ],
+        "missing": [],
+        "tolerated": [
+          "email-pattern",
+          "json-schema-fold"
+        ],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 9,
+        "unquoted": 0,
+        "titleLength": 115
+      }
+    },
+    {
+      "slug": "zod",
+      "version": "4.6.5",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "Patch 4.6.5 changes `instanceof` `.properties()` typing and re-adds `z.currencyCode`; no breaking changes.",
+        "keyPoints": [
+          {
+            "text": "`instanceof` now keys the `.properties()` shape off the instance type.",
+            "quote": "feat(instanceof): key the .properties() shape off the instance type (#6600)"
+          },
+          {
+            "text": "`z.currencyCode()` was added, reverted, then restored, so it is included in this release.",
+            "quote": "Revert \"Revert \"feat: add z.currencyCode() over a vendored ISO 4217 list, refreshed weekly by CI (#6595)\""
+          },
+          {
+            "text": "The properties docs now lead with the check and add a Zod Mini tab.",
+            "quote": "docs: lead the properties section with the check and add a Zod Mini tab (#6598)"
+          },
+          {
+            "text": "The integration peers were re-pinned to the workspace `zod` after the 4.6.5 bump.",
+            "quote": "chore: re-pin the integration peers to the workspace zod after the 4.6.5 bump"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 2198,
+        "outputTokens": 2100
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 4,
+        "unquoted": 0,
+        "titleLength": 106
+      }
+    },
+    {
+      "slug": "prisma",
+      "version": "7.10.0",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "Adds `@prisma/prisma7` so Prisma 7 can run beside Prisma 8, and secures Prisma Studio's local server.",
+        "keyPoints": [
+          {
+            "text": "A new `@prisma/prisma7` package lets Prisma 7 CLI and configuration run alongside Prisma 8 in one project.",
+            "quote": "This release introduces `@prisma/prisma7`, a compatibility package"
+          },
+          {
+            "text": "Prisma Studio's local server now binds to 127.0.0.1, rejects foreign origins and drops wildcard CORS headers.",
+            "quote": "This prevents network clients or malicious websites from accessing Studio's database endpoints while Studio is running."
+          },
+          {
+            "text": "`P2002` errors from nested writes now report the correct model in `meta.modelName`.",
+            "quote": "Fixed `P2002` errors from nested writes so `meta.modelName` identifies the model where the unique constraint violation occurred"
+          },
+          {
+            "text": "Parameter-chunked statements now run atomically and roll back if a later chunk fails.",
+            "quote": "Parameter-chunked statements are now executed atomically in a transaction and rolled back if a later chunk fails."
+          },
+          {
+            "text": "PostgreSQL deadlocks are now reported as `P2034` transaction write conflicts.",
+            "quote": "PostgreSQL deadlocks using SQLSTATE `40P01` are now reported as `P2034` transaction write conflicts."
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 6030,
+        "outputTokens": 1693
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 101
+      }
+    },
+    {
+      "slug": "vitest",
+      "version": "5.0.1",
+      "outcome": "evaluated",
+      "content": {
+        "actionRequired": false,
+        "title": "Patch release with bug fixes for vitest list, automocking, cache and config, plus new UI trace view options.",
+        "keyPoints": [
+          {
+            "text": "The trace attempts selector moves to the viewer header.",
+            "quote": "Move trace attempts selector to viewer header"
+          },
+          {
+            "text": "A focused trace view layout mode is added.",
+            "quote": "Add focused trace view layout mode"
+          },
+          {
+            "text": "`vitest list` now exits with code 1 when collection fails.",
+            "quote": "Exit 1 when vitest list fails collection"
+          },
+          {
+            "text": "A warning is shown when the deprecated `deps.optimizer.web` option is used.",
+            "quote": "Warn when deprecated `deps.optimizer.web` is used"
+          },
+          {
+            "text": "`deepMerge` now handles prototype properties correctly.",
+            "quote": "Fix `deepMerge` to handle prototype"
+          }
+        ],
+        "breakingChanges": []
+      },
+      "usage": {
+        "inputTokens": 4296,
+        "outputTokens": 855
+      },
+      "evaluation": {
+        "actionRequiredMatches": true,
+        "found": [],
+        "missing": [],
+        "tolerated": [],
+        "unexpected": [],
+        "inventedQuotes": [],
+        "quoted": 5,
+        "unquoted": 0,
+        "titleLength": 108
+      }
+    }
+  ]
+}

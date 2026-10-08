@@ -15,7 +15,84 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-08, notte).** La **#26 è chiusa**: **PR #129 unita** in `78aba60`, e la
+**Da dove ripartire (2026-10-08, dopo la #57).** Siamo **dentro la #57**, sul ramo
+`57-haiku-summaries`, con il lavoro **finito e verde** ma **nessun commit**: la PR si apre adesso.
+
+**Le Sintesi si generano con Claude Haiku 5.5**, scelta dell'utente sui numeri del set di
+valutazione. ⚠️ **La issue era datata e va letta sapendolo**: proponeva Haiku **4.5**, e tutta la sua
+parte tecnica (il `budget_tokens`, l'`effort` non supportato, la finestra da 200K, il risparmio di
+cinque volte) **è superata**. Haiku **5.5** costa $0,10 e $0,50 per milione contro i $5 e $25 di Opus
+5, cioè **un cinquantesimo**, ha 1M di finestra e accetta `effort` dentro `output_config` come Opus:
+l'adattatore non è stato toccato nella sostanza, e **l'ostacolo tecnico della issue non esisteva**.
+
+**I tre giri del set, tutti e tre nel repository** (`eval/summaries/reports/`, col prompt e il
+modello nel nome):
+
+| | Opus 5, v4 | Haiku 5.5, v5 | Haiku 5.5, v6 |
+|---|---|---|---|
+| Intervento richiesto azzeccato | 14 su 14 | 14 su 14 | **14 su 14** |
+| Breaking changes mancanti | 0 | 0 | **0** |
+| Breaking changes inattese | 3 | 2 | **0** |
+| Citazioni inventate | 0 | 1 | **0** |
+| Voci senza puntatore | 4 su 81 | 20 su 79 | **3 su 76** |
+| Costo del giro | $0,486 | $0,0097 | $0,0097 |
+
+⚠️ **Il confronto non è pulito, e l'ADR lo dice**: fra la prima colonna e l'ultima sono cambiati sia
+il modello sia il prompt, e **Opus col `v6` non è stato misurato**, perché costa 50 volte tanto per
+rispondere a una domanda che non cambia la decisione. Quello che le colonne dicono è l'unica cosa che
+serviva: il modello economico, col prompt di oggi, fa un lavoro almeno pari a quello che si pagava.
+
+**Il prompt è salito a `v6`**, e serviva: col `v5` Haiku lasciava **una voce su quattro senza
+puntatore** alle righe delle Note, cioè Sintesi giuste e poco verificabili. Il `v6` chiede la
+citazione per ogni voce che le Note enunciano in un punto solo, dice al modello **perché** (una voce
+senza puntatore non si può controllare) e aggiunge un passo di ricontrollo prima della risposta.
+Niente di quello che riguarda il verdetto è stato toccato. ⚠️ **Conseguenza sulla #93**: il suo prompt
+diventa **`v7`**, e il titolo è da correggere, era già sfalsato perché `v5` è arrivato con la #87.
+
+⚠️ **Tre cose da non ripagare.**
+1. **Non si cerca lo zero sulle voci senza puntatore.** `locateCitation` verifica che la citazione
+   esista verbatim nelle Note, **non** che quella riga enunci la voce a cui è attaccata: una citazione
+   inventata viene scartata e si vede, una riga vera attaccata alla voce sbagliata passa e porta il
+   lettore al posto sbagliato. Le 3 voci scoperte rimaste sono il **pavimento della forma**, su
+   `vite 8.2.2` e `tailwindcss 4.2.4`, le due Release le cui Note rimandano al changelog mentre lo
+   schema chiede comunque almeno 3 punti chiave. Opus ne lasciava 4, nelle stesse due Release.
+2. **I token di un batch si rileggono gratis**, con `GET /v1/messages/batches/<id>/results`: il primo
+   giro era partito prima della modifica che li registra, e il costo vero è stato recuperato così,
+   senza un secondo giro a pagamento. Adesso il report porta `inputTokens` e `outputTokens` suoi.
+3. **Il tetto dei 150.000 caratteri ha una seconda ragione**: Haiku 5.5 costa **cinque volte tanto
+   oltre i 100k token di prompt**, e 150.000 caratteri sono circa 40k token, quindi nessuna Sintesi
+   può finire nella fascia cara. Sta nell'ADR.
+
+**I documenti**: **ADR 0007 riscritto e rinominato** in `0007-sintesi-con-haiku-5-5-via-batch-api.md`
+(la vecchia motivazione, "il modello più capace costa pochi dollari al mese", non è stata lasciata a
+contraddire il codice); `docs/DECISIONI.md` coi costi rifatti sui token veri ($0,00066 per Sintesi in
+media, arretrato $0,08 contro i $4,16 spesi davvero, regime ~$0,03 al mese contro $1,30), tenendo la
+lezione di metodo che c'era prima; `eval/summaries/README.md` documenta `--model` e dice che toccare
+`SUMMARY_MODEL` senza aver lanciato il set è vietato dall'ADR.
+
+**I numeri**: **564 unitari** (2 nuovi sull'adattatore, **provati rimettendo il difetto**: cadono
+entrambi), **63 di integrazione**, **186 E2E verdi**, cioè tutta la suite, più `pnpm lint`,
+`pnpm typecheck` e `pnpm build`. **Speso in tutto: $0,0194**, due giri del set.
+
+### Cosa resta
+
+1. **La rigenerazione delle 126 Sintesi non si fa qui**: scelta dell'utente, si fa **una volta sola
+   dentro la #93**, insieme al prompt nuovo, perché due rigenerazioni costerebbero il doppio senza
+   che la prima serva a niente. Fino a quel merge il Catalogo porta Sintesi `claude-opus-5` a prompt
+   `v4` e le Release nuove nascono `claude-haiku-5-5` a prompt `v6`. È scritto nell'ADR.
+2. **L'ordine consigliato delle issue a pagamento**, e il perché, discusso con l'utente in questo
+   giro: **#93** subito dopo (porta l'unica rigenerazione e chiude il verdetto verde sulle note non
+   giudicabili), poi il **database separato per i preview** (oggi un `catalog:sync` da un preview
+   scriverebbe in produzione: è l'unica cosa in giro che può fare danno vero), poi la **#65** ridotta
+   alla sola strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage,
+   non deciso, e se lo stage si fa la sua strada 1 diventa lavoro buttato.
+3. **Il tetto di tutto quello che resta a pagamento sta sotto $0,30**: eval della #93, una
+   rigenerazione, il submit a mano della #54 (era ~25 centesimi su Opus, ora mezzo centesimo), le
+   Sintesi della #80. Ogni altra issue aperta (#65, #126, #130, #131, #132, #133, #69) non tocca
+   Anthropic.
+4. La cancellazione del ramo `26-landing-page`, locale e remoto, che resta dell'utente.
+
+**Lo stato precedente (2026-10-08, notte).** La **#26 è chiusa**: **PR #129 unita** in `78aba60`, e la
 issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso**, e `main` locale e remoto
 combaciano. La **CI del merge è verde**, e il `Deploy database` pure (nessuna migrazione da
 applicare). ⚠️ Il ramo `26-landing-page` **esiste ancora**, locale e remoto: la cancellazione resta
