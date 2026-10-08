@@ -64,7 +64,9 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 
 /* Technology header */
 .tech-head { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
-.tech-head h1 { margin: 0; font: 600 22px/1.2 var(--sans); letter-spacing: -0.01em; }
+.tech-head h1 { margin: 0; display: flex; align-items: center; gap: var(--space-2); font: 600 22px/1.2 var(--sans); letter-spacing: -0.01em; }
+/* Technology Mark: the brand's shape in the headline's own ink, 24px beside it. */
+.mark { width: 24px; height: 24px; flex: none; fill: currentColor; }
 .tech-facts { display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 13px var(--mono); color: var(--text-muted); }
 .tech-facts strong { color: var(--text); font-weight: 400; }
 .tech-head .follow { margin-left: auto; }
@@ -273,7 +275,7 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
     </ol>
   </nav>
   <div class="tech-head">
-    <h1>Vite</h1>
+    <h1><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.056 23.238a.57.57 0 0 1-1.02-.355v-5.202c0-.63-.512-1.143-1.144-1.143H5.148a.57.57 0 0 1-.464-.903l3.777-5.29c.54-.753 0-1.804-.93-1.804H.57a.574.574 0 0 1-.543-.746.6.6 0 0 1 .08-.157L5.008.78a.57.57 0 0 1 .467-.24h14.589a.57.57 0 0 1 .466.903l-3.778 5.29c-.54.755 0 1.806.93 1.806h5.745c.238 0 .424.138.513.322a.56.56 0 0 1-.063.603z"/></svg>Vite</h1>
     <div class="tech-facts">
       <span>latest <strong>6.0.3</strong></span>
       <span>npm vite</span>

@@ -18,7 +18,8 @@
     "catalog:sync": "tsx --conditions=react-server scripts/sync-catalog.mts",
     "summary:try": "tsx --conditions=react-server scripts/summarize-release.mts",
     "summary:eval": "tsx --conditions=react-server scripts/evaluate-summaries.mts",
-    "summary:reimport": "tsx --conditions=react-server scripts/reimport-summaries.mts"
+    "summary:reimport": "tsx --conditions=react-server scripts/reimport-summaries.mts",
+    "icons:sync": "tsx scripts/sync-technology-marks.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
@@ -45,6 +46,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "simple-icons": "^16.34.0",
     "supabase": "^2.117.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",

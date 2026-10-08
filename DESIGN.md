@@ -305,7 +305,7 @@ Diagnostic rows use a gutter grid: a 5ch right-aligned faint gutter holds `-->`,
 
 **Dashboard rows.** Stack rows use a four-column grid (14ch technology, 17ch version with its significance glyph, 11ch date, then the content), with the same 16px column gap, 12px vertical padding and 1px `rule` between rows (the first row also gets a top rule). Compact rows tighten to 8px vertical padding. Weekly Digest summaries share the 14ch first column; their expanded lines indent to the content column in a 28ch auto-fill grid. Sections sit 48px apart.
 
-**Technologies page.** The Status-scale follow status opens the page 32px below the header, the muted intro sits 12px below it, and the filter sentence 24px below that. The `following`, `catalog` and `retired` sections follow, 48px apart. Picker rows use a three-column grid (16ch name, facts, auto toggle), with a 16px column gap, 12px vertical padding, centred alignment and a 1px `rule` between rows (the first row also gets a top rule). Note lines inside a section (the limit note, the retired note) sit between the section title and the rows, 12px above the rows, capped at 900px.
+**Technologies page.** The Status-scale follow status opens the page 32px below the header, the muted intro sits 12px below it, and the filter sentence 24px below that. The `following`, `catalog` and `retired` sections follow, 48px apart. Picker rows use a three-column grid (`calc(16ch + 24px)` name, facts, auto toggle; the name cell holds the Technology Mark and the name 8px apart, so the extra 24px is the mark's own), with a 16px column gap, 12px vertical padding, centred alignment and a 1px `rule` between rows (the first row also gets a top rule). Note lines inside a section (the limit note, the retired note) sit between the section title and the rows, 12px above the rows, capped at 900px.
 
 **Responsive (640px and below):** the breadcrumb path stays at the top of the content, whole, and the source meta is hidden. Key-point labels and diagnostic headings stack to one column. Gutters narrow to 4.5ch. **Caret rows are hidden.** The quoted span gets a 2px `breaking` underline (offset 4px) inside the quote row instead. Fix diffs scroll horizontally. Quotes and inline code break inside a word rather than widening the page.
 
@@ -411,6 +411,11 @@ The two pages that replace a page instead of a part of it use the same grammar a
 ### Significance Glyphs
 12px SVG shapes on a 12-unit grid, paired with a Mono 13px lowercase label word in `text-muted` and a 6px gap: featured (filled diamond), notable (1.5px outlined diamond), digest (2-unit radius dot), preview (outlined diamond with a 2/1.6 dash). They are neutral (see The Neutral Significance Rule). They mark rank, not risk.
 
+### Technology Mark
+A Technology can carry its own mark beside its name: a 16px monochrome SVG glyph drawn in `currentColor`, `aria-hidden`, with 8px between it and the name. It appears in the Catalog picker row (on the Technologies page and in the Dashboard's own picker) and, at 24px, beside the headline of a Technology page. It is the brand's **shape** and never its colour: no brand tint, no two-tone logo, no tile or circle behind it (see The Severity-Only Colour Rule). It says which Technology the line is about, so it only appears where the subject is a Technology, and never on a Release row, where a glyph already means Significance (see The Neutral Significance Rule).
+
+**A Technology without a mark keeps the space and shows nothing.** The glyph box is always in the row, so every name starts at the same x and no row changes height whether its mark exists or not (see The Reserved Space Rule). There is no invented placeholder and no initial letter: an initial is the name a second time, in a worse typeface. SvelteKit is deliberately left unmarked, because the only mark that exists for it is Svelte's own, and two rows of one list wearing one shape takes away exactly what the mark was added to give.
+
 ### Stat Row (signature)
 A `git diff --stat` line for each major version, inside a list with a top rule and a 1px `rule` under each row (8px vertical padding, 16px gaps, Mono 14px). In order:
 1. The major (`v6`) in `text`.
@@ -491,7 +496,7 @@ Under the ISO date, a Mono 12px `text-muted` `this week` stacks in the date cell
 Digest releases fold per ISO week into `<details>` rows between rules, closed by default. The summary is a grid (14ch, content, chevron): the digest dot + `week 49` in `text`, then Mono 13px muted `9 digest releases · Dec 2 to 8 · no action needed`, then the chevron (same rotation and curve as the Digest Row). When open, lines run newest first in a 28ch auto-fill grid: the Technology name in `text-muted`, the version link in `text` and a faint `MM-DD` date.
 
 ### Empty State (Dashboard)
-With no follows, the verdict slot holds a Status-scale muted line: info glyph + `note: you follow no technologies yet`. Below it are a muted Grotesk intro paragraph (72ch) and a Mono 14px muted live count (`aria-live="polite"`) `N of 10 followed`, with the number in `text`. Once N is above 0 the claim reads `you follow N technologies` and an `Open dashboard` button appears beside the count. A catalog picker follows under a section title, the same rows as the Technologies page (16ch name column, the name linking to its Technology page): the Technology name (Grotesk 600 16px), Mono 13px faint facts (`latest 19.0.0 · library for web and native UIs`, version in `text-muted`) and a Follow toggle, ending with a `-->` help pointer to the full catalog.
+With no follows, the verdict slot holds a Status-scale muted line: info glyph + `note: you follow no technologies yet`. Below it are a muted Grotesk intro paragraph (72ch) and a Mono 14px muted live count (`aria-live="polite"`) `N of 10 followed`, with the number in `text`. Once N is above 0 the claim reads `you follow N technologies` and an `Open dashboard` button appears beside the count. A catalog picker follows under a section title, the same rows as the Technologies page (the Technology Mark, then a 16ch name linking to its Technology page): the Technology name (Grotesk 600 16px), Mono 13px faint facts (`latest 19.0.0 · library for web and native UIs`, version in `text-muted`) and a Follow toggle, ending with a `-->` help pointer to the full catalog.
 
 ### Follow Status and Filter (Technologies)
 The page opens with no verdict: a Status-scale line in `text-muted`, the info glyph + `note:` + `you follow 7 of your 10 free follows`, with the count in `text` and the claim inline-block in a polite live region. At 640px and below the claim reads `7 of your 10`. A muted Grotesk intro (72ch) follows.
@@ -511,7 +516,7 @@ Three sections in order, each with a Section title that counts the rows that bel
 The `catalog` section is read by Category, not as one alphabetical list: ten groups in the order `CONTEXT.md` declares (`language`, `runtime`, `framework`, `server framework`, `database`, `build tool`, `testing`, `lint and formatting`, `library`, `platform`), none of them above eight rows. Each group is a `<section>` headed by the same Section title one level down (`<h3>`, identical type and rule), 20px below the group before it, and the Catalog keeps its own `catalog (32)` title and count above them all, with the Limit Note still directly under it where the next Follow would happen. The sum of the group counts is the Catalog count, and a group loses a row the moment it is followed, exactly like a section: following a row inside `framework (8)` reads `framework (7)` on the same tick, because the row has gone to `following`. While filtering, a group title reads `framework (2 of 8)` and a group with no match is hidden, the same rule the sections follow. `following` and `retired` are never grouped: the Category answers "what could go in my stack", which is a question only the Catalog is asked.
 
 ### Catalog Picker Row (Technologies)
-The Dashboard catalog picker row, as a full page list: the Technology name (Grotesk 600 16px/1.45, -0.01em) links to its Technology page (underlined on hover), then Mono 13px/1.6 `text-faint` facts (`latest 6.0.3 · frontend build tool`, version in `text-muted`), then the Follow Toggle. See Layout for the grid and the mobile reflow.
+The Dashboard catalog picker row, as a full page list: the Technology Mark, then the Technology name (Grotesk 600 16px/1.45, -0.01em) linking to its Technology page (underlined on hover), then Mono 13px/1.6 `text-faint` facts (`latest 6.0.3 · frontend build tool`, version in `text-muted`), then the Follow Toggle. See Layout for the grid and the mobile reflow.
 
 ### Limit Note
 At 10 of 10, a note line sits under the catalog title, where the next Follow would happen: the info glyph + Mono 14px/1.7 muted `note: 10 of 10 followed · unfollow one to follow another`, with the count in `text`. It has no ink. Every disabled toggle is described by it.
@@ -542,6 +547,7 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Do** keep the caret-draw as the single motion moment, with an immediate fallback under reduced motion.
 - **Do** define both themes for every colour role. Dark is the default.
 - **Do** mark release significance with the neutral SVG shape glyphs (see The Neutral Significance Rule).
+- **Do** give a Technology its mark where the subject is the Technology itself, in `currentColor`, and reserve the box empty where no mark exists (see Technology Mark).
 - **Do** give navigational links their grammar: a faint `-->` arrow and a cyan dashed-underline label.
 - **Do** keep neutral row verdicts (`note:`, `pending:`) and dashboard counts in `text-muted`, with no ink.
 - **Do** write counts in words beside every bar, using the list's own vocabulary, with a legend that repeats the shape glyphs.
@@ -552,7 +558,7 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Do** reserve the space a control will take while its state is still unknown, and declare the unknown with `aria-busy` rather than guessing a value (see The Reserved Space Rule).
 
 ### Don't:
-- **Don't** use hue for anything but severity. There are no brand accents or decorative colour.
+- **Don't** use hue for anything but severity. There are no brand accents or decorative colour. A Technology Mark is a shape in the text's own ink, never the brand's palette.
 - **Don't** add shadows or extra raised surfaces. Depth is `sunken` / `ground` / one `raised`, and the account panel is the single surface allowed over the page (see The One Raised Plane Rule).
 - **Don't** wrap diagnostics in cards or badges. Structure comes from gutters and grammar.
 - **Don't** colour `note:` or non-error status lines. They stay `text-muted`.

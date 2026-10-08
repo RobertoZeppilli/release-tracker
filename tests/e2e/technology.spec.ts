@@ -114,3 +114,17 @@ test.describe("the Release rows of the plain list", () => {
     await expect(v1.getByRole("link", { name: /^migrate to/ })).toHaveCount(0);
   });
 });
+
+// DESIGN.md, Technology Mark: 24px beside the headline, and the heading still reads as the name
+// alone, since the mark is `aria-hidden`.
+test("the Technology page carries the mark beside the headline, and the heading stays the name", async ({ page }) => {
+  await page.goto("/technologies/vite");
+  const heading = page.getByRole("heading", { level: 1, name: "Vite" });
+  const mark = heading.locator("svg");
+
+  await expect(mark).toHaveAttribute("aria-hidden", "true");
+  await expect(mark.locator("path")).toHaveAttribute("fill", "currentColor");
+  await expect(heading).toHaveAccessibleName("Vite");
+  const box = await mark.boundingBox();
+  expect(box?.width).toBeCloseTo(24, 0);
+});

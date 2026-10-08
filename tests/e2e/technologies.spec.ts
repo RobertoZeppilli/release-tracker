@@ -346,3 +346,69 @@ test("the filter answers to `/`, and leaves the key alone to whoever is typing",
   await page.keyboard.type("z");
   await expect(field).toHaveValue("z");
 });
+
+// DESIGN.md, Technology Mark. Both rows are real Catalog entries, because the mark is keyed by slug:
+// `vite` has one, `playwright` has none (there is no Playwright icon in simple-icons).
+test.describe("the Technology Mark", () => {
+  function row(page: Page, name: string): Locator {
+    return rows(page).filter({ has: page.getByRole("link", { name, exact: true }) });
+  }
+
+  test("is drawn in the name's own ink, and says nothing to a screen reader", async ({ page }) => {
+    await page.goto("/technologies");
+    const mark = row(page, "Vite").locator("svg").first();
+
+    await expect(mark).toHaveAttribute("aria-hidden", "true");
+    await expect(mark.locator("path")).toHaveAttribute("fill", "currentColor");
+    // The name beside it is already the accessible name: the mark must not add a second one.
+    await expect(row(page, "Vite")).toHaveAccessibleName("");
+    const [markInk, nameInk] = await Promise.all([
+      mark.evaluate((node) => getComputedStyle(node).color),
+      row(page, "Vite").getByRole("link", { name: "Vite", exact: true }).evaluate((node) => getComputedStyle(node).color),
+    ]);
+    expect(markInk).toBe(nameInk);
+    // 16px on the row, from the 24-unit grid the paths are drawn on.
+    const box = await mark.boundingBox();
+    expect(box?.width).toBeCloseTo(16, 0);
+    expect(box?.height).toBeCloseTo(16, 0);
+  });
+
+  // The Reserved Space Rule: the box is there either way, so the list keeps one left edge.
+  test("leaves its space empty for a Technology without one, and moves no row", async ({ page }) => {
+    await page.goto("/technologies");
+    const marked = row(page, "Vite");
+    const unmarked = row(page, "Playwright");
+
+    await expect(marked.locator("svg").first().locator("path")).toHaveCount(1);
+    await expect(unmarked.locator("svg").first()).toBeAttached();
+    await expect(unmarked.locator("svg").first().locator("path")).toHaveCount(0);
+
+    const [markedBox, unmarkedBox, markedName, unmarkedName] = await Promise.all([
+      marked.boundingBox(),
+      unmarked.boundingBox(),
+      marked.getByRole("link", { name: "Vite", exact: true }).boundingBox(),
+      unmarked.getByRole("link", { name: "Playwright", exact: true }).boundingBox(),
+    ]);
+    expect(markedBox?.height).toBe(unmarkedBox?.height);
+    expect(markedName?.x).toBe(unmarkedName?.x);
+  });
+
+  // At 390px the row is already two lines, so the mark must sit on the name's line and add none.
+  // Boxes are compared by their vertical centre, never by their top edge: the mark is 16px and the
+  // name's line box is taller, so their tops differ by design.
+  test("sits on the name's line at 390px, and adds no line to the row", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/technologies");
+    const marked = row(page, "Vite");
+    const [mark, name, markedBox, unmarkedBox] = await Promise.all([
+      marked.locator("svg").first().boundingBox(),
+      marked.getByRole("link", { name: "Vite", exact: true }).boundingBox(),
+      marked.boundingBox(),
+      row(page, "Playwright").boundingBox(),
+    ]);
+    expect(mark?.width).toBeCloseTo(16, 0);
+    const centre = (box: { y: number; height: number } | null) => (box ? box.y + box.height / 2 : null);
+    expect(centre(mark)).toBeCloseTo(centre(name) ?? 0, 0);
+    expect(markedBox?.height).toBe(unmarkedBox?.height);
+  });
+});
