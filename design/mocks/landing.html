@@ -63,17 +63,20 @@ a:hover { text-decoration-color: currentColor; }
 code, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 code { font-size: 0.92em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
 * { scrollbar-color: var(--rule-strong) transparent; }
+:target { scroll-margin-top: var(--space-8); }
 svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; flex: none; }
+svg.mark { width: 16px; height: 16px; fill: currentColor; stroke: none; flex: none; }
+svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 
 .skip { position: absolute; left: -9999px; }
-.skip:focus { left: var(--space-4); top: var(--space-4); background: var(--raised); padding: var(--space-2) var(--space-3); z-index: 10; }
+.skip:focus { left: var(--space-4); top: var(--space-4); background: var(--raised); padding: var(--space-2) var(--space-3); z-index: 20; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-.topbar { border-bottom: 1px solid var(--rule); }
-.topbar-inner, main { max-width: 1040px; margin: 0 auto; padding: 0 var(--space-5); }
-.topbar-inner { height: 56px; display: flex; align-items: center; gap: var(--space-5); }
-.wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; }
+/* La barra resta sullo schermo su ogni pagina: stessa altezza, nessuna ombra. */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--ground); border-bottom: 1px solid var(--rule); }
+.topbar-inner { max-width: 1240px; margin: 0 auto; padding: 0 var(--space-5); height: 56px; display: flex; align-items: center; gap: var(--space-5); }
+.wordmark { font: 400 16px var(--mono); text-decoration: none; font-variant-ligatures: none; }
 .nav { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); }
 .nav a { text-decoration: none; }
 .nav a:hover { color: var(--text); }
@@ -81,52 +84,62 @@ svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; str
 .btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
 .btn:hover { background: var(--raised); border-color: var(--text-faint); }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
-
-main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
-
-/* Heading block: the claim carries the display scale, with no label above it. */
-h1.claim { margin: 0; max-width: 24ch; font: 400 clamp(1.9rem, 5.2vw, 3.4rem)/1.08 var(--mono); letter-spacing: -0.035em; text-wrap: balance; }
-.stake { margin: var(--space-5) 0 0; max-width: var(--measure); font: 500 clamp(1.15rem, 2.2vw, 1.4rem)/1.4 var(--sans); text-wrap: pretty; }
-.lede { margin: var(--space-4) 0 0; max-width: var(--measure); color: var(--text-muted); }
-.actions { margin: var(--space-5) 0 0; display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
 .pointer { font: 400 13px var(--mono); color: var(--help); text-decoration: none; display: inline-flex; gap: 1ch; align-items: baseline; }
 .pointer .arrow { color: var(--text-faint); font-variant-ligatures: none; }
 .pointer .plabel { border-bottom: 1px dashed currentColor; }
 .pointer:hover .plabel { border-bottom-style: solid; }
+.actions { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
 
-.section-title { margin: var(--space-8) 0 var(--space-4); font: 600 13px var(--mono); letter-spacing: 0.02em; color: var(--text-muted); display: flex; gap: var(--space-3); align-items: baseline; }
-.section-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--space-5); }
+main { padding-bottom: var(--space-8); }
 
-/* The bench */
-.specimen { margin: 0; font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
-.specimen .tech { color: var(--text); display: inline-flex; gap: var(--space-2); align-items: center; }
-.specimen .sig { display: inline-flex; gap: 6px; align-items: center; }
-svg.mark { width: 16px; height: 16px; fill: currentColor; stroke: none; flex: none; }
-svg.sig-glyph { width: 12px; height: 12px; flex: none; }
-.rail { list-style: none; margin: var(--space-4) 0 var(--space-6); padding: var(--space-2) 0; display: flex; gap: var(--space-5); font: 400 13px var(--mono); color: var(--text-faint); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
-.rail a { text-decoration: none; }
-.rail a:hover, .rail a[aria-current="true"] { color: var(--text); }
-.stage { margin: 0 0 var(--space-7); scroll-margin-top: var(--space-5); }
-.stage h3 { margin: 0 0 var(--space-4); font: 400 13px var(--mono); color: var(--text-faint); }
+/* La prima schermata: l'argomento a sinistra, la prova a destra, senza scorrere. */
+.hero { padding: var(--space-8) 0 var(--space-7); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: var(--space-8); align-items: start; }
+h1.claim { margin: 0; max-width: 20ch; font: 400 clamp(2.2rem, 5.6vw, 4.2rem)/1.04 var(--mono); letter-spacing: -0.04em; text-wrap: balance; }
+.stake { margin: var(--space-5) 0 0; max-width: 54ch; font: 500 clamp(1.15rem, 2.2vw, 1.4rem)/1.4 var(--sans); text-wrap: pretty; }
+.lede { margin: var(--space-4) 0 0; max-width: 54ch; color: var(--text-muted); }
+.hero .actions { margin-top: var(--space-6); }
 
-/* Stage 1: the real notes as a source view */
-.source { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--raised); max-width: var(--measure); }
-.source-head { padding: var(--space-3) var(--space-4); font: 400 14px var(--mono); display: flex; gap: var(--space-3); align-items: center; }
-.source-head .meta { margin-left: auto; color: var(--text-muted); font-size: 13px; }
-.source-lines { border-top: 1px solid var(--rule); padding: var(--space-3) 0; margin: 0; list-style: none; font: 400 13.5px/1.75 var(--mono); overflow-x: auto; }
-.source-lines li { display: grid; grid-template-columns: 6ch 1fr; color: var(--text-muted); }
-.source-lines .ln { color: var(--text-faint); text-align: right; padding-right: 2ch; user-select: none; }
-.source-lines .src { white-space: pre-wrap; padding-right: var(--space-4); overflow-wrap: anywhere; }
-.source-lines .h { color: var(--text); }
+/* Il Proof Panel: la superficie del Source View, con sotto il verdetto che ne e uscito. */
+.proof { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--raised); overflow: hidden; }
+.proof-head { margin: 0; padding: var(--space-3) var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-3); align-items: center; border-bottom: 1px solid var(--rule); }
+.proof-head .tech { color: var(--text); display: inline-flex; gap: var(--space-2); align-items: center; }
+.proof-head .meta { margin-left: auto; }
+.proof-body { padding: var(--space-4); }
+.source-lines { margin: 0; padding: 0; list-style: none; font: 400 13.5px/1.75 var(--mono); }
+.source-lines li { display: grid; grid-template-columns: 5ch 1fr; color: var(--text-muted); }
+.source-lines .ln { color: var(--text-faint); text-align: right; padding-right: 1.5ch; user-select: none; }
+.source-lines .src { white-space: pre-wrap; overflow-wrap: anywhere; }
 .source-lines li.cited { background: var(--breaking-wash); }
 .source-lines li.cited .src { color: var(--text); }
-.source-foot { padding: var(--space-2) var(--space-4) var(--space-3); font: 400 12px var(--mono); color: var(--text-faint); border-top: 1px solid var(--rule); }
+.proof-verdict { margin: var(--space-5) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--rule); }
+.verdict-line { margin: 0; font: 400 clamp(1.5rem, 2.4vw, 1.9rem)/1.15 var(--mono); letter-spacing: -0.03em; display: flex; flex-wrap: wrap; column-gap: 0.4ch; align-items: baseline; }
+.verdict-line .glyph { stroke-width: 1.75; width: 0.8em; height: 0.8em; align-self: center; }
+.verdict-line .claim-part { display: inline-block; }
+.sev-action { color: var(--action); display: inline-flex; align-items: baseline; }
+.verdict-count { margin: var(--space-3) 0 0; font: 400 13px/1.7 var(--mono); color: var(--text-muted); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+.verdict-count strong { color: var(--text); font-weight: 400; }
 
-/* Stage 2: the quote well and the caret row */
-.gut { display: grid; grid-template-columns: 5ch 1fr; font: 400 14px/1.7 var(--mono); max-width: var(--measure); }
+/* Le bande: una riga da bordo a bordo, e il numero nel margine alla scala del titolo. */
+.band { border-top: 1px solid var(--rule); padding: var(--space-8) 0; }
+.band-head { display: grid; grid-template-columns: 8ch 1fr; gap: var(--space-4); align-items: baseline; margin: 0 0 var(--space-6); }
+.band-num { font: 400 clamp(1.4rem, 2.6vw, 1.9rem)/1.2 var(--mono); letter-spacing: -0.03em; color: var(--text-faint); }
+.band-title { margin: 0; font: 400 clamp(1.4rem, 2.6vw, 1.9rem)/1.2 var(--mono); letter-spacing: -0.03em; }
+.band-sub { grid-column: 2; margin: var(--space-2) 0 0; color: var(--text-muted); max-width: 64ch; }
+.band-body { display: grid; grid-template-columns: 8ch 1fr; gap: var(--space-4); }
+.band-body > * { grid-column: 2; }
+
+/* Il banco: le quattro tappe due per due, senza rail. */
+.stages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-7); }
+/* Il titolo della tappa, evidenziato: la lavata e l'inchiostro del testo al 10%, non una tinta. */
+.stage h3 { margin: 0 0 var(--space-4); font: 400 14px var(--mono); }
+.stage h3 span { display: inline-block; background: color-mix(in srgb, var(--text) 10%, transparent); border-radius: 4px; padding: 2px 8px; font-weight: 600; letter-spacing: 0.02em; color: var(--text); }
+.stage p { margin: 0; }
+.prose { font-family: var(--sans); font-size: 16px; line-height: 1.6; max-width: 68ch; color: var(--text-muted); }
+.gut { display: grid; grid-template-columns: 5ch 1fr; font: 400 14px/1.7 var(--mono); }
 .gut > span:first-child { color: var(--text-faint); text-align: right; padding-right: 1.5ch; user-select: none; font-variant-ligatures: none; white-space: nowrap; }
-.well { background: var(--sunken); border-radius: 4px; margin: 2px 0; padding: 6px 0; max-width: var(--measure); }
-.well .gut { margin: 0; max-width: none; }
+.well { background: var(--sunken); border-radius: 4px; margin: 0 0 var(--space-3); padding: 6px 0; }
 .quote > span:last-child { color: var(--text-muted); padding-right: var(--space-3); white-space: pre-wrap; }
 .quote .q-span { color: var(--text); }
 .carets { line-height: 1; }
@@ -137,64 +150,66 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 @keyframes caret { to { clip-path: inset(0 0 0 0); } }
 .cite { font: 400 13px var(--mono); color: var(--help); text-decoration: none; border-bottom: 1px dashed currentColor; white-space: nowrap; }
 .cite:hover { border-bottom-style: solid; }
-
-/* Stage 3 and 4: the verdict and the help line */
-.verdict-line { margin: 0; font: 400 clamp(1.9rem, 5.2vw, 3.4rem)/1.08 var(--mono); letter-spacing: -0.035em; display: flex; flex-wrap: wrap; column-gap: 0.4ch; align-items: baseline; }
-.verdict-line .sev { display: inline-flex; align-items: baseline; }
-.verdict-line .glyph { stroke-width: 1.75; width: 0.8em; height: 0.8em; align-self: center; }
-.sev-action { color: var(--action); }
-.sev-note { color: var(--text-muted); }
-.verdict-count { margin: var(--space-3) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); display: flex; gap: var(--space-4); flex-wrap: wrap; }
-.verdict-count strong { color: var(--text); font-weight: 400; }
-.diag { margin: var(--space-5) 0 0; max-width: 900px; }
-.diag-head { margin: 0; font: 500 18px/1.45 var(--sans); display: grid; grid-template-columns: auto 1fr; column-gap: var(--space-3); }
+.diag-head { margin: 0 0 var(--space-2); font: 500 18px/1.45 var(--sans); display: grid; grid-template-columns: auto 1fr; column-gap: var(--space-3); }
 .diag-head .code { font: 400 16px/1.7 var(--mono); color: var(--breaking); white-space: nowrap; }
-.diag-body { margin-top: var(--space-2); font: 400 14px/1.7 var(--mono); }
-.label { font: 400 14px/1.6 var(--mono); white-space: nowrap; }
 .label-help { color: var(--help); }
 .help-line > span:last-child { font-family: var(--sans); font-size: 16px; }
-.prose { font-family: var(--sans); font-size: 16px; line-height: 1.6; max-width: 68ch; margin: var(--space-4) 0 0; }
 
-/* Two more real releases, the thin notes beside the rich ones */
-.shorts { list-style: none; margin: 0; padding: 0; max-width: var(--measure); border-top: 1px solid var(--rule); }
-.shorts li { padding: var(--space-4) 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 22ch 1fr; gap: var(--space-4); align-items: baseline; }
-.shorts .who { display: flex; gap: var(--space-2); align-items: baseline; font: 600 16px var(--sans); }
+/* Le Note che non sono di quel tipo: due righe larghe. */
+.shorts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.shorts li { padding: var(--space-5) 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 24ch 1fr; gap: var(--space-5); align-items: baseline; }
+.shorts .who { display: flex; gap: var(--space-2); align-items: baseline; font: 600 18px var(--sans); }
 .shorts .who .ver { font: 400 14px var(--mono); color: var(--text-muted); }
-.shorts .what { font: 400 13px/1.7 var(--mono); color: var(--text-muted); }
+.shorts .what { font: 400 14px/1.75 var(--mono); color: var(--text-muted); max-width: var(--measure); }
 .shorts .what strong { color: var(--text); font-weight: 400; }
-
-/* The four words */
-.vocab { margin: 0; padding: 0; max-width: var(--measure); border-top: 1px solid var(--rule); }
-.vocab > div { display: grid; grid-template-columns: 14ch 1fr; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
-.vocab dt { font: 400 13px var(--mono); display: inline-flex; gap: 6px; align-items: center; }
-.vocab dd { margin: 0; color: var(--text-muted); }
-
 .note-block { margin-top: var(--space-5); max-width: var(--measure); }
 .note-line { margin: 0 0 var(--space-3); font: 400 14px var(--mono); color: var(--text-muted); }
 .note-block p { margin: 0; color: var(--text-muted); }
-.close { margin-top: var(--space-8); padding-top: var(--space-5); border-top: 1px solid var(--rule); max-width: var(--measure); }
-.close p { margin: 0; font: 400 clamp(1.5rem, 3.6vw, 2.3rem)/1.15 var(--mono); letter-spacing: -0.03em; }
-.close .sub { margin: var(--space-3) 0 0; font: 400 16px/1.6 var(--sans); color: var(--text-muted); }
-.foot { margin-top: var(--space-7); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
 
+/* Le quattro parole: quattro colonne, l'asse girato. */
+.vocab { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-5); }
+.vocab > div { border-top: 1px solid var(--rule-strong); padding-top: var(--space-3); }
+.vocab dt { font: 400 13px var(--mono); display: inline-flex; gap: 6px; align-items: center; margin-bottom: var(--space-2); }
+.vocab dd { margin: 0; color: var(--text-muted); font-size: 15px; }
+
+/* La chiusura: la claim a sinistra, la contro-posizione a destra. */
+.close { border-top: 1px solid var(--rule); padding: var(--space-8) 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8); align-items: start; }
+.close-claim { margin: 0; font: 400 clamp(1.5rem, 3.6vw, 2.3rem)/1.15 var(--mono); letter-spacing: -0.03em; max-width: 22ch; }
+.close .sub { margin: var(--space-4) 0 0; color: var(--text-muted); }
+.close .actions { margin-top: var(--space-5); }
+.foot { margin-top: var(--space-8); padding-top: var(--space-4); border-top: 1px solid var(--rule); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+
+/* L'arrivo di una banda: una volta sola, e solo se il JavaScript c'e. */
+.js .rise { opacity: 0; transform: translateY(10px); }
+.js .rise.in { opacity: 1; transform: none; transition: opacity 460ms cubic-bezier(0.16, 1, 0.3, 1), transform 460ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+@media (max-width: 1040px) {
+  .hero-grid, .close { grid-template-columns: 1fr; gap: var(--space-7); }
+  .stages { grid-template-columns: 1fr; }
+  .vocab { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 640px) {
-  .topbar-inner, main { padding: 0 var(--space-4); }
-  main { padding-top: var(--space-5); padding-bottom: var(--space-7); }
-  .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
+  .topbar { position: static; }
+  .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; padding: 0 var(--space-4); position: sticky; top: 0; background: var(--ground); }
   .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
   .topbar-inner > nav { order: 3; width: 100%; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+  .wrap { padding: 0 var(--space-4); }
+  .hero { padding-top: var(--space-6); }
+  .band { padding: var(--space-7) 0; }
+  .band-head, .band-body { grid-template-columns: 1fr; gap: var(--space-2); }
+  .band-sub, .band-body > * { grid-column: 1; }
+  .vocab { grid-template-columns: 1fr; }
+  .shorts li { grid-template-columns: 1fr; gap: var(--space-2); }
   .gut { grid-template-columns: 4.5ch 1fr; }
-  .gut > span:first-child { padding-right: 1ch; }
   .carets { display: none; }
   .quote .q-span { text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; }
   .source-lines li { grid-template-columns: 4.5ch 1fr; }
-  .source-lines .ln { padding-right: 1.2ch; }
-  .source-head .meta { display: none; }
-  .shorts li, .vocab > div { grid-template-columns: 1fr; gap: var(--space-2); }
+  .proof-head .meta { display: none; }
   .diag-head { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .js .rise, .js .rise.in { opacity: 1; transform: none; transition: none; }
   .carets .car, .drawn .carets .car { clip-path: none; animation: none; }
 }
 </style>
@@ -203,7 +218,6 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="g-warning" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></symbol>
   <symbol id="g-note" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
-  <symbol id="g-help" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
   <symbol id="s-featured" viewBox="0 0 12 12"><path d="M6 1 11 6 6 11 1 6Z" fill="currentColor"/></symbol>
   <symbol id="s-notable" viewBox="0 0 12 12"><path d="M6 1.7 10.3 6 6 10.3 1.7 6Z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
   <symbol id="s-digest" viewBox="0 0 12 12"><circle cx="6" cy="6" r="2" fill="currentColor"/></symbol>
@@ -233,156 +247,151 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 </header>
 
 <main id="content">
-  <h1 class="claim">Understand before you upgrade.</h1>
-  <p class="stake">React 19.0.0 shipped <strong>13 breaking changes</strong> across 271 lines of release notes. One of them makes <code>propTypes</code> do nothing, silently, and it is on line 47.</p>
-  <p class="lede">Verdict follows the releases of the technologies in your stack and gives each one a single verdict: whether it asks something of you, what breaks, and how to migrate. Every claim points at the line of the release notes it was read from, so you can check it in one click instead of trusting it.</p>
-  <div class="actions">
-    <a class="pointer" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="plabel">see the verdict for react 19.0.0</span></a>
-    <a class="btn" href="#">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-      Sign in with GitHub
-    </a>
-  </div>
-
-  <section aria-labelledby="bench-title">
-    <h2 class="section-title" id="bench-title">one release, four stages</h2>
-    <p class="specimen">
-      <span class="tech"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true" data-mark="React"></svg>React <span class="mono">19.0.0</span></span>
-      <time datetime="2024-12-05">2024-12-05</time>
-      <span class="sig"><svg class="sig-glyph" aria-hidden="true"><use href="#s-featured"/></svg>featured</span>
-      <span>notes from GitHub Releases, 271 lines</span>
-    </p>
-    <ul class="rail">
-      <li><a href="#stage-source" aria-current="true">source</a></li>
-      <li><a href="#stage-cite">cite</a></li>
-      <li><a href="#stage-verdict">verdict</a></li>
-      <li><a href="#stage-help">help</a></li>
-    </ul>
-
-    <div class="stage" id="stage-source">
-      <h3>source &middot; what the project published</h3>
-      <div class="source">
-        <p class="source-head">release-notes: react 19.0.0<span class="meta">lines 43 to 50 of 271</span></p>
-        <ol class="source-lines">
-          <li><span class="ln">43</span><span class="src h">### React</span></li>
-          <li><span class="ln">44</span><span class="src"> </span></li>
-          <li><span class="ln">45</span><span class="src">* New JSX Transform is now required: We introduced a new JSX transform in 2020 to improve bundle size and use JSX without importing React.</span></li>
-          <li><span class="ln">46</span><span class="src">* Errors in render are not re-thrown: Errors that are not caught by an Error Boundary are now reported to window.reportError.</span></li>
-          <li class="cited"><span class="ln">47</span><span class="src">* Removed: `propTypes`: Using `propTypes` will now be silently ignored. If required, we recommend migrating to TypeScript or another type-checking solution.</span></li>
-          <li><span class="ln">48</span><span class="src">* Removed: `defaultProps` for functions: ES6 default parameters can be used in place.</span></li>
-          <li><span class="ln">49</span><span class="src">* Removed: `contextTypes` and `getChildContext`: Legacy Context for class components has been removed.</span></li>
-          <li><span class="ln">50</span><span class="src">* Removed: string refs: Any usage of string refs need to be migrated to ref callbacks.</span></li>
-        </ol>
-        <p class="source-foot">kept exactly as published &middot; 13 breaking changes are listed in this section</p>
+  <section class="hero wrap">
+    <div class="hero-grid">
+      <div>
+        <h1 class="claim">Understand before you upgrade.</h1>
+        <p class="stake">React 19.0.0 shipped <strong>13 breaking changes</strong> across 271 lines of release notes. One of them makes <code>propTypes</code> do nothing, silently, and it is on line 47.</p>
+        <p class="lede">Verdict follows the releases of the technologies in your stack and gives each one a single verdict: whether it asks something of you, what breaks, and how to migrate. Every claim points at the line of the release notes it was read from, so you can check it in one click instead of trusting it.</p>
+        <div class="actions">
+          <a class="btn" href="#">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+            Sign in with GitHub
+          </a>
+          <a class="pointer" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="plabel">see the verdict for react 19.0.0</span></a>
+        </div>
       </div>
-    </div>
-
-    <div class="stage" id="stage-cite">
-      <h3>cite &middot; the line the verdict rests on</h3>
-      <div class="well" id="cited-quote">
-        <p class="gut quote"><span>47</span><span>Using `propTypes` <span class="q-span">will now be silently ignored</span>.</span></p>
-        <p class="gut carets"><span></span><span><span class="pad">Using `propTypes` </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></p>
-      </div>
-      <p class="prose">Nothing is paraphrased. The verdict below quotes this line, points back at it, and would be wrong in a way you could see if the line said something else.</p>
-    </div>
-
-    <div class="stage" id="stage-verdict">
-      <h3>verdict &middot; what it means for you</h3>
-      <p class="verdict-line">
-        <span class="sev sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span>action required</span>
-      </p>
-      <p class="verdict-count">
-        <span><strong>13</strong> breaking changes</span>
-        <span><strong>8</strong> notable changes</span>
-        <span><strong>271</strong> lines read</span>
-      </p>
-      <div class="diag">
-        <p class="diag-head"><span class="code">breaking[1]:</span><span>propTypes stop being checked</span></p>
-        <div class="diag-body">
-          <p class="gut"><span>&nbsp;</span><span class="prose">A component that declares <code>propTypes</code> keeps compiling and keeps running. Nothing warns, and nothing is checked any more.</span></p>
-          <p class="gut help-line"><span>=</span><span><span class="label label-help">help:</span> migrate to TypeScript props, or to another type-checking solution. <a class="cite" href="#stage-cite">release-notes:47</a></span></p>
+      <div class="proof rise">
+        <p class="proof-head">
+          <span class="tech"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true" data-mark="React"></svg>react <span class="mono">19.0.0</span></span>
+          <span class="sig"><svg class="sig-glyph" aria-hidden="true"><use href="#s-featured"/></svg></span>
+          <span class="meta">lines 46 to 49 of 271</span>
+        </p>
+        <div class="proof-body">
+          <ol class="source-lines">
+            <li><span class="ln">46</span><span class="src">* Errors in render are not re-thrown: Errors that are not caught by an Error Boundary are now reported to window.reportError.</span></li>
+            <li class="cited"><span class="ln">47</span><span class="src">* Removed: `propTypes`: Using `propTypes` will now be silently ignored. If required, we recommend migrating to TypeScript or another type-checking solution.</span></li>
+            <li><span class="ln">48</span><span class="src">* Removed: `defaultProps` for functions: ES6 default parameters can be used in place.</span></li>
+            <li><span class="ln">49</span><span class="src">* Removed: `contextTypes` and `getChildContext`: Legacy Context for class components has been removed.</span></li>
+          </ol>
+          <div class="proof-verdict">
+            <p class="verdict-line"><span class="sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span class="claim-part">action required</span></p>
+            <p class="verdict-count">
+              <span><strong>13</strong> breaking</span>
+              <span><strong>8</strong> notable</span>
+              <span><strong>271</strong> lines read</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="stage" id="stage-help">
-      <h3>help &middot; where it goes next</h3>
-      <p class="prose">The full verdict for this release lists all 13 breaking changes the same way, each with its own cited line and its own help line, and the release notes sit under it as a numbered listing you can read in place.</p>
+  <section class="band wrap rise" aria-labelledby="band-1">
+    <div class="band-head">
+      <span class="band-num" aria-hidden="true">01</span>
+      <h2 class="band-title" id="band-1">One release, four stages</h2>
+      <p class="band-sub">The same release the first screen quotes, read the way the app reads it: what the project published, the line the verdict rests on, the verdict itself, and where it goes next.</p>
+    </div>
+    <div class="band-body">
+      <div class="stages">
+        <div class="stage">
+          <h3><span>source</span></h3>
+          <p class="prose">271 lines, kept exactly as published and numbered so a claim can name one of them. The 13 breaking changes are listed in a single section, and the first screen shows lines 46 to 49.</p>
+        </div>
+        <div class="stage" id="cited-quote">
+          <h3><span>cite</span></h3>
+          <div class="well">
+            <p class="gut quote"><span>47</span><span>Using `propTypes` <span class="q-span">will now be silently ignored</span>.</span></p>
+            <p class="gut carets"><span></span><span><span class="pad">Using `propTypes` </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></p>
+          </div>
+          <p class="prose">Nothing is paraphrased. The verdict quotes this line, points back at it, and would be wrong in a way you could see if the line said something else.</p>
+        </div>
+        <div class="stage">
+          <h3><span>verdict</span></h3>
+          <p class="diag-head"><span class="code">breaking[1]:</span><span>propTypes stop being checked</span></p>
+          <p class="prose">A component that declares <code>propTypes</code> keeps compiling and keeps running. Nothing warns, and nothing is checked any more.</p>
+        </div>
+        <div class="stage">
+          <h3><span>help</span></h3>
+          <p class="gut help-line"><span>=</span><span><span class="label-help mono">help:</span> migrate to TypeScript props, or to another type-checking solution. <a class="cite" href="release.html">release-notes:47</a></span></p>
+          <p class="prose" style="margin-top:var(--space-3)">All 13 breaking changes are listed the same way on the release page, each with its own cited line and its own help line.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band wrap rise" aria-labelledby="band-2">
+    <div class="band-head">
+      <span class="band-num" aria-hidden="true">02</span>
+      <h2 class="band-title" id="band-2">And when the notes are not that kind</h2>
+      <p class="band-sub">Most releases do not publish 271 lines. What Verdict does with the thin ones is the same discipline, which is why it is on this page and not in a FAQ.</p>
+    </div>
+    <div class="band-body">
+      <ul class="shorts">
+        <li>
+          <span class="who"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true" data-mark="Vite"></svg>Vite <span class="ver">6.0.0</span></span>
+          <span class="what">a changelog of <strong>28</strong> lines, where the two breaking ones are marked by a single <code>!</code> and sit between a <code>chore</code> and a <code>perf</code>. <a class="cite" href="technology.html">read them apart</a></span>
+        </li>
+        <li>
+          <span class="who"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true" data-mark="TypeScript"></svg>TypeScript <span class="ver">5.7.2</span></span>
+          <span class="what">a release whose body is <strong>a link to a blog post</strong>. There is nothing here to judge, so Verdict says exactly that and points at where the real notes live. <a class="cite" href="technology.html">see that state</a></span>
+        </li>
+      </ul>
+      <div class="note-block">
+        <p class="note-line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: not enough notes to judge</p>
+        <p>This is the sentence Verdict prints instead of a verdict when the notes only point elsewhere. &ldquo;I found no breaking changes&rdquo; and &ldquo;there are no breaking changes&rdquo; are different claims, and the second one is never printed in place of the first.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band wrap rise" aria-labelledby="band-3">
+    <div class="band-head">
+      <span class="band-num" aria-hidden="true">03</span>
+      <h2 class="band-title" id="band-3">Four words on every release</h2>
+      <p class="band-sub">Significance is a shape beside the version, never a hue: colour on this product means severity and nothing else. A release is not urgent because it is red, it is urgent because its notes say so, on a line you can read.</p>
+    </div>
+    <div class="band-body">
+      <dl class="vocab" id="significance">
+        <div>
+          <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-featured"/></svg>featured</dt>
+          <dd>The release where a technology changes direction: a new major where SemVer holds, a new minor for the projects that ship their real changes there. These open your dashboard.</dd>
+        </div>
+        <div>
+          <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-notable"/></svg>notable</dt>
+          <dd>New work, no change of direction: a new minor under SemVer, an odd-numbered Node major. Worth reading, rarely urgent.</dd>
+        </div>
+        <div>
+          <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-digest"/></svg>digest</dt>
+          <dd>What the rule treats as routine, patches first. They never interrupt: you read them grouped by ISO week, in one pass.</dd>
+        </div>
+        <div>
+          <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-preview"/></svg>preview</dt>
+          <dd>A beta or a release candidate. Only the first preview of a new major is summarized, and canaries and nightlies are not releases here at all.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="close wrap rise">
+    <div>
+      <p class="close-claim">Follow the ten technologies that decide your week.</p>
+      <p class="sub">The free plan follows up to 10 technologies from a curated catalog of 37. Sign-in is GitHub, and the release pages stay readable without it.</p>
       <div class="actions">
-        <a class="pointer" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="plabel">read the full verdict for react 19.0.0</span></a>
         <a class="btn" href="#">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
           Sign in with GitHub
         </a>
+        <a class="pointer" href="technologies.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="plabel">browse all 37 technologies</span></a>
       </div>
     </div>
-  </section>
-
-  <section aria-labelledby="thin-title">
-    <h2 class="section-title" id="thin-title">and when the notes are not that kind</h2>
-    <ul class="shorts">
-      <li>
-        <span class="who"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true" data-mark="Vite"></svg>Vite <span class="ver">6.0.0</span></span>
-        <span class="what">a changelog of <strong>28</strong> lines, where the two breaking ones are marked by a single <code>!</code> and sit between a <code>chore</code> and a <code>perf</code>. <a class="cite" href="technology.html">read them apart</a></span>
-      </li>
-      <li>
-        <span class="who"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true" data-mark="TypeScript"></svg>TypeScript <span class="ver">5.7.2</span></span>
-        <span class="what">a release whose body is <strong>a link to a blog post</strong>. There is nothing here to judge, so Verdict says exactly that and points at where the real notes live. <a class="cite" href="technology.html">see that state</a></span>
-      </li>
-    </ul>
-    <div class="note-block">
-      <p class="note-line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: not enough notes to judge</p>
-      <p>This is the sentence Verdict prints instead of a verdict when the notes only point elsewhere. &ldquo;I found no breaking changes&rdquo; and &ldquo;there are no breaking changes&rdquo; are different claims, and the second one is never printed in place of the first.</p>
-    </div>
-  </section>
-
-  <section aria-labelledby="words-title">
-    <h2 class="section-title" id="words-title">the four words on every release</h2>
-    <dl class="vocab" id="significance">
-      <div>
-        <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-featured"/></svg>featured</dt>
-        <dd>The release where a technology changes direction: a new major where SemVer holds, a new minor for the projects that ship their real changes there. These open your dashboard, and they are the ones the page verdict counts.</dd>
-      </div>
-      <div>
-        <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-notable"/></svg>notable</dt>
-        <dd>New work, no change of direction: a new minor under SemVer, an odd-numbered Node major. Worth reading, rarely urgent.</dd>
-      </div>
-      <div>
-        <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-digest"/></svg>digest</dt>
-        <dd>What the rule treats as routine, patches first. They never interrupt: you read them grouped by ISO week, in one pass.</dd>
-      </div>
-      <div>
-        <dt><svg class="sig-glyph" aria-hidden="true"><use href="#s-preview"/></svg>preview</dt>
-        <dd>A beta or a release candidate. Only the first preview of a new major is summarized, and canaries, nightlies and alphas are not releases here at all.</dd>
-      </div>
-    </dl>
-    <div class="note-block">
-      <p class="note-line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: a shape, never a colour</p>
-      <p>Significance is the glyph beside the version, and colour on this product means severity and nothing else. A release is not urgent because it is red; it is urgent because its notes say so, on a line you can read.</p>
-    </div>
-  </section>
-
-  <section aria-labelledby="not-title">
-    <h2 class="section-title" id="not-title">what this is not</h2>
     <div class="note-block" style="margin-top:0">
       <p class="note-line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: it does not open pull requests</p>
       <p>Dependabot and Renovate do that well, and they tell you a version moved. A newsletter tells you a release was interesting. Verdict answers the question those leave open: does this release ask something of me, and where does it say so. It reads only the release notes, it never guesses, and when the notes say nothing it says nothing.</p>
     </div>
-  </section>
-
-  <div class="close">
-    <p>Follow the ten technologies that decide your week.</p>
-    <p class="sub">The free plan follows up to 10 technologies from a curated catalog of 37. Sign-in is GitHub, and the release pages stay readable without it.</p>
-    <div class="actions">
-      <a class="btn" href="#">
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-        Sign in with GitHub
-      </a>
-      <a class="pointer" href="technologies.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="plabel">browse all 37 technologies</span></a>
-    </div>
   </div>
 
-  <p class="foot">
+  <p class="foot wrap">
     <span>verdict:</span>
     <span>design mock</span>
     <span>content read from public release notes</span>
@@ -392,6 +401,8 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 
 <script src="technology-marks.js"></script>
 <script>
+document.documentElement.classList.add("js");
+
 const root = document.documentElement;
 const themeButton = document.getElementById("theme");
 themeButton.addEventListener("click", () => {
@@ -400,7 +411,7 @@ themeButton.addEventListener("click", () => {
   themeButton.setAttribute("aria-label", `Switch to ${next === "dark" ? "light" : "dark"} theme`);
 });
 
-// The Technology Mark comes from the same generated file the other mocks read.
+// Il Marchio della Tecnologia arriva dallo stesso file generato che leggono gli altri mock.
 document.querySelectorAll("[data-mark]").forEach((svg) => {
   const path = window.TECHNOLOGY_MARKS?.[svg.dataset.mark];
   if (!path) return;
@@ -409,28 +420,27 @@ document.querySelectorAll("[data-mark]").forEach((svg) => {
   svg.append(node);
 });
 
-// The one motion moment: the caret row draws once, when the cited line is on screen.
-const cite = document.getElementById("stage-cite");
-const observer = new IntersectionObserver((entries) => {
+// L'arrivo: ogni banda entra una volta e poi e dimenticata.
+const rises = [...document.querySelectorAll(".rise")];
+const enter = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add("in");
+    enter.unobserve(entry.target);
+  });
+}, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
+rises.forEach((node) => enter.observe(node));
+
+// Il caret si disegna quando la riga citata e sullo schermo.
+const cite = document.getElementById("cited-quote");
+const draw = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (!entry.isIntersecting) return;
     entry.target.classList.add("drawn");
-    observer.unobserve(entry.target);
+    draw.unobserve(entry.target);
   });
 }, { threshold: 0.4 });
-observer.observe(cite);
-
-// The rail says where the reader is; it never hides a stage.
-const stages = [...document.querySelectorAll(".stage")];
-const railLinks = new Map([...document.querySelectorAll(".rail a")].map((a) => [a.getAttribute("href").slice(1), a]));
-const spy = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (!entry.isIntersecting) return;
-    railLinks.forEach((link) => link.removeAttribute("aria-current"));
-    railLinks.get(entry.target.id)?.setAttribute("aria-current", "true");
-  });
-}, { rootMargin: "-20% 0px -60% 0px" });
-stages.forEach((stage) => spy.observe(stage));
+draw.observe(cite);
 </script>
 </body>
 </html>

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { TechnologyMark } from "@/modules/catalog/ui";
-import { LandingNote, LandingSectionTitle } from "./landing-note";
+import { Band } from "./band";
+import { LandingNote } from "./landing-note";
 
-const ROW = "grid grid-cols-[22ch_1fr] gap-4 items-baseline border-b border-rule py-4 max-[640px]:grid-cols-1 max-[640px]:gap-2";
-const WHO = "flex items-baseline gap-2 font-sans text-body font-semibold";
+const ROW = "grid grid-cols-[24ch_1fr] gap-5 items-baseline border-b border-rule py-5 max-[640px]:grid-cols-1 max-[640px]:gap-2";
+const WHO = "flex items-baseline gap-2 font-sans text-title font-semibold";
 const VERSION = "font-mono text-diagnostic text-text-muted";
-const WHAT = "font-mono text-label leading-[1.7] text-text-muted";
+const WHAT = "font-mono text-diagnostic leading-[1.75] text-text-muted max-w-measure";
 const LINK = "border-b border-dashed border-current whitespace-nowrap text-help no-underline hover:border-solid";
 
 // DESIGN.md, Short Specimen: two more real Releases, one row each, and they are the honest half of
@@ -17,9 +18,18 @@ const LINK = "border-b border-dashed border-current whitespace-nowrap text-help 
 // Technology reads when its notes are badly shaped, and that is the list rather than one row of it.
 export function ShortSpecimens() {
   return (
-    <section aria-labelledby="thin-title">
-      <LandingSectionTitle id="thin-title">and when the notes are not that kind</LandingSectionTitle>
-      <ul className="max-w-measure border-t border-rule">
+    <Band
+      id="thin-title"
+      number="02"
+      title="And when the notes are not that kind"
+      sub={
+        <>
+          Most releases do not publish 271 lines. What Verdict does with the thin ones is the same
+          discipline, which is why it is on this page and not in a FAQ.
+        </>
+      }
+    >
+      <ul className="border-t border-rule">
         <li className={ROW}>
           <span className={WHO}>
             <TechnologyMark slug="vite" />
@@ -54,6 +64,6 @@ export function ShortSpecimens() {
         &ldquo;I found no breaking changes&rdquo; and &ldquo;there are no breaking changes&rdquo; are
         different claims, and the second one is never printed in place of the first.
       </LandingNote>
-    </section>
+    </Band>
   );
 }

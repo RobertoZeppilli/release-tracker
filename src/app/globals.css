@@ -88,6 +88,14 @@
   --text-verdict: clamp(1.9rem, 5.2vw, 3.4rem);
   --text-verdict--line-height: 1.08;
   --text-verdict--letter-spacing: -0.035em;
+  /* The landing's own claim, the one display line bigger than a verdict: it is the page's sentence,
+     and the verdict it quotes sits beside it at Status scale (DESIGN.md, Proof Panel). */
+  --text-claim: clamp(2.2rem, 5.6vw, 4.2rem);
+  --text-claim--line-height: 1.04;
+  --text-claim--letter-spacing: -0.04em;
+  --text-band: clamp(1.4rem, 2.6vw, 1.9rem);
+  --text-band--line-height: 1.2;
+  --text-band--letter-spacing: -0.03em;
   --text-status: clamp(1.5rem, 3.6vw, 2.3rem);
   --text-status--line-height: 1.15;
   --text-status--letter-spacing: -0.03em;
@@ -110,6 +118,9 @@
   --text-meta: 12px;
 
   --container-content: 1040px;
+  /* The landing alone (DESIGN.md, Layout): the width that lets the argument and the Proof Panel
+     stand side by side on the first screen. The measures inside it are unchanged. */
+  --container-wide: 1240px;
   --container-measure: 72ch;
 }
 
@@ -123,6 +134,12 @@
     color: var(--text);
     font: 400 16px/1.6 var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* The top bar is sticky on every page (DESIGN.md, Layout), so what a link scrolls to clears it:
+     the 56px bar plus 16px of air. */
+  :target {
+    scroll-margin-top: 72px;
   }
 
   ::selection {
@@ -170,6 +187,18 @@
   box-shadow: 0 0 0 2px var(--raised);
   font-size: inherit;
   padding: 0;
+}
+
+/* DESIGN.md, Stage Title: a highlighter over the word, the way a reader marks the four steps of an
+   argument on paper. The wash is the text's own ink at 10%, not a hue: colour means severity here,
+   and a marked word is not a verdict. It works in both themes for the same reason, light over a
+   dark ground and dark over a light one. */
+@utility marker {
+  display: inline-block;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius: var(--radius-inline);
+  padding: 2px 8px;
+  color: var(--text);
 }
 
 /* DESIGN.md: where the caret row cannot be shown, the cited stretch carries this underline inside the
@@ -224,5 +253,33 @@
 
   [data-draw="drawn"] .caret-run {
     animation: caret 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+/* The Arrival Rule (DESIGN.md, Motion): on the landing, and nowhere else, a band arrives once, 10px
+   and a fade on the caret's own curve. Like the caret draw it lives under an attribute only the
+   client sets, so the page is whole with JavaScript off, and the client never arms a band that is
+   already on the screen or a reader who asked for reduced motion. */
+@layer components {
+  [data-arrival="armed"] {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  [data-arrival="in"] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 460ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 460ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-arrival="armed"],
+    [data-arrival="in"] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
   }
 }

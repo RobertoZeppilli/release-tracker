@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { caretWidth, CARET_WIDTHS } from "@/modules/summaries";
-import { CITATION, citedLine, citedSpan, EXCERPT, SPECIMEN } from "./specimen";
+import { CITATION, citedLine, citedSpan, EXCERPT, panelWindow, SPECIMEN } from "./specimen";
 
 // DESIGN.md forbids inventing a Release, a count or a number on the landing, and the landing's whole
 // argument is that a claim and the line it rests on can be checked against each other. What cannot
@@ -40,6 +40,20 @@ describe("the bench specimen", () => {
     expect(numbers).toEqual([...numbers].sort((a, b) => a - b));
     expect(numbers.at(-1)! - numbers[0]!).toBe(numbers.length - 1);
     expect(numbers).toContain(CITATION.line);
+  });
+
+  it("stands the Proof Panel on four real lines, the cited one among them, word for word", () => {
+    const shown = panelWindow();
+
+    expect(shown).toHaveLength(4);
+    expect(shown.map((line) => line.number)).toContain(CITATION.line);
+    // Word for word out of the excerpt: the panel never shortens a line, so a reader who opens the
+    // notes finds what the page showed them.
+    for (const line of shown) {
+      expect(EXCERPT).toContainEqual(line);
+    }
+    // The heading and the blank line stay out: the panel shows entries, not the shape of the file.
+    expect(shown.some((line) => line.heading || line.text.trim() === "")).toBe(false);
   });
 
   it("shows fewer lines than the notes it says it read", () => {

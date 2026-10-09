@@ -66,6 +66,17 @@ export function citedSpan(quote: string, cited: string): Span | null {
   return start < 0 ? null : { start, end: start + cited.length };
 }
 
+// The window the Proof Panel shows, which is narrower than the bench's: the entries only, without
+// the markdown heading and the blank line, and of those the cited one with a line above and two
+// below. Four real lines is what stands beside the claim over the fold. They are never shortened
+// and never reworded, because the panel is the first thing a sceptical reader checks against the
+// file the foot links to (DESIGN.md, Proof Panel).
+export function panelWindow(): SourceLine[] {
+  const entries = EXCERPT.filter((line) => !line.heading && line.text.trim() !== "");
+  const cited = entries.findIndex((line) => line.number === CITATION.line);
+  return entries.slice(Math.max(cited - 1, 0), cited + 3);
+}
+
 // The one line of the excerpt the citation rests on.
 export function citedLine(): SourceLine | undefined {
   return EXCERPT.find((line) => line.number === CITATION.line);
