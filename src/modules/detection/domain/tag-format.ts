@@ -31,3 +31,30 @@ export function versionFromTag(tagFormat: string, tag: string): string | null {
 function escape(literal: string): string {
   return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+// A repository can change how it writes tags, and a `tagFormat` covers one era only: `angular`
+// tagged `21.0.3` in 2025 and tags `v21.0.3` today, `drizzle-orm` did the opposite. The variant is
+// the configured format with the `v` before the Version added or removed, so both eras are readable
+// without the Catalog declaring a second format. The configured form comes first: it is the one that
+// works for the majority, and turning it around would only move the gap.
+export function notesTagCandidates(
+  source: { tagFormat: string; prereleaseTagFormat?: string },
+  version: string,
+): string[] {
+  const variant = {
+    tagFormat: vVariant(source.tagFormat),
+    prereleaseTagFormat: source.prereleaseTagFormat ? vVariant(source.prereleaseTagFormat) : undefined,
+  };
+  const tags = [notesTagFor(source, version), notesTagFor(variant, version)];
+  return [...new Set(tags.filter((tag): tag is string => tag !== null))];
+}
+
+// The `v` sits right before the first placeholder, whichever it is: `v{version}` and
+// `v{major}.{minor}-{prerelease}` both lose it, `svelte@{version}` gains it.
+function vVariant(format: string): string {
+  const placeholder = format.indexOf("{");
+  if (placeholder < 0) return format;
+  const before = format.slice(0, placeholder);
+  const rest = format.slice(placeholder);
+  return before.endsWith("v") ? `${before.slice(0, -1)}${rest}` : `${before}v${rest}`;
+}

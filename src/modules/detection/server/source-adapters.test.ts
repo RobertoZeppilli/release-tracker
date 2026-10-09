@@ -233,3 +233,70 @@ describe("a Source that fails for a moment", () => {
     }
   });
 });
+
+// The three cases of #137, each measured on GitHub on 2026-10-09: `angular` tagged `21.0.3` in 2025
+// and tags `v21.0.3` today, `drizzle-orm` did the opposite, and `express` publishes releases its own
+// paginated list does not contain.
+describe("a repository that changed how it writes tags", () => {
+  function githubApi(repo: string) {
+    return {
+      page: (n: number) => `https://api.github.com/repos/${repo}/releases?per_page=100&page=${n}`,
+      byTag: (tag: string) => `https://api.github.com/repos/${repo}/releases/tags/${tag}`,
+      release: (tag: string, body: string | null = "### Breaking Changes") => ({
+        tag_name: tag,
+        body,
+        draft: false,
+        published_at: "2025-12-03T10:00:00Z",
+        html_url: `https://github.com/${repo}/releases/tag/${tag}`,
+      }),
+    };
+  }
+
+  it("reads the older era out of the list it is already walking", async () => {
+    const { page, release } = githubApi("angular/angular");
+    const angular = { role: "notes", kind: "github-releases", repo: "angular/angular", tagFormat: "v{version}" } as const;
+    const { fetch, requested } = fakeFetch({ [page(1)]: [release("v21.0.4"), release("21.0.3")] });
+
+    const notes = await createSourceAdapters({ fetch }).findNotes(angular, ["21.0.4", "21.0.3"]);
+    expect([...notes.keys()]).toEqual(["21.0.4", "21.0.3"]);
+    expect(notes.get("21.0.3")?.url).toBe("https://github.com/angular/angular/releases/tag/21.0.3");
+    // Both tags were in the list: nothing had to be asked tag by tag.
+    expect(requested).toHaveLength(1);
+  });
+
+  // The same trouble the other way round, and the one that is still bleeding: every new Release of
+  // drizzle is tagged in a form the Catalog does not know.
+  it("reads the newer era too, when the Catalog holds the older one", async () => {
+    const { page, release } = githubApi("drizzle-team/drizzle-orm");
+    const drizzle = { role: "notes", kind: "github-releases", repo: "drizzle-team/drizzle-orm", tagFormat: "{version}" } as const;
+    const { fetch } = fakeFetch({ [page(1)]: [release("v1.0.0-rc.4"), release("0.44.6")] });
+
+    const notes = await createSourceAdapters({ fetch }).findNotes(drizzle, ["1.0.0-rc.4", "0.44.6"]);
+    expect([...notes.keys()]).toEqual(["1.0.0-rc.4", "0.44.6"]);
+  });
+
+  it("asks for the tag directly when the release is missing from the list", async () => {
+    const { page, byTag, release } = githubApi("expressjs/express");
+    const express = { role: "notes", kind: "github-releases", repo: "expressjs/express", tagFormat: "v{version}" } as const;
+    const { fetch, requested } = fakeFetch({
+      [page(1)]: [release("v5.2.0")],
+      [byTag("v4.22.3")]: release("v4.22.3", "Fixed a regression"),
+    });
+
+    const notes = await createSourceAdapters({ fetch }).findNotes(express, ["4.22.3"]);
+    expect(notes.get("4.22.3")?.body).toBe("Fixed a regression");
+    // One page, then the configured form, which answered: the other form was never asked.
+    expect(requested.map((request) => request.url)).toEqual([page(1), byTag("v4.22.3")]);
+  });
+
+  it("tries both forms and gives up on a Version nobody published, without failing", async () => {
+    const { page, byTag, release } = githubApi("expressjs/express");
+    const express = { role: "notes", kind: "github-releases", repo: "expressjs/express", tagFormat: "v{version}" } as const;
+    const { fetch, requested } = fakeFetch({ [page(1)]: [release("v5.2.0")] });
+
+    const notes = await createSourceAdapters({ fetch }).findNotes(express, ["4.22.3"]);
+    expect(notes.size).toBe(0);
+    // Two candidate tags, two questions, and a 404 is an answer and not a failure.
+    expect(requested.map((request) => request.url)).toEqual([page(1), byTag("v4.22.3"), byTag("4.22.3")]);
+  });
+});
