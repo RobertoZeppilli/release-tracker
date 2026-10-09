@@ -15,12 +15,19 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-09, notte fonda, la #141).** La landing è **ripensata e non ancora
-unita**: branch `141-landing-redesign`, nessun commit ancora al momento in cui questo file è stato
-scritto. La #141 era `ready-for-human` e le tre decisioni le ha prese l'utente guardando **tre
-proposte vere** (mock A, B, C, costruiti e aperti nel browser): ha scelto la **A**, "asse spezzato",
-più ingressi sobri per sezione e mano libera sul visivo. Le varianti B e C sono state cancellate
-dopo la scelta: la fonte dell'aspetto resta un file solo, `design/mocks/landing.html`.
+**Da dove ripartire (2026-10-10, notte fonda, dopo la #141).** La landing è **ripensata e unita**:
+**PR #146 unita** in `26214c3`, issue #141 chiusa, tutti i controlli della PR verdi prima del merge
+(`check`, `integration`, Vercel) e **CodeRabbit senza un rilievo**, zero commenti in linea. La CI del
+merge su `main` era **ancora in corso** quando questo file è stato scritto, insieme al `Deploy
+database`, che non ha nulla da applicare: **questa PR non porta migrazioni**. **Non c'è niente in
+sospeso.**
+
+La #141 era `ready-for-human` e le tre decisioni le ha prese l'utente guardando **tre proposte vere**
+(mock A, B, C, costruiti e aperti nel browser): ha scelto la **A**, "asse spezzato", più ingressi
+sobri per sezione e mano libera sul visivo. Le varianti B e C sono state cancellate dopo la scelta:
+la fonte dell'aspetto resta un file solo, `design/mocks/landing.html`. Quattro aggiunte sono nate
+guardando la pagina viva, non dalla issue: numeri delle bande alla scala del titolo, **barra sticky
+su tutta l'app**, titoli delle tappe evidenziati, Marchio a 16px.
 
 **Cosa c'è dentro, nell'ordine che la issue impone.** Prima `DESIGN.md`: una sezione **Motion**
 nuova con due regole nominate, **The One Motion Moment Rule** (dentro l'app si muove solo il caret,
@@ -49,34 +56,42 @@ verdetto del Proof Panel a Status scale andava a capo a ogni larghezza da deskto
 eccezione** a The One-Line Verdict Rule, scritta accanto alla regola.
 
 **I numeri**: **611 unitari**, **191 E2E** (la suite intera, verde), più `pnpm lint`, `pnpm
-typecheck` e `pnpm build`. Il mobile è stato guardato a **390px** con uno script Playwright, non
-ridimensionando la finestra, che qui non cambia il viewport.
+typecheck` e `pnpm build`. Gli E2E sono stati provati **due volte**, sul server di sviluppo e con
+`pnpm build` e `CI=1 pnpm test:e2e`, che è la condizione della CI e la lezione della #140. Il mobile
+è stato guardato a **390px** con uno script Playwright, non ridimensionando la finestra, che qui non
+cambia il viewport.
+
+**In produzione c'è già, e non costa niente.** Il merge ridistribuisce la landing da solo e la
+pagina non chiama nessuno: nessuna migrazione, nessun giro da lanciare a mano, Anthropic non è
+toccata.
 
 ### Cosa resta
 
-1. **La #141 non è unita**: branch `141-landing-redesign`, da committare, aprire in PR con
-   `Closes #141` e far passare dalla CI.
-2. **Su telefono resta ferma tutta la barra, 96px**, non solo la prima riga come l'utente avrebbe
+1. **Su telefono resta ferma tutta la barra, 96px**, non solo la prima riga come l'utente avrebbe
    preferito: la strip delle due destinazioni è figlia dello stesso elemento flex della riga del
    marchio, e fermarne una sola vuole o un secondo `<nav>` nel DOM (due copie degli stessi link per
    uno screen reader) o la strip **sopra** il marchio. Tocca le decisioni della #119, quindi
    l'utente ha scelto di tenere la barra intera e rivederlo con una issue sua, misurando.
-3. **La #142** (`ready-for-human`, Blocked by #141), la stessa direzione portata nell'app, a mock e
+2. **La #142** (`ready-for-human`, Blocked by #141), la stessa direzione portata nell'app, a mock e
    non a codice. ⚠️ Adesso ha una cosa in più da portare: la barra sticky e il Marchio a 16px sono
    già su tutte le pagine, quindi la #142 eredita un'app che la landing non contraddice più sulla
    barra, ma la contraddice ancora su tutto il resto.
-4. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono. Si incrocia con la
-   #141, che ha appena cambiato la landing, e **la misura di partenza non è mai stata presa**:
-   adesso la landing nuova è quella da misurare.
-5. **Il dev server è stato fermato** per provare la suite in condizione CI (`pnpm build` e `CI=1
+3. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono. **La misura di
+   partenza non è mai stata presa**, e adesso in produzione c'è già la landing nuova: quello che si
+   misurerà è lei, e un confronto con la vecchia non esiste più. Che non peggiori è **ragionato e
+   non misurato**: la pagina resta statica e prerenderizzata e l'unico JavaScript in più è la
+   spazzata degli arrivi, che non tocca il primo paint.
+4. **Il dev server è stato fermato** per provare la suite in condizione CI (`pnpm build` e `CI=1
    pnpm test:e2e`, che è la lezione della #140). Va riavviato dall'utente con `pnpm dev`.
-6. **La cancellazione dei rami**, locali e remoti, che resta dell'utente:
+5. **La cancellazione dei rami**, locali e remoti, che resta dell'utente:
    `139-detection-tag-variants`, `140-landing-entry-action`, `137-tag-format-variants`,
    `137-coda-risparmio-chiamate`, `93-prompt-v7`, `57-haiku-summaries`, `26-landing-page`,
-   `80-notes-backfill` e `120-technology-icons`, più `141-landing-redesign` quando sarà unito.
-7. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. Nessuna issue
+   `80-notes-backfill`, `120-technology-icons` e adesso anche **`141-landing-redesign`**, che è
+   unito: in locale si cancella con `git checkout main && git pull && git branch -D
+   141-landing-redesign`.
+6. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. Nessuna issue
    aperta tocca Anthropic.
-8. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview**
+7. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview**
    (oggi un `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla
    sola strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage.
 
@@ -136,15 +151,15 @@ Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte
 nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via dell'utente. Sono tutte
 `ready-for-human`. ⚠️ **Questo capoverso è del 2026-10-06 e va letto con lo Stato davanti**: la **#137** è **chiusa** il
 2026-10-09 e ha lasciato al suo posto **quattro issue nuove**, di cui la **#139** e la **#140** sono
-state chiuse la notte dello stesso giorno (PR #145 e #144); delle quattro restano la **#141** e la
-**#142**, entrambe `ready-for-human`, quindi "non ce n'è nessuna `ready-for-agent`" è di nuovo
-vero. La **#80**
+state chiuse la notte dello stesso giorno (PR #145 e #144), e la **#141** la notte dopo (PR #146):
+delle quattro resta la sola **#142**, `ready-for-human` e non più bloccata, quindi "non ce n'è
+nessuna `ready-for-agent`" è di nuovo vero. La **#80**
 è **chiusa** il 2026-10-09 e ha lasciato al suo posto la **#137**, che è `ready-for-agent`, quindi
 "non ce n'è nessuna" adesso è falso; la **#57**
 è **chiusa** il 2026-10-08, e la **#93** adesso è il prompt **v7** e costa **8 centesimi**, non più
 qualche dollaro, perché le Sintesi si generano con Haiku 5.5. La #93 **spende** su Anthropic, poco; **#65**, tecnica, serve solo il via, e adesso va
 letta insieme allo stage (vedi lo Stato: la strada 1 potrebbe non servire più); **#26** la landing
-page, ferma sul nome del prodotto; **#69** esplicitamente dopo il lancio. La **#80** è chiusa, e la
+page, chiusa da tempo e ripensata dalla #141; **#69** esplicitamente dopo il lancio. La **#80** è chiusa, e la
 scelta fra le sue tre strade è stata la 3, scritta in `CONTEXT.md`: il backfill non genera Sintesi.
 
 **Fuori dalle issue, due cose vive e non decise**, nate in chat il 2026-10-06 e scritte nello Stato:
@@ -400,7 +415,9 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti), **chiusa** il 2026-10-09
   con la PR #136.
   Aperta il 2026-10-09: **#137** (le Note non si trovano quando un repository cambia la convenzione
-  dei tag), `ready-for-agent` e libera da blocchi, nata dal giro a vuoto della #80.
+  dei tag), **chiusa** lo stesso giorno con la PR #138, lasciando al suo posto le **#139**, **#140**,
+  **#141** e **#142**. Le prime tre sono chiuse (PR #145, #144 e **#146**, quest'ultima il
+  2026-10-10 con la landing ripensata); resta la **#142**.
   Aperta dall'utente il 2026-10-04: **#88** (una Sintesi `ready` senza provenienza non viene
   rifiutata dal database), `ready-for-agent` e libera da blocchi.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
