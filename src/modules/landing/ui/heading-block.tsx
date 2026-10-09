@@ -1,7 +1,7 @@
 import { HelpPointer } from "@/components/help-pointer";
 import { releasePath } from "@/modules/releases";
 import { CITATION, SPECIMEN } from "../domain/specimen";
-import { SignInButton } from "./sign-in-button";
+import { EntryAction } from "./entry-action";
 
 // The claim carries the display scale and has nothing above it: a label over an `h1` is a kicker,
 // which DESIGN.md forbids, and the Brand Mark already sits in the header. The stake under it is the
@@ -25,7 +25,7 @@ export function HeadingBlock() {
         <HelpPointer href={releasePath(SPECIMEN.technology.slug, SPECIMEN.version)}>
           see the verdict for {SPECIMEN.technology.slug} {SPECIMEN.version}
         </HelpPointer>
-        <SignInButton />
+        <EntryAction />
       </div>
     </>
   );

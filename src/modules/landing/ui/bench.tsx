@@ -7,7 +7,7 @@ import { Glyph } from "@/modules/summaries/ui";
 import { CITATION, EXCERPT, SPECIMEN } from "../domain/specimen";
 import { CiteWell } from "./cite-well";
 import { LandingSectionTitle } from "./landing-note";
-import { SignInButton } from "./sign-in-button";
+import { EntryAction } from "./entry-action";
 import { SourceView } from "./source-view";
 
 // DESIGN.md, The Bench: four stages that never leave the page, in reading order, at every width.
@@ -125,7 +125,7 @@ export function Bench({ rail }: { rail: React.ReactNode }) {
           <HelpPointer href={release}>
             read the full verdict for {SPECIMEN.technology.slug} {SPECIMEN.version}
           </HelpPointer>
-          <SignInButton />
+          <EntryAction />
         </div>
       </Stage>
     </section>
