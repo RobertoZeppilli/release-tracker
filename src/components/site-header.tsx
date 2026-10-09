@@ -26,7 +26,17 @@ const SLOT =
 // Where the page sits is no longer in the bar: that is `PageBreadcrumb`, at the top of the content.
 // `quota` arrives as an element, not as a component: the header shows what a signed-in page hands
 // it and never learns what a Plan is, so the public pages simply pass nothing.
-export function SiteHeader({ section, quota }: { section?: NavItem; quota?: React.ReactNode }) {
+// `wide` is the landing, the one page at the 1240px container: the bar carries the page's own width
+// so the wordmark sits over the first letter of the claim. Everywhere else it is the app's 1040.
+export function SiteHeader({
+  section,
+  quota,
+  wide,
+}: {
+  section?: NavItem;
+  quota?: React.ReactNode;
+  wide?: boolean;
+}) {
   return (
     <>
       <a
@@ -35,8 +45,12 @@ export function SiteHeader({ section, quota }: { section?: NavItem; quota?: Reac
       >
         Skip to content
       </a>
-      <header className="border-b border-rule">
-        <SiteHeaderBar quota={quota}>
+      {/* DESIGN.md, Layout: the bar stays on the screen, on every page. A product whose pages are
+          long lists of Releases should not ask a reader at the bottom of one to scroll back up to
+          reach the other destination. It keeps its height and its shape while the page moves under
+          it: no shadow, no hiding on scroll, nothing that grows. */}
+      <header className="sticky top-0 z-20 border-b border-rule bg-ground">
+        <SiteHeaderBar quota={quota} wide={wide}>
           <nav aria-label="Sections" className={SLOT}>
             <ul className="flex gap-4 font-mono text-label text-text-muted">
               {NAV.map((item) => (

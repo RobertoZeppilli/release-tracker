@@ -41,6 +41,18 @@ typography:
     fontWeight: 400
     lineHeight: 1.08
     letterSpacing: "-0.035em"
+  claim:
+    fontFamily: "Fragment Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontSize: "clamp(2.2rem, 5.6vw, 4.2rem)"
+    fontWeight: 400
+    lineHeight: 1.04
+    letterSpacing: "-0.04em"
+  band-title:
+    fontFamily: "Fragment Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontSize: "clamp(1.4rem, 2.6vw, 1.9rem)"
+    fontWeight: 400
+    lineHeight: 1.2
+    letterSpacing: "-0.03em"
   status:
     fontFamily: "Fragment Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
     fontSize: "clamp(1.5rem, 3.6vw, 2.3rem)"
@@ -214,18 +226,31 @@ components:
     typography: "{typography.label}"
   brand-mark:
     textColor: "{colors.text}"
-    typography: "{typography.label}"
+    fontFamily: "Fragment Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontSize: "16px"
     letterSpacing: "-0.02em"
-  stage-rail:
+  proof-panel:
+    backgroundColor: "{colors.raised}"
+    textColor: "{colors.text-muted}"
+    typography: "{typography.source}"
+    rounded: "{rounded.md}"
+  band:
+    padding: "72px 0"
+  band-number:
     textColor: "{colors.text-faint}"
-    typography: "{typography.label}"
-    padding: "8px 0"
-  stage-current:
+    typography: "{typography.band-title}"
+  stage-title:
     textColor: "{colors.text}"
-  vocabulary-row:
-    padding: "12px 0"
+    typography: "{typography.diagnostic}"
+    fontWeight: 600
+    letterSpacing: "0.02em"
+    rounded: "{rounded.inline}"
+    padding: "2px 8px"
+  vocabulary-column:
+    textColor: "{colors.text-muted}"
+    padding: "12px 0 0"
   short-specimen:
-    padding: "16px 0"
+    padding: "24px 0"
 ---
 
 # Design System: Verdict
@@ -244,7 +269,7 @@ A light theme mirrors every role with darker severity inks on a warm off-white g
 - Severity colour is always paired with a label word and a glyph.
 - Monospace grammar (`note:`, `breaking[n]:`, `-->`, `|`, `=`, `help:`) is the component language.
 - Flat surfaces: three tonal layers (ground, raised, sunken) and 1px rules. No shadows.
-- One motion moment: the caret underline draws beneath cited spans.
+- One motion moment inside the app: the caret underline draws beneath cited spans. The landing adds one more, an arrival per section, and nothing else anywhere does (see Motion).
 - The Summary and the source notes use different registers: grammar plus prose above, a numbered listing below.
 
 **The landing page is inside this register, not beside it.** "Dense and working-scale, not a marketing page" is a rule about the app, and the one page whose job is to persuade keeps it: the landing argues by putting the work on the screen, a real Release and its real notes, and it owns no furniture the app does not have. No cards, no metric row, no logo wall, no gradient, no testimonial. What it adds is the Brand Mark, the four significance words written out in prose, and two visible actions.
@@ -309,9 +334,19 @@ The neutrals are cool graphite. The four diagnostic inks are the only hues that 
 
 ## Layout
 
-The content column is 1040px max with 24px side padding (16px at 640px and below). The top bar is 56px high and separated by a 1px rule; at 640px and below it is two rows, 56px plus a 40px navigation strip, with a 1px rule between them and under them. Two rows is a rule, not a result: below 430px the quota comes down into the strip, at its right edge, because the wordmark, the quota and the actions no longer fit on one line and the bar would take a third row. It shares the strip with the two sections, which stay at its left edge. Prose is capped at a 72ch measure, and diagnostics at 900px. Spacing uses an 8-step scale (4, 8, 12, 16, 24, 32, 48, 72px). Sections are separated by 48px, diagnostics by 32px, and the verdict sits 32px below the header.
+The content column is 1040px max with 24px side padding (16px at 640px and below). **The top bar stays**: it is `position: sticky; top: 0` on every page, on `ground` with no shadow, under the 1px rule that already separated it, and above the content at a z-index of its own. A product whose pages are long lists of Releases should not make a reader scroll back to the top to reach the other destination, and a bar that is there at 10% of the page and gone at 60% is the kind of inconsistency a reader learns to distrust. What the bar may not do is grow, hide on scroll, change height or gain a shadow when the page moves under it: it is the same 56px row, always, and the rule under it is the only thing that says the content starts. Anything a link scrolls to carries `scroll-margin-top` of 72px (the bar plus 16px) so the bar never lands on top of its own target.
+
+The top bar is 56px high and separated by a 1px rule; at 640px and below it is two rows, 56px plus a 40px navigation strip, with a 1px rule between them and under them. **On a phone only the first row stays**: the 56px row with the wordmark, the quota and the actions is the sticky part, and the 40px strip scrolls away with the page. 96px held on a 667px screen is a seventh of it spent on furniture, and the strip is the row a reader needs least often, since the destination it holds is one scroll to the top away. There, `scroll-margin-top` is 56px plus 16px all the same. Two rows is a rule, not a result: below 430px the quota comes down into the strip, at its right edge, because the wordmark, the quota and the actions no longer fit on one line and the bar would take a third row. It shares the strip with the two sections, which stay at its left edge. Prose is capped at a 72ch measure, and diagnostics at 900px. Spacing uses an 8-step scale (4, 8, 12, 16, 24, 32, 48, 72px). Sections are separated by 48px, diagnostics by 32px, and the verdict sits 32px below the header.
 
 Diagnostic rows use a gutter grid: a 5ch right-aligned faint gutter holds `-->`, `|`, `=` or a line number, and content sits to its right. Key points use an 8.5ch label column. The source view uses a 6ch line-number column.
+
+**The bar's container is the page's container.** The top bar lays its contents out at the width the page under it uses, 1040px on every page of the app and 1240px on the landing, so the wordmark sits over the first letter of the heading rather than 100px inside it. It is one rule and not a landing exception: a bar that kept its own width would be misaligned with any page that did not share it.
+
+**Landing.** The landing is the one page whose container is **1240px**, not 1040px, and the extra 200px are not decoration: they are what lets the argument and the proof stand side by side on the first screen instead of one under the other. Everything inside it still obeys the measures, 72ch for prose and 68ch for explanations, so no line gets longer to fill the width. The first screen is two columns, `minmax(0, 1.05fr)` and `minmax(0, 0.95fr)`, 72px apart: the claim, the stake, the lede and the two actions on the left, the Proof Panel on the right. Below it the page is a stack of **bands**, each opened by a 1px `rule` that runs the full width of the container and holding 72px of padding above and below. A band's head is an 8ch margin column holding the band number (`01`, `02`, `03`) at **Band title scale** in `text-faint`, then the band title at the same scale in `text` and a muted Grotesk line under it at 64ch. The band body keeps the same 8ch indent, so every band reads off one vertical line and the numbers are the only thing in the margin. The number is set at the title's own scale and not smaller, because its job is the page's rhythm: at Meta size it read as a footnote to the margin and gave the eye nothing to count. It is `aria-hidden` and decorative, and no sentence anywhere refers to a band by its number.
+
+Inside the bands: the four bench stages sit **two by two**, 48px apart; the Short Specimen rows use a 24ch first column and 24px of vertical padding; the Vocabulary Legend is four columns, 24px apart, each opened by a 1px `rule-strong` above its word. The closing band is two columns of equal width: the closing claim and its actions on the left, the Counter-Position Note on the right, so the page ends on the same split it opened on.
+
+**Responsive, landing.** At 1040px and below the two columns of the first screen and of the closing band become one, in source order (argument, then proof), the stages become one column and the Vocabulary Legend two. At 640px and below the band head loses its 8ch margin column, the number sitting above the title, the Vocabulary Legend becomes one column and the Short Specimen rows stack to name over line. The arrivals do not change with the width: they are per section, and a phone gets exactly the ones a desktop gets.
 
 **Technology page rows.** The Upgrade Panel opens the page 32px below the header, and the verdict sits 32px below the panel: on this page the verdict is the second thing, not the first, because the counts it claims are built on what the panel declares. Release rows use a four-column grid (11ch significance, 14ch version, 11ch date, then the content), with a 16px column gap, 12px vertical padding and a 1px `rule` below. Folded digest rows share the 11ch significance column, so glyphs line up down the list. The stat list is capped at 820px and uses a 3ch major column, a 1ch `|` column, a bar track (min 120px) and an auto-width words column. Major groups are separated by 48px.
 
@@ -344,17 +379,29 @@ The mock stamps each well with the width its own quote needs: two at 1024px (88 
 The system is flat with no shadows. Depth comes from three tonal layers: `sunken` wells for quotes, diffs and inline code, `ground` for the page, and one `raised` plane for the source view and hover states. Edges are 1px `rule` borders.
 
 ### Named Rules
-**The One Raised Plane Rule.** Only the release-notes source view sits on `raised`. Quoted and code material sinks. One surface floats, and only one: the account panel under the top bar, on `raised` inside a 1px `rule`, with no shadow under it. It is what the viewer opened, it closes on Escape, on a click anywhere else and on following one of its own links, and nothing else on any page is allowed to hover over the text.
+**The One Raised Plane Rule.** Only the release-notes source view sits on `raised`, and the landing's Proof Panel is that same surface and not a second one: real numbered notes on `raised` inside a 1px `rule`, with the verdict they produced added under a hairline. A card would be a surface that holds a claim; this one holds the source, which is the only thing the system lets float. Quoted and code material sinks. One surface floats, and only one: the account panel under the top bar, on `raised` inside a 1px `rule`, with no shadow under it. It is what the viewer opened, it closes on Escape, on a click anywhere else and on following one of its own links, and nothing else on any page is allowed to hover over the text.
 
 ## Shapes
 
 Corners are gently squared: 6px for buttons, the source panel and fix diffs, and 4px for inline code and quote/caret wells. A quote row and its caret row sit in one well, rounded 4px, with 6px of padding above and below. The focus outline is 2px `focus`, offset 3px, with a 3px radius. Pointer links use a dashed 1px underline that turns solid on hover; on a `-->` help pointer only the label carries it. The `-->` pointer and caret row are typographic shapes, not drawn graphics.
 
+## Motion
+
+**The One Motion Moment Rule, inside the app.** On every page a reader works in, the caret underline drawing beneath a cited span is the only motion, plus the digest chevron that rotates to say a row opened. Nothing else moves: no row slides, no section enters, no panel fades. A page that jiggles while demonstrating precision argues against itself, and a reader who comes back to the same page twenty times pays for a flourish twenty times.
+
+**The Arrival Rule, on the landing and nowhere else.** The landing is read once, by someone deciding whether to trust the product, and a page that is read once can afford to be read in order. So each of its sections arrives a single time: 10px up and a fade, 460ms on the same exponential ease-out as the caret (`cubic-bezier(0.16, 1, 0.3, 1)`), fired when the section enters the viewport and then forgotten. What an arrival may not do is the whole of the rule, and it is the part that keeps this from becoming a marketing page: it never repeats, never runs on scroll position, never parallaxes, never moves anything sideways, and never delays what a reader can already see. The first screen does not arrive, it is simply there, because the thing it holds is the argument and the proof.
+
+**A band that was passed over has arrived.** A reader who presses End, or follows an anchor, jumps over bands without any of them ever crossing the viewport, and one left waiting for an entrance it will never get would stay invisible for the rest of the visit. A band now above the viewport is therefore in, immediately: an arrival is a greeting, not a gate.
+
+An arrival carries no information. Every section is in the DOM, in reading order, at full opacity for a crawler, for a reader with JavaScript off, and for anyone who never scrolls, which is why the hiding is applied by script (a `js` class on the root) and not by the stylesheet. Under `prefers-reduced-motion: reduce` there is no arrival and no caret draw: everything is simply in place, and this is not negotiable.
+
+The two exist together because they say different things. The caret draw is **evidence**, it happens where a claim meets the line it rests on, and it happens in the app too. The arrival is **pace**, it belongs to a page that argues, and it stops at the app's door: no section of the Dashboard, a Technology page, a Release page or `/technologies` ever arrives.
+
 ## Brand Mark
 
 The wordmark is the product's own grammar: **`verdict:`** in Fragment Mono 400, lowercase, `-0.02em`, in `text`, colon included and nothing after it. The colon is not decoration. Every line this product cares about opens with one (`ok:`, `warning:`, `breaking[n]:`, `note:`, `help:`), so the mark is the opening of a sentence the app finishes, and the space it leaves after the colon is where the answer goes.
 
-It is Mono 14px in the site header, where it is also the home link, and that is the only place it is set: a second, larger mark over the landing's `h1` is a kicker, which this document forbids, and the header already carries it on that page. It appears once more in the page foot, at Meta size, as the line that names what read the notes. It carries no glyph beside it, no box around it, no second word and no tagline: a claim belongs to the landing's heading, which can be read and corrected, not to a mark that repeats on every page.
+It is Mono 16px in the site header, where it is also the home link, and that is the only place it is set: one step over the 14px it used to be, because it is the first thing read on every page and at the bar's scale it sat level with the links it is not one of; a second, larger mark over the landing's `h1` is a kicker, which this document forbids, and the header already carries it on that page. It appears once more in the page foot, at Meta size, as the line that names what read the notes. It carries no glyph beside it, no box around it, no second word and no tagline: a claim belongs to the landing's heading, which can be read and corrected, not to a mark that repeats on every page.
 
 **The mark never takes a severity ink**, in either theme. Hue means severity (The Severity-Only Colour Rule), and a mark drawn in `ok` or `breaking` would deliver a verdict on every page it sits on, pages that have nothing to judge included. The mark is `text` on `ground`, and the only state it has is the focus ring it gets as a link.
 
@@ -375,6 +422,7 @@ Rejected, and for reasons that outlive the choice: the **octagon**, because in t
 ### Navigation
 There is one navigation, not two: a single top bar on every page, and the slot between the wordmark and the actions always holds the same two sections. The bar says where the viewer may go, and that is all it says. Where the page itself sits belongs to the page, so the breadcrumb is at the top of the content rather than in the bar. There is no sidebar: the app has two signed-in destinations, and the width a sidebar would take is the width the release page spends on its quote wells.
 
+- **The bar stays on the screen.** It is sticky at the top of every page (see Layout): the two destinations are reachable from the bottom of a long list of Releases without scrolling back, which is the commonest shape a page here has. On a phone only the 56px row stays and the 40px strip scrolls away.
 - Top bar: the Mono 14px `release-tracker` wordmark, then the slot, then right-aligned actions. The slot holds a Mono 13px muted nav (`dashboard`, `technologies`, 16px gap), with `aria-current` on the section being read, in `text`. It is the same on every page, public ones included, and no item is current where neither section is being read: a Technology page, a Release page, the home page, the 404, sign in.
 - **The two sections are in the open for everyone, a visitor included.** Both sit behind sign-in and the links are there all the same: a visitor who follows one lands on sign-in and is returned to it afterwards. The header cannot branch on the viewer anyway, since the session arrives after the first paint and a header that changed shape when it arrived would remount the page. This is the rule the `technologies` breadcrumb step already followed, now applied to the slot.
 - **Page breadcrumb:** on a Technology page, a Release page and sign in, a Mono 13px muted `technologies / vite / 6.0.0` at the top of the content, above the `h1`, with the current item in `text` and 24px of air under it. **Steps are links wherever they have a destination**, for everyone, and `technologies` always points at `/technologies`: the breadcrumb describes where the page sits, and `/technologies/vite/6.0.0` really does sit under `/technologies`, so the step tells the truth about the hierarchy rather than about the viewer's rights. It is in the content and not in the bar because the slot it used to take is what put the Dashboard out of sight from a public page (issue #119).
@@ -414,7 +462,7 @@ A Mono 14px muted closing line after the diagnostics. The breaking count is in c
 ### Source View (signature)
 A `<details>` panel on `raised` with a 1px rule border and 6px radius. The summary row shows a chevron (rotates 90deg, 200ms), `release-notes` and right-aligned muted meta (origin · line count). Lines are numbered by counter in a faint 6ch gutter. Headings are in `text`, body lines in `text-muted`. Following a cite pointer opens the panel, clears earlier highlights, applies `breaking-wash` or `help-wash` to the cited range (depending on the citing severity), centres the first line, and draws a 2px underline in that severity's ink beneath each cited span.
 
-**Motion:** the underline reveals left to right (clip-path, 650ms, cubic-bezier(0.16, 1, 0.3, 1), 120ms delay). This is the system's only motion moment besides the chevron. Under `prefers-reduced-motion`, the underline appears immediately and smooth scrolling is off.
+**Motion:** the underline reveals left to right (clip-path, 650ms, cubic-bezier(0.16, 1, 0.3, 1), 120ms delay). This is the app's only motion moment besides the chevron (see Motion; the landing adds an arrival per section, and nothing else does). Under `prefers-reduced-motion`, the underline appears immediately and smooth scrolling is off.
 
 **The way back.** The interaction is a round trip, so the panel owes the reader the second leg: one `<-- back to breaking[1]` pointer, on a row of its own directly above the first line of the active range. The row keeps the line gutter but takes no line number of its own, so every number beside the lines being compared stays where it was; it carries the range's wash and the citing severity's ink, and the label is a Help Pointer Link turned around, with the arrow reversed and no `-->`. It **names its caller** (`breaking[1]`, `note[3]`), never a generic way up, so a reader with four breaking changes returns to the one they came from.
 
@@ -538,7 +586,7 @@ The filter is one Mono 14px/1.7 muted sentence in a `role="search"` paragraph, l
 **`/` puts the focus in the filter**, and the line says so: after the count, in Meta `text-faint`, `press / to filter`. The hint is a fact and not a control, so it has no border and nothing to press, and it goes at 640px and below, where the keyboard it talks about is usually not there. The shortcut is announced to assistive technology by `aria-keyshortcuts="/"` on the field itself, which is the half of the announcement a faint line cannot make. **It is only a shortcut while nothing else is listening**: a `/` typed into a field, or with a modifier held, belongs to whoever has the focus, and the press selects what the field already holds so the next keystroke replaces it. It is the one key the app claims, and it claims it because this audience reaches for it first.
 
 ### Picker Sections (Technologies)
-Three sections in order, each with a Section title that counts the rows that belong to it: `following (7)`, `catalog (35)`, and `retired (1)` only when a retired Technology is still followed. While filtering, the counts read `following (2 of 7)`, and a section with no matches is hidden. The `catalog` section is divided one level further, by Category (see Category Groups). A toggle moves the row: following one inside `catalog (35)` puts it in `following` and reads `following (8)` and `catalog (34)` at once, on the same tick the follow status moves. The move is instant and nothing animates, so the caret draw stays the system's single motion moment, and the Follow Toggle takes the focus back at the row's new place: the keyboard lands where it was pressing and the page scrolls to where the row went. **This reverses the first shape of the page**, where a row kept its place until the next visit so that a long list would not shift under the pointer mid-press, and said where it was going with an uninked note line under it (see Row Error Line). The reversal was made in two steps, on a Developer's report both times: first the counts alone were made live, on the reasoning that the complaint was really about a page contradicting itself (a row sitting under `catalog` with a `Following` toggle), and when that was shipped the complaint survived, because finding a row you have just followed still took a reload. The cost that was feared is paid by the focus, which the old shape had no answer for either, and it is cheaper than it looked: the list shifts after the press is released, not during it. The page never shows a count that the next visit would contradict.
+Three sections in order, each with a Section title that counts the rows that belong to it: `following (7)`, `catalog (35)`, and `retired (1)` only when a retired Technology is still followed. While filtering, the counts read `following (2 of 7)`, and a section with no matches is hidden. The `catalog` section is divided one level further, by Category (see Category Groups). A toggle moves the row: following one inside `catalog (35)` puts it in `following` and reads `following (8)` and `catalog (34)` at once, on the same tick the follow status moves. The move is instant and nothing animates, so the caret draw stays the app's single motion moment, and the Follow Toggle takes the focus back at the row's new place: the keyboard lands where it was pressing and the page scrolls to where the row went. **This reverses the first shape of the page**, where a row kept its place until the next visit so that a long list would not shift under the pointer mid-press, and said where it was going with an uninked note line under it (see Row Error Line). The reversal was made in two steps, on a Developer's report both times: first the counts alone were made live, on the reasoning that the complaint was really about a page contradicting itself (a row sitting under `catalog` with a `Following` toggle), and when that was shipped the complaint survived, because finding a row you have just followed still took a reload. The cost that was feared is paid by the focus, which the old shape had no answer for either, and it is cheaper than it looked: the list shifts after the press is released, not during it. The page never shows a count that the next visit would contradict.
 
 ### Category Groups (Technologies)
 The `catalog` section is read by Category, not as one alphabetical list: ten groups in the order `CONTEXT.md` declares (`language`, `runtime`, `framework`, `server framework`, `database`, `build tool`, `testing`, `lint and formatting`, `library`, `platform`), none of them above eight rows. Each group is a `<section>` headed by the same Section title one level down (`<h3>`, identical type and rule), 20px below the group before it, and the Catalog keeps its own `catalog (32)` title and count above them all, with the Limit Note still directly under it where the next Follow would happen. The sum of the group counts is the Catalog count, and a group loses a row the moment it is followed, exactly like a section: following a row inside `framework (8)` reads `framework (7)` on the same tick, because the row has gone to `following`. While filtering, a group title reads `framework (2 of 8)` and a group with no match is hidden, the same rule the sections follow. `following` and `retired` are never grouped: the Category answers "what could go in my stack", which is a question only the Catalog is asked.
@@ -566,31 +614,51 @@ When the filter matches nothing, all three sections are hidden and a polite live
 
 The landing is one real Release on a bench, examined in four stages that never leave the page: `source`, `cite`, `verdict`, `help`. The specimen is React 19.0.0, its notes are the ones GitHub serves, and the line the page cites is line 47 of them. Nothing on the landing is a mock-up of a Release: a page that argues for cited judgments cannot make its own claims uncheckable.
 
-**The rail is anchors, not tabs.** A Mono 13px row of the four stage words sits under the heading, the current one in `text` and the rest in `text-faint`, each a link to the stage below it. All four stages exist in the DOM, in reading order, at every width: the rail moves the reader, it does not reveal content. A visitor with JavaScript off, a crawler, and a reader who never scrolls all get the whole page.
+**The proof comes before the bench, and the bench explains it.** The first screen carries the Proof Panel, so the reader meets the real notes and the verdict they produced without scrolling; the bench below takes the same Release apart in four stages and says how that verdict was reached. The four stages sit **two by two** inside band `01`, each opened by its word as a **Stage Title** (`source`, `cite`, `verdict`, `help`) and holding what that word means: `source` says what the 271 lines are and which of them the Proof Panel showed, `cite` is the quote row and caret row that name line 47, `verdict` is the `breaking[1]:` diagnostic with its Grotesk explanation, `help` is the `= help:` line with the Help Pointer Link to the public Release page.
 
-**The one motion moment is the system's own.** As the `cite` stage comes into view the caret underline draws beneath the quoted span, the same draw the Release page performs, exponential ease-out, once. Under `prefers-reduced-motion: reduce` the underline is simply there. No stage animates in, nothing parallaxes, and the page has no second effect: the bench is the demonstration, and a page that jiggles while demonstrating precision argues against itself.
+**There is no stage rail**, and that is a reversal: the four stages used to be a full column each with a Mono row of anchors above them, the current one in `text`. Two by two they fit a screen, so the rail pointed at what the reader could already see, which is furniture with a navigational excuse. The anchors go, the four words stay as the stage titles, and the content is unchanged: all four stages are in the DOM, in reading order, at every width.
 
-The stages carry the page's hierarchy: `source` is a Source View at the 72ch measure with the real notes and their real line numbers; `cite` is the quote row and caret row that name line 47; `verdict` is a Verdict Line, `warning: action required`, at Verdict scale, with its count row; `help` is the `= help:` line and the Help Pointer Link that leads to the public Release page for React 19.0.0. The two actions of the page, a Help Pointer Link and the entry action, sit together in three places and nowhere else: the heading block, the end of the bench, and the foot. The pointer names a different destination in the last one, the Catalog rather than the Release, because by then the reader has been shown the Release twice.
+**The motion is two things, and both are named in Motion.** The caret underline draws beneath the quoted span as the `cite` stage arrives, the same draw the Release page performs; and each band arrives once, 10px and a fade. Under `prefers-reduced-motion: reduce` neither happens and everything is simply in place.
+
+The two actions of the page, the entry action and a Help Pointer Link, sit together in two places and nowhere else: the first screen and the closing band. The pointer names a different destination in the second one, the Catalog rather than the Release, because by then the reader has been shown the Release twice. The third pair, at the end of the bench, is gone with the long bench that needed it: on the new page the closing band is one screen away, and a page that offers the same button three times is asking rather than showing.
 
 **The entry action has two faces, and it is the one element of the landing that depends on the reader.** To a Visitor it reads `Sign in with GitHub` and leads to the login, which returns to the Dashboard; with a session open it reads `Go to your dashboard` and leads there. It never disappears and it never asks for something already done: a reader who is signed in still needs one visible way to their work (The No Dead End Rule), and a button that vanished would leave a hole and move what sits beside it.
 
 The landing is a static document, so the session lands after the first paint, and the two halves of The Reserved Space Rule are not kept the same way here. The **space is reserved**, strictly: both labels sit in the same grid cell, the one that is not the reader's at `visibility: hidden`, so the box is as wide as the wider of them from the first paint and the change of face moves nothing and is measured not to (issue #140). The **unknown is not declared**, and this is the one place in the product where it is answered with a guess instead: the visitor's face is what the prerendered document carries, it is what every crawler reads, and holding an empty box over the fold for as long as a cookie takes to be read costs the commonest reader more than a changed word costs the rarer one. Nothing else on the landing branches on the viewer, for the reason the top bar does not either: a provider that arrives with the session would remount the page.
 
+### Stage Title (landing)
+
+The four words of the bench, each **highlighted**: Mono 14px 600 at `0.02em` in `text`, inside a 4px-radius wash of the text's own ink at 10% (`color-mix(in srgb, var(--text) 10%, transparent)`), 2px above and below and 8px either side. It is the mark a reader makes on paper over the steps of an argument, and it is the same gesture in both themes, light ink over a dark ground and dark ink over a light one.
+
+**The wash is neutral by construction, and that is the whole reason it may exist.** Hue means severity (The Severity-Only Colour Rule), so a highlighter in coral or cyan would deliver a verdict on a word that judges nothing. Drawn from `text` it carries no hue at all, and it cannot drift into one when a theme changes.
+
+The words were a Section title before, Mono 13px muted, and at that weight they read as captions to the prose rather than as its joints: the four stages are the skeleton of the page's argument, and a reader skimming the band has to be able to count them. Neither an ordinal nor a rule above them survived the same question: the band already carries a number in its margin, and a second counter inside it counts something the reader was not asked to track.
+
+### Proof Panel (signature, landing)
+
+The right half of the landing's first screen: the one place in the product where the source and the verdict it produced are shown together, because a reader who has not scrolled yet has no other way to be told what this is.
+
+It is the Source View surface (`raised`, 1px `rule`, 6px radius) and not a second raised plane. Its head is a Label row: the Technology Mark and `react 19.0.0` in `text`, the featured glyph, and `lines 45 to 50 of 271` right-aligned in `text-muted`, which is hidden at 640px and below. Its body is **four** real lines of the React 19.0.0 notes at Source scale in a 5ch line-number column, with line 47 carrying the `breaking-wash` and its text in `text`. Four is the cited line with one above and two below, which is what stands beside the claim without pushing the verdict under the fold on a laptop; the window is chosen in the domain (`panelWindow`) and tested there, so the head that names it (`lines 46 to 49 of 271`) and the bench sentence that repeats it cannot drift from what is on the screen. Under a 1px `rule`, the verdict those lines produced: the warning glyph and `warning: action required` at Mono `clamp(1.5rem, 2.4vw, 1.9rem)`, then the count row in Mono 13px `text-muted` with `13 breaking`, `8 notable` and `271 lines read`, the figures in `text`.
+
+**The verdict in the panel is under Status scale, and this is the one exception to The One-Line Verdict Rule.** The display line of this page is the claim, which is the page's own sentence; the panel quotes a verdict that belongs to the Release page, and two display lines on one screen would leave the reader to work out which of them the page is making. Its clamp is its own because the rule it must keep is the one-line rule: the column is a fraction of the page rather than the page, so a scale set against the viewport wrapped `action required` onto a second row at every desktop width. `2.4vw` is the coefficient at which the line holds from the 1040px step up, and the cap keeps it under Status at the widest. Below 1040px the panel takes the full width and the claim wraps as a unit, exactly as a verdict does on a phone. The exception is bounded to this panel: on any page that judges a Release, the verdict keeps Verdict scale.
+
+**The lines are never shortened and never reworded**, and the numbers are the true ones: the panel is the first thing a sceptical reader checks against GitHub, so what it cuts is the window, never the sentence. The bench no longer repeats them in a Source View of its own, since the panel is already that view: on the old page the notes were shown once, below the fold; now they are shown once, above it.
+
 ### Short Specimen (landing)
 
-Under the bench, two more real Releases, one row each, 16px of vertical padding and a 1px `rule` between them: the Technology Mark and name, the version, and one Mono 13px line that names what the notes of that Release actually are. Vite 6.0.0 ships a changelog of 28 lines where the two breaking ones are marked by a single `!`; TypeScript 5.7.2 ships a release whose body is a link to a blog post.
+In band `02`, two more real Releases, one row each, a 24ch first column, 24px of vertical padding and a 1px `rule` between them: the Technology Mark and name, the version, and one Mono 13px line that names what the notes of that Release actually are. Vite 6.0.0 ships a changelog of 28 lines where the two breaking ones are marked by a single `!`; TypeScript 5.7.2 ships a release whose body is a link to a blog post.
 
 They are the honest half of the argument and they are not decoration: they show the product meeting notes that are badly shaped and notes that are missing, which is the state the Summary calls `unavailable`. A landing that shows only its best case teaches a visitor to distrust the first ordinary Release they open.
 
 ### Vocabulary Legend (landing)
 
-The four significance words, defined in words, with the id `significance` so the app can point here. One row each, 12px glyph and the word in Mono 13px `text` in a 14ch column, then a Grotesk sentence in `text-muted` taken from CONTEXT.md, rows divided by 1px `rule`, no boxes and no colour: significance is a shape (The Neutral Significance Rule).
+The four significance words, defined in words, with the id `significance` so the app can point here. In band `03` they are **four columns, not four rows**: each one opens with a 1px `rule-strong` above it, then the 12px glyph and the word in Mono 13px `text`, then a Grotesk 15px sentence in `text-muted` taken from CONTEXT.md. No boxes and no colour: significance is a shape (The Neutral Significance Rule), and the four rules above the four words are a reading order, not a frame. The axis is turned because four short definitions stacked as rows were the page's flattest stretch, 200px of left-aligned list in the middle of the argument; side by side they are one object the eye takes in at once, and they say by their shape that the four words are siblings.
 
 It exists because the app shows these four words everywhere and defines them nowhere, which is why the help axis of the 2026-10-07 critique scores 1 out of 5. The definition lives on the landing by decision (`docs/DECISIONI.md`): inside the app the word stays paired with its glyph, which is what WCAG asks, and a definition in every section heading would repeat four sentences on every visit.
 
 ### Counter-Position Note (landing)
 
-What the product is not, in the register the product already has: a `note:` line in `text-muted` with the info glyph, then Grotesk prose at the measure. Dependabot and Renovate open a pull request when a version moves; a newsletter says a release was interesting; this product says whether this Release asks something of you, and cites the line it read. No comparison table, no competitor logo, and no claim about another tool's quality: naming what a neighbour does well is the only way the sentence stays true, and the only way it stays persuasive to someone who already uses one.
+What the product is not, in the register the product already has: a `note:` line in `text-muted` with the info glyph, then Grotesk prose at the measure. **It has no band of its own**: it sits in the right half of the closing band, beside the closing claim and the entry action. A whole band saying what the product is not gave a counter-argument the same weight as the demonstration, and it was the fifth stop on a page whose reader had already decided by the fourth. Beside the closing claim it is read by whoever is still weighing the decision, which is exactly who it was written for. Dependabot and Renovate open a pull request when a version moves; a newsletter says a release was interesting; this product says whether this Release asks something of you, and cites the line it read. No comparison table, no competitor logo, and no claim about another tool's quality: naming what a neighbour does well is the only way the sentence stays true, and the only way it stays persuasive to someone who already uses one.
 
 ### Inline Code
 Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
@@ -602,7 +670,9 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Do** cite every key point and breaking change with a `release-notes:N` or `N-M` pointer that highlights exactly those lines in the source view, and give the highlighted range a pointer back to the diagnostic that cited it: an authored round trip owes the reader both legs.
 - **Do** set grammar, numbers and line references in Fragment Mono with tabular numerals, and explanations in Hanken Grotesk.
 - **Do** replace a caret row with an in-quote 2px `breaking` underline wherever the quote would wrap, not only at 640px and below.
-- **Do** keep the caret-draw as the single motion moment, with an immediate fallback under reduced motion.
+- **Do** keep the caret-draw as the app's single motion moment, with an immediate fallback under reduced motion (see Motion).
+- **Do** let a landing band arrive once, 10px and a fade on the caret's own curve, applied by script so the page is whole without JavaScript, and never anywhere but the landing (see The Arrival Rule).
+- **Do** keep the top bar sticky on every page, at its own 56px height, with no shadow and no change of shape while the page moves under it, and give anchor targets a 72px `scroll-margin-top`.
 - **Do** define both themes for every colour role. Dark is the default.
 - **Do** mark release significance with the neutral SVG shape glyphs (see The Neutral Significance Rule).
 - **Do** give a Technology its mark where the subject is the Technology itself, in `currentColor`, and reserve the box empty where no mark exists (see Technology Mark).
@@ -623,7 +693,8 @@ Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 - **Don't** wrap diagnostics in cards or badges. Structure comes from gutters and grammar.
 - **Don't** colour `note:` or non-error status lines. They stay `text-muted`.
 - **Don't** give significance (featured, notable, digest, preview) a severity ink, and don't let a bar carry meaning without its counts in words.
-- **Don't** shrink the verdict scale to fit longer copy.
+- **Don't** shrink the verdict scale to fit longer copy. The landing's Proof Panel is the single exception, and it is written down (see Proof Panel).
+- **Don't** animate anything inside the app, and don't let a landing arrival repeat, follow the scroll, parallax, move sideways or hold back something the reader could already read.
 - **Don't** leave a viewer without a way to the destinations at any width. Narrow screens get the same links, on a second row, or in the account panel that every page carries for whoever is signed in. There is no hamburger: what opens is the account, and it is the viewer's own menu, not the page's navigation.
 - **Don't** fill a wait with a skeleton, a shimmer or a spinner. The space is reserved and empty, and what is not known is said (see The Reserved Space Rule).
 - **Don't** persuade with furniture the app does not own: no cards, no metric row, no logo wall, no testimonial, no comparison table, no kicker above a heading. The landing persuades by showing the work.

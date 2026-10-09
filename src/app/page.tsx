@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
 import { readCatalogDirectory } from "@/modules/catalog/server";
 import { SPECIMEN } from "@/modules/landing";
-import { Bench, ClosingBlock, HeadingBlock, ShortSpecimens, STAGES, StageRail, VocabularyLegend } from "@/modules/landing/ui";
+import { Arrivals, Bench, ClosingBlock, HeadingBlock, ProofPanel, ShortSpecimens, VocabularyLegend } from "@/modules/landing/ui";
 import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
 const TITLE = "Verdict, understand before you upgrade";
@@ -30,14 +30,21 @@ export default async function LandingPage() {
 
   return (
     <>
-      <SiteHeader />
-      <main id="content" className="mx-auto max-w-content px-4 pt-6 pb-8 sm:px-5 sm:pt-6">
-        <HeadingBlock />
-        <Bench rail={<StageRail stages={STAGES} />} />
+      <SiteHeader wide />
+      {/* The landing is the one page at the wide container (DESIGN.md, Layout): the 200px over the
+          app's 1040 are what lets the argument and the proof stand side by side on the first
+          screen. The measures inside it do not move. */}
+      <main id="content" className="mx-auto max-w-wide px-4 pb-8 sm:px-5">
+        <section className="grid grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] items-start gap-8 py-8 pb-7 max-[1040px]:grid-cols-1 max-[1040px]:gap-7 max-sm:pt-6">
+          <HeadingBlock />
+          <ProofPanel />
+        </section>
+        <Bench />
         <ShortSpecimens />
         <VocabularyLegend />
         <ClosingBlock catalogSize={catalog.length} followLimit={FREE_FOLLOW_LIMIT} />
-        <p className="mt-7 flex flex-wrap gap-4 font-mono text-meta text-text-faint">
+        <Arrivals />
+        <p className="mt-8 flex flex-wrap gap-4 border-t border-rule pt-4 font-mono text-meta text-text-faint">
           <span>verdict:</span>
           <span>content read from public release notes</span>
           <a href={SPECIMEN.notesUrl}>

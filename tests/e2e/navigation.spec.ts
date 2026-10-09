@@ -198,3 +198,16 @@ test("the account panel hands the keyboard its first visible line, above 640px",
   await expect(panel).toBeHidden();
   await expect(account).toBeFocused();
 });
+
+// DESIGN.md, Layout: the bar stays on the screen, on every page. The destinations are what a reader
+// at the bottom of a long list of Releases needs, and that is exactly where they used to be out of
+// reach without scrolling back. The bar keeps its height while the page moves under it.
+test("the top bar is still there at the bottom of a long page", async ({ page }) => {
+  await page.goto("/technologies");
+  const bar = page.getByRole("banner");
+  const height = (await bar.boundingBox())?.height;
+
+  await page.keyboard.press("End");
+  await expect(page.getByRole("banner").getByRole("link", { name: "verdict:" })).toBeInViewport();
+  expect((await bar.boundingBox())?.height).toBe(height);
+});

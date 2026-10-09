@@ -2,8 +2,8 @@ import { expect, type Locator, type Page, test } from "@playwright/test";
 import { e2eAuthSecret, type FixtureDeveloper, seedDeveloper } from "./fixtures";
 
 // The landing argues by showing the work, so what is tested is that the work is on the page: the
-// four stages in the DOM rather than behind a tab, the four Significance words said in words, the
-// two actions, and the one motion moment held to its rule.
+// proof over the fold, the four stages in the DOM rather than behind a tab, the four Significance
+// words said in words, the two actions, and the two motion moments held to their rules.
 
 const STAGES = ["source", "cite", "verdict", "help"];
 const WORDS = ["featured", "notable", "digest", "preview"];
@@ -29,6 +29,16 @@ test.afterAll(async () => {
   await developer.remove();
 });
 
+// Every band arrived and every transition finished. An arrival moves an element 10px while it runs,
+// so a box read mid-arrival differs from the same box afterwards for a reason that has nothing to do
+// with the session (DESIGN.md, The Arrival Rule).
+async function settled(page: Page): Promise<void> {
+  await page.keyboard.press("End");
+  await expect(page.locator('[data-arrival="armed"]')).toHaveCount(0);
+  await page.waitForTimeout(600);
+  await page.evaluate(() => window.scrollTo(0, 0));
+}
+
 async function boxesOf(links: Locator): Promise<(readonly number[])[]> {
   const all = await links.all();
   return Promise.all(
@@ -48,16 +58,58 @@ test("the claim and the specimen open the page", async ({ page }) => {
   await expect(page.getByText("React 19.0.0", { exact: false }).first()).toBeVisible();
 });
 
-test("the four stages are on the page, in reading order, and the rail only moves the reader", async ({ page }) => {
+test("the proof stands beside the claim, with the real line and the verdict it produced", async ({ page }) => {
+  await page.goto("/");
+  const panel = page.getByRole("main").locator("ol").first();
+
+  // The cited line, word for word out of the notes, and three real lines around it.
+  await expect(panel.getByRole("listitem")).toHaveCount(4);
+  await expect(panel).toContainText("Using `propTypes` will now be silently ignored");
+  await expect(page.getByText("warning:").first()).toBeVisible();
+});
+
+test("the four stages are on the page, in reading order, each saying its name", async ({ page }) => {
   await page.goto("/");
 
   for (const stage of STAGES) {
-    await expect(page.locator(`#stage-${stage}`)).toBeVisible();
+    const node = page.locator(`#stage-${stage}`);
+    await expect(node).toBeVisible();
+    await expect(node.getByRole("heading", { level: 3 })).toHaveText(stage);
   }
-  // Anchors, not tabs: each rail link points at a stage that is already in the document.
+  // The rail is gone with the long bench: nothing points at a stage the reader can already see.
   for (const stage of STAGES) {
-    await expect(page.getByRole("link", { name: stage, exact: true })).toHaveAttribute("href", `#stage-${stage}`);
+    await expect(page.getByRole("link", { name: stage, exact: true })).toHaveCount(0);
   }
+});
+
+// DESIGN.md, The Arrival Rule: a band arrives once, and only a band that is still below the fold is
+// ever armed. Hiding something the reader can already see and fading it back in is the one thing an
+// arrival may not do, and hydration is exactly when that would happen.
+test("the bands arrive once, and never the ones already on the screen", async ({ page }) => {
+  await page.goto("/");
+  const bands = page.locator("[data-arrival]");
+
+  await expect(bands.first()).toHaveAttribute("data-arrival", "");
+  const armed = page.locator('[data-arrival="armed"]');
+  await expect(armed.first()).toBeAttached();
+
+  const last = bands.last();
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toHaveAttribute("data-arrival", "in");
+});
+
+test("nothing is armed under reduced motion, or with JavaScript off", async ({ browser, page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator('[data-arrival="armed"]')).toHaveCount(0);
+  await expect(page.locator("#stage-help")).toBeVisible();
+
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const still = await context.newPage();
+  await still.goto("/");
+  await expect(still.locator('[data-arrival="armed"]')).toHaveCount(0);
+  await expect(still.locator("#significance")).toBeVisible();
+  await context.close();
 });
 
 test("every stage is there with JavaScript off, the quoted line included", async ({ browser }) => {
@@ -114,7 +166,8 @@ test("the two actions lead to a public release page and to the login, and nowher
     "/technologies/react/19.0.0",
   );
   const signIn = main.getByRole("link", { name: ENTRY_VISITOR });
-  await expect(signIn).toHaveCount(3);
+  // Twice and no more: the first screen and the closing band (DESIGN.md, The Bench).
+  await expect(signIn).toHaveCount(2);
   await expect(signIn.first()).toHaveAttribute("href", "/login?next=%2Fdashboard");
   await expect(main.getByRole("link", { name: /^browse all \d+ technologies$/ })).toHaveAttribute(
     "href",
@@ -142,7 +195,7 @@ test("the landing is in the index and in the sitemap, and the brand mark is the 
 // in between to measure: `onAuthStateChange` hands `useSession` the session out of the cookie, with
 // no request to wait for, so the face changes as hydration runs. Holding back `/auth/v1/user` was
 // tried and proves nothing, since nobody waits for it.
-test("with a session open the three entry actions lead to the Dashboard, and the change moves nothing", async ({
+test("with a session open both entry actions lead to the Dashboard, and the change moves nothing", async ({
   browser,
   page,
 }) => {
@@ -152,8 +205,9 @@ test("with a session open the three entry actions lead to the Dashboard, and the
   // Measured once the fonts have settled: a box read mid-swap differs from the same box afterwards
   // for a reason that has nothing to do with the session.
   await visitorPage.evaluate(() => document.fonts.ready);
+  await settled(visitorPage);
   const offered = visitorPage.getByRole("main").getByRole("link", { name: ENTRY_VISITOR });
-  await expect(offered).toHaveCount(3);
+  await expect(offered).toHaveCount(2);
   const asVisitor = await boxesOf(offered);
   await visitor.close();
 
@@ -179,16 +233,17 @@ test("with a session open the three entry actions lead to the Dashboard, and the
   expect(response.status()).toBe(204);
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
+  await settled(page);
   const main = page.getByRole("main");
 
   const arrived = main.getByRole("link", { name: ENTRY_DEVELOPER });
-  await expect(arrived).toHaveCount(3);
+  await expect(arrived).toHaveCount(2);
   await expect(main.getByRole("link", { name: ENTRY_VISITOR })).toHaveCount(0);
   for (const link of await arrived.all()) {
     await expect(link).toHaveAttribute("href", "/dashboard");
   }
 
-  // Measured, not supposed: the same three boxes, in the same places, whoever is reading.
+  // Measured, not supposed: the same two boxes, in the same places, whoever is reading.
   expect(await boxesOf(arrived)).toEqual(asVisitor);
   expect(await page.evaluate(() => window.quoteSwaps)).toBe(0);
 });

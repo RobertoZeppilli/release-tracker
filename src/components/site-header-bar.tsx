@@ -47,7 +47,7 @@ function inside(panel: HTMLElement | null): HTMLElement[] {
 // on every page, in the open, and a copy here would be a second `dashboard` link (issue #119). The
 // theme toggle stays in the bar: those pages are readable signed out, and a visitor has no panel to
 // find it in.
-export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?: ReactNode }) {
+export function SiteHeaderBar({ children, quota, wide }: { children: ReactNode; quota?: ReactNode; wide?: boolean }) {
   const session = useSession();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
@@ -104,11 +104,11 @@ export function SiteHeaderBar({ children, quota }: { children: ReactNode; quota?
       onKeyDown={(event) => {
         if (event.key === "Escape" && open) close();
       }}
-      className="relative mx-auto flex max-w-content flex-wrap items-center gap-x-5 px-4 max-[429px]:gap-x-0 sm:h-[56px] sm:flex-nowrap sm:px-5"
+      className={`relative mx-auto flex ${wide ? "max-w-wide" : "max-w-content"} flex-wrap items-center gap-x-5 px-4 max-[429px]:gap-x-0 sm:h-[56px] sm:flex-nowrap sm:px-5`}
     >
       <Link
         href="/"
-        className="flex h-[56px] shrink-0 items-center font-mono text-[14px] tracking-[-0.02em] whitespace-nowrap no-underline [font-variant-ligatures:none]"
+        className="flex h-[56px] shrink-0 items-center font-mono text-[16px] tracking-[-0.02em] whitespace-nowrap no-underline [font-variant-ligatures:none]"
       >
         {/* DESIGN.md, Brand Mark: `verdict:` with the colon, in `text`, never in a severity ink.
             The colon is the opening of a sentence the app finishes. */}

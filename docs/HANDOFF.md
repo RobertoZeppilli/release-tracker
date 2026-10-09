@@ -15,89 +15,73 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-09, notte, dopo la #139 e la #140).** Le due issue sono **chiuse**:
-**PR #144 unita** in `adb70c5`, **PR #145 unita** in `35495b5`, entrambe con CodeRabbit senza un
-rilievo. La CI del merge della #144 su `main` è verde; quella della #145 era **ancora in corso**
-quando questo file è stato scritto, col `Deploy database` già verde e nessuna migrazione da
-applicare. **Non c'è niente in sospeso.**
+**Da dove ripartire (2026-10-09, notte fonda, la #141).** La landing è **ripensata e non ancora
+unita**: branch `141-landing-redesign`, nessun commit ancora al momento in cui questo file è stato
+scritto. La #141 era `ready-for-human` e le tre decisioni le ha prese l'utente guardando **tre
+proposte vere** (mock A, B, C, costruiti e aperti nel browser): ha scelto la **A**, "asse spezzato",
+più ingressi sobri per sezione e mano libera sul visivo. Le varianti B e C sono state cancellate
+dopo la scelta: la fonte dell'aspetto resta un file solo, `design/mocks/landing.html`.
 
-**Cosa c'è dentro.** La **#140**: la landing non offre più il login a chi ha la sessione aperta.
-`EntryAction` (`src/modules/landing/ui/entry-action.tsx`, più `entry-copy.ts` che è TypeScript puro
-e testato) è un pezzo client con due facce, `Sign in with GitHub` verso il login e
-`Go to your dashboard` verso la Dashboard, nei tre posti di prima. Le due etichette stanno **nella
-stessa cella di griglia**, quella che non è del lettore a `visibility: hidden`, quindi la scatola
-nasce larga come la più larga e il cambio non muove niente. La landing **resta statica**. La
-**#139**: il Rilevamento legge **entrambe le forme** del tag, non più solo il `tagFormat` dichiarato
-(`versionFromAnyTagForm` in `src/modules/detection/domain/tag-format.ts`), senza una chiamata in più
-perché la variante si legge nella lista che il giro scarica già.
+**Cosa c'è dentro, nell'ordine che la issue impone.** Prima `DESIGN.md`: una sezione **Motion**
+nuova con due regole nominate, **The One Motion Moment Rule** (dentro l'app si muove solo il caret,
+più la chevron del digest) e **The Arrival Rule** (sulla landing e **solo** lì, ogni banda arriva
+una volta, 10px e una dissolvenza sulla curva del caret); il **Proof Panel**, lo **Stage Title**, la
+landing nel Layout (container **1240px**, bande separate da una riga a tutta larghezza, numero nel
+margine da 8ch alla scala del titolo), la **barra sticky su ogni pagina** con la larghezza che segue
+quella della pagina, il **Marchio a 16px**. Poi il mock, poi il codice: `ProofPanel`, `Band`,
+`Arrivals` nuovi; il banco a **due per due** senza rail; le quattro parole della Rilevanza in quattro
+colonne; la contro-posizione dentro la banda di chiusura. La landing resta **statica e
+prerenderizzata**, nessuna chiamata esterna nuova.
 
-⚠️ **La sessione non arriva dalla rete, arriva dal cookie.** `onAuthStateChange` emette
-`INITIAL_SESSION` leggendo il cookie, senza nessuna richiesta da aspettare: la faccia cambia mentre
-l'idratazione gira, e **fra primo paint e idratazione non c'è un momento da misurare**. Trattenere
-`/auth/v1/user` con `page.route` non prova niente, ed è il test che ho scritto e buttato. Le due
-facce si misurano **su due contesti**, la pagina di un visitatore e quella con la sessione, a font
-fermi (`document.fonts.ready`), confrontando i riquadri.
+⚠️ **Un IntersectionObserver non vede un salto.** Gli arrivi erano scritti con un observer, ed è
+sbagliato: un observer parla solo quando una soglia viene **attraversata**, quindi `End` o un'ancora
+portano una banda da sotto la finestra a sopra senza nessuna callback, e la banda resta **invisibile
+per il resto della visita**. Ora è una spazzata sullo scroll (`arrivals.tsx`), che un salto non lo
+può mancare, ed è il test `settled()` di `landing.spec.ts` ad averlo scoperto.
 
-⚠️ **Il server di sviluppo nasconde i difetti dei test E2E che dipendono dall'idratazione**, e
-questo è costato un giro di CI rosso: `pnpm dev` idrata lento, quindi la faccia del visitatore
-restava sullo schermo da sola e il test passava; la CI gira `pnpm start`, dove l'evento `load`
-arriva **dopo i font**, cioè a sessione già atterrata. Un test E2E che tocca l'idratazione si prova
-con `pnpm build` e poi **`CI=1 pnpm test:e2e`**, che è esattamente la condizione della CI.
+⚠️ **`pl-0` e `mt-0` cadono in silenzio**, di nuovo: la scala delle spaziature non ha lo zero
+(`--spacing: initial`), quindi su telefono le bande restavano rientrate di 8ch. Si scrive
+`pl-[0px]`. La lezione era già in questo file dal 2026-10-02 e si è ripresentata identica.
 
-⚠️ **Nel Rilevamento una Release saltata può non tornare più**, ed è la ragione per cui la #139 ha
-preso la strada 1 (le due forme sempre) e non la 2 (la variante come ripiego): `selectDetected`
-(`src/modules/releases/domain/select-detected.ts:28`) tiene solo i candidati con
-`publishedAt > latest`, dove `latest` è la data della Release più recente conosciuta. Con un cambio
-netto di convenzione il Rilevamento si blocca e `latest` resta fermo, quindi si recupera tutto; **in
-un periodo misto**, dove le due forme convivono come fa `prisma` oggi con 250 tag senza la `v` e 18
-con, un tag scartato viene superato da uno più recente nella forma vecchia e quella Release **non è
-più recuperabile da nessun giro**. Un ripiego non scatterebbe mai lì, cioè nel solo caso che costa
-davvero. La regola sta in `CONTEXT.md` accanto a quella delle Note.
+⚠️ **Una scala che deve stare su una riga dentro una colonna non si misura sul viewport.** Il
+verdetto del Proof Panel a Status scale andava a capo a ogni larghezza da desktop, perché la colonna
+è una frazione della pagina: ha un clamp suo, `clamp(1.5rem, 2.4vw, 1.9rem)`, ed è **l'unica
+eccezione** a The One-Line Verdict Rule, scritta accanto alla regola.
 
-⚠️ **`DESIGN.md` ha adesso un'eccezione scritta**, l'unica: The Reserved Space Rule vuole che un
-valore non noto si **dichiari** ignoto, e l'entry action della landing invece lo risponde con la
-faccia del visitatore, perché è quella che il documento prerenderizzato porta e che ogni crawler
-legge. Lo spazio resta riservato in senso stretto. La regola porta il rimando alla sezione The
-Bench, dove l'argomento è per intero: chi la rovescia rovesci anche quello.
-
-**I numeri**: **606 unitari** (17 nuovi fra le due PR), **67 di integrazione** e **187 E2E**, più
-`pnpm lint`, `pnpm typecheck` e `pnpm build`. Provati **rimettendo il difetto** due volte, e la
-seconda col build di produzione: senza la cella condivisa i tre riquadri cadono, 170 px contro 191;
-senza la variante il test dell'adattatore del Rilevamento cade.
-
-**Niente da lanciare in produzione, e spesa zero.** La #139 chiude un buco che **non era aperto**
-(nessuna delle cinque Tecnologie esposte ha Release mancanti, misurato nella issue), quindi non c'è
-nulla da recuperare: il cron delle 02:00 userà la lettura nuova da solo.
+**I numeri**: **611 unitari**, **191 E2E** (la suite intera, verde), più `pnpm lint`, `pnpm
+typecheck` e `pnpm build`. Il mobile è stato guardato a **390px** con uno script Playwright, non
+ridimensionando la finestra, che qui non cambia il viewport.
 
 ### Cosa resta
 
-1. **La cancellazione dei rami**, locali e remoti, che resta dell'utente:
+1. **La #141 non è unita**: branch `141-landing-redesign`, da committare, aprire in PR con
+   `Closes #141` e far passare dalla CI.
+2. **Su telefono resta ferma tutta la barra, 96px**, non solo la prima riga come l'utente avrebbe
+   preferito: la strip delle due destinazioni è figlia dello stesso elemento flex della riga del
+   marchio, e fermarne una sola vuole o un secondo `<nav>` nel DOM (due copie degli stessi link per
+   uno screen reader) o la strip **sopra** il marchio. Tocca le decisioni della #119, quindi
+   l'utente ha scelto di tenere la barra intera e rivederlo con una issue sua, misurando.
+3. **La #142** (`ready-for-human`, Blocked by #141), la stessa direzione portata nell'app, a mock e
+   non a codice. ⚠️ Adesso ha una cosa in più da portare: la barra sticky e il Marchio a 16px sono
+   già su tutte le pagine, quindi la #142 eredita un'app che la landing non contraddice più sulla
+   barra, ma la contraddice ancora su tutto il resto.
+4. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono. Si incrocia con la
+   #141, che ha appena cambiato la landing, e **la misura di partenza non è mai stata presa**:
+   adesso la landing nuova è quella da misurare.
+5. **Il dev server è stato fermato** per provare la suite in condizione CI (`pnpm build` e `CI=1
+   pnpm test:e2e`, che è la lezione della #140). Va riavviato dall'utente con `pnpm dev`.
+6. **La cancellazione dei rami**, locali e remoti, che resta dell'utente:
    `139-detection-tag-variants`, `140-landing-entry-action`, `137-tag-format-variants`,
    `137-coda-risparmio-chiamate`, `93-prompt-v7`, `57-haiku-summaries`, `26-landing-page`,
-   `80-notes-backfill` e `120-technology-icons`.
-2. **La #141**, la landing ripensata, che è la strada scelta dall'utente come seguente. È
-   `ready-for-human`: dentro ci sono i riferimenti e tre decisioni che sono sue. ⚠️ Va fatta in una
-   **sessione dedicata**, perché un redesign mangia contesto in fretta, e ⚠️ **si rovescia la
-   regola, non si aggira**: `DESIGN.md` dice che il movimento del sistema è uno solo, il caret, e se
-   cambia lo dice `DESIGN.md` prima del codice. Le skill di gusto dichiarano **fuori scope le UI di
-   prodotto**, quindi sull'app serve solo la loro parte di audit. Il dev server va chiuso a fine
-   giro.
-3. **La #142** (`ready-for-human`, Blocked by #141), la stessa direzione portata nell'app, a mock e
-   non a codice.
-4. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
-   `ready-for-human`. Si incrocia con la #141, che non deve peggiorarli, e **oggi non esiste una
-   misura di partenza**: prenderla prima di cambiare la landing è quello che rende il confronto
-   possibile.
-5. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. Ogni altra
-   issue aperta (#65, #126, #130, #131, #132, #133, #69, #113, #94, #141, #142) non tocca Anthropic.
-6. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview** (oggi
-   un `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla sola
-   strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, non
-   deciso.
+   `80-notes-backfill` e `120-technology-icons`, più `141-landing-redesign` quando sarà unito.
+7. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. Nessuna issue
+   aperta tocca Anthropic.
+8. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview**
+   (oggi un `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla
+   sola strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage.
 
-⚠️ **Il `CRON_SECRET` di produzione non passa da questa chat**, ed è la lezione della rotazione del
-2026-10-09: il vecchio era finito dentro una conversazione. I giri in produzione li lancia l'utente
-dal suo terminale, nemmeno quando sono gratis.
+⚠️ **Il `CRON_SECRET` di produzione non passa da questa chat**: i giri in produzione li lancia
+l'utente dal suo terminale, nemmeno quando sono gratis.
 
 Il primo comando della sessione nuova:
 
@@ -198,6 +182,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-09 (notte, dopo la #139 e la #140): la faccia dell'entry action e le due forme del tag
+  - ⚠️ La sessione non arriva dalla rete, arriva dal cookie: le due facce si misurano su due contesti
+  - ⚠️ Il server di sviluppo nasconde i difetti dei test E2E che dipendono dall'idratazione
+  - ⚠️ Nel Rilevamento una Release saltata può non tornare più, ed è perché la #139 legge sempre le due forme
 - Stato al 2026-10-09 (notte, dopo la #137): le due forme del tag per le Note, e le quattro strade nuove
   - ⚠️ `prisma` era un quarto caso che nessuno aveva diagnosticato, e il suo `tagFormat` non va girato
   - ⚠️ La stima della issue era ottimista su 7 Release, e il perché è verificato tag per tag
