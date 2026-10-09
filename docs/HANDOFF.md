@@ -15,86 +15,89 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-09, notte, dopo la #137).** La **#137 è chiusa**: **PR #138 unita** in
-`606a900`, CI verde e CodeRabbit senza un rilievo. **Il giro `apply=1` in produzione è stato fatto**,
-e il suo esito sta nel commento alla #137, non qui. Anche la coda del risparmio sulle chiamate è
-dentro: **PR #143 unita**, CI verde. **Non c'è niente in sospeso.**
+**Da dove ripartire (2026-10-09, notte, dopo la #139 e la #140).** Le due issue sono **chiuse**:
+**PR #144 unita** in `adb70c5`, **PR #145 unita** in `35495b5`, entrambe con CodeRabbit senza un
+rilievo. La CI del merge della #144 su `main` è verde; quella della #145 era **ancora in corso**
+quando questo file è stato scritto, col `Deploy database` già verde e nessuna migrazione da
+applicare. **Non c'è niente in sospeso.**
 
-**Il risultato vero del giro: 45 Note riempite su 91**, 45 Sintesi passate a _Non generata_, zero
-fallimenti, 52 pagine rigenerate, **spesa zero**. Il criterio della issue diceva 38.
+**Cosa c'è dentro.** La **#140**: la landing non offre più il login a chi ha la sessione aperta.
+`EntryAction` (`src/modules/landing/ui/entry-action.tsx`, più `entry-copy.ts` che è TypeScript puro
+e testato) è un pezzo client con due facce, `Sign in with GitHub` verso il login e
+`Go to your dashboard` verso la Dashboard, nei tre posti di prima. Le due etichette stanno **nella
+stessa cella di griglia**, quella che non è del lettore a `visibility: hidden`, quindi la scatola
+nasce larga come la più larga e il cambio non muove niente. La landing **resta statica**. La
+**#139**: il Rilevamento legge **entrambe le forme** del tag, non più solo il `tagFormat` dichiarato
+(`versionFromAnyTagForm` in `src/modules/detection/domain/tag-format.ts`), senza una chiamata in più
+perché la variante si legge nella lista che il giro scarica già.
 
-⚠️ **`prisma` era un quarto caso, che nessuno aveva diagnosticato**: tagga **con** la `v` mentre il
-Catalogo dichiara `{version}`, e la variante gli ha recuperato **14 Release** da sola. È la prova
-che la strada scelta chiude la classe di difetto e non i tre casi noti. ⚠️ **Il suo `tagFormat` non
-va girato**: misurato, 250 rilasci senza la `v` contro 18 con, e il cambio è delle ultime settimane.
-La forma della maggioranza è quella dichiarata, come vuole la regola scritta in `CONTEXT.md`.
+⚠️ **La sessione non arriva dalla rete, arriva dal cookie.** `onAuthStateChange` emette
+`INITIAL_SESSION` leggendo il cookie, senza nessuna richiesta da aspettare: la faccia cambia mentre
+l'idratazione gira, e **fra primo paint e idratazione non c'è un momento da misurare**. Trattenere
+`/auth/v1/user` con `page.route` non prova niente, ed è il test che ho scritto e buttato. Le due
+facce si misurano **su due contesti**, la pagina di un visitatore e quella con la sessione, a font
+fermi (`document.fonts.ready`), confrontando i riquadri.
 
-⚠️ **La stima della issue era ottimista su 7 Release**, e il perché è verificato tag per tag:
-`angular 20.3.9`, `20.3.12`, `20.3.13`, `21.0.0-rc.0` hanno un rilascio che **esiste col corpo
-vuoto**, e `drizzle-orm 1.0.0-beta.1`, `beta.23`, `beta.24` rispondono **404 in entrambe le forme**.
-Le 46 che restano mute lo sono per davvero: adesso "not at the source" dice il vero.
+⚠️ **Il server di sviluppo nasconde i difetti dei test E2E che dipendono dall'idratazione**, e
+questo è costato un giro di CI rosso: `pnpm dev` idrata lento, quindi la faccia del visitatore
+restava sullo schermo da sola e il test passava; la CI gira `pnpm start`, dove l'evento `load`
+arriva **dopo i font**, cioè a sessione già atterrata. Un test E2E che tocca l'idratazione si prova
+con `pnpm build` e poi **`CI=1 pnpm test:e2e`**, che è esattamente la condizione della CI.
 
-**Come è fatta la correzione**, perché la #139 ne è la gemella: `notesTagCandidates` in
-`src/modules/detection/domain/tag-format.ts` dà due tag per Versione, il formato dichiarato e la sua
-variante con la `v` davanti al primo segnaposto aggiunta o tolta, **col dichiarato sempre primo**. La
-lista paginata riconosce entrambe le forme, quindi angular, drizzle e prisma non costano niente in
-più; solo per le Versioni che restano mute parte `GET /repos/<repo>/releases/tags/<tag>`, al massimo
-due per Versione. La parte GitHub è traslocata in `src/modules/detection/server/github-api.ts`.
+⚠️ **Nel Rilevamento una Release saltata può non tornare più**, ed è la ragione per cui la #139 ha
+preso la strada 1 (le due forme sempre) e non la 2 (la variante come ripiego): `selectDetected`
+(`src/modules/releases/domain/select-detected.ts:28`) tiene solo i candidati con
+`publishedAt > latest`, dove `latest` è la data della Release più recente conosciuta. Con un cambio
+netto di convenzione il Rilevamento si blocca e `latest` resta fermo, quindi si recupera tutto; **in
+un periodo misto**, dove le due forme convivono come fa `prisma` oggi con 250 tag senza la `v` e 18
+con, un tag scartato viene superato da uno più recente nella forma vecchia e quella Release **non è
+più recuperabile da nessun giro**. Un ripiego non scatterebbe mai lì, cioè nel solo caso che costa
+davvero. La regola sta in `CONTEXT.md` accanto a quella delle Note.
 
-**I numeri**: **589 unitari** (13 nuovi fra le due PR), **67 di integrazione** e **186 E2E**, più
-`pnpm lint`, `pnpm typecheck` e `pnpm build`. Provati **rimettendo il difetto** tre volte: senza la
-variante ne cadono 10, senza il giro per tag diretto 2, senza il salto dei tag già visti 1.
+⚠️ **`DESIGN.md` ha adesso un'eccezione scritta**, l'unica: The Reserved Space Rule vuole che un
+valore non noto si **dichiari** ignoto, e l'entry action della landing invece lo risponde con la
+faccia del visitatore, perché è quella che il documento prerenderizzato porta e che ogni crawler
+legge. Lo spazio resta riservato in senso stretto. La regola porta il rimando alla sezione The
+Bench, dove l'argomento è per intero: chi la rovescia rovesci anche quello.
 
-⚠️ **Il `CRON_SECRET` di produzione non passa da questa chat.** Il giro in produzione lo ha lanciato
-l'utente dal suo terminale e ha incollato l'output, che è JSON e non contiene segreti. È la lezione
-della rotazione del 2026-10-09: il vecchio era finito dentro una conversazione. Per questo i job in
-produzione **non li chiamo io**, nemmeno quando sono gratis.
+**I numeri**: **606 unitari** (17 nuovi fra le due PR), **67 di integrazione** e **187 E2E**, più
+`pnpm lint`, `pnpm typecheck` e `pnpm build`. Provati **rimettendo il difetto** due volte, e la
+seconda col build di produzione: senza la cella condivisa i tre riquadri cadono, 170 px contro 191;
+senza la variante il test dell'adattatore del Rilevamento cade.
 
-### Quattro issue nuove, aperte il 2026-10-09 su richiesta dell'utente
-
-1. **#139** (`bug`, `ready-for-agent`): il **Rilevamento** legge una sola forma del tag, ed è la
-   gemella della #137 dal lato peggiore, perché una Release nell'altra forma **non entra affatto**
-   invece di entrare muta. ⚠️ Esposte **cinque** Tecnologie, misurate e non supposte, quelle che
-   rilevano da GitHub Releases: `bun`, `deno`, `nodejs`, `rust`, `terraform`. `rust` è la più
-   fragile, tagga `{version}`. Oggi il buco **non è aperto**. Dentro c'è una decisione: la lettura
-   inversa del tag è dove un formato permissivo può raccogliere il tag di un altro pacchetto in un
-   monorepo, quindi la variante va accettata sempre o solo come ripiego.
-2. **#140** (`bug`, `ready-for-agent`): la landing offre `Sign in` anche a sessione aperta, in tre
-   posti. Causa: è prerenderizzata statica per i Core Web Vitals e non sa chi legge. ⚠️ La risposta
-   **non** è renderla dinamica e **non** è farlo sparire, ma cambiargli destinazione verso la
-   Dashboard con lo spazio riservato prima che la sessione arrivi.
-3. **#141** (`enhancement`, `ready-for-human`): ripensare la landing. Nata dalle parole dell'utente,
-   "non ci sono animazioni, è un po' confusionaria, tutto a sinistra", e dal suo "vorrei un'app
-   moderna visivamente". Dentro ci sono i riferimenti scelti (Linear changelog, Sentry Releases,
-   Vercel, Railway, Resend) e le tre decisioni che sono sue.
-4. **#142** (`enhancement`, `ready-for-human`, Blocked by #141): la stessa direzione portata
-   nell'app, a mock e non a codice.
-
-⚠️ **La regola del design, fissata nelle due issue**: `DESIGN.md` dice che il movimento del sistema è
-**uno solo**, il caret che si disegna sotto la citazione, con la ragione scritta ("una pagina che
-sobbalza mentre dimostra precisione argomenta contro se stessa"). L'utente può rovesciarla, ed è suo
-diritto, ma **si rovescia la regola, non si aggira**: `DESIGN.md` prima, codice dopo, o fra due
-sessioni nessuno sa più quale dei due ha ragione.
+**Niente da lanciare in produzione, e spesa zero.** La #139 chiude un buco che **non era aperto**
+(nessuna delle cinque Tecnologie esposte ha Release mancanti, misurato nella issue), quindi non c'è
+nulla da recuperare: il cron delle 02:00 userà la lettura nuova da solo.
 
 ### Cosa resta
 
 1. **La cancellazione dei rami**, locali e remoti, che resta dell'utente:
-   `137-tag-format-variants`, `137-coda-risparmio-chiamate`, `93-prompt-v7`,
-   `57-haiku-summaries`, `26-landing-page`, `80-notes-backfill` e `120-technology-icons`.
-2. **La #139**, `ready-for-agent` e senza blocchi, che è il seguito tecnico naturale.
-3. **Il design**, cioè la #140 (piccola e oggettiva) e poi la #141. ⚠️ Un redesign mangia contesto in
-   fretta: va fatto in una **sessione dedicata**, non in coda a un lavoro tecnico. Due cose da
-   sapere prima: le skill di gusto **dichiarano fuori scope le UI di prodotto** come questa, quindi
-   sull'app serve solo la loro parte di audit; e il dev server va chiuso a fine giro.
-4. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. Ogni altra
-   issue aperta (#65, #126, #130, #131, #132, #133, #69, #113, #94, #139, #140, #141, #142) non
-   tocca Anthropic.
-5. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview** (oggi
+   `139-detection-tag-variants`, `140-landing-entry-action`, `137-tag-format-variants`,
+   `137-coda-risparmio-chiamate`, `93-prompt-v7`, `57-haiku-summaries`, `26-landing-page`,
+   `80-notes-backfill` e `120-technology-icons`.
+2. **La #141**, la landing ripensata, che è la strada scelta dall'utente come seguente. È
+   `ready-for-human`: dentro ci sono i riferimenti e tre decisioni che sono sue. ⚠️ Va fatta in una
+   **sessione dedicata**, perché un redesign mangia contesto in fretta, e ⚠️ **si rovescia la
+   regola, non si aggira**: `DESIGN.md` dice che il movimento del sistema è uno solo, il caret, e se
+   cambia lo dice `DESIGN.md` prima del codice. Le skill di gusto dichiarano **fuori scope le UI di
+   prodotto**, quindi sull'app serve solo la loro parte di audit. Il dev server va chiuso a fine
+   giro.
+3. **La #142** (`ready-for-human`, Blocked by #141), la stessa direzione portata nell'app, a mock e
+   non a codice.
+4. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
+   `ready-for-human`. Si incrocia con la #141, che non deve peggiorarli, e **oggi non esiste una
+   misura di partenza**: prenderla prima di cambiare la landing è quello che rende il confronto
+   possibile.
+5. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. Ogni altra
+   issue aperta (#65, #126, #130, #131, #132, #133, #69, #113, #94, #141, #142) non tocca Anthropic.
+6. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview** (oggi
    un `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla sola
    strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, non
    deciso.
-6. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
-   `ready-for-human`. Si incrocia con la #141, che non deve peggiorarli.
+
+⚠️ **Il `CRON_SECRET` di produzione non passa da questa chat**, ed è la lezione della rotazione del
+2026-10-09: il vecchio era finito dentro una conversazione. I giri in produzione li lancia l'utente
+dal suo terminale, nemmeno quando sono gratis.
 
 Il primo comando della sessione nuova:
 
@@ -149,7 +152,9 @@ Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte
 nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via dell'utente. Sono tutte
 `ready-for-human`. ⚠️ **Questo capoverso è del 2026-10-06 e va letto con lo Stato davanti**: la **#137** è **chiusa** il
 2026-10-09 e ha lasciato al suo posto **quattro issue nuove**, di cui la **#139** e la **#140** sono
-`ready-for-agent`, quindi "non ce n'è nessuna" è falso. La **#80**
+state chiuse la notte dello stesso giorno (PR #145 e #144); delle quattro restano la **#141** e la
+**#142**, entrambe `ready-for-human`, quindi "non ce n'è nessuna `ready-for-agent`" è di nuovo
+vero. La **#80**
 è **chiusa** il 2026-10-09 e ha lasciato al suo posto la **#137**, che è `ready-for-agent`, quindi
 "non ce n'è nessuna" adesso è falso; la **#57**
 è **chiusa** il 2026-10-08, e la **#93** adesso è il prompt **v7** e costa **8 centesimi**, non più
@@ -193,6 +198,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-09 (notte, dopo la #137): le due forme del tag per le Note, e le quattro strade nuove
+  - ⚠️ `prisma` era un quarto caso che nessuno aveva diagnosticato, e il suo `tagFormat` non va girato
+  - ⚠️ La stima della issue era ottimista su 7 Release, e il perché è verificato tag per tag
+  - ⚠️ Il `CRON_SECRET` di produzione non passa dalla chat: il giro lo lancia l'utente
 - Stato al 2026-10-09 (sera, dopo la #80): riprese le Note mancanti, e la #137 che ne è nata (PR #136)
   - ⚠️ Girare il `tagFormat` è la risposta sbagliata: un formato copre una sola epoca del repository
   - ⚠️ I numeri delle 91 Release mute, misurati prima di decidere, e il mezzo centesimo che costavano
