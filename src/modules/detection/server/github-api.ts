@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { DetectionSource, FoundNotes, NotesSource, ObservedVersion, VersionListing } from "../domain/source-adapters";
-import { notesTagCandidates, versionFromTag } from "../domain/tag-format";
+import { notesTagCandidates, versionFromAnyTagForm } from "../domain/tag-format";
 
 type Fetch = typeof fetch;
 
@@ -23,7 +23,10 @@ const PER_PAGE = 100;
 const MAX_PAGES = 3;
 
 // The tag is the only place a GitHub Release spells its Version, and the list holds whatever else
-// the repository tags: a tag that does not read back as a Version is somebody else's.
+// the repository tags: a tag that does not read back as a Version is somebody else's. Both forms of
+// the declared format are read, so a repository that changes convention keeps being detected
+// (`versionFromAnyTagForm`). A Version listed in both forms is one Release all the same: the caller
+// keeps one date per Version, the earliest (`observeVersions`).
 export async function listGitHubVersions(
   fetch: Fetch,
   token: string | undefined,
@@ -46,7 +49,7 @@ export async function listGitHubVersions(
 
     const releases = GitHubReleasesSchema.parse(await response.json());
     for (const release of releases) {
-      const version = versionFromTag(source.tagFormat, release.tag_name);
+      const version = versionFromAnyTagForm(source.tagFormat, release.tag_name);
       // A draft has no date and no audience; a Release without one cannot be placed in time.
       if (version === null || release.draft || !release.published_at) continue;
       versions.push({ version, publishedAt: new Date(release.published_at) });

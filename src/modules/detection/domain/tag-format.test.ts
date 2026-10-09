@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { notesTagCandidates, notesTagFor, tagFor, versionFromTag } from "./tag-format";
+import { notesTagCandidates, notesTagFor, tagFor, versionFromAnyTagForm, versionFromTag } from "./tag-format";
 
 // Real tag formats from the Catalog.
 describe("versionFromTag", () => {
@@ -26,6 +26,44 @@ describe("versionFromTag", () => {
 
   it("round-trips the tag it writes", () => {
     expect(versionFromTag("bun-v{version}", tagFor("bun-v{version}", "1.4.2") ?? "")).toBe("1.4.2");
+  });
+});
+
+// Issue #139: the Rilevamento reads the Versione out of the tag, so a change of convention costs it
+// the Release itself. The formats below are the five Tecnologie of the Catalog that detect from
+// GitHub Releases, with the tag each one writes today.
+describe("versionFromAnyTagForm", () => {
+  it.each([
+    ["bun-v{version}", "bun-v1.4.2", "1.4.2"],
+    ["v{version}", "v2.5.6", "2.5.6"],
+    ["v{version}", "v24.11.0", "24.11.0"],
+    ["{version}", "1.93.0", "1.93.0"],
+    ["v{version}", "v1.14.2", "1.14.2"],
+  ])("%s keeps reading its own %s as %s", (format, tag, version) => {
+    expect(versionFromAnyTagForm(format, tag)).toBe(version);
+  });
+
+  it.each([
+    ["bun-v{version}", "bun-1.4.2", "1.4.2"],
+    ["v{version}", "2.5.6", "2.5.6"],
+    ["{version}", "v1.93.0", "1.93.0"],
+    ["svelte@{version}", "svelte@v5.57.1", "5.57.1"],
+  ])("%s reads %s, the same Version in the other form, as %s", (format, tag, version) => {
+    expect(versionFromAnyTagForm(format, tag)).toBe(version);
+  });
+
+  // The variant is a second form, not a looser one: what is left over still has to be a Version,
+  // which is what keeps the other packages of a monorepo out of the list.
+  it.each([
+    ["svelte@{version}", "@sveltejs/adapter-node@6.0.0"],
+    ["v{version}", "vsix-22.2.0"],
+    ["{version}", "vsix-22.2.0"],
+    ["php-{version}", "PHP-8.5"],
+    ["bun-v{version}", "bun-types-v1.4.0"],
+    ["bun-v{version}", "bun-types-1.4.0"],
+    ["v{version}", "v"],
+  ])("%s does not read %s, in either form", (format, tag) => {
+    expect(versionFromAnyTagForm(format, tag)).toBeNull();
   });
 });
 

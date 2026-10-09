@@ -134,6 +134,34 @@ describe("GitHub Releases as a detection Source", () => {
     });
   });
 
+  // Issue #139: a repository in transition tags in both forms at once, and the Rilevamento takes
+  // only what is newer than the newest Release it knows. A Version skipped while an older form
+  // keeps arriving would never be picked up again.
+  it("reads both forms of the tag while a repository is changing convention", async () => {
+    const { fetch, requested } = fakeFetch({
+      [page(1)]: [
+        githubRelease("bun-1.4.4", "x"),
+        githubRelease("bun-v1.4.3", "x"),
+        githubRelease("bun-1.4.2", "x"),
+        // Still somebody else's, in either form: what is left over is not a Version.
+        githubRelease("bun-types-v1.4.0", "x"),
+        githubRelease("bun-types-1.4.0", "x"),
+      ],
+    });
+    const listing = await createSourceAdapters({ fetch }).listVersions(bun);
+
+    expect(listing).toEqual({
+      etag: null,
+      versions: [
+        { version: "1.4.4", publishedAt: new Date("2026-03-12T10:00:00Z") },
+        { version: "1.4.3", publishedAt: new Date("2026-03-12T10:00:00Z") },
+        { version: "1.4.2", publishedAt: new Date("2026-03-12T10:00:00Z") },
+      ],
+    });
+    // The second form is read out of the list the run already downloads, not asked for.
+    expect(requested).toHaveLength(1);
+  });
+
   it("asks the first page with the stored validator and reports that nothing changed", async () => {
     const { fetch, requested } = fakeFetch({ [page(1)]: [githubRelease("bun-v1.4.2", "x")] }, '"abc"');
     expect(await createSourceAdapters({ fetch }).listVersions(bun, null)).toEqual({
