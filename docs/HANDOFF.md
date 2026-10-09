@@ -15,121 +15,93 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-09, sera, dopo la #80).** La **#80 è chiusa**: **PR #136 unita** in
-`2225dd1`, e la issue si è chiusa da sola col `Closes`. La CI del merge e il `Deploy database` sono
-**verdi** (nessuna migrazione da applicare), e **non c'è niente in sospeso**. Il giro a vuoto in
-produzione **è stato fatto**, e da lì è nata la **#137**, che è il vero lavoro seguente.
+**Da dove ripartire (2026-10-09, notte, dopo la #137).** La **#137 è chiusa**: **PR #138 unita** in
+`606a900`, CI verde e CodeRabbit senza un rilievo. **Il giro `apply=1` in produzione è stato fatto**,
+e il suo esito sta nel commento alla #137, non qui. Anche la coda del risparmio sulle chiamate è
+dentro: **PR #143 unita**, CI verde. **Non c'è niente in sospeso.**
 
-**La scelta è stata fra la #65 e la #80, e la #80 ha vinto per una ragione di sequenza.** La #65
-dipende dallo stage, che non è deciso: il suo primo criterio chiede di scrivere quale delle due
-strade si prende, e quella scelta non si può scrivere prima. La #80 invece non dipende da niente,
-tocca GitHub e npm e non Anthropic.
+**Il risultato vero del giro: 45 Note riempite su 91**, 45 Sintesi passate a _Non generata_, zero
+fallimenti, 52 pagine rigenerate, **spesa zero**. Il criterio della issue diceva 38.
 
-**La domanda che costava è stata decisa prima del codice**, come chiedeva il primo criterio della
-issue, ed è scritta in `CONTEXT.md` (Stato della sintesi) e in `docs/DECISIONI.md`: quando le **Note
-di rilascio** arrivano dopo, la **Sintesi** passa da _Non disponibile_ a _Non generata_, **mai** a
-_In attesa_. Rimetterla in coda è un gesto a parte, perché è l'unico che spende.
+⚠️ **`prisma` era un quarto caso, che nessuno aveva diagnosticato**: tagga **con** la `v` mentre il
+Catalogo dichiara `{version}`, e la variante gli ha recuperato **14 Release** da sola. È la prova
+che la strada scelta chiude la classe di difetto e non i tre casi noti. ⚠️ **Il suo `tagFormat` non
+va girato**: misurato, 250 rilasci senza la `v` contro 18 con, e il cambio è delle ultime settimane.
+La forma della maggioranza è quella dichiarata, come vuole la regola scritta in `CONTEXT.md`.
 
-⚠️ **Lo stato va cambiato comunque, e la issue non lo aveva visto.** `rowVerdict` su `unavailable`
-dichiara sulla riga "no release notes to summarize" e **nasconde il link alle note**. La strada 1
-della issue, "le note si riempiono e la Sintesi resta com'è", non dava "una pagina un po'
-incoerente": rendeva invisibili le Note appena riempite e lasciava la riga a dire il falso. Quindi
-la scelta vera era solo fra _Non generata_ e _In attesa_, non fra toccare e non toccare.
+⚠️ **La stima della issue era ottimista su 7 Release**, e il perché è verificato tag per tag:
+`angular 20.3.9`, `20.3.12`, `20.3.13`, `21.0.0-rc.0` hanno un rilascio che **esiste col corpo
+vuoto**, e `drizzle-orm 1.0.0-beta.1`, `beta.23`, `beta.24` rispondono **404 in entrambe le forme**.
+Le 46 che restano mute lo sono per davvero: adesso "not at the source" dice il vero.
 
-**I numeri della produzione, misurati prima di decidere** (tre `select` nel SQL Editor, gratis):
+**Come è fatta la correzione**, perché la #139 ne è la gemella: `notesTagCandidates` in
+`src/modules/detection/domain/tag-format.ts` dà due tag per Versione, il formato dichiarato e la sua
+variante con la `v` davanti al primo segnaposto aggiunta o tolta, **col dichiarato sempre primo**. La
+lista paginata riconosce entrambe le forme, quindi angular, drizzle e prisma non costano niente in
+più; solo per le Versioni che restano mute parte `GET /repos/<repo>/releases/tags/<tag>`, al massimo
+due per Versione. La parte GitHub è traslocata in `src/modules/detection/server/github-api.ts`.
 
-| | |
-|---|---|
-| Release senza Note | **91 su 1960**, il 4,6% |
-| Stato della loro Sintesi | **tutte** _Non disponibile_ |
-| Di cui `digest` | 47, che la regola non riassume mai |
-| Di cui Anteprime | 39, nessuna la prima della sua major |
-| **Di cui riassumibili** | **5**: 3 `notable`, 2 `featured` |
+**I numeri**: **589 unitari** (13 nuovi fra le due PR), **67 di integrazione** e **186 E2E**, più
+`pnpm lint`, `pnpm typecheck` e `pnpm build`. Provati **rimettendo il difetto** tre volte: senza la
+variante ne cadono 10, senza il giro per tag diretto 2, senza il salto dei tag già visti 1.
 
-Cioè il costo massimo della strada 2, quella che spendeva, era **mezzo centesimo**. Le Tecnologie
-con più buchi: `angular` 22, `prisma` 19 (tutte rc di 8.0.0), `drizzle-orm` 11, `next` 9, `trpc` 6.
+⚠️ **Il `CRON_SECRET` di produzione non passa da questa chat.** Il giro in produzione lo ha lanciato
+l'utente dal suo terminale e ha incollato l'output, che è JSON e non contiene segreti. È la lezione
+della rotazione del 2026-10-09: il vecchio era finito dentro una conversazione. Per questo i job in
+produzione **non li chiamo io**, nemmeno quando sono gratis.
 
-**Come si chiama il passo nuovo**: `GET /api/jobs/notes/backfill`, con
-`Authorization: Bearer <CRON_SECRET>` come gli altri job e **fuori da `vercel.json`**, quindi non
-parte mai da solo. Senza parametri è una **prova a vuoto**: interroga le Fonti, dice cosa
-riempirebbe e non scrive niente. `?apply=1` scrive, `?technology=<slug>` lo restringe a una
-Tecnologia, che è anche come si riprende un giro fermato dai limiti di GitHub. Non può spendere: non
-mette mai una Sintesi in `pending`, e l'`UPDATE` ha il filtro `status = 'unavailable'`, quindi una
-Sintesi `ready` o `failed` non è raggiungibile nemmeno per errore.
+### Quattro issue nuove, aperte il 2026-10-09 su richiesta dell'utente
 
-⚠️ **Deviazione dalla issue, dichiarata nella PR.** La issue indicava come precedente di forma
-`pnpm summary:reimport`, cioè uno script. Un comando `pnpm` però arriva solo al database locale, e
-le 91 Release sono in produzione: per toccarla dal portatile servirebbe la chiave segreta di
-Supabase di produzione sul disco. Se l'utente preferisce lo script, il modulo non cambia.
+1. **#139** (`bug`, `ready-for-agent`): il **Rilevamento** legge una sola forma del tag, ed è la
+   gemella della #137 dal lato peggiore, perché una Release nell'altra forma **non entra affatto**
+   invece di entrare muta. ⚠️ Esposte **cinque** Tecnologie, misurate e non supposte, quelle che
+   rilevano da GitHub Releases: `bun`, `deno`, `nodejs`, `rust`, `terraform`. `rust` è la più
+   fragile, tagga `{version}`. Oggi il buco **non è aperto**. Dentro c'è una decisione: la lettura
+   inversa del tag è dove un formato permissivo può raccogliere il tag di un altro pacchetto in un
+   monorepo, quindi la variante va accettata sempre o solo come ripiego.
+2. **#140** (`bug`, `ready-for-agent`): la landing offre `Sign in` anche a sessione aperta, in tre
+   posti. Causa: è prerenderizzata statica per i Core Web Vitals e non sa chi legge. ⚠️ La risposta
+   **non** è renderla dinamica e **non** è farlo sparire, ma cambiargli destinazione verso la
+   Dashboard con lo spazio riservato prima che la sessione arrivi.
+3. **#141** (`enhancement`, `ready-for-human`): ripensare la landing. Nata dalle parole dell'utente,
+   "non ci sono animazioni, è un po' confusionaria, tutto a sinistra", e dal suo "vorrei un'app
+   moderna visivamente". Dentro ci sono i riferimenti scelti (Linear changelog, Sentry Releases,
+   Vercel, Railway, Resend) e le tre decisioni che sono sue.
+4. **#142** (`enhancement`, `ready-for-human`, Blocked by #141): la stessa direzione portata
+   nell'app, a mock e non a codice.
 
-**I numeri**: **576 unitari**, **67 di integrazione** (4 nuovi) e **186 E2E**, più `pnpm lint`,
-`pnpm typecheck` e `pnpm build`. I 4 nuovi sono stati **provati rimettendo il difetto**: con lo
-stato portato a `pending` cade "settles their Summary as skipped, never as pending"; togliendo la
-guardia della prova a vuoto ne cadono due. **Speso oggi per la #80: zero.**
-
-⚠️ **Un difetto vero trovato dal giro, e corretto**: l'ordine del report era casuale, perché
-`readReleasesWithoutNotes` pagina per `id` e gli UUID non hanno ordine. Due giri non si potevano
-confrontare, e il test cadeva a caso. Adesso ogni Tecnologia ordina per Versione.
-
-⚠️ **L'heredoc ha colpito un'altra volta, lo stesso giorno.** Il file di test contiene `\n` dentro
-le stringhe e l'heredoc lo ha fatto fallire in partenza ("unexpected EOF"), senza scrivere niente.
-La regola dell'ambiente vale: **file con barre rovesciate, strumenti di modifica, mai heredoc**.
-
-**Il giro a vuoto in produzione, e la sorpresa che conteneva.** `GET /api/jobs/notes/backfill`
-senza `apply` ha risposto: **91 mancanti, 3 recuperabili**, 17 Tecnologie interrogate, nessun
-fallimento. Le 3 sono `typescript 6.0.0-beta` e `6.0.1-rc`, cioè esattamente quelle che la #36
-aveva insegnato a leggere, e `next 16.4.0`. Le altre 88 si dichiaravano "not at the source", e
-**per 35 di loro non era vero**.
-
-⚠️ **Perché non era vero: quei repository hanno cambiato convenzione dei tag nel tempo**, e un
-`tagFormat` per Fonte copre una sola epoca. Verificato chiamando GitHub tag per tag:
-`angular` nel 2025 taggava `21.0.3` e oggi tagga `v21.0.3` (22 Release mute); `drizzle-orm` il
-contrario (11); `express` pubblica rilasci che **non compaiono nella lista paginata** ma rispondono
-a `GET /releases/tags/<tag>` (2). È diventata la **#137**, `ready-for-agent`, con dentro tutte le
-prove: con quella, il recupero passa da 3 a **38** su 91.
-
-⚠️ **Due trappole dentro la #137, già pagate una volta qui.** La prima: **girare il `tagFormat` è la
-risposta sbagliata**, perché `angular` ha 116 Release e **94 hanno le Note**, cioè il formato
-configurato funziona per la maggioranza, e cambiarlo sposterebbe soltanto il buco. La seconda:
-**non è solo arretrato**, `drizzle-orm` tagga oggi in un modo che il Catalogo non riconosce, quindi
-ogni sua Release nuova entra senza Note e senza Sintesi, e il Rilevamento ne accumula altre ogni
-giorno.
-
-⚠️ **Le verifiche su GitHub vogliono il `GITHUB_TOKEN`.** Senza, il budget è di 60 richieste
-all'ora, e diagnosticare la #137 lo ha quasi esaurito: ne restavano 9. Lo stato del budget si legge
-gratis con `GET https://api.github.com/rate_limit`, che non conta.
-
-⚠️ **In PowerShell `curl` non è curl**: è un alias di `Invoke-WebRequest`, e `-s` viene letto come
-l'inizio di `-SessionVariable`. Per chiamare i job si usa `curl.exe` oppure `Invoke-RestMethod` con
-`-Headers @{ Authorization = "Bearer $env:CRON_SECRET" }`.
-
-⚠️ **Il `CRON_SECRET` di produzione è stato ruotato** il 2026-10-09, perché il vecchio era finito
-dentro una conversazione. Il nuovo è su Vercel e la produzione è stata ridistribuita, quindi le
-funzioni ce l'hanno: verificato, il backfill risponde invece di dare 401. Da ricordare, perché è la
-stessa lezione della `ANTHROPIC_API_KEY`: **cambiare la variabile non basta, serve un redeploy**.
+⚠️ **La regola del design, fissata nelle due issue**: `DESIGN.md` dice che il movimento del sistema è
+**uno solo**, il caret che si disegna sotto la citazione, con la ragione scritta ("una pagina che
+sobbalza mentre dimostra precisione argomenta contro se stessa"). L'utente può rovesciarla, ed è suo
+diritto, ma **si rovescia la regola, non si aggira**: `DESIGN.md` prima, codice dopo, o fra due
+sessioni nessuno sa più quale dei due ha ragione.
 
 ### Cosa resta
 
-1. **La #137**, `ready-for-agent` e senza blocchi, che è il seguito naturale. ⚠️ **Il giro con
-   `apply=1` conviene farlo dopo di lei, non adesso**: oggi riempirebbe 3 Note, dopo ne riempie 38,
-   e un giro solo vale due.
-2. La cancellazione dei rami `93-prompt-v7`, `57-haiku-summaries`, `26-landing-page`,
-   `80-notes-backfill` e `120-technology-icons` (quest'ultimo solo locale, la sua PR #128 è unita
-   dall'8 ottobre), locali e remoti, che resta dell'utente.
-3. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. La #80 non
-   spende più niente, perché la decisione presa oggi toglie la generazione dal backfill. Ogni altra
-   issue aperta (#65, #126, #130, #131, #132, #133, #69, #113, #94) non tocca Anthropic.
-4. **L'ordine consigliato**, invariato: il **database separato per i preview** (oggi un
-   `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla sola strada
-   2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, non deciso.
-5. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
-   `ready-for-human`.
+1. **La cancellazione dei rami**, locali e remoti, che resta dell'utente:
+   `137-tag-format-variants`, `137-coda-risparmio-chiamate`, `93-prompt-v7`,
+   `57-haiku-summaries`, `26-landing-page`, `80-notes-backfill` e `120-technology-icons`.
+2. **La #139**, `ready-for-agent` e senza blocchi, che è il seguito tecnico naturale.
+3. **Il design**, cioè la #140 (piccola e oggettiva) e poi la #141. ⚠️ Un redesign mangia contesto in
+   fretta: va fatto in una **sessione dedicata**, non in coda a un lavoro tecnico. Due cose da
+   sapere prima: le skill di gusto **dichiarano fuori scope le UI di prodotto** come questa, quindi
+   sull'app serve solo la loro parte di audit; e il dev server va chiuso a fine giro.
+4. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. Ogni altra
+   issue aperta (#65, #126, #130, #131, #132, #133, #69, #113, #94, #139, #140, #141, #142) non
+   tocca Anthropic.
+5. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview** (oggi
+   un `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla sola
+   strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, non
+   deciso.
+6. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
+   `ready-for-human`. Si incrocia con la #141, che non deve peggiorarli.
 
 Il primo comando della sessione nuova:
 
 ```
 leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
 ```
+
 
 **Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
 chiude. Sono nate il 2026-10-06, insieme allo stato del ritento dei transitori, che è stato spostato
@@ -175,7 +147,9 @@ lui. Quello che si è fatto dopo quella frase è nato dalle sue richieste dirett
 
 Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e **non ce n'è
 nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via dell'utente. Sono tutte
-`ready-for-human`. ⚠️ **Questo capoverso è del 2026-10-06 e tre righe sono invecchiate**: la **#80**
+`ready-for-human`. ⚠️ **Questo capoverso è del 2026-10-06 e va letto con lo Stato davanti**: la **#137** è **chiusa** il
+2026-10-09 e ha lasciato al suo posto **quattro issue nuove**, di cui la **#139** e la **#140** sono
+`ready-for-agent`, quindi "non ce n'è nessuna" è falso. La **#80**
 è **chiusa** il 2026-10-09 e ha lasciato al suo posto la **#137**, che è `ready-for-agent`, quindi
 "non ce n'è nessuna" adesso è falso; la **#57**
 è **chiusa** il 2026-10-08, e la **#93** adesso è il prompt **v7** e costa **8 centesimi**, non più
@@ -219,6 +193,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-09 (sera, dopo la #80): riprese le Note mancanti, e la #137 che ne è nata (PR #136)
+  - ⚠️ Girare il `tagFormat` è la risposta sbagliata: un formato copre una sola epoca del repository
+  - ⚠️ I numeri delle 91 Release mute, misurati prima di decidere, e il mezzo centesimo che costavano
+  - ⚠️ In PowerShell `curl` non è curl, e il `CRON_SECRET` di produzione è stato ruotato
+  - ⚠️ L'heredoc ha colpito un'altra volta: file con barre rovesciate, strumenti di modifica
 - Stato al 2026-10-09 (dopo la #93): il modello dice da sé se le Note erano giudicabili (PR #135)
   - ⚠️ Il pavimento dei 3 punti chiave era una richiesta di inventare, e buttava una Sintesi pagata
   - ⚠️ Un batch si paga una volta e si rilegge quante si vuole: `summary:eval --results`
