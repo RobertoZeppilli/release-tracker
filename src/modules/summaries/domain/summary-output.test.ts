@@ -44,6 +44,18 @@ describe("parseSummaryOutput", () => {
     expect(parseSummaryOutput(JSON.stringify(safe))).toEqual({ ok: true, content: safe });
   });
 
+  // Issue #93: the `v7` third exit. The field is carried through to the stored content, because it
+  // is what decides the verdict on read, and `valid` above shows a `v4` or `v6` output, which has no
+  // such field, still parsing: the Summaries already paid for must keep working.
+  it("keeps the judgement of the notes the model made", () => {
+    const unjudgeable = { ...valid, breakingChanges: [], actionRequired: false, notesJudgeable: false };
+    expect(parseSummaryOutput(JSON.stringify(unjudgeable))).toEqual({ ok: true, content: unjudgeable });
+  });
+
+  it("rejects a judgement of the notes that is not a boolean", () => {
+    expect(reason(output({ notesJudgeable: "no" }))).toContain("notesJudgeable");
+  });
+
   // Issue #56: the longest of the 4 titles the first real batch produced over the old limit of 120.
   // They were sound in everything else, and the prompt still asks for 120: the margin is there so
   // that the few characters the model goes over do not throw away a Summary that has been paid for.
@@ -66,6 +78,25 @@ describe("parseSummaryOutput", () => {
   it("rejects fewer than 3 key points", () => {
     const point = (text: string) => ({ text });
     expect(reason(output({ keyPoints: ["one", "two"].map(point) }))).toMatch(/keyPoints/);
+  });
+
+  // Issue #93, measured on the `v7` run of the evaluation set: `vite 8.2.2` is 114 characters of
+  // notes pointing at a changelog, the model answered with the one point they hold, and the floor of
+  // 3 threw the Summary away. Asking for three there is asking it to invent.
+  it("accepts a single key point when the model says the notes could not be judged", () => {
+    const thin = {
+      keyPoints: [{ text: "The notes only point to the external CHANGELOG.md for details." }],
+      breakingChanges: [],
+      actionRequired: false,
+      notesJudgeable: false,
+    };
+    expect(parseSummaryOutput(output(thin)).ok).toBe(true);
+  });
+
+  it("keeps the floor of 3 on notes the model judged", () => {
+    const thin = { keyPoints: [{ text: "one" }], breakingChanges: [], actionRequired: false };
+    expect(reason(output({ ...thin, notesJudgeable: true }))).toMatch(/keyPoints/);
+    expect(reason(output(thin))).toMatch(/keyPoints/);
   });
 
   // Paid for and otherwise sound: the sixth key point goes, not the Summary.

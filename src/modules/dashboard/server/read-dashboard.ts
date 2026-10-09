@@ -68,6 +68,6 @@ function toDashboardRelease(slug: string, row: ReleaseRow): DashboardRelease {
     publishedAt: new Date(row.published_at),
     summaryStatus: row.summaries?.status ?? null,
     summary,
-    ...judge(summary ? summary.actionRequired : null, storedNotesHead(row.release_notes?.body_head)),
+    ...judge(summary, storedNotesHead(row.release_notes?.body_head)),
   };
 }

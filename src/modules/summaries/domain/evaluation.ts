@@ -10,8 +10,11 @@ export type ExpectedBreakingChange = { id: string; about: string; match: string[
 // `breakingChanges` must be found; `allowed` are the borderline ones the notes describe but a
 // Summary may leave out — claiming one is not a mistake, so it is not reported as unexpected.
 // `actionRequired` is "either" when only borderline changes are on the table and both verdicts read.
+// `notesJudgeable` is the third exit of the prompt `v7` (issue #93), and takes "either" for the same
+// reason: a bare list of commit messages describes something and also describes nothing.
 export type ExpectedSummary = {
   actionRequired: boolean | "either";
+  notesJudgeable: boolean | "either";
   breakingChanges: ExpectedBreakingChange[];
   allowed?: ExpectedBreakingChange[];
 };
@@ -22,6 +25,9 @@ export type UnexpectedChange = { change: string; quote: QuoteState };
 
 export type SummaryEvaluation = {
   actionRequiredMatches: boolean;
+  // `null` when the Summary does not say: a prompt before `v7` was not asked the question, and a
+  // report of one of those runs should not read as fourteen wrong answers.
+  notesJudgeableMatches: boolean | null;
   found: string[];
   missing: string[];
   tolerated: string[];
@@ -53,6 +59,7 @@ export function evaluateSummary({ expected, content, notes }: EvaluationInput): 
   const quotes = items.map((item) => item.quote).filter((quote) => quote !== undefined);
   return {
     actionRequiredMatches: expected.actionRequired === "either" || content.actionRequired === expected.actionRequired,
+    notesJudgeableMatches: judgeableMatches(expected, content),
     found,
     missing,
     tolerated: tolerated.map((expectation) => expectation.id),
@@ -68,6 +75,11 @@ export function evaluateSummary({ expected, content, notes }: EvaluationInput): 
 // in the migration, and splitting the two would make an expectation impossible to write.
 function claimText(change: BreakingChange): string {
   return `${change.change}\n${change.migration}`.toLowerCase();
+}
+
+function judgeableMatches(expected: ExpectedSummary, content: SummaryContent): boolean | null {
+  if (content.notesJudgeable === undefined) return null;
+  return expected.notesJudgeable === "either" || content.notesJudgeable === expected.notesJudgeable;
 }
 
 function matches(expectation: ExpectedBreakingChange, claim: string): boolean {

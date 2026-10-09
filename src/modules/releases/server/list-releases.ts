@@ -48,5 +48,5 @@ function readSummary(
   if (stored?.status !== "ready") return { actionRequired: null, unjudged: false, summary: null };
   const parsed = SummaryContentSchema.safeParse(stored.content);
   if (!parsed.success) return { actionRequired: null, unjudged: false, summary: null };
-  return { ...judge(parsed.data.actionRequired, notes), summary: parsed.data };
+  return { ...judge(parsed.data, notes), summary: parsed.data };
 }

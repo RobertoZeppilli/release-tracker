@@ -48,7 +48,7 @@ export async function getRelease(db: SupabaseClient, technologyId: string, versi
     notes: row.release_notes,
     summaryStatus: row.summaries?.status ?? null,
     summary,
-    unjudged: summary !== null && judge(summary.content.actionRequired, notes).unjudged,
+    unjudged: summary !== null && judge(summary.content, notes).unjudged,
   };
 }
 

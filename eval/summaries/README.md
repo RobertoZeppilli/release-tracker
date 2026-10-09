@@ -6,7 +6,9 @@ chiamare Anthropic né spendere), e ogni giro lascia un report in `reports/`, co
 quelli dei giri precedenti.
 
 `--model <id>` lancia il set su un modello diverso da quello dell'app, che è il modo di confrontare
-due modelli sullo stesso prompt (#57). Il report porta prompt e modello nel nome, quindi i giri
+due modelli sullo stesso prompt (#57). `--results <file>` **rilegge un giro già pagato** dal file
+`.results.json` che ogni giro salva accanto al suo report, senza mandare niente e senza spendere: una
+correzione al nostro schema o al report non vale un secondo batch (#93). Il report porta prompt e modello nel nome, quindi i giri
 stanno uno accanto all'altro invece di sovrascriversi, e registra anche i **token fatturati**, così
 il costo si calcola sui numeri veri. **Toccare `SUMMARY_MODEL` senza aver lanciato il set è vietato**
 dall'ADR 0007: i due requisiti che il set misura, le citazioni verbatim e l'Intervento richiesto, non
@@ -27,6 +29,10 @@ Le attese sono il giudizio umano, l'unica parte che nessuna macchina dà:
   una Sintesi che raggruppa più rimozioni in un punto solo conta lo stesso.
 - `allowed`: le breaking changes di confine, legittime ma non obbligatorie. Citarne una non è un
   errore; il report la segna come tollerata invece che come inattesa.
+- `notesJudgeable`: se le Note descrivevano dei cambiamenti o rimandavano soltanto altrove. Prende
+  `"either"` come `actionRequired`, per i casi in cui le due letture reggono entrambe (una lista
+  secca di messaggi di commit). Il report lo conta come l'Intervento richiesto, e dice **non chiesto**
+  per un giro con un prompt precedente al `v7`, che la domanda non la faceva.
 
 Un cambiamento dichiarato che non rientra in nessuna delle due liste è **inattesto**, e il report dice
 se la citazione che lo accompagna sta davvero nelle Note.

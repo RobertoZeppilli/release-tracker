@@ -30,4 +30,4 @@ export {
   SUMMARY_MODEL,
   type SummaryInput,
 } from "./domain/summary-prompt";
-export { type Judged, judge, SummaryVerdictSchema } from "./domain/summary-verdict";
+export { type Judged, judge, type SummaryVerdict, SummaryVerdictSchema } from "./domain/summary-verdict";
