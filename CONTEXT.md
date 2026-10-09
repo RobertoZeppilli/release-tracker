@@ -174,6 +174,11 @@ richiede intervento: la **Release** si legge come una senza **Sintesi** _Pronta_
 controllare, e il prodotto dice dove stanno le note vere. "Non ho trovato breaking changes" e "non
 ci sono breaking changes" sono affermazioni diverse e il prodotto non stampa la seconda al posto
 della prima. In dubbio tace: una nota che descrive qualcosa resta giudicabile.
+Chi lo dice: la **Sintesi** stessa, col campo `notesJudgeable` che il prompt `v7` le chiede, perché
+il modello ha letto le **Note di rilascio** intere. Quando il campo manca, cioè nelle **Sintesi**
+generate con un prompt precedente, risponde l'euristica di `notesJudgeable`, che legge i primi 400
+caratteri e resta la rete per quelle. Un **Intervento richiesto** _sì_ non si ritira comunque: una
+breaking change elencata è un fatto preso dalle note.
 _Evitare_: note vuote, note povere, low quality notes.
 
 **Stato della sintesi**:

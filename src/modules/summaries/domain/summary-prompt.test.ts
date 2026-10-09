@@ -32,6 +32,17 @@ describe("prepareSummaryRequest", () => {
     expect(result.request.system).toMatch(/does not apply to a "quote"/);
   });
 
+  // Issue #93: the rule above equated "the notes declare no breaking change" with "the upgrade is
+  // safe", and the third exit is what separates them. It has to be asked of the model in the prompt,
+  // because the heuristic that stands in for it only reads the first 400 characters of the notes.
+  it("asks whether the notes could be judged at all, and says why it is a separate question", () => {
+    const result = prepareSummaryRequest({ ...release, notes: "Fixes" });
+    if (!result.ok) throw new Error(result.reason);
+    expect(result.request.system).toContain('"notesJudgeable"');
+    expect(result.request.system).toMatch(/not a claim that the upgrade is safe/i);
+    expect(result.request.system).toMatch(/no changes/i);
+  });
+
   it("names the prompt version it was built with", () => {
     expect(PROMPT_VERSION).toMatch(/^v\d+$/);
   });

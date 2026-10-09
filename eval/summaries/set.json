@@ -8,6 +8,7 @@
       "note": "45k characters, an explicit Breaking Changes section with about twenty removals",
       "expected": {
         "actionRequired": true,
+        "notesJudgeable": true,
         "breakingChanges": [
           { "id": "proptypes", "about": "propTypes is ignored", "match": ["proptypes"] },
           { "id": "string-refs", "about": "string refs removed", "match": ["string ref"] },
@@ -42,6 +43,7 @@
       "note": "minor, no breaking section, but useId changes the ids it generates",
       "expected": {
         "actionRequired": "either",
+        "notesJudgeable": true,
         "breakingChanges": [],
         "allowed": [
           { "id": "useid", "about": "useId now uses an underscore instead of a colon", "match": ["useid"] },
@@ -57,7 +59,7 @@
       "technologyName": "React",
       "notes": "notes/react@19.2.7.md",
       "note": "one-line patch: nothing to invent",
-      "expected": { "actionRequired": false, "breakingChanges": [] }
+      "expected": { "actionRequired": false, "notesJudgeable": true, "breakingChanges": [] }
     },
     {
       "slug": "typescript",
@@ -65,7 +67,7 @@
       "technologyName": "TypeScript",
       "notes": "notes/typescript@6.0.3.md",
       "note": "notes that only link elsewhere: the Summary must not fill the void",
-      "expected": { "actionRequired": false, "breakingChanges": [] }
+      "expected": { "actionRequired": false, "notesJudgeable": false, "breakingChanges": [] }
     },
     {
       "slug": "vite",
@@ -75,6 +77,7 @@
       "note": "beta, a changelog of commits with internal removals",
       "expected": {
         "actionRequired": "either",
+        "notesJudgeable": true,
         "breakingChanges": [],
         "allowed": [
           { "id": "hmrurl", "about": "the HmrUrl concept is gone", "match": ["hmrurl"] },
@@ -89,7 +92,7 @@
       "technologyName": "Vite",
       "notes": "notes/vite@8.2.2.md",
       "note": "the notes only point at the changelog: the hardest case for invention",
-      "expected": { "actionRequired": false, "breakingChanges": [] }
+      "expected": { "actionRequired": false, "notesJudgeable": false, "breakingChanges": [] }
     },
     {
       "slug": "eslint",
@@ -99,6 +102,7 @@
       "note": "minor: new reports can fail a build that passed",
       "expected": {
         "actionRequired": "either",
+        "notesJudgeable": true,
         "breakingChanges": [],
         "allowed": [
           { "id": "new-cap", "about": "new-cap only exempts built-ins referencing the global", "match": ["new-cap"] },
@@ -113,7 +117,7 @@
       "technologyName": "ESLint",
       "notes": "notes/eslint@10.9.1.md",
       "note": "patch: one fix, one doc, one chore",
-      "expected": { "actionRequired": false, "breakingChanges": [] }
+      "expected": { "actionRequired": false, "notesJudgeable": true, "breakingChanges": [] }
     },
     {
       "slug": "tailwindcss",
@@ -123,6 +127,7 @@
       "note": "minor: additions and fixes, plus changes to the upgrade codemod",
       "expected": {
         "actionRequired": "either",
+        "notesJudgeable": true,
         "breakingChanges": [],
         "allowed": [
           { "id": "has-canonicalization", "about": "the upgrade tool rewrites arbitrary :has() variants", "match": ["has-"] },
@@ -136,7 +141,7 @@
       "technologyName": "Tailwind CSS",
       "notes": "notes/tailwindcss@4.2.4.md",
       "note": "patch: a single fix",
-      "expected": { "actionRequired": false, "breakingChanges": [] }
+      "expected": { "actionRequired": false, "notesJudgeable": true, "breakingChanges": [] }
     },
     {
       "slug": "zod",
@@ -146,6 +151,7 @@
       "note": "30k characters, behaviour changes marked with a warning sign under Bug fixes",
       "expected": {
         "actionRequired": true,
+        "notesJudgeable": true,
         "breakingChanges": [
           { "id": "emoji", "about": "z.emoji() rejects component-only strings", "match": ["emoji"] },
           { "id": "enum-options", "about": "numeric enum options drop the reverse mappings", "match": ["enum"] },
@@ -166,7 +172,7 @@
       "technologyName": "Zod",
       "notes": "notes/zod@4.6.5.md",
       "note": "a bare list of commits: docs, a revert and a re-revert",
-      "expected": { "actionRequired": false, "breakingChanges": [] }
+      "expected": { "actionRequired": false, "notesJudgeable": "either", "breakingChanges": [] }
     },
     {
       "slug": "prisma",
@@ -176,6 +182,7 @@
       "note": "11k characters, long prose, security hardening that can lock someone out",
       "expected": {
         "actionRequired": "either",
+        "notesJudgeable": true,
         "breakingChanges": [],
         "allowed": [
           { "id": "studio-localhost", "about": "Prisma Studio binds to 127.0.0.1 and rejects other origins", "match": ["studio"] },
@@ -192,6 +199,7 @@
       "note": "patch after a major: features and fixes, one deprecation warning",
       "expected": {
         "actionRequired": "either",
+        "notesJudgeable": true,
         "breakingChanges": [],
         "allowed": [
           { "id": "list-exit-code", "about": "vitest list exits 1 when collection fails", "match": ["exit"] },

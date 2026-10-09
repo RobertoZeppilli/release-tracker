@@ -11,9 +11,13 @@ import {
   SUMMARY_MODEL,
   type SummaryContent,
   type SummaryEvaluation,
+  type SummaryResult,
   type SummaryUsage,
 } from "@/modules/summaries";
 import { createSummaryBatches } from "@/modules/summaries/server";
+
+// A batch to score, whether it was just paid for or read back from the file a run left behind.
+type Replayable = { batchId: string; results: Map<string, SummaryResult>; startedAt: Date };
 
 // The evaluation set of issue #14: every case through the real Message Batches API in one batch,
 // compared against what a human said the Summary must say. Costs a few tens of cents a run.
@@ -21,8 +25,13 @@ import { createSummaryBatches } from "@/modules/summaries/server";
 // `--model <id>` runs the set on another model than the one the app uses, which is how two
 // models are compared on the same prompt (#57): the report keeps the model in its name, so the
 // runs sit side by side in `reports/`.
+// `--results <file>` scores a batch that has already been paid for, from the `.results.json` every
+// run saves beside its report, instead of submitting a new one. What the model answered does not
+// change when our schema does, and a fix to the schema is not worth a second batch (#93).
 const SET_DIR = "eval/summaries";
 const dry = process.argv.includes("--dry");
+const replayFile = process.argv.includes("--results") ? (process.argv[process.argv.indexOf("--results") + 1] ?? "") : null;
+if (replayFile === "") throw new Error("--results wants the path of a saved results file");
 const modelArgument = process.argv[process.argv.indexOf("--model") + 1];
 const model = process.argv.includes("--model") ? (modelArgument ?? "") : SUMMARY_MODEL;
 if (!model.startsWith("claude-")) throw new Error(`--model wants a model id, got ${JSON.stringify(modelArgument)}`);
@@ -40,6 +49,7 @@ const CaseSchema = z.object({
   note: z.string(),
   expected: z.object({
     actionRequired: z.union([z.boolean(), z.literal("either")]),
+    notesJudgeable: z.union([z.boolean(), z.literal("either")]),
     breakingChanges: z.array(ExpectedBreakingChangeSchema),
     allowed: z.array(ExpectedBreakingChangeSchema).optional(),
   }),
@@ -77,23 +87,54 @@ if (dry) {
   process.exit(0);
 }
 
-const env = z.object({ ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-") }).parse(process.env);
-const batches = createSummaryBatches(env.ANTHROPIC_API_KEY);
-if (batches === null) throw new Error("no ANTHROPIC_API_KEY in the environment");
+// A saved result is decoded, not trusted: the file comes back from the disk like anything else.
+const SavedResultSchema: z.ZodType<SummaryResult> = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("succeeded"),
+    text: z.string(),
+    usage: z.object({ inputTokens: z.number(), outputTokens: z.number() }).optional(),
+  }),
+  z.object({ type: z.enum(["errored", "expired", "canceled", "credit_exhausted"]), message: z.string() }),
+]);
 
-const startedAt = new Date();
-const batchId = await batches.submit(requests);
-console.log(`batch ${batchId}, waiting (batches usually take minutes)`);
+const SavedResultsSchema = z.object({
+  batchId: z.string(),
+  results: z.record(z.string(), SavedResultSchema),
+});
 
-const deadline = Date.now() + 60 * 60 * 1000;
-let results = await batches.collect(batchId);
-while (results === null) {
-  if (Date.now() > deadline) throw new Error(`batch ${batchId} is still running after an hour`);
-  await new Promise((resolve) => setTimeout(resolve, 20_000));
-  process.stdout.write(".");
-  results = await batches.collect(batchId);
+const { batchId, results, startedAt, replayed } = replayFile === null ? await run() : await replay(replayFile);
+
+async function run(): Promise<Replayable & { replayed: false }> {
+  const env = z.object({ ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-") }).parse(process.env);
+  const batches = createSummaryBatches(env.ANTHROPIC_API_KEY);
+  if (batches === null) throw new Error("no ANTHROPIC_API_KEY in the environment");
+
+  const startedAt = new Date();
+  const id = await batches.submit(requests);
+  console.log(`batch ${id}, waiting (batches usually take minutes)`);
+
+  const deadline = Date.now() + 60 * 60 * 1000;
+  let collected = await batches.collect(id);
+  while (collected === null) {
+    if (Date.now() > deadline) throw new Error(`batch ${id} is still running after an hour`);
+    await new Promise((resolve) => setTimeout(resolve, 20_000));
+    process.stdout.write(".");
+    collected = await batches.collect(id);
+  }
+  console.log("");
+  return { batchId: id, results: collected, startedAt, replayed: false };
 }
-console.log("");
+
+async function replay(file: string): Promise<Replayable & { replayed: true }> {
+  const saved = SavedResultsSchema.parse(JSON.parse(await readFile(file, "utf8")));
+  console.log(`replaying batch ${saved.batchId} from ${file}, nothing is sent and nothing is spent`);
+  return {
+    batchId: saved.batchId,
+    results: new Map(Object.entries(saved.results)),
+    startedAt: new Date(),
+    replayed: true,
+  };
+}
 
 type CaseReport = {
   slug: string;
@@ -130,6 +171,8 @@ const totals = {
   evaluated: evaluated.length,
   unusable: reports.length - evaluated.length,
   actionRequiredMatches: evaluated.filter((report) => report.evaluation?.actionRequiredMatches === true).length,
+  notesJudgeableMatches: evaluated.filter((report) => report.evaluation?.notesJudgeableMatches === true).length,
+  notesJudgeableUnanswered: evaluated.filter((report) => report.evaluation?.notesJudgeableMatches === null).length,
   missing: evaluated.flatMap((report) => report.evaluation?.missing ?? []).length,
   unexpected: evaluated.flatMap((report) => report.evaluation?.unexpected ?? []).length,
   inventedQuotes: evaluated.flatMap((report) => report.evaluation?.inventedQuotes ?? []).length,
@@ -139,22 +182,29 @@ const totals = {
   outputTokens: reports.reduce((sum, report) => sum + (report.usage?.outputTokens ?? 0), 0),
 };
 
-const report = { promptVersion: PROMPT_VERSION, model, batchId, startedAt, totals, cases: reports };
+const report = { promptVersion: PROMPT_VERSION, model, batchId, startedAt, replayed, totals, cases: reports };
 const stamp = startedAt.toISOString().replaceAll(/[:.]/g, "-");
 const path = join(SET_DIR, "reports", `${PROMPT_VERSION}-${model}-${stamp}.json`);
 await mkdir(dirname(path), { recursive: true });
 await writeFile(path, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+// What the model answered, kept apart from how it scored. A batch is paid for once and rereading it
+// is free, so a fix to the schema or to the report never costs a second batch (#93).
+const resultsPath = path.replace(/\.json$/, ".results.json");
+await writeFile(resultsPath, `${JSON.stringify({ batchId, results: Object.fromEntries(results) }, null, 2)}\n`, "utf8");
 
 for (const item of reports) {
   console.log(`\n${item.slug} ${item.version} — ${item.outcome}${item.reason === undefined ? "" : `: ${item.reason}`}`);
   if (item.evaluation === undefined) continue;
   const { missing, unexpected, inventedQuotes, tolerated, actionRequiredMatches, titleLength } = item.evaluation;
+  const judgeable = item.evaluation.notesJudgeableMatches;
   console.log(`  title (${titleLength}): ${item.content?.title ?? ""}`);
   console.log(`  actionRequired ${String(item.content?.actionRequired)} — ${actionRequiredMatches ? "as expected" : "WRONG"}`);
+  const judgeableVerdict = judgeable === null ? "not asked" : judgeable ? "as expected" : "WRONG";
+  console.log(`  notesJudgeable ${String(item.content?.notesJudgeable)} — ${judgeableVerdict}`);
   if (missing.length > 0) console.log(`  MISSING: ${missing.join(", ")}`);
   if (tolerated.length > 0) console.log(`  tolerated: ${tolerated.join(", ")}`);
   for (const claim of unexpected) console.log(`  UNEXPECTED (${claim.quote}): ${claim.change}`);
   for (const quote of inventedQuotes) console.log(`  INVENTED QUOTE: ${quote}`);
 }
 
-console.log(`\n${JSON.stringify(totals, null, 2)}\nreport: ${path}`);
+console.log(`\n${JSON.stringify(totals, null, 2)}\nreport: ${path}\nresults: ${resultsPath}`);

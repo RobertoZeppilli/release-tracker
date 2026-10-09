@@ -16,6 +16,7 @@ function content(overrides: Partial<SummaryContent> = {}): SummaryContent {
 
 const expected: ExpectedSummary = {
   actionRequired: true,
+  notesJudgeable: true,
   breakingChanges: [{ id: "foo-removed", about: "foo() is gone", match: ["foo"] }],
 };
 
@@ -32,6 +33,7 @@ describe("evaluateSummary", () => {
   it("matches keywords case-insensitively across the change and its migration", () => {
     const withMigrationKeyword: ExpectedSummary = {
       actionRequired: true,
+      notesJudgeable: true,
       breakingChanges: [{ id: "foo-removed", about: "foo() is gone", match: ["FOO", "BAR"] }],
     };
 
@@ -104,7 +106,7 @@ describe("evaluateSummary", () => {
   });
 
   it("accepts both verdicts when the set says the Intervento richiesto reads either way", () => {
-    const either: ExpectedSummary = { actionRequired: "either", breakingChanges: [] };
+    const either: ExpectedSummary = { actionRequired: "either", notesJudgeable: true, breakingChanges: [] };
 
     const yes = evaluateSummary({ expected: either, content: content(), notes });
     const no = evaluateSummary({ expected: either, content: content({ actionRequired: false, breakingChanges: [] }), notes });
@@ -112,9 +114,52 @@ describe("evaluateSummary", () => {
     expect([yes.actionRequiredMatches, no.actionRequiredMatches]).toEqual([true, true]);
   });
 
+  // Issue #93: the third exit is scored like the Intervento richiesto, and a run of a prompt that was
+  // never asked the question has to read as unanswered rather than as fourteen wrong answers.
+  describe("the judgement of the notes", () => {
+    const unjudgeable: ExpectedSummary = { actionRequired: false, notesJudgeable: false, breakingChanges: [] };
+    const safe = { actionRequired: false, breakingChanges: [] };
+
+    it("matches when the Summary agrees with the set", () => {
+      const evaluation = evaluateSummary({
+        expected: unjudgeable,
+        content: content({ ...safe, notesJudgeable: false }),
+        notes,
+      });
+
+      expect(evaluation.notesJudgeableMatches).toBe(true);
+    });
+
+    it("does not match a Summary that judged notes the set calls unjudgeable", () => {
+      const evaluation = evaluateSummary({
+        expected: unjudgeable,
+        content: content({ ...safe, notesJudgeable: true }),
+        notes,
+      });
+
+      expect(evaluation.notesJudgeableMatches).toBe(false);
+    });
+
+    it("says nothing of a Summary the question was never put to", () => {
+      const evaluation = evaluateSummary({ expected: unjudgeable, content: content(safe), notes });
+
+      expect(evaluation.notesJudgeableMatches).toBeNull();
+    });
+
+    it("accepts both answers when the set says the notes read either way", () => {
+      const either: ExpectedSummary = { actionRequired: false, notesJudgeable: "either", breakingChanges: [] };
+
+      const yes = evaluateSummary({ expected: either, content: content({ ...safe, notesJudgeable: true }), notes });
+      const no = evaluateSummary({ expected: either, content: content({ ...safe, notesJudgeable: false }), notes });
+
+      expect([yes.notesJudgeableMatches, no.notesJudgeableMatches]).toEqual([true, true]);
+    });
+  });
+
   it("matches a keyword against the whole expected claim only, never across two claims", () => {
     const two: ExpectedSummary = {
       actionRequired: true,
+      notesJudgeable: true,
       breakingChanges: [{ id: "both", about: "foo and baz", match: ["foo", "baz"] }],
     };
     const claimed = content({

@@ -13,14 +13,15 @@ davvero è leggere delle Note e riportarne i punti con le citazioni, cioè estra
 e il set di valutazione (14 Release reali, le attese scritte a mano, `pnpm summary:eval`) dice che
 sulle due cose che contano Haiku 5.5 col prompt `v6` non perde niente:
 
-| | Opus 5, prompt v4 | Haiku 5.5, prompt v6 |
-|---|---|---|
-| Intervento richiesto azzeccato | 14 su 14 | 14 su 14 |
-| Breaking changes mancanti | 0 | 0 |
-| Breaking changes inattese | 3 | 0 |
-| Citazioni inventate | 0 | 0 |
-| Voci senza puntatore alle righe | 4 su 81 | 3 su 76 |
-| Costo del giro | $0,486 | $0,0097 |
+| | Opus 5, prompt v4 | Haiku 5.5, prompt v6 | Haiku 5.5, prompt v7 |
+|---|---|---|---|
+| Intervento richiesto azzeccato | 14 su 14 | 14 su 14 | 14 su 14 |
+| Note giudicabili azzeccate | non chiesto | non chiesto | 14 su 14 |
+| Breaking changes mancanti | 0 | 0 | 0 |
+| Breaking changes inattese | 3 | 0 | 0 |
+| Citazioni inventate | 0 | 0 | 0 |
+| Voci senza puntatore alle righe | 4 su 81 | 3 su 76 | 3 su 73 |
+| Costo del giro | $0,486 | $0,0097 | $0,0096 |
 
 Il confronto **non è pulito e non va letto come "Haiku batte Opus"**: fra le due colonne sono
 cambiati sia il modello sia il prompt, e Opus col `v6` non è stato misurato, perché costa 50 volte
@@ -36,6 +37,23 @@ controllare) e aggiunge un passo di ricontrollo prima della risposta. Le 3 voci 
 sono il pavimento della forma, non un difetto del modello: stanno su `vite 8.2.2` e
 `tailwindcss 4.2.4`, due Release le cui Note sono un rimando al changelog, mentre lo schema chiede
 comunque almeno 3 punti chiave.
+
+**Il `v7` ha tolto metà di quel pavimento, e l'ha fatto scoprendolo** (issue #93, 2026-10-09). Il
+prompt chiede adesso alla Sintesi se le Note erano giudicabili, invece di lasciarlo dedurre a
+un'euristica; su `vite 8.2.2` il modello ha risposto che non lo erano e ha dato **l'unico punto che
+quelle Note contengono**, e lo schema, che ne chiedeva tre, ha buttato una Sintesi già pagata. Il
+pavimento era quindi una richiesta di inventare, e dal `v7` **il minimo è 1 quando il modello
+dichiara le Note non giudicabili**, come il titolo che il prompt chiede a 120 caratteri e lo schema
+accetta a 140. Le 3 voci scoperte che restano sono una su `vite 8.2.2`, un punto che parla delle
+Note stesse e non ha niente da citare per costruzione, e due su `tailwindcss 4.2.4`, dove le Note
+sono una riga di fix vera e il pavimento dei 3 punti vale ancora.
+
+⚠️ **Il giro del `v7` è stato pagato una volta e letto due.** Il primo report
+(`v7-…T07-38-02-044Z`) è quello col difetto dello schema, 13 casi su 14. Il secondo
+(`…T07-58-42-486Z`, con `"replayed": true`) è **lo stesso batch** riletto gratis dopo la correzione,
+ed è la misura che conta. Da qui l'opzione `--results` di `pnpm summary:eval`, e il fatto che ogni
+giro salva accanto al report quello che il modello ha risposto: una correzione al nostro schema non
+deve costare un secondo batch.
 
 **Non si cerca lo zero**, ed è una scelta: `locateCitation` verifica che la citazione esista
 verbatim nelle Note, non che quella riga enunci la voce a cui è attaccata. Una citazione inventata
