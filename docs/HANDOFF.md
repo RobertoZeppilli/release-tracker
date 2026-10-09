@@ -15,9 +15,10 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-09, sera, dopo la #80).** La **#80 è implementata e la PR #136 è
-aperta, non unita**: branch `80-notes-backfill`, un commit, spinto. Da controllare la CI della PR, e
-poi il merge, che resta dell'utente. Tutto il resto di `main` è fermo e pulito.
+**Da dove ripartire (2026-10-09, sera, dopo la #80).** La **#80 è chiusa**: **PR #136 unita** in
+`2225dd1`, e la issue si è chiusa da sola col `Closes`. La CI del merge e il `Deploy database` sono
+**verdi** (nessuna migrazione da applicare), e **non c'è niente in sospeso**. Il giro a vuoto in
+produzione **è stato fatto**, e da lì è nata la **#137**, che è il vero lavoro seguente.
 
 **La scelta è stata fra la #65 e la #80, e la #80 ha vinto per una ragione di sequenza.** La #65
 dipende dallo stage, che non è deciso: il suo primo criterio chiede di scrivere quale delle due
@@ -74,14 +75,47 @@ confrontare, e il test cadeva a caso. Adesso ogni Tecnologia ordina per Versione
 le stringhe e l'heredoc lo ha fatto fallire in partenza ("unexpected EOF"), senza scrivere niente.
 La regola dell'ambiente vale: **file con barre rovesciate, strumenti di modifica, mai heredoc**.
 
+**Il giro a vuoto in produzione, e la sorpresa che conteneva.** `GET /api/jobs/notes/backfill`
+senza `apply` ha risposto: **91 mancanti, 3 recuperabili**, 17 Tecnologie interrogate, nessun
+fallimento. Le 3 sono `typescript 6.0.0-beta` e `6.0.1-rc`, cioè esattamente quelle che la #36
+aveva insegnato a leggere, e `next 16.4.0`. Le altre 88 si dichiaravano "not at the source", e
+**per 35 di loro non era vero**.
+
+⚠️ **Perché non era vero: quei repository hanno cambiato convenzione dei tag nel tempo**, e un
+`tagFormat` per Fonte copre una sola epoca. Verificato chiamando GitHub tag per tag:
+`angular` nel 2025 taggava `21.0.3` e oggi tagga `v21.0.3` (22 Release mute); `drizzle-orm` il
+contrario (11); `express` pubblica rilasci che **non compaiono nella lista paginata** ma rispondono
+a `GET /releases/tags/<tag>` (2). È diventata la **#137**, `ready-for-agent`, con dentro tutte le
+prove: con quella, il recupero passa da 3 a **38** su 91.
+
+⚠️ **Due trappole dentro la #137, già pagate una volta qui.** La prima: **girare il `tagFormat` è la
+risposta sbagliata**, perché `angular` ha 116 Release e **94 hanno le Note**, cioè il formato
+configurato funziona per la maggioranza, e cambiarlo sposterebbe soltanto il buco. La seconda:
+**non è solo arretrato**, `drizzle-orm` tagga oggi in un modo che il Catalogo non riconosce, quindi
+ogni sua Release nuova entra senza Note e senza Sintesi, e il Rilevamento ne accumula altre ogni
+giorno.
+
+⚠️ **Le verifiche su GitHub vogliono il `GITHUB_TOKEN`.** Senza, il budget è di 60 richieste
+all'ora, e diagnosticare la #137 lo ha quasi esaurito: ne restavano 9. Lo stato del budget si legge
+gratis con `GET https://api.github.com/rate_limit`, che non conta.
+
+⚠️ **In PowerShell `curl` non è curl**: è un alias di `Invoke-WebRequest`, e `-s` viene letto come
+l'inizio di `-SessionVariable`. Per chiamare i job si usa `curl.exe` oppure `Invoke-RestMethod` con
+`-Headers @{ Authorization = "Bearer $env:CRON_SECRET" }`.
+
+⚠️ **Il `CRON_SECRET` di produzione è stato ruotato** il 2026-10-09, perché il vecchio era finito
+dentro una conversazione. Il nuovo è su Vercel e la produzione è stata ridistribuita, quindi le
+funzioni ce l'hanno: verificato, il backfill risponde invece di dare 401. Da ricordare, perché è la
+stessa lezione della `ANTHROPIC_API_KEY`: **cambiare la variabile non basta, serve un redeploy**.
+
 ### Cosa resta
 
-1. **Il giro in produzione della #80, non ancora fatto**, e si fa dopo il merge. Il primo è la
-   chiamata **senza `apply`**: non scrive niente e dice quante delle 91 Note sono davvero
-   recuperabili alla Fonte. ⚠️ Aspettarsene parecchie irrecuperabili: molte sono patch vecchie di
-   rami di manutenzione, e `7.0.1-rc` di TypeScript non esiste proprio su GitHub.
-2. La cancellazione dei rami `93-prompt-v7`, `57-haiku-summaries`, `26-landing-page` e, dopo il
-   merge, `80-notes-backfill`, locali e remoti, che resta dell'utente.
+1. **La #137**, `ready-for-agent` e senza blocchi, che è il seguito naturale. ⚠️ **Il giro con
+   `apply=1` conviene farlo dopo di lei, non adesso**: oggi riempirebbe 3 Note, dopo ne riempie 38,
+   e un giro solo vale due.
+2. La cancellazione dei rami `93-prompt-v7`, `57-haiku-summaries`, `26-landing-page`,
+   `80-notes-backfill` e `120-technology-icons` (quest'ultimo solo locale, la sua PR #128 è unita
+   dall'8 ottobre), locali e remoti, che resta dell'utente.
 3. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. La #80 non
    spende più niente, perché la decisione presa oggi toglie la generazione dal backfill. Ogni altra
    issue aperta (#65, #126, #130, #131, #132, #133, #69, #113, #94) non tocca Anthropic.
@@ -141,13 +175,14 @@ lui. Quello che si è fatto dopo quella frase è nato dalle sue richieste dirett
 
 Tutto quello che era stato scelto è chiuso, quindi restano solo le issue aperte, e **non ce n'è
 nessuna `ready-for-agent`**: qualunque strada qui sotto vuole il via dell'utente. Sono tutte
-`ready-for-human`. ⚠️ **Questo capoverso è del 2026-10-06 e due righe sono invecchiate**: la **#57**
+`ready-for-human`. ⚠️ **Questo capoverso è del 2026-10-06 e tre righe sono invecchiate**: la **#80**
+è **chiusa** il 2026-10-09 e ha lasciato al suo posto la **#137**, che è `ready-for-agent`, quindi
+"non ce n'è nessuna" adesso è falso; la **#57**
 è **chiusa** il 2026-10-08, e la **#93** adesso è il prompt **v7** e costa **8 centesimi**, non più
 qualche dollaro, perché le Sintesi si generano con Haiku 5.5. La #93 **spende** su Anthropic, poco; **#65**, tecnica, serve solo il via, e adesso va
-letta insieme allo stage (vedi lo Stato: la strada 1 potrebbe non servire più); **#80** (tocca GitHub
-e npm, non Anthropic, ma genera Sintesi a valle, quindi **a costo zero solo scegliendo la strada 1 o
-la 3** della issue); **#26** la landing page, ferma sul nome del prodotto; **#69** esplicitamente
-dopo il lancio.
+letta insieme allo stage (vedi lo Stato: la strada 1 potrebbe non servire più); **#26** la landing
+page, ferma sul nome del prodotto; **#69** esplicitamente dopo il lancio. La **#80** è chiusa, e la
+scelta fra le sue tre strade è stata la 3, scritta in `CONTEXT.md`: il backfill non genera Sintesi.
 
 **Fuori dalle issue, due cose vive e non decise**, nate in chat il 2026-10-06 e scritte nello Stato:
 l'**exit code di `catalog:sync`** quando una Fonte è giù per davvero, e l'**ordine stage / #65** con
@@ -386,7 +421,10 @@ dashboard. La chiamata in sé **non spende**, tocca solo GitHub e npm.
   la barra) e **#120** (le icone delle Tecnologie). Le ultime due sono **chiuse** il 2026-10-08, con
   la PR #127 e la PR #128; resta aperta la #113.
   Aperta il 2026-10-05: **#94** (il verdetto della Dashboard si contraddice, `ready-for-human`).
-  Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti, `ready-for-human`).
+  Aperta il 2026-10-02: **#80** (riprendere le Note di rilascio mancanti), **chiusa** il 2026-10-09
+  con la PR #136.
+  Aperta il 2026-10-09: **#137** (le Note non si trovano quando un repository cambia la convenzione
+  dei tag), `ready-for-agent` e libera da blocchi, nata dal giro a vuoto della #80.
   Aperta dall'utente il 2026-10-04: **#88** (una Sintesi `ready` senza provenienza non viene
   rifiutata dal database), `ready-for-agent` e libera da blocchi.
   Le Sintesi dell'arretrato sono **pubblicate** dal 2026-09-29 (122 su 126): vedi la sezione del batch.
