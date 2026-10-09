@@ -2,7 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { StoredTechnology } from "@/modules/catalog";
 import { initialSummaryStatus, type Significance } from "@/modules/releases";
-import type { FoundNotes, SourceAdapters } from "../domain/source-adapters";
+import type { SourceAdapters } from "../domain/source-adapters";
+import { findNotes } from "./find-notes";
 
 const ReleaseIdSchema = z.array(z.object({ id: z.uuid(), version: z.string() }));
 
@@ -63,17 +64,4 @@ export async function persistReleases(
   const { error } = await db.from("summaries").upsert(summaryRows, { onConflict: "release_id", ignoreDuplicates: true });
   if (error) throw error;
   return rows.map(({ release }) => release.version);
-}
-
-async function findNotes(technology: StoredTechnology, adapters: SourceAdapters, versions: readonly string[]) {
-  const found = new Map<string, FoundNotes & { sourceId: string }>();
-  for (const source of technology.sources) {
-    if (source.role !== "notes") continue;
-    const missing = versions.filter((version) => !found.has(version));
-    if (missing.length === 0) break;
-    for (const [version, notes] of await adapters.findNotes(source, missing)) {
-      found.set(version, { ...notes, sourceId: source.id });
-    }
-  }
-  return found;
 }

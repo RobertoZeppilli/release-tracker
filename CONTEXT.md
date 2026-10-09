@@ -186,6 +186,14 @@ A che punto è la **Sintesi** di una **Release**: _In attesa_, _In corso_, _Pron
 _Non disponibile_ (mancano le **Note di rilascio**), _Non generata_ (possibile, ma scelto di non
 farla) o _Fallita_. Una **Release** è visibile in
 dashboard qualunque sia questo stato.
+
+Quando le **Note di rilascio** arrivano dopo, perché una **Fonte** ha imparato a trovarle, una
+**Sintesi** _Non disponibile_ passa a _Non generata_, mai direttamente a _In attesa_: le note
+diventano leggibili e nessuna **Sintesi** si genera a sorpresa. Lo stato va cambiato comunque,
+perché _Non disponibile_ dichiara sulla riga che non ci sono note da riassumere e nasconde il link
+alle note: lasciarlo direbbe il falso proprio sulle **Release** appena riempite. Rimettere _In
+attesa_ è un gesto a parte, chiesto a mano, perché è l'unico che spende. Deciso il 2026-10-09 con la
+issue #80.
 _Evitare_: status job, flag summarized.
 
 **Rilevamento**:
