@@ -92,9 +92,20 @@ in `eval/summaries/reports/` porta il modello nel nome, così i giri si confront
 chi le ha scritte e `summaries.prompt_version` con quale prompt, quindi due generazioni convivono
 senza ambiguità nella pagina della Release.
 
-**Le 126 Sintesi dell'arretrato non si rigenerano qui**, ed è una scelta dell'utente del 2026-10-08:
-si rigenerano **una volta sola** dentro la #93, che cambia a sua volta il prompt. Rigenerarle due
-volte costerebbe il doppio senza che la prima volta serva a niente, perché le Sintesi di Opus non
-sono peggiori di quelle che la #57 produrrebbe: sono quelle che si leggono oggi. Fino a quel merge il
-Catalogo porta Sintesi `claude-opus-5` a prompt `v4`, e le Release nuove nascono `claude-haiku-5-5` a
-prompt `v6`.
+**L'arretrato non si è rigenerato qui**, ed è stata una scelta dell'utente del 2026-10-08: si è
+rigenerato **una volta sola** dentro la #93, che cambiava a sua volta il prompt. Rigenerarlo due
+volte sarebbe costato il doppio senza che la prima volta servisse a niente, perché le Sintesi di
+Opus non erano peggiori di quelle che la #57 avrebbe prodotto: erano quelle che si leggevano.
+
+**La rigenerazione è avvenuta il 2026-10-09**, dopo il merge della #93, e tutto il Catalogo porta
+adesso Sintesi `claude-haiku-5-5` a prompt `v7`. **142 Sintesi, non 126**: alle 122 `ready` si sono
+aggiunte 7 `failed` e le 13 `pending` che erano già in coda, e mandarle tutte nello stesso batch è
+costato un centesimo in più che lasciarle a un giro successivo. Nessuna fallita, né all'invio né
+alla validazione.
+
+⚠️ **Il costo vero è stato $0,1362, contro gli $0,08 proiettati**, cioè il 45% in più, e la
+differenza è tutta nel metodo: la proiezione scalava i token misurati su Opus su 126 Sintesi, mentre
+il Catalogo nel frattempo era cresciuto e le Note vere sono più lunghe di quanto la proiezione
+assumesse. **La media misurata è $0,00096 per Sintesi** (9.648 token in ingresso e 1.906 in uscita),
+contro i $0,00066 proiettati. È la prima misura su dati veri col modello nuovo, e sostituisce la
+stima ovunque.

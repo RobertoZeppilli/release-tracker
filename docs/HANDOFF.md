@@ -15,317 +15,113 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-08, dopo la #57).** La **#57 è chiusa**: **PR #134 unita** in
-`dc862f7`, e la issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso**, e `main`
-locale e remoto combaciano. Il `Deploy database` del merge è **verde** (nessuna migrazione da
-applicare). ⚠️ **Due rami esistono ancora**, locali e remoti, `57-haiku-summaries` e
-`26-landing-page`: la cancellazione resta dell'utente, la modalità auto la nega all'agente.
+**Da dove ripartire (2026-10-09, dopo la #93).** La **#93 è chiusa**: **PR #135 unita** in `36cb15b`,
+e la issue si è chiusa da sola col `Closes`. La CI del merge e il `Deploy database` sono **verdi**
+(nessuna migrazione da applicare), `main` locale e remoto combaciano, **non c'è niente in sospeso**.
+⚠️ **Tre rami esistono ancora**, locali e remoti: `93-prompt-v7`, `57-haiku-summaries` e
+`26-landing-page`. La cancellazione resta dell'utente, la modalità auto la nega all'agente.
 
-⚠️ **Il lavoro seguente è deciso: la #93**, corretta il 2026-10-08 e da leggere prima di cominciare.
-Il titolo diceva "Prompt v5" ed è adesso **`v7`**, perché il `v5` è arrivato con la #87 e il `v6` con
-la #57. Nel corpo le due decisioni sulla spesa **non sono più appese**: si rigenera **tutto** il
-Catalogo (a 8 centesimi la selezione costa in codice più di quanto risparmia) e quella è **l'unica
-rigenerazione**. Un criterio nuovo chiede il set di valutazione sul `v7` **prima** di rigenerare.
+**Il modello dice da sé se le Note erano giudicabili.** Il prompt è al **`v7`** e chiede alla Sintesi
+un campo nuovo, `notesJudgeable`, che si chiama come il nome canonico di `CONTEXT.md` e non
+`notesWereJudgeable` come ipotizzava la issue. La regola vecchia equiparava "le Note non dichiarano
+breaking changes" e "l'upgrade è sicuro": adesso c'è la terza uscita, e il verdetto verde su Note che
+rimandano soltanto altrove non si produce più alla radice.
 
-**Le Sintesi si generano con Claude Haiku 5.5**, scelta dell'utente sui numeri del set di
-valutazione. ⚠️ **La issue era datata e va letta sapendolo**: proponeva Haiku **4.5**, e tutta la sua
-parte tecnica (il `budget_tokens`, l'`effort` non supportato, la finestra da 200K, il risparmio di
-cinque volte) **è superata**. Haiku **5.5** costa $0,10 e $0,50 per milione contro i $5 e $25 di Opus
-5, cioè **un cinquantesimo**, ha 1M di finestra e accetta `effort` dentro `output_config` come Opus:
-l'adattatore non è stato toccato nella sostanza, e **l'ostacolo tecnico della issue non esisteva**.
+**Chi risponde**: il campo quando c'è, perché il modello ha letto le Note intere; l'euristica di
+`notes-judgement.ts` quando manca, cioè per le Sintesi dei prompt vecchi, e legge i primi 400
+caratteri. Un **Intervento richiesto _sì_ non si ritira mai**: una breaking change elencata è un
+fatto preso dalle Note. `judge` prende adesso il verdetto intero invece del solo `actionRequired`,
+così un chiamante non può dimenticarsi di passargli il campo.
 
-**I tre giri del set, tutti e tre nel repository** (`eval/summaries/reports/`, col prompt e il
-modello nel nome):
+**Il set di valutazione sul `v7`**, lanciato prima di rigenerare come chiede l'ADR 0007:
 
-| | Opus 5, v4 | Haiku 5.5, v5 | Haiku 5.5, v6 |
-|---|---|---|---|
-| Intervento richiesto azzeccato | 14 su 14 | 14 su 14 | **14 su 14** |
-| Breaking changes mancanti | 0 | 0 | **0** |
-| Breaking changes inattese | 3 | 2 | **0** |
-| Citazioni inventate | 0 | 1 | **0** |
-| Voci senza puntatore | 4 su 81 | 20 su 79 | **3 su 76** |
-| Costo del giro | $0,486 | $0,0097 | $0,0097 |
+| | Haiku 5.5, v6 | Haiku 5.5, v7 |
+|---|---|---|
+| Intervento richiesto azzeccato | 14 su 14 | **14 su 14** |
+| Note giudicabili azzeccate | non chiesto | **14 su 14** |
+| Breaking changes mancanti / inattese | 0 / 0 | **0 / 0** |
+| Citazioni inventate | 0 | **0** |
+| Voci senza puntatore | 3 su 76 | **3 su 73** |
+| Costo del giro | $0,0097 | **$0,0096** |
 
-⚠️ **Il confronto non è pulito, e l'ADR lo dice**: fra la prima colonna e l'ultima sono cambiati sia
-il modello sia il prompt, e **Opus col `v6` non è stato misurato**, perché costa 50 volte tanto per
-rispondere a una domanda che non cambia la decisione. Quello che le colonne dicono è l'unica cosa che
-serviva: il modello economico, col prompt di oggi, fa un lavoro almeno pari a quello che si pagava.
+**La rigenerazione è fatta**, il 2026-10-09 dopo il merge: batch
+`msgbatch_01MQPSGWjXiiGwqEaMkFh5ve`, **142 Sintesi**, nessuna fallita né all'invio né alla
+validazione, pagine rivalidate dal job stesso. Tutto il Catalogo porta adesso `claude-haiku-5-5` a
+prompt `v7`. **I due criteri della issue sono verificati in produzione**: `vite 8.0.0`,
+`webpack 5.0.0` e `tRPC 11.0.0` sono rimaste sul settimo stato, e nessuna Release con Note ricche ha
+perso il verdetto (sotto, il caso `bun`).
 
-**Il prompt è salito a `v6`**, e serviva: col `v5` Haiku lasciava **una voce su quattro senza
-puntatore** alle righe delle Note, cioè Sintesi giuste e poco verificabili. Il `v6` chiede la
-citazione per ogni voce che le Note enunciano in un punto solo, dice al modello **perché** (una voce
-senza puntatore non si può controllare) e aggiunge un passo di ricontrollo prima della risposta.
-Niente di quello che riguarda il verdetto è stato toccato. ⚠️ **Conseguenza sulla #93**: il suo prompt
-diventa **`v7`**, e il titolo è da correggere, era già sfalsato perché `v5` è arrivato con la #87.
+⚠️ **Quattro cose da non ripagare.**
+1. **Il pavimento dei 3 punti chiave era una richiesta di inventare.** Il primo giro del set dava 13
+   su 14: su `vite 8.2.2`, 114 caratteri che rimandano al changelog, il modello ha dichiarato le Note
+   non giudicabili e ha dato **l'unico punto che contengono**, e lo schema ha buttato una Sintesi
+   pagata. Dal `v7` il minimo è **1 quando il modello dichiara le Note non giudicabili**, come il
+   titolo chiesto a 120 e accettato a 140.
+2. **Un batch si paga una volta e si rilegge quante si vuole.** La correzione sopra **non** ha
+   ripagato il giro: `pnpm summary:eval --results <file>` rigioca un batch salvato, e ogni giro
+   adesso scrive accanto al report un `.results.json` con quello che il modello ha risposto. In
+   `reports/` ci sono **due report del `v7`**: il primo col difetto dello schema, il secondo
+   (`"replayed": true`) è lo stesso batch riletto, ed è la misura che conta.
+3. **La stima del costo era bassa del 45%.** Proiettava $0,08; la spesa vera è **$0,1362**, media
+   **$0,00096 a Sintesi** contro $0,00066 proiettati. Il conto scalava i token di Opus su un Catalogo
+   di un mese prima, e il Catalogo era cresciuto: 142 Sintesi, non 126. La misura ha sostituito la
+   proiezione in `docs/DECISIONI.md` e nell'ADR 0007.
+4. **Lo stato di un batch si legge gratis** con `GET /v1/messages/batches/<id>`, e serve a non
+   aspettare a vuoto: questo ha chiuso in **quattro minuti**, non nei dieci stimati. ⚠️ Una lettura
+   può tornare vecchia: a batch già finito l'API ha risposto ancora `in_progress`.
 
-⚠️ **Tre cose da non ripagare.**
-1. **Non si cerca lo zero sulle voci senza puntatore.** `locateCitation` verifica che la citazione
-   esista verbatim nelle Note, **non** che quella riga enunci la voce a cui è attaccata: una citazione
-   inventata viene scartata e si vede, una riga vera attaccata alla voce sbagliata passa e porta il
-   lettore al posto sbagliato. Le 3 voci scoperte rimaste sono il **pavimento della forma**, su
-   `vite 8.2.2` e `tailwindcss 4.2.4`, le due Release le cui Note rimandano al changelog mentre lo
-   schema chiede comunque almeno 3 punti chiave. Opus ne lasciava 4, nelle stesse due Release.
-2. **I token di un batch si rileggono gratis**, con `GET /v1/messages/batches/<id>/results`: il primo
-   giro era partito prima della modifica che li registra, e il costo vero è stato recuperato così,
-   senza un secondo giro a pagamento. Adesso il report porta `inputTokens` e `outputTokens` suoi.
-3. **Il tetto dei 150.000 caratteri ha una seconda ragione**: Haiku 5.5 costa **cinque volte tanto
-   oltre i 100k token di prompt**, e 150.000 caratteri sono circa 40k token, quindi nessuna Sintesi
-   può finire nella fascia cara. Sta nell'ADR.
+**Il caso `bun 1.4.0`, che sembra un difetto e non lo è.** È l'unica delle 8 Release dichiarate non
+giudicabili ad avere Note lunghe (4.771 caratteri), e prima aveva un verdetto perché l'euristica dà
+per giudicabile qualunque nota oltre i 400 caratteri. Lette: comandi di installazione, un link al
+blog post e **la lista dei contributori**, un centinaio di handle GitHub. Nessun cambiamento
+descritto. È il punto cieco dell'euristica, e il `v7` lo chiude; l'altro caso misurato è
+`typescript 6.0.3` nel set, Note che rimandano a un post del blog.
 
-**I documenti**: **ADR 0007 riscritto e rinominato** in `0007-sintesi-con-haiku-5-5-via-batch-api.md`
-(la vecchia motivazione, "il modello più capace costa pochi dollari al mese", non è stata lasciata a
-contraddire il codice); `docs/DECISIONI.md` coi costi rifatti sui token veri ($0,00066 per Sintesi in
-media, arretrato $0,08 contro i $4,16 spesi davvero, regime ~$0,03 al mese contro $1,30), tenendo la
-lezione di metodo che c'era prima; `eval/summaries/README.md` documenta `--model` e dice che toccare
-`SUMMARY_MODEL` senza aver lanciato il set è vietato dall'ADR.
+**I numeri**: **576 unitari** (12 nuovi, **provati rimettendo il difetto**: cadono tutti tranne "non
+ritira mai un Intervento richiesto", che passa in entrambi i casi perché quel ramo non è toccato),
+**63 di integrazione**, **186 E2E verdi**, cioè tutta la suite, più `pnpm lint`, `pnpm typecheck` e
+`pnpm build`. **Speso in tutto il 2026-10-09: $0,1458**, il giro del set più la rigenerazione.
 
-**I numeri**: **564 unitari** (2 nuovi sull'adattatore, **provati rimettendo il difetto**: cadono
-entrambi), **63 di integrazione**, **186 E2E verdi**, cioè tutta la suite, più `pnpm lint`,
-`pnpm typecheck` e `pnpm build`. **Speso in tutto: $0,0194**, due giri del set.
+⚠️ **Due trappole dell'ambiente, ripagate oggi.** L'**heredoc della shell di Claude mangia le barre
+rovesciate** anche con `<<'EOF'`, e stavolta ha fatto fallire in silenzio due sostituzioni di testo
+(`\n` dentro una stringa Python diventa un a capo vero): per i file con barre rovesciate si usano gli
+strumenti di modifica, mai l'heredoc. E il **CLI Vercel non è installato**, né nel PATH delle due
+shell né in `%APPDATA%\npm` o nella cartella globale di pnpm: il `CRON_SECRET` di produzione si legge
+dalla dashboard, e le chiamate ai job le lancia l'utente con `!`, così il segreto non entra nella
+conversazione.
 
-### Cosa resta
+### Come si rigenera il Catalogo, visto che adesso è documentato
 
-1. **La rigenerazione delle 126 Sintesi non si fa qui**: scelta dell'utente, si fa **una volta sola
-   dentro la #93**, insieme al prompt nuovo, perché due rigenerazioni costerebbero il doppio senza
-   che la prima serva a niente. Fino a quel merge il Catalogo porta Sintesi `claude-opus-5` a prompt
-   `v4` e le Release nuove nascono `claude-haiku-5-5` a prompt `v6`. È scritto nell'ADR.
-2. **L'ordine consigliato delle issue a pagamento**, e il perché, discusso con l'utente in questo
-   giro: **#93** subito dopo (porta l'unica rigenerazione e chiude il verdetto verde sulle note non
-   giudicabili), poi il **database separato per i preview** (oggi un `catalog:sync` da un preview
-   scriverebbe in produzione: è l'unica cosa in giro che può fare danno vero), poi la **#65** ridotta
-   alla sola strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage,
-   non deciso, e se lo stage si fa la sua strada 1 diventa lavoro buttato.
-3. **Il tetto di tutto quello che resta a pagamento sta sotto $0,30**: eval della #93, una
-   rigenerazione, il submit a mano della #54 (era ~25 centesimi su Opus, ora mezzo centesimo), le
-   Sintesi della #80. Ogni altra issue aperta (#65, #126, #130, #131, #132, #133, #69) non tocca
-   Anthropic.
-4. La cancellazione dei rami `57-haiku-summaries` e `26-landing-page`, locali e remoti, che resta dell'utente.
+Serve l'utente: i cron delle Sintesi non sono in `vercel.json` e il `CRON_SECRET` di produzione non è
+quello di `.env.local` (risponde 401).
 
-**Lo stato precedente (2026-10-08, notte).** La **#26 è chiusa**: **PR #129 unita** in `78aba60`, e la
-issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso**, e `main` locale e remoto
-combaciano. La **CI del merge è verde**, e il `Deploy database` pure (nessuna migrazione da
-applicare). ⚠️ Il ramo `26-landing-page` **esiste ancora**, locale e remoto: la cancellazione resta
-dell'utente, la modalità auto la nega all'agente.
-⚠️ **Questo documento è stato pushato dopo** che la CI aveva chiuso, apposta: un push su `main`
-annulla la CI in corso, ed è la trappola che il giro scorso aveva già pagato.
+1. Nel SQL Editor: `update public.summaries set status = 'pending', batch_id = null,
+   failure_reason = null, updated_at = now() where status in ('ready', 'failed');`. Non cancella
+   niente: `content`, `model` e `prompt_version` restano finché il batch nuovo non li sovrascrive, ed
+   è questo che rende il ritorno indietro una riga sola.
+2. `GET /api/jobs/summaries/submit` con `Authorization: Bearer <CRON_SECRET>`.
+3. Dopo qualche minuto `GET /api/jobs/summaries/collect`, che rivalida da sé le pagine.
 
-**Cos'è stato scritto.** Un modulo nuovo, `src/modules/landing/`, con il `domain` che tiene il
-contenuto reale e la `ui` che tiene i quattro componenti di `DESIGN.md`:
-
-1. **`domain/specimen.ts`**: le righe 43-50 delle note di React 19.0.0 ai loro numeri veri, la
-   citazione (riga 47, il virgolettato e il tratto citato) e i conti. `citedSpan` dice dove cade il
-   tratto citato dentro il virgolettato, in caratteri, che è quello con cui la caret row si impagina.
-   **`domain/vocabulary.ts`**: i quattro livelli di Rilevanza detti a parole, presi da `CONTEXT.md`.
-2. **`ui/`**: `heading-block`, `bench` (con `source-view`, `cite-well`, `caret-draw`, `stage-rail`),
-   `short-specimens`, `vocabulary-legend` (id `significance`), `closing-block`, `landing-note`
-   (il `note:` + prosa, che serve a tre blocchi), `sign-in-button`.
-3. **`src/app/page.tsx`**: la landing, **senza `revalidate` e senza API dinamiche**, cioè
-   prerenderizzata una volta per deploy. L'unico numero che legge, la taglia del Catalogo, viene da
-   `readCatalogDirectory()`, cioè dalla cartella `catalog/`: letta a build time, niente database.
-
-**Il marchio e i metadati**: `verdict:` nella barra (era `release-tracker`), `SITE_NAME = "Verdict"`
-in `src/lib/metadata.ts`, il titolo del layout è un **template `%s · Verdict`** e la landing è
-l'unica con `absolute`. **`src/app/icon.svg`** è la caret row `^^^` come path, inchiostri fissi;
-⚠️ **il `favicon.ico` di Next è stato cancellato**, era il logo di Next e in molti browser vince
-sull'SVG. La home è **dentro la sitemap** come prima voce e il `noindex` è sparito.
-
-⚠️ **Tre cose già risolte, da non ripagare.**
-1. **Il numero di riga della riga citata** era `text-faint` sopra il `breaking-wash`, e axe lo boccia
-   in tema scuro. La pagina Release non se l'era mai posto perché lì i numeri sono un **counter CSS**,
-   che axe non vede; qui sono testo vero, quindi la riga citata alza anche il suo numero.
-2. **Il disegno della caret row non sta in uno `useState`**: lo stato è un attributo `data-draw`
-   scritto sull'elemento da `CaretDraw` (`armed` → `drawn`). Il markup che arriva dal server non ne
-   ha nessuno, quindi **senza JavaScript i caret ci sono già**; tenerlo in React vorrebbe dire
-   renderizzare il clip prima di poterlo animare, cioè l'unico ordine che li nasconde per sempre.
-   La regola di lint `react-hooks/immutability` vieta anche di scriverlo dentro un hook che riceve
-   la ref: per questo `CaretDraw` è un fratello del pozzetto e lo trova per id.
-3. **URL canonico e sitemap**: Next risolve `/` su `metadataBase` **senza barra finale**, e la
-   sitemap adesso scrive lo stesso indirizzo (`new URL(...).origin`), non una seconda grafia.
-
-**`DESIGN.md` corretto in due punti** che il mock aveva già smentito: il Brand Mark **non** si ripete
-a 20px sopra l'`h1` (sarebbe un kicker), e le due azioni stanno in **tre** posti, non due: blocco di
-testa, fondo del banco, chiusura. `docs/DECISIONI.md` ha tre righe nuove: Home `/`, Titolo delle
-pagine, Favicon.
-
-**I numeri**: **562 unitari** (8 nuovi, tutti sul dominio della landing: il virgolettato è davvero un
-pezzo della riga 47, il tratto citato è un pezzo del virgolettato, la caret row è disegnabile a ogni
-larghezza in cui viene mostrata, e la legenda copre tutti i livelli dello schema), **186 E2E verdi**,
-cioè tutta la suite, `pnpm lint`, `pnpm typecheck` e `pnpm build` verdi. **Nessun overflow
-orizzontale** a 320, 390, 640, 1024 e 1440. **Core Web Vitals misurati in laboratorio** sulla build
-di produzione: LCP 1240 ms desktop e 188 ms mobile, **CLS 0 e 0,0015**, cioè dentro la fascia buona;
-⚠️ è localhost senza throttling, **la misura vera è quella in produzione**, e sta nella **#130**.
-
-**Gli scatti del codice** stanno in `.impeccable/review/app-landing-*.png` (desktop, light, mobile,
-cite, fold), committati accanto a quelli del mock.
+⚠️ Fra 1 e 3 le Release si leggono **senza Sintesi**, perché le pagine mostrano solo le `ready`. Se
+qualcosa si pianta in mezzo: `update public.summaries set status = 'ready', batch_id = null,
+updated_at = now() where status = 'processing' and content is not null and model is not null and
+prompt_version is not null;`.
 
 ### Cosa resta
 
-1. ⚠️ **La #130**, aperta l'8 ottobre 2026: i **Core Web Vitals veri in produzione** e la **lettura
-   dal telefono**, su tutta l'app e non sulla sola landing. Erano due punti appesi a giri diversi di
-   questo documento, adesso stanno in un posto solo. È `ready-for-human`.
-2. La cancellazione del ramo `26-landing-page`, locale e remoto, che è dell'utente.
-3. Le strade di "Le strade aperte", tutte in attesa del via dell'utente.
-
-### Quattro issue nuove dell'8 ottobre 2026, tutte `ready-for-human`
-
-Nate da richieste dell'utente, e **nessuna è stata iniziata**. Vanno lette prima di riaprirle,
-perché ciascuna porta già dentro gli ostacoli trovati guardando il codice.
-
-- **#130**: Core Web Vitals in produzione e lettura dal telefono, su tutta l'app.
-- **#131, le traduzioni** (inglese, italiano, francese, spagnolo, tedesco). ⚠️ Tre ostacoli già
-  accertati: **il footer non esiste in nessuna pagina dell'app**, quindi il selettore non ha il posto
-  che l'utente immaginava; **il menu profilo esiste solo da firmati**, mentre Technology e Release si
-  leggono da visitatori, che è il motivo per cui il tema è rimasto nella barra; e **un cookie di
-  lingua butterebbe l'ISR** esattamente come quello del tema (decisione già pagata in
-  `docs/DECISIONI.md`), quindi la strada è la lingua nell'URL, che però tocca canonici, sitemap e
-  `robots.txt`. Restano fuori: le **Note di rilascio**, che non si traducono mai, e le **traduzioni
-  delle Sintesi**, già fuori dall'MVP e vietate dalla regola della spesa.
-- **#132, le pagine legali e la trasparenza**. Il pezzo di codice vero che ne esce: **la
-  cancellazione dell'account non esiste**, c'è solo `sign out`, e un'informativa che la promette
-  senza un bottone che la esegue è una promessa falsa. Anche qui serve il footer.
-- **#133, tornare in cima da una pagina lunga**. ⚠️ Il bottone flottante classico sbatte contro
-  **The One Raised Plane Rule**, il divieto di ombre e il rischio di coprire l'ultima riga delle note
-  su un telefono: le due strade sono un ritorno tipografico col `BackPointer` che già esiste, oppure
-  il bottone con la deroga scritta. Le altre comodità sono elencate lì come **candidate non
-  approvate**.
-
-Il primo comando della sessione nuova:
-
-```
-leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
-```
-
-**Lo stato di partenza di questo giro (2026-10-08, sera).** Siamo **dentro la #26**, sul ramo `26-landing-page`.
-Tutto quello che segue è in **un commit solo**, `5261aa6`, **non pushato** e senza PR: il ramo esiste
-solo in locale. La CI del giro precedente è finita **verde** e `f8dcdfc` è stato pushato, quindi su
-`main` locale e remoto combaciano.
-
-**Il prodotto ha un nome: Verdict.** Scelto fra i due che piacevano all'utente, con **VeriLog
-scartato** perché Verilog è un linguaggio di descrizione hardware (IEEE 1364) noto al pubblico esatto
-del prodotto: ricerca persa in partenza e prima frase spesa a negare l'omonimia. Registrato in
-`docs/DECISIONI.md` ("Il nome: Verdict", con le ragioni e le alternative), `PRODUCT.md` (nome e
-**Brand Commitments**) e `CONTEXT.md` (titolo, riga nella tabella dei nomi, ambiguità risolta).
-⚠️ **La convenzione è vincolante**: **Verdict** senza articolo è il prodotto, il **Verdetto** è il
-giudizio su una Release, e nessun identificatore nuovo prende il nome del prodotto (`pageVerdict`,
-`rowVerdict`, `DashboardVerdict`, `SummaryVerdictSchema` restano quelli). `release-tracker` è solo il
-repository.
-
-⚠️ **Il dominio non è deciso e non si compra adesso** (regola della spesa). Verificato il 2026-10-08
-con RDAP e DNS: presi `verdict.dev`, `.io`, `.sh`, `.app`, `.tools`, `.run`, `.cloud`, `.tech`,
-`getverdict.com`, `useverdict.com`; `verdict.co` è parcheggiato su Efty, cioè in vendita. **Liberi
-quel giorno**: `verdict.build`, `verdict.codes`, `verdict.page`, `verdictdev.com`. ⚠️ Attenzione al
-metodo: `rdap.org` **non copre** `.sh`, `.io`, `.co`, `.so`, quindi lì un 404 non vuol dire libero e
-va controllato con `nslookup -type=NS`.
-
-**La struttura della landing è scelta con l'utente, fra tre tirate dal `concept-seed`**
-(`--scope surface --mode persuade`, chiave `48f9f1bc`, mani 4-2-1): ha vinto **il banco di esame**.
-Una sola Release vera esaminata per stadi (`source` → `cite` → `verdict` → `help`) che restano tutti
-nel DOM; lo scroll non rivela niente, muove solo il lettore, e l'unico moto è la caret che si disegna.
-⚠️ **Scartata "la pagina che si diagnostica"** per una ragione da non riaprire: usava `breaking[n]:`
-per accusare lo stato dell'arte, e questo insegna al primo contatto un vocabolario che l'app poi
-smentisce (l'inchiostro `breaking` significa gravità, Severity-Only Colour Rule).
-
-**Prima del codice, i documenti, come chiede il criterio della issue:**
-1. **`DESIGN.md`**: la sezione **Brand Mark** (logotipo `verdict:` in Fragment Mono, mai in un
-   inchiostro di severità, icona = la caret row `^^^` come path SVG su quadrato `ground`), quattro
-   componenti nuovi (**The Bench**, **Short Specimen**, **Vocabulary Legend**, **Counter-Position
-   Note**), due righe nei Do e due nei Don't, un paragrafo in Overview che spiega perché la landing
-   sta **dentro** il registro di lavoro, e i token dei componenti nel frontmatter. Titolo e `name:`
-   adesso dicono **Verdict**.
-2. **`CONTEXT.md`**: i **quattro livelli di Rilevanza detti a parole** sotto la voce Rilevanza,
-   perché è da lì che la landing li copia e perché il critique dà 1 su 5 ad "Aiuto e documentazione"
-   proprio per questo.
-
-**Il mock è scritto e verificato**: `design/mocks/landing.html`, ed è la fonte dell'aspetto come gli
-altri quattro. **Nessun contenuto inventato**, e ogni numero è contabile in un file pubblico:
-React 19.0.0 (2024-12-05) ha **13 breaking changes** e **8 notable** in **271 righe** di note, e la
-riga citata è davvero la **47** (`Removed: propTypes`); Vite 6.0.0 ha un changelog di **28 righe**
-dove le due breaking sono marcate solo da un `!`; **TypeScript 5.7.2** ha un corpo di release che è
-**solo un link a un blog**, cioè il caso di "note non giudicabili" di `CONTEXT.md`. Le due Release
-magre non sono decorazione: sono la metà onesta dell'argomento.
-
-⚠️ **Due difetti già trovati e corretti nel mock, da non ripagare**: il marchio a 20px sopra l'`h1`
-era un **kicker**, che la craft floor della skill vieta esplicitamente (il marchio sta nell'header e
-basta); e la citazione **andava a capo** con la caret row ancora visibile, cioè carets sotto le
-parole sbagliate. La regola di `DESIGN.md` è che il testo citato deve stare su una riga sola: si è
-accorciato il quote a `Using propTypes will now be silently ignored.` e quote e caret row stanno
-**in un solo pozzetto**. Misurato a 320, 390, 640, 1024 e 1440: **nessun overflow orizzontale**
-(`node .impeccable/shoot-landing.mjs`, che scrive in `.impeccable/review/landing-*.png`).
-⚠️ Quello script importa Playwright **per percorso dentro `node_modules/.pnpm`**: un `from
-"playwright"` non risolve dalla cartella `.impeccable/`.
-
-**I quattro mock esistenti** hanno il wordmark nuovo (`verdict:`, che punta a `landing.html`).
-
-### Quello che questo giro chiedeva, e che adesso è fatto
-
-La pagina al posto del provino dei token, il marchio nell'app, la favicon, i metadati, i test
-unitari e E2E, i Core Web Vitals e il controllo di accessibilità: tutto nello stato in testa.
-
-
-**Lo stato precedente (2026-10-08, pomeriggio).** La **#120 è chiusa**: **PR #128 unita** in
-`bdc712a`, e la issue si è chiusa da sola col `Closes`. **Non c'è niente in sospeso.** I rami sono
-stati **cancellati tutti**, locali e remoti: restano `main` e nient'altro (erano 17 locali e 38
-remoti). ⚠️ **La cancellazione resta dell'utente**: la modalità auto la nega all'agente
-(`Irreversible Local Destruction`) **anche quando l'utente la chiede a parole** dentro la sessione.
-Quello che l'agente può fare è preparare la lista verificata e passargli i due comandi.
-
-**Cos'è cambiato**: le Tecnologie hanno un **Marchio**, e la issue chiedeva prima di tutto una
-risposta di prodotto.
-
-1. **La risposta è sì, ma solo dove il soggetto è la Tecnologia**: 16px nella riga del Catalogo
-   (quindi anche nel picker della Dashboard vuota, che è lo stesso componente) e 24px accanto al
-   titolo della pagina Technology. **Niente sulle righe di Release**, dove un glifo monocromatico
-   vuol già dire Rilevanza. ⚠️ **Scelta dell'utente fra quattro strade**: aveva chiesto anche la
-   riga della Dashboard, poi l'ha lasciata fuori.
-2. ⚠️ **Il nome resta sempre scritto, ed è un rifiuto motivato.** L'utente ha proposto di mostrare
-   **solo l'icona** dove c'è e il nome solo dove manca. Rifiutato per iscritto e per tre ragioni, la
-   prima delle quali non è di gusto: il link e il Toggle annunciano "React" mentre a schermo non
-   c'è nessuna parola "React", e questo **fallisce WCAG 2.5.3 Label in Name**, che il progetto
-   dichiara; il filtro cerca per nome, quindi mostrerebbe righe senza la stringa digitata; e una
-   lista mista (34 glifi e 3 parole nella stessa colonna) si scorre più piano di una omogenea.
-   L'utente ha accettato la strada consigliata.
-3. **La provenienza è `pnpm icons:sync`** (`scripts/sync-technology-marks.mts`): legge
-   `simple-icons`, **devDependency**, e genera due file, `src/modules/catalog/ui/technology-marks.ts`
-   per l'app e `design/mocks/technology-marks.js` per i mock, che sono chiavati **per nome** perché i
-   mock costruiscono le righe dai nomi. Una sola fonte, così un mock non può divergere. Le eccezioni
-   di slug stanno nello script: `next`→`nextdotjs`, `nodejs`→`nodedotjs`, `vue`→`vuedotjs`,
-   `drizzle-orm`→`drizzle`, `redux-toolkit`→`redux`.
-4. **34 Marchi su 37.** Playwright e Zustand non ce l'hanno in simple-icons; ⚠️ **SvelteKit è senza
-   di proposito**, perché l'unico che esiste per lei è quello di Svelte, e due righe della stessa
-   lista con la stessa forma togliono proprio quello che il Marchio doveva dare. Le tre righe tengono
-   il box **vuoto**: ogni nome parte dalla stessa x e nessuna riga cambia altezza.
-5. **`DESIGN.md` scritto prima del codice**, come chiedeva il criterio: la sezione **Technology
-   Mark**, la colonna del nome in Layout (`calc(16ch + 24px)`), le due descrizioni dei componenti e
-   una riga per ciascuna lista Do / Don't. `docs/DECISIONI.md` registra la licenza **CC0** e che i
-   **marchi restano dei loro proprietari**, con uso nominativo e descrittivo.
-
-**I numeri**: **554 unitari** (3 nuovi, sui dati generati: copertura del Catalogo, nessun path
-orfano, e un path che contiene **solo geometria** e niente da scaricare), **180 E2E verdi**, cioè
-tutta la suite. `pnpm typecheck` e `pnpm lint` verdi. Su `main` il **`Deploy database` è verde** due
-volte (nessuna migrazione da applicare). ⚠️ **La `CI` del merge è stata annullata** dal push di
-questo documento, ed è la trappola già scritta qui sotto: un push su `main` annulla la CI in corso.
-Il giro che la sostituisce gira sullo stesso albero, **ma non era ancora chiuso** quando questa riga
-è stata scritta: **il primo controllo della sessione nuova è il suo esito** (`gh run list --branch
-main --limit 3`). La PR #128 era verde su tutto prima del merge, CodeRabbit compreso. **Peso misurato su due build vere**, come chiedeva il criterio: **+39,4 KB raw
-e +18,3 KB gzip** sui chunk client (1.391.332 → 1.430.738 e 390.506 → 408.853). Sta in un chunk
-cacheato, e la pagina Technology non paga niente lato client, perché lì il Marchio è reso dal server.
-⚠️ **Next 16 non stampa più il First Load JS** nella tabella del build: il peso si misura sommando
-`.next/static/chunks/**/*.js`, gzip compreso, su due build.
-
-**Provato rimettendo il difetto**, coi due file sorgente riportati a `HEAD`: **cadono tutti e 4** i
-test nuovi. ⚠️ Due inciampi della misura, da non ripagare: il quarto test, al primo giro, **passava
-anche senza il Marchio** (due righe hanno la stessa altezza comunque), e va riscritto finché non
-distingue il difetto, confrontando il Marchio col **centro verticale** del nome; e `.locator("svg")`
-dentro una riga del picker prende **anche i due svg del Toggle**, quindi il Marchio è
-`.locator("svg").first()`.
-
-### Cosa resta
-
-1. ⚠️ **La verifica dal telefono in produzione** è diventata la **#130** l'8 ottobre 2026, insieme
-   alla misura dei Core Web Vitals veri, e si fa su tutta l'app. Resta dell'utente.
-2. Nel mock della Dashboard c'è una riga **`Python`, che non è nel Catalogo**: discrepanza
-   preesistente, non toccata. Ora mostra lo spazio vuoto, e illustra bene la regola.
-3. Le strade di "Le strade aperte", tutte in attesa del via dell'utente.
+1. La cancellazione dei rami `93-prompt-v7`, `57-haiku-summaries` e `26-landing-page`, locali e
+   remoti, che resta dell'utente.
+2. **Il tetto di quello che resta a pagamento è sotto i 5 centesimi**: il submit a mano della #54
+   (mezzo centesimo) e le Sintesi della #80. Ogni altra issue aperta (#65, #126, #130, #131, #132,
+   #133, #69, #113, #94) non tocca Anthropic. ⚠️ La riga precedente di questo documento diceva
+   "sotto $0,30" contando la rigenerazione, che adesso è fatta e ne è costati 13,6 di centesimi.
+3. **L'ordine consigliato delle issue a pagamento**, discusso con l'utente: adesso tocca al
+   **database separato per i preview** (oggi un `catalog:sync` da un preview scriverebbe in
+   produzione: è l'unica cosa in giro che può fare danno vero), poi la **#65** ridotta alla sola
+   strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, non
+   deciso, e se lo stage si fa la sua strada 1 diventa lavoro buttato.
+4. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
+   `ready-for-human`.
 
 Il primo comando della sessione nuova:
 
@@ -420,6 +216,15 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-08 (dopo la #57): le Sintesi passate a Haiku 5.5 (PR #134)
+  - ⚠️ Il confronto fra i giri del set non è pulito, e l'ADR lo dice: cambiano modello e prompt insieme
+  - ⚠️ Il tetto dei 150.000 caratteri ha una seconda ragione: oltre i 100k token di prompt Haiku costa cinque volte
+- Stato al 2026-10-08 (notte): la #26 chiusa, la landing e il nome Verdict (PR #129)
+  - ⚠️ Il numero della riga citata è testo vero, non un counter CSS, quindi axe lo vede
+  - ⚠️ Il disegno della caret row sta in un attributo, non in uno `useState`, o senza JS sparisce
+- Stato al 2026-10-08 (pomeriggio): la #120 chiusa, i Marchi delle Tecnologie (PR #128)
+  - ⚠️ Mostrare solo l'icona fallisce WCAG 2.5.3 Label in Name: il nome resta sempre scritto
+  - ⚠️ Next 16 non stampa più il First Load JS: il peso si misura sommando i chunk di due build
 - Stato al 2026-10-08 (mezzogiorno): la barra ripensata, le due destinazioni su ogni pagina (#119, PR #127)
   - ⚠️ Il breadcrumb ha traslocato nel contenuto, e l'header non ramifica mai sulla sessione
   - ⚠️ Sotto 430px la strip va spezzata da un elemento `BREAK`, o torna la terza riga
@@ -693,22 +498,29 @@ atteso e poi confrontate a ogni versione del prompt.
 Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
 dimezzato dalla Batch API, pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
 
-## Debito noto: l'output grezzo del modello non si conserva
+## Debito noto: l'output grezzo del modello non si conserva (metà pagato)
+
+⚠️ **Metà di questo debito è stato pagato dalla #93** il 2026-10-09: il **set di valutazione adesso
+conserva la risposta grezza**, in un `.results.json` accanto al report, e `pnpm summary:eval
+--results <file>` la rigioca senza chiamare Anthropic. Resta aperta la metà della pipeline, cioè il
+testo di una Sintesi fallita in produzione, che è il seguito di questo paragrafo.
 
 Segnalato da un commento sul thread Bluesky della tappa B (2026-09-24), verificato nel codice.
 `collect-summaries.ts:79` passa `result.text` a `parseSummaryOutput` e lo scarta: di una Sintesi
-fallita resta solo il `reason`. Anche i report in `eval/summaries/reports/` contengono il risultato
-già decodificato, non la risposta. Conseguenza: un modo di fallire nuovo e reale non è riproducibile
+fallita resta solo il `reason`. Conseguenza: un modo di fallire nuovo e reale non è riproducibile
 in un test, e i casi limite di `summary-output.test.ts` restano quelli scritti a mano (cornice
 markdown, sesto punto chiave, CRLF nelle citazioni). Proprio i due difetti della #14 erano di quel
 tipo, trovati solo perché c'era una chiamata vera sotto gli occhi.
 
 Il rimedio costa poco e non spende: tenere il testo grezzo rende gratis il replay di un fallimento
 che oggi richiederebbe di rilanciare un batch a pagamento. Criteri, quando diventerà una issue:
-l'output grezzo conservato per ogni Sintesi fallita e per ogni caso dell'eval; un test che rigioca un
-output salvato attraverso `parseSummaryOutput` senza chiamare Anthropic; nessuna chiamata esterna in
-più. Da decidere: colonna sulla Sintesi o solo file nell'eval, e per quanto si tiene il testo (le
-Note sono pubbliche, quindi non ci sono dati sensibili in ballo).
+l'output grezzo conservato per ogni Sintesi fallita; un test che rigioca un output salvato
+attraverso `parseSummaryOutput` senza chiamare Anthropic; nessuna chiamata esterna in più. Da
+decidere: colonna sulla Sintesi o file, e per quanto si tiene il testo (le Note sono pubbliche,
+quindi non ci sono dati sensibili in ballo). ⚠️ **Il metodo esiste già comunque**, ed è stato usato
+due volte il 2026-10-09: i risultati di un batch si rileggono gratis con
+`GET /v1/messages/batches/<id>/results` finché Anthropic li tiene, quindi anche senza questa issue
+un fallimento recente è ispezionabile senza ripagare.
 
 **Non è ancora una issue**: l'utente ha scelto di segnarlo qui e basta (2026-09-24).
 
