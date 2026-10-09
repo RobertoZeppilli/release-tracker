@@ -26,3 +26,6 @@ next-env.d.ts
 /playwright/.cache/
 # Dati locali che non stanno nel repository (risultati dei batch salvati a mano)
 /local/
+
+# Screenshot incollati in chat: non appartengono al repository.
+docs/Cattura.JPG
