@@ -78,11 +78,16 @@ export async function findGitHubReleaseNotes(
   const headers = githubHeaders(token);
 
   const found = new Map<string, FoundNotes>();
+  // A tag the list has already shown has nothing left to say: asking for it again would buy the
+  // same draft or the same empty body a second time.
+  const listed = new Set<string>();
   for (let page = 1; found.size < tagsByVersion.size; page++) {
     const releases = GitHubReleasesSchema.parse(await getJson(fetch, releasesUrl(source.repo, page), headers));
     for (const release of releases) {
       const version = versionByTag.get(release.tag_name);
-      if (version === undefined || found.has(version)) continue;
+      if (version === undefined) continue;
+      listed.add(release.tag_name);
+      if (found.has(version)) continue;
       const notes = notesOf(release);
       if (notes) found.set(version, notes);
     }
@@ -94,6 +99,7 @@ export async function findGitHubReleaseNotes(
   for (const [version, tags] of tagsByVersion) {
     if (found.has(version)) continue;
     for (const tag of tags) {
+      if (listed.has(tag)) continue;
       const notes = notesOf(await getGitHubReleaseByTag(fetch, source.repo, tag, headers));
       if (notes) {
         found.set(version, notes);

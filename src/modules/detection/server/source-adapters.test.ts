@@ -289,6 +289,20 @@ describe("a repository that changed how it writes tags", () => {
     expect(requested.map((request) => request.url)).toEqual([page(1), byTag("v4.22.3")]);
   });
 
+  // A draft, and an empty body, are both the list saying there is nothing there.
+  it("does not ask again for a tag the list has already shown", async () => {
+    const { page, byTag, release } = githubApi("expressjs/express");
+    const express = { role: "notes", kind: "github-releases", repo: "expressjs/express", tagFormat: "v{version}" } as const;
+    const empty = { ...release("v5.2.0"), body: "   " };
+    const draft = { ...release("v5.1.0"), draft: true };
+    const { fetch, requested } = fakeFetch({ [page(1)]: [empty, draft] });
+
+    const notes = await createSourceAdapters({ fetch }).findNotes(express, ["5.2.0", "5.1.0"]);
+    expect(notes.size).toBe(0);
+    // Only the other form of each tag is left to ask: the two the list showed are not asked again.
+    expect(requested.map((request) => request.url)).toEqual([page(1), byTag("5.2.0"), byTag("5.1.0")]);
+  });
+
   it("tries both forms and gives up on a Version nobody published, without failing", async () => {
     const { page, byTag, release } = githubApi("expressjs/express");
     const express = { role: "notes", kind: "github-releases", repo: "expressjs/express", tagFormat: "v{version}" } as const;
