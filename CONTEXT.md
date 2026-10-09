@@ -74,6 +74,14 @@ rilascio** può dichiarare in più un **formato delle Anteprime** (`prereleaseTa
 per le **Versioni** che hanno un prerelease: serve quando una **Tecnologia** scrive l'**Anteprima**
 in un altro modo, come TypeScript, che pubblica `6.0.1-rc` e la tagga `v6.0-rc`. Quel formato può
 perdere delle parti, perché nessuno ci rilegge una **Versione** dentro.
+Un formato copre **una sola epoca** del repository, e un progetto può cambiare convenzione: Angular
+taggava `21.0.3` nel 2025 e tagga `v21.0.3` oggi, Drizzle ORM il contrario. Per questo la ricerca
+delle **Note di rilascio** prova sempre **due tag** per **Versione**: il formato dichiarato e la sua
+**variante**, cioè lo stesso formato con la `v` davanti alla **Versione** aggiunta o tolta, con la
+precedenza al formato dichiarato. Quando la lista dei rilasci non contiene né l'uno né l'altro, i
+due tag si chiedono **uno per uno**, perché un rilascio può esistere senza comparire nella lista,
+come succede a Express. Non è un motivo per girare il `tagFormat` del **Catalogo**: va dichiarata la
+forma che vale per la maggioranza delle **Release**, e l'altra epoca la trova la variante.
 
 **Seguire**:
 La scelta di uno sviluppatore di vedere nella propria dashboard le **Release** di una

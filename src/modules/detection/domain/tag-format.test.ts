@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { notesTagFor, tagFor, versionFromTag } from "./tag-format";
+import { notesTagCandidates, notesTagFor, tagFor, versionFromTag } from "./tag-format";
 
 // Real tag formats from the Catalog.
 describe("versionFromTag", () => {
@@ -51,5 +51,27 @@ describe("notesTagFor", () => {
     ["8.0.0-beta.1", "v8.0.0-beta.1"],
   ])("writes Vite %s as %s, unchanged", (version, tag) => {
     expect(notesTagFor(vite, version)).toBe(tag);
+  });
+});
+
+// #137: a `tagFormat` covers one era of a repository, and the variant covers the other.
+describe("notesTagCandidates", () => {
+  it.each([
+    // The configured form first: it is the one that works for the majority of angular's Releases.
+    [{ tagFormat: "v{version}" }, "21.0.3", ["v21.0.3", "21.0.3"]],
+    [{ tagFormat: "{version}" }, "1.0.0-rc.4", ["1.0.0-rc.4", "v1.0.0-rc.4"]],
+    [{ tagFormat: "bun-v{version}" }, "1.4.2", ["bun-v1.4.2", "bun-1.4.2"]],
+    [{ tagFormat: "svelte@{version}" }, "5.57.1", ["svelte@5.57.1", "svelte@v5.57.1"]],
+    [{ tagFormat: "php-{version}" }, "8.5.11", ["php-8.5.11", "php-v8.5.11"]],
+    // The second spelling of an Anteprima gets a variant of its own, patch and all still gone.
+    [typescript, "6.0.1-rc", ["v6.0-rc", "6.0-rc"]],
+    [typescript, "7.0.2", ["v7.0.2", "7.0.2"]],
+  ])("writes %o %s as %o", (source, version, tags) => {
+    expect(notesTagCandidates(source, version)).toEqual(tags);
+  });
+
+  // A Version whose tag cannot be written at all is nobody's tag, in either form.
+  it("writes nothing for a Version the format cannot spell", () => {
+    expect(notesTagCandidates({ tagFormat: "v{prerelease}" }, "7.0.2")).toEqual([]);
   });
 });
