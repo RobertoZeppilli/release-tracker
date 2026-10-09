@@ -1,0 +1,56 @@
+/* Token e base del mock di direzione della Dashboard (#142).
+   Presi parola per parola da design/mocks/dashboard.html: la direzione si decide sulla
+   struttura dell'informazione, non sul colore, quindi la tavolozza non cambia. */
+:root {
+  --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #676d77;
+  --text: #e7e9ec; --text-muted: #9aa3ad; --text-faint: #7b848f;
+  --breaking: #ff7b6b; --breaking-wash: rgba(255, 123, 107, 0.10);
+  --action: #f2c14e; --help: #6cc4d8; --help-wash: rgba(108, 196, 216, 0.10); --ok: #7bd88f;
+  --focus: #da6b6b; --selection: rgba(108, 196, 216, 0.28);
+  --mono: "Fragment Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --sans: "Hanken Grotesk", system-ui, sans-serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 72px;
+  --radius: 6px; --measure: 72ch;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #82827b;
+  --text: #16181c; --text-muted: #525a63; --text-faint: #636b74;
+  --breaking: #b42a1f; --breaking-wash: rgba(180, 42, 31, 0.07);
+  --action: #8a5a00; --help: #0b6b80; --help-wash: rgba(11, 107, 128, 0.08); --ok: #1d7a3a;
+  --focus: #ad4b4b; --selection: rgba(11, 107, 128, 0.18);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--ground); scroll-behavior: smooth; }
+body { margin: 0; background: var(--ground); color: var(--text); font: 400 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--selection); color: var(--text); }
+a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+* { scrollbar-color: var(--rule-strong) transparent; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Barra, identica su ogni pagina e su ogni variante (DESIGN.md, Layout). */
+.bar { position: sticky; top: 0; z-index: 20; background: var(--ground); border-bottom: 1px solid var(--rule); }
+.bar-in { display: flex; align-items: center; gap: var(--space-5); height: 56px; padding: 0 var(--space-5); margin: 0 auto; }
+.wordmark { font-family: var(--mono); font-size: 16px; letter-spacing: -0.02em; }
+.bar nav { display: flex; gap: var(--space-4); font-family: var(--mono); font-size: 14px; }
+.bar nav a { text-decoration: none; color: var(--text-muted); }
+.bar nav a[aria-current] { color: var(--text); }
+.bar .right { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+.chip { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--rule-strong); border-radius: var(--radius); font-family: var(--mono); font-size: 13px; background: none; color: var(--text); }
+
+/* Grammatica del diagnostico, invariata: una severita' non compare mai senza la sua parola. */
+.sev { font-family: var(--mono); font-size: 14px; }
+.sev-warn { color: var(--action); }
+.sev-ok { color: var(--ok); }
+.sev-breaking { color: var(--breaking); }
+.sev-note { color: var(--help); }
+.sev-pending { color: var(--text-muted); }
+.meta { font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
+.label { font-family: var(--mono); font-size: 14px; color: var(--text-muted); }
+code { font-family: var(--mono); font-size: 0.92em; background: var(--sunken); border-radius: 4px; padding: 1px 4px; }
