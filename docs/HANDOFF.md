@@ -15,112 +15,80 @@ autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
   `technologies.html`; stati col selettore "page state", `technologies.html?state=…`).
 
 ## Stato
-**Da dove ripartire (2026-10-09, dopo la #93).** La **#93 è chiusa**: **PR #135 unita** in `36cb15b`,
-e la issue si è chiusa da sola col `Closes`. La CI del merge e il `Deploy database` sono **verdi**
-(nessuna migrazione da applicare), `main` locale e remoto combaciano, **non c'è niente in sospeso**.
-⚠️ **Tre rami esistono ancora**, locali e remoti: `93-prompt-v7`, `57-haiku-summaries` e
-`26-landing-page`. La cancellazione resta dell'utente, la modalità auto la nega all'agente.
+**Da dove ripartire (2026-10-09, sera, dopo la #80).** La **#80 è implementata e la PR #136 è
+aperta, non unita**: branch `80-notes-backfill`, un commit, spinto. Da controllare la CI della PR, e
+poi il merge, che resta dell'utente. Tutto il resto di `main` è fermo e pulito.
 
-**Il modello dice da sé se le Note erano giudicabili.** Il prompt è al **`v7`** e chiede alla Sintesi
-un campo nuovo, `notesJudgeable`, che si chiama come il nome canonico di `CONTEXT.md` e non
-`notesWereJudgeable` come ipotizzava la issue. La regola vecchia equiparava "le Note non dichiarano
-breaking changes" e "l'upgrade è sicuro": adesso c'è la terza uscita, e il verdetto verde su Note che
-rimandano soltanto altrove non si produce più alla radice.
+**La scelta è stata fra la #65 e la #80, e la #80 ha vinto per una ragione di sequenza.** La #65
+dipende dallo stage, che non è deciso: il suo primo criterio chiede di scrivere quale delle due
+strade si prende, e quella scelta non si può scrivere prima. La #80 invece non dipende da niente,
+tocca GitHub e npm e non Anthropic.
 
-**Chi risponde**: il campo quando c'è, perché il modello ha letto le Note intere; l'euristica di
-`notes-judgement.ts` quando manca, cioè per le Sintesi dei prompt vecchi, e legge i primi 400
-caratteri. Un **Intervento richiesto _sì_ non si ritira mai**: una breaking change elencata è un
-fatto preso dalle Note. `judge` prende adesso il verdetto intero invece del solo `actionRequired`,
-così un chiamante non può dimenticarsi di passargli il campo.
+**La domanda che costava è stata decisa prima del codice**, come chiedeva il primo criterio della
+issue, ed è scritta in `CONTEXT.md` (Stato della sintesi) e in `docs/DECISIONI.md`: quando le **Note
+di rilascio** arrivano dopo, la **Sintesi** passa da _Non disponibile_ a _Non generata_, **mai** a
+_In attesa_. Rimetterla in coda è un gesto a parte, perché è l'unico che spende.
 
-**Il set di valutazione sul `v7`**, lanciato prima di rigenerare come chiede l'ADR 0007:
+⚠️ **Lo stato va cambiato comunque, e la issue non lo aveva visto.** `rowVerdict` su `unavailable`
+dichiara sulla riga "no release notes to summarize" e **nasconde il link alle note**. La strada 1
+della issue, "le note si riempiono e la Sintesi resta com'è", non dava "una pagina un po'
+incoerente": rendeva invisibili le Note appena riempite e lasciava la riga a dire il falso. Quindi
+la scelta vera era solo fra _Non generata_ e _In attesa_, non fra toccare e non toccare.
 
-| | Haiku 5.5, v6 | Haiku 5.5, v7 |
-|---|---|---|
-| Intervento richiesto azzeccato | 14 su 14 | **14 su 14** |
-| Note giudicabili azzeccate | non chiesto | **14 su 14** |
-| Breaking changes mancanti / inattese | 0 / 0 | **0 / 0** |
-| Citazioni inventate | 0 | **0** |
-| Voci senza puntatore | 3 su 76 | **3 su 73** |
-| Costo del giro | $0,0097 | **$0,0096** |
+**I numeri della produzione, misurati prima di decidere** (tre `select` nel SQL Editor, gratis):
 
-**La rigenerazione è fatta**, il 2026-10-09 dopo il merge: batch
-`msgbatch_01MQPSGWjXiiGwqEaMkFh5ve`, **142 Sintesi**, nessuna fallita né all'invio né alla
-validazione, pagine rivalidate dal job stesso. Tutto il Catalogo porta adesso `claude-haiku-5-5` a
-prompt `v7`. **I due criteri della issue sono verificati in produzione**: `vite 8.0.0`,
-`webpack 5.0.0` e `tRPC 11.0.0` sono rimaste sul settimo stato, e nessuna Release con Note ricche ha
-perso il verdetto (sotto, il caso `bun`).
+| | |
+|---|---|
+| Release senza Note | **91 su 1960**, il 4,6% |
+| Stato della loro Sintesi | **tutte** _Non disponibile_ |
+| Di cui `digest` | 47, che la regola non riassume mai |
+| Di cui Anteprime | 39, nessuna la prima della sua major |
+| **Di cui riassumibili** | **5**: 3 `notable`, 2 `featured` |
 
-⚠️ **Quattro cose da non ripagare.**
-1. **Il pavimento dei 3 punti chiave era una richiesta di inventare.** Il primo giro del set dava 13
-   su 14: su `vite 8.2.2`, 114 caratteri che rimandano al changelog, il modello ha dichiarato le Note
-   non giudicabili e ha dato **l'unico punto che contengono**, e lo schema ha buttato una Sintesi
-   pagata. Dal `v7` il minimo è **1 quando il modello dichiara le Note non giudicabili**, come il
-   titolo chiesto a 120 e accettato a 140.
-2. **Un batch si paga una volta e si rilegge quante si vuole.** La correzione sopra **non** ha
-   ripagato il giro: `pnpm summary:eval --results <file>` rigioca un batch salvato, e ogni giro
-   adesso scrive accanto al report un `.results.json` con quello che il modello ha risposto. In
-   `reports/` ci sono **due report del `v7`**: il primo col difetto dello schema, il secondo
-   (`"replayed": true`) è lo stesso batch riletto, ed è la misura che conta.
-3. **La stima del costo era bassa del 45%.** Proiettava $0,08; la spesa vera è **$0,1362**, media
-   **$0,00096 a Sintesi** contro $0,00066 proiettati. Il conto scalava i token di Opus su un Catalogo
-   di un mese prima, e il Catalogo era cresciuto: 142 Sintesi, non 126. La misura ha sostituito la
-   proiezione in `docs/DECISIONI.md` e nell'ADR 0007.
-4. **Lo stato di un batch si legge gratis** con `GET /v1/messages/batches/<id>`, e serve a non
-   aspettare a vuoto: questo ha chiuso in **quattro minuti**, non nei dieci stimati. ⚠️ Una lettura
-   può tornare vecchia: a batch già finito l'API ha risposto ancora `in_progress`.
+Cioè il costo massimo della strada 2, quella che spendeva, era **mezzo centesimo**. Le Tecnologie
+con più buchi: `angular` 22, `prisma` 19 (tutte rc di 8.0.0), `drizzle-orm` 11, `next` 9, `trpc` 6.
 
-**Il caso `bun 1.4.0`, che sembra un difetto e non lo è.** È l'unica delle 8 Release dichiarate non
-giudicabili ad avere Note lunghe (4.771 caratteri), e prima aveva un verdetto perché l'euristica dà
-per giudicabile qualunque nota oltre i 400 caratteri. Lette: comandi di installazione, un link al
-blog post e **la lista dei contributori**, un centinaio di handle GitHub. Nessun cambiamento
-descritto. È il punto cieco dell'euristica, e il `v7` lo chiude; l'altro caso misurato è
-`typescript 6.0.3` nel set, Note che rimandano a un post del blog.
+**Come si chiama il passo nuovo**: `GET /api/jobs/notes/backfill`, con
+`Authorization: Bearer <CRON_SECRET>` come gli altri job e **fuori da `vercel.json`**, quindi non
+parte mai da solo. Senza parametri è una **prova a vuoto**: interroga le Fonti, dice cosa
+riempirebbe e non scrive niente. `?apply=1` scrive, `?technology=<slug>` lo restringe a una
+Tecnologia, che è anche come si riprende un giro fermato dai limiti di GitHub. Non può spendere: non
+mette mai una Sintesi in `pending`, e l'`UPDATE` ha il filtro `status = 'unavailable'`, quindi una
+Sintesi `ready` o `failed` non è raggiungibile nemmeno per errore.
 
-**I numeri**: **576 unitari** (12 nuovi, **provati rimettendo il difetto**: cadono tutti tranne "non
-ritira mai un Intervento richiesto", che passa in entrambi i casi perché quel ramo non è toccato),
-**63 di integrazione**, **186 E2E verdi**, cioè tutta la suite, più `pnpm lint`, `pnpm typecheck` e
-`pnpm build`. **Speso in tutto il 2026-10-09: $0,1458**, il giro del set più la rigenerazione.
+⚠️ **Deviazione dalla issue, dichiarata nella PR.** La issue indicava come precedente di forma
+`pnpm summary:reimport`, cioè uno script. Un comando `pnpm` però arriva solo al database locale, e
+le 91 Release sono in produzione: per toccarla dal portatile servirebbe la chiave segreta di
+Supabase di produzione sul disco. Se l'utente preferisce lo script, il modulo non cambia.
 
-⚠️ **Due trappole dell'ambiente, ripagate oggi.** L'**heredoc della shell di Claude mangia le barre
-rovesciate** anche con `<<'EOF'`, e stavolta ha fatto fallire in silenzio due sostituzioni di testo
-(`\n` dentro una stringa Python diventa un a capo vero): per i file con barre rovesciate si usano gli
-strumenti di modifica, mai l'heredoc. E il **CLI Vercel non è installato**, né nel PATH delle due
-shell né in `%APPDATA%\npm` o nella cartella globale di pnpm: il `CRON_SECRET` di produzione si legge
-dalla dashboard, e le chiamate ai job le lancia l'utente con `!`, così il segreto non entra nella
-conversazione.
+**I numeri**: **576 unitari**, **67 di integrazione** (4 nuovi) e **186 E2E**, più `pnpm lint`,
+`pnpm typecheck` e `pnpm build`. I 4 nuovi sono stati **provati rimettendo il difetto**: con lo
+stato portato a `pending` cade "settles their Summary as skipped, never as pending"; togliendo la
+guardia della prova a vuoto ne cadono due. **Speso oggi per la #80: zero.**
 
-### Come si rigenera il Catalogo, visto che adesso è documentato
+⚠️ **Un difetto vero trovato dal giro, e corretto**: l'ordine del report era casuale, perché
+`readReleasesWithoutNotes` pagina per `id` e gli UUID non hanno ordine. Due giri non si potevano
+confrontare, e il test cadeva a caso. Adesso ogni Tecnologia ordina per Versione.
 
-Serve l'utente: i cron delle Sintesi non sono in `vercel.json` e il `CRON_SECRET` di produzione non è
-quello di `.env.local` (risponde 401).
-
-1. Nel SQL Editor: `update public.summaries set status = 'pending', batch_id = null,
-   failure_reason = null, updated_at = now() where status in ('ready', 'failed');`. Non cancella
-   niente: `content`, `model` e `prompt_version` restano finché il batch nuovo non li sovrascrive, ed
-   è questo che rende il ritorno indietro una riga sola.
-2. `GET /api/jobs/summaries/submit` con `Authorization: Bearer <CRON_SECRET>`.
-3. Dopo qualche minuto `GET /api/jobs/summaries/collect`, che rivalida da sé le pagine.
-
-⚠️ Fra 1 e 3 le Release si leggono **senza Sintesi**, perché le pagine mostrano solo le `ready`. Se
-qualcosa si pianta in mezzo: `update public.summaries set status = 'ready', batch_id = null,
-updated_at = now() where status = 'processing' and content is not null and model is not null and
-prompt_version is not null;`.
+⚠️ **L'heredoc ha colpito un'altra volta, lo stesso giorno.** Il file di test contiene `\n` dentro
+le stringhe e l'heredoc lo ha fatto fallire in partenza ("unexpected EOF"), senza scrivere niente.
+La regola dell'ambiente vale: **file con barre rovesciate, strumenti di modifica, mai heredoc**.
 
 ### Cosa resta
 
-1. La cancellazione dei rami `93-prompt-v7`, `57-haiku-summaries` e `26-landing-page`, locali e
-   remoti, che resta dell'utente.
-2. **Il tetto di quello che resta a pagamento è sotto i 5 centesimi**: il submit a mano della #54
-   (mezzo centesimo) e le Sintesi della #80. Ogni altra issue aperta (#65, #126, #130, #131, #132,
-   #133, #69, #113, #94) non tocca Anthropic. ⚠️ La riga precedente di questo documento diceva
-   "sotto $0,30" contando la rigenerazione, che adesso è fatta e ne è costati 13,6 di centesimi.
-3. **L'ordine consigliato delle issue a pagamento**, discusso con l'utente: adesso tocca al
-   **database separato per i preview** (oggi un `catalog:sync` da un preview scriverebbe in
-   produzione: è l'unica cosa in giro che può fare danno vero), poi la **#65** ridotta alla sola
-   strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, non
-   deciso, e se lo stage si fa la sua strada 1 diventa lavoro buttato.
-4. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
+1. **Il giro in produzione della #80, non ancora fatto**, e si fa dopo il merge. Il primo è la
+   chiamata **senza `apply`**: non scrive niente e dice quante delle 91 Note sono davvero
+   recuperabili alla Fonte. ⚠️ Aspettarsene parecchie irrecuperabili: molte sono patch vecchie di
+   rami di manutenzione, e `7.0.1-rc` di TypeScript non esiste proprio su GitHub.
+2. La cancellazione dei rami `93-prompt-v7`, `57-haiku-summaries`, `26-landing-page` e, dopo il
+   merge, `80-notes-backfill`, locali e remoti, che resta dell'utente.
+3. **Quello che resta a pagamento è sotto il centesimo**: il submit a mano della #54. La #80 non
+   spende più niente, perché la decisione presa oggi toglie la generazione dal backfill. Ogni altra
+   issue aperta (#65, #126, #130, #131, #132, #133, #69, #113, #94) non tocca Anthropic.
+4. **L'ordine consigliato**, invariato: il **database separato per i preview** (oggi un
+   `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla sola strada
+   2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, non deciso.
+5. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono, su tutta l'app.
    `ready-for-human`.
 
 Il primo comando della sessione nuova:
@@ -216,6 +184,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-09 (dopo la #93): il modello dice da sé se le Note erano giudicabili (PR #135)
+  - ⚠️ Il pavimento dei 3 punti chiave era una richiesta di inventare, e buttava una Sintesi pagata
+  - ⚠️ Un batch si paga una volta e si rilegge quante si vuole: `summary:eval --results`
+  - ⚠️ La stima del costo della rigenerazione era bassa del 45%, e lo stato di un batch si legge gratis
+  - Come si rigenera il Catalogo, passo per passo, e il caso `bun 1.4.0` che sembra un difetto
 - Stato al 2026-10-08 (dopo la #57): le Sintesi passate a Haiku 5.5 (PR #134)
   - ⚠️ Il confronto fra i giri del set non è pulito, e l'ADR lo dice: cambiano modello e prompt insieme
   - ⚠️ Il tetto dei 150.000 caratteri ha una seconda ragione: oltre i 100k token di prompt Haiku costa cinque volte
