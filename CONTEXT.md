@@ -82,6 +82,14 @@ precedenza al formato dichiarato. Quando la lista dei rilasci non contiene né l
 due tag si chiedono **uno per uno**, perché un rilascio può esistere senza comparire nella lista,
 come succede a Express. Non è un motivo per girare il `tagFormat` del **Catalogo**: va dichiarata la
 forma che vale per la maggioranza delle **Release**, e l'altra epoca la trova la variante.
+Anche il **rilevamento** legge **entrambe le forme**, perché la lettura inversa paga il cambio di
+convenzione più della ricerca delle **Note di rilascio**: un tag nell'altra forma non dà una
+**Release** muta, non dà nessuna **Release**. Le due forme valgono **sempre**, non solo quando la
+dichiarata non trova niente: un repository in transizione tagga nelle due forme insieme, come fa
+Prisma con 250 tag senza la `v` e 18 con, e un ripiego lì non scatterebbe mai. È il caso in cui la
+perdita è definitiva, perché il **rilevamento** prende solo ciò che è più recente della **Release**
+più recente che conosce. Quello che tiene fuori il tag di un altro pacchetto non cambia: ciò che
+resta deve essere una **Versione**, quindi una forma permissiva non decide da sola.
 
 **Seguire**:
 La scelta di uno sviluppatore di vedere nella propria dashboard le **Release** di una

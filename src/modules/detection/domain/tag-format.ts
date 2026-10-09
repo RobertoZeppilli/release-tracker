@@ -32,6 +32,20 @@ function escape(literal: string): string {
   return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// Reading the Version out of a tag is the Rilevamento's job, and the change of era hits it harder
+// than it hits the Note: a tag in the other form is not a mute Release, it is a Release that never
+// enters, so nothing is there to report it (issue #139). Both forms are read, always, and not only
+// when the declared one found nothing in the whole list: a repository in transition tags in both
+// forms at once, which is what `prisma` does today with 250 tags without the `v` and 18 with, and a
+// fallback would never fire there. That is the one case where the loss is permanent, because the
+// Rilevamento takes only what is newer than the newest Release it already knows, so a Release
+// skipped while an older form keeps arriving is never picked up again. What keeps somebody else's
+// tag out is unchanged: what is left over still has to be a Version, so a permissive form never
+// decides on its own.
+export function versionFromAnyTagForm(tagFormat: string, tag: string): string | null {
+  return versionFromTag(tagFormat, tag) ?? versionFromTag(vVariant(tagFormat), tag);
+}
+
 // A repository can change how it writes tags, and a `tagFormat` covers one era only: `angular`
 // tagged `21.0.3` in 2025 and tags `v21.0.3` today, `drizzle-orm` did the opposite. The variant is
 // the configured format with the `v` before the Version added or removed, so both eras are readable
