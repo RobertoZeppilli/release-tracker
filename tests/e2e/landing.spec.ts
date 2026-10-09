@@ -13,6 +13,12 @@ const ENTRY_DEVELOPER = "Go to your dashboard";
 
 const carets = (page: Page) => page.locator(".caret-run");
 
+declare global {
+  interface Window {
+    quoteSwaps: number;
+  }
+}
+
 let developer: FixtureDeveloper;
 
 test.beforeAll(async () => {
@@ -128,33 +134,52 @@ test("the landing is in the index and in the sitemap, and the brand mark is the 
   expect(body).toContain("<loc>http://localhost:3000</loc>");
 });
 
-// Issue #140: the landing is a static document, so it cannot know who is reading it before the first
-// paint. The entry action is the one element that learns, and what it owes the page is that learning
-// it changes nothing but its own words.
+// Issue #140: the landing is a static document, so it cannot know who is reading it. The entry
+// action is the one element that learns, and what it owes the page is that learning it changes
+// nothing but its own words.
+//
+// The two faces are measured on two pages rather than across one load, because there is no moment
+// in between to measure: `onAuthStateChange` hands `useSession` the session out of the cookie, with
+// no request to wait for, so the face changes as hydration runs. Holding back `/auth/v1/user` was
+// tried and proves nothing, since nobody waits for it.
 test("with a session open the three entry actions lead to the Dashboard, and the change moves nothing", async ({
+  browser,
   page,
 }) => {
+  const visitor = await browser.newContext();
+  const visitorPage = await visitor.newPage();
+  await visitorPage.goto("/");
+  // Measured once the fonts have settled: a box read mid-swap differs from the same box afterwards
+  // for a reason that has nothing to do with the session.
+  await visitorPage.evaluate(() => document.fonts.ready);
+  const offered = visitorPage.getByRole("main").getByRole("link", { name: ENTRY_VISITOR });
+  await expect(offered).toHaveCount(3);
+  const asVisitor = await boxesOf(offered);
+  await visitor.close();
+
+  // Watches the quoted line from before the document exists: a page rebuilt when the session lands
+  // would put a different node in its place, and that is the trap of 2026-09-30.
+  await page.addInitScript(() => {
+    window.quoteSwaps = 0;
+    let seen: Element | null = null;
+    const tick = () => {
+      const node = document.getElementById("cited-quote");
+      if (node && node !== seen) {
+        if (seen !== null) window.quoteSwaps++;
+        seen = node;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+
   const response = await page.request.post("/api/test/session", {
     data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
   });
   expect(response.status()).toBe(204);
-
-  // The session arrives over the network, and without a delay it can land before the first
-  // measurement: held back, the two faces of the same page are measured on the same load.
-  await page.route("**/auth/v1/user**", async (route) => {
-    await new Promise((settle) => setTimeout(settle, 600));
-    await route.continue();
-  });
   await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
   const main = page.getByRole("main");
-
-  // Before the session lands the prerendered face is the visitor's, in all three places.
-  const waiting = main.getByRole("link", { name: ENTRY_VISITOR });
-  await expect(waiting).toHaveCount(3);
-  const before = await boxesOf(waiting);
-  // A handle on a node of the page: if the session remounted the page this one would be replaced
-  // and the handle would be left pointing outside the document (the trap of 2026-09-30).
-  const quote = await page.locator("#cited-quote").elementHandle();
 
   const arrived = main.getByRole("link", { name: ENTRY_DEVELOPER });
   await expect(arrived).toHaveCount(3);
@@ -163,7 +188,7 @@ test("with a session open the three entry actions lead to the Dashboard, and the
     await expect(link).toHaveAttribute("href", "/dashboard");
   }
 
-  // Measured, not supposed: same place, same size, in both faces.
-  expect(await boxesOf(arrived)).toEqual(before);
-  expect(await quote?.evaluate((node) => node.isConnected)).toBe(true);
+  // Measured, not supposed: the same three boxes, in the same places, whoever is reading.
+  expect(await boxesOf(arrived)).toEqual(asVisitor);
+  expect(await page.evaluate(() => window.quoteSwaps)).toBe(0);
 });
