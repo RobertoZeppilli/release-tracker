@@ -36,8 +36,9 @@ grounded only in the release notes.
 
 ## Operating Context
 
-- Periodic dashboard check across followed Technologies, sections by Significance: Spotlight,
-  Latest, Previews, Weekly Digest.
+- Periodic dashboard check across followed Technologies, split into two questions: the Standing,
+  where each followed Technology stands by Distance, and the Stream, what came out in date order.
+  Significance is a glyph on the row, not a section.
 - Deep reading of a single Release page before an upgrade, often from search.
 - Summaries may be pending for a few hours after a Release is detected; Releases are visible in
   every Summary state.
