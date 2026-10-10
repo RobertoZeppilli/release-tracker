@@ -18,6 +18,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-10 (mattina, dopo la direzione scelta per la #142): lo spacco scelto fra quattro proposte
+  - ⚠️ La dissolvenza di una lista che scorre va fatta cadere sul vuoto, alta quanto il padding in fondo
+  - ⚠️ La scrollbar nascosta è misurata e non sperata: `offsetWidth - clientWidth` deve valere 0
+  - ⚠️ A 390px un mock nuovo non eredita le soluzioni responsive del prodotto: 144px di overflow trovati a misura
+- Stato al 2026-10-10 (notte fonda, dopo la #141): la landing ripensata e unita
 - Stato al 2026-10-09 (notte, dopo la #139 e la #140): la faccia dell'entry action e le due forme del tag
   - ⚠️ La sessione non arriva dalla rete, arriva dal cookie: le due facce si misurano su due contesti
   - ⚠️ Il server di sviluppo nasconde i difetti dei test E2E che dipendono dall'idratazione
