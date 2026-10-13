@@ -28,9 +28,9 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 ## Stato
 
 **Da dove ripartire (2026-10-13, dopo il codice della Dashboard).** Il lavoro sta sul branch
-**`142-app-visual-direction`**, **non pushato**, tre commit avanti a `main` (`c75969e`, `a961308`,
-`8dd532a`) e **tutto il codice della Dashboard nuova non è ancora committato**. Il passo seguente:
-**gli stati per colonna** (sotto), poi le altre tre schermate.
+**`142-app-visual-direction`**, **non pushato**, quattro commit avanti a `main`: la Dashboard nuova
+è tutta in **`bc6c0bc`** e l'albero è pulito. Il passo seguente: **gli stati per colonna** (sotto),
+poi le altre tre schermate.
 
 **La Dashboard è riscritta sul mock ufficiale**, dominio compreso. Il dominio vecchio
 (`spotlight`, `latest`, `previews`, `counts`, `inUse`) non esiste più: al suo posto
@@ -44,7 +44,7 @@ spariti `dashboard-summary`, `spotlight`, `release-section` e `row-parts`; ci so
 
 **Il verdetto è la somma delle righe, per costruzione** (CONTEXT.md): ogni riga conta le Release
 della sua Tecnologia nella finestra più quelle del Cammino di upgrade, ognuna una volta, e il
-verdetto le somma. Non è più un conto a parte che poteva smentire le righe sotto.
+verdetto le somma, invece di essere un conto a parte che poteva smentirle.
 
 **Gli stati per colonna sono rimandati, per scelta dell'utente (2026-10-13).** Caricamento ed
 errore per colonna (`pending:`, `Try again` che ricarica una colonna sola) vogliono **due query
@@ -61,26 +61,25 @@ poter rimpicciolirsi (`min-height: 0`) o la colonna sfonda il proprio massimo; u
 Le prime due stampavano sopra il contenuto accanto, la terza sopra la riga in fondo.
 
 **Due scostamenti voluti dal mock**, scritti in `DESIGN.md` con la ragione: lo **stato vuoto tiene
-il contenitore da 1240px** con il contenuto a 1040 dentro (il mock centrava 1040 e lasciava il logo
-e il pannello account 100px fuori asse), e la lista della Posizione ha un nome accessibile suo,
-perché la quota in barra si chiama già `Followed technologies`.
+il contenitore da 1240px** col contenuto a 1040 dentro (il mock centrava 1040 e lasciava logo e
+pannello account 100px fuori asse), e la lista ha un nome accessibile suo, perché la quota in barra
+si chiama già `Followed technologies`.
 
-**Le icone delle Tecnologie ci sono nelle righe della Posizione** (richiesta dell'utente del
-2026-10-13), con il Technology Mark del Catalogo. **Nel Flusso no**: lì la riga si apre con il glifo
-di Rilevanza, e due glifi attaccati litigherebbero. Se le vuoi anche lì, va deciso l'ordine.
+**Le icone delle Tecnologie ci sono nelle righe della Posizione** (chieste dall'utente il
+2026-10-13), col Technology Mark del Catalogo. **Nel Flusso no**: lì la riga si apre col glifo di
+Rilevanza e due glifi attaccati litigherebbero; se le vuoi anche lì, va deciso l'ordine.
 
-**Misurato con Playwright**, su ogni larghezza: lo spacco è **360/760 a 1440px**, una colonna sotto
+**Misurato con Playwright**, a ogni larghezza: lo spacco è **360/760 a 1440px**, una colonna sotto
 i 1040 (il passo è `min-[1041px]:`, perché il mock scrive `max-width: 1040px`), la barra resta
-**57px** fino a 320px, il documento non scorre mai di lato, e **`offsetWidth - clientWidth` della
-lista vale 0**. La suite di accessibilità (33 scansioni axe, chiaro e scuro) passa.
+**57px** fino a 320px, niente scorrimento laterale, **`offsetWidth - clientWidth` della lista = 0**,
+e le 33 scansioni axe passano in chiaro e in scuro.
 
-**Gli E2E della Dashboard sono riscritti**: 15 test, tutti verdi, più le patch a
-`a11y.spec.ts` (il riquadro `in-use-counts` non esiste più), `current-version.spec.ts` (la
-dichiarazione si legge sulla riga e nei totali), `overflow.spec.ts` (la quota si chiede per nome
-esatto). ⚠️ Il giro intero della suite fa **186 verdi e 6 rossi, e i 6 sono timeout di
-`page.goto` a 30s sul dev server**, non asserzioni: le stesse suite passano lanciate una per una
-(dashboard 15/15, a11y 33/33, overflow 23/23, navigation 23/23). Va rifatto il giro, meglio sulla
-build di produzione, prima di dire che la suite è verde.
+**Gli E2E della Dashboard sono riscritti**, 15 test verdi, più le patch a `a11y.spec.ts` (il
+riquadro `in-use-counts` non esiste più), `current-version.spec.ts` (la dichiarazione si legge sulla
+riga e nei totali) e `overflow.spec.ts` (la quota si chiede per nome esatto). ⚠️ Il giro intero fa
+**186 verdi e 6 rossi, e i 6 sono timeout di `page.goto` a 30s sul dev server**, non asserzioni: le
+stesse suite passano una per una (dashboard 15/15, a11y 33/33, overflow 23/23, navigation 23/23).
+Va rifatto sulla build di produzione prima di dire che la suite è verde.
 
 ### Cosa resta
 
@@ -91,15 +90,11 @@ build di produzione, prima di dire che la suite è verde.
    (Core Web Vitals veri in produzione) resta senza misura di partenza.
 4. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
    Non parte da zero: le Notifiche sono già un Pro post-MVP in `docs/DECISIONI.md` (ADR 0004).
-5. **La cancellazione dei rami** resta dell'utente (`git branch -D <ramo>`): i dieci rami sono
-   elencati nello stato del 2026-10-10 in `docs/handoff/2026-10.md`.
-6. **L'ordine per gli ambienti**, invariato: prima il **database separato per i preview**, poi la
-   **#65** ridotta alla sola strada 2 se lo stage si fa (dipende dallo stage, in `APERTE.md`).
-7. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
+5. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
    lavoro tocca Anthropic. Il `CRON_SECRET` di produzione non passa da questa chat.
-8. **Docker e il dev server erano attivi** a fine sessione (la 3000 risponde, Supabase locale in
+6. **Docker e il dev server erano attivi** a fine sessione (la 3000 risponde, Supabase locale in
    piedi). Se la sessione nuova li trova spenti: `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
-9. ⚠️ **Il flake di `technology.spec.ts:72` vive su `main`**, non è della #142.
+7. **Rami, ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
 
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e facciamo gli stati per colonna
 della Dashboard`.

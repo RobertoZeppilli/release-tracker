@@ -79,6 +79,24 @@ Il primo comando della sessione nuova:
 leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
 ```
 
+## Cose dell'utente, e il flake che vive su `main`
+
+Spostate qui da `docs/HANDOFF.md` il 2026-10-13, parola per parola, per tenere lo stato vivo sotto
+le 100 righe. Non sono stato: sono vive e restano qui finché non le chiude l'utente.
+
+- **La cancellazione dei rami** resta dell'utente (`git branch -D <ramo>`), locali e remoti:
+  `141-landing-redesign`, `139-detection-tag-variants`, `140-landing-entry-action`,
+  `137-tag-format-variants`, `137-coda-risparmio-chiamate`, `93-prompt-v7`, `57-haiku-summaries`,
+  `26-landing-page`, `80-notes-backfill`, `120-technology-icons`. ⚠️ Anche **merge e cancellazione
+  li fa l'utente**: la modalità auto li nega, quindi i comandi si danno, non si provano.
+- **L'ordine per gli ambienti**, invariato: prima il **database separato per i preview** (oggi un
+  `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla sola strada 2
+  se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, qui sopra.
+- ⚠️ **Il flake di `technology.spec.ts:72` vive su `main`**, non è della #142: si aspetta
+  `/technologies/<slug>` e trova `/technologies/<slug>?from=` dopo il link "back to the upgrade
+  path". La corsa è fra il client che legge `?from=` (`src/modules/releases/ui/upgrade-path-view.tsx:33`)
+  e la navigazione soffice. Da guardare prima o poi, **non blocca niente**.
+
 ## Code da non perdere
 
 Tre cose vive che fino al 2026-09-30 stavano **solo** in fondo a questo documento, sotto un titolo
