@@ -30,14 +30,16 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 **Da dove ripartire (2026-10-14): `/technologies` è scritta in `DESIGN.md` e implementata, e il
 giro E2E della pagina è verde.** Il lavoro sta sul branch **`142-handoff-dopo-il-merge`**, pushato,
 nella **PR #149**, che non chiude la #142: la issue chiede ancora **Technology e Release**. `main` è
-a **`207b4b9`**. Il passo seguente è il merge della #149, e poi quelle due schermate, nello stesso
-ordine: mock, `DESIGN.md`, codice.
+a **`207b4b9`**. Il passo seguente è il merge della #149, e poi quelle due schermate.
 
-⚠️ **La #149 ha trovato conflitti perché `main` ha preso lo squash della #148** (`207b4b9`), lo
-stesso contenuto che sul ramo era già un commit suo: l'handoff arrivava due volte. Risolti con un
-**merge di `origin/main` dentro il ramo**, tenendo lo stato del ramo, perché quello di `main` era lo
-stato di prima, già sceso parola per parola in `docs/handoff/2026-10.md`. Niente rebase e niente
-force push su un ramo già pushato.
+**Technology e Release si auditano e si mockano insieme, per scelta dell'utente del 2026-10-14**, e
+si scrivono in codice una per volta, la Technology per prima. La ragione: la Release è il contenuto
+che la Technology elenca, e le due condividono la riga di Release, il verdetto e i glifi di
+Significance, quindi deciderle separate è il modo sicuro di scrivere due volte le stesse regole in
+`DESIGN.md`. Il giro resta quello di `/technologies`: audit misurato sulla pagina viva, mock,
+approvazione dell'utente, `DESIGN.md`, codice, E2E. ⚠️ I loro mock (`design/mocks/technology.html`
+e `release.html`) sono fermi all'**8 ottobre**, cioè alla direzione di prima: nella direzione nuova
+ci sono solo `landing`, `dashboard` e `technologies`.
 
 **Che pagina è adesso.** Due colonne a 1240px, come la Dashboard: a sinistra `what you follow, by
 name`, sticky a 72px con la lista che scorre dentro sé, a destra il Catalogo per Categoria. Il
@@ -70,9 +72,9 @@ in iframe dava 11px di overflow: era **la scrollbar dell'iframe**, non la pagina
 
 ### Cosa resta
 
-1. **PR di `/technologies`**, poi Technology e Release (#142). Dopo, gli stati per colonna della
-   Dashboard, rimandati per scelta dell'utente: vogliono **due query separate** che si sovrappongono
-   **circa 1.7x** sul database.
+1. **Merge della #149**, poi l'audit di **Technology e Release insieme** (#142). Dopo, gli stati per
+   colonna della Dashboard, rimandati per scelta dell'utente: vogliono **due query separate** che si
+   sovrappongono **circa 1.7x** sul database.
 2. ⚠️ **Il giro intero degli E2E non è mai stato verde in una corsa sola**: qui sono passati
    `technologies` (19) più a11y, keyboard, overflow, navigation, retired e technology-follow (84),
    ma il giro intero sul dev server dava **6 timeout di `page.goto` a 30s**. Va rifatto **sulla
@@ -83,11 +85,15 @@ in iframe dava 11px di overflow: era **la scrollbar dell'iframe**, non la pagina
 4. ⚠️ **Una volta sola, `/technologies` ha risposto con la pagina di errore in dev**, al primo
    colpo dopo l'avvio, nella sessione del mock. Non si è ripetuta in questa. Se torna, è un difetto
    vero e va aperta una issue.
-5. **Il peso delle pagine prima e dopo** (criterio della #142) non è stato misurato, e la **#130**
-   (Core Web Vitals veri in produzione) resta senza misura di partenza.
+5. **Due criteri della #142 ancora da soddisfare**, oltre alle due schermate: il peso delle pagine
+   prima e dopo, mai misurato (e la **#130**, Core Web Vitals veri in produzione, resta senza misura
+   di partenza), e il giro a mano nel browser su tutta l'app alla fine, col metro della facilità d'uso.
 6. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
 7. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
    lavoro tocca Anthropic.
 8. **Docker e il dev server erano attivi** a fine sessione. Se la sessione nuova li trova spenti:
    `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
 9. **Rami, ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
+
+Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e facciamo l'audit di Technology e
+Release insieme`.
