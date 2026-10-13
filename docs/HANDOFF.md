@@ -27,12 +27,17 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-13, sera, con la PR aperta).** Il branch
-**`142-app-visual-direction`** è **pushato**, otto commit avanti a `main`, e la **PR #147** è
-aperta: <https://github.com/RobertoZeppilli/release-tracker/pull/147>. ⚠️ **Non chiude la #142**: la
-issue chiede quattro schermate e lì dentro c'è solo la Dashboard, quindi il corpo cita la issue
-senza la parola chiave. **Merge e cancellazione del ramo sono dell'utente** (la modalità auto li
-nega): `gh pr merge 147 --squash --delete-branch`.
+**Da dove ripartire (2026-10-13, sera, la Dashboard è su `main`).** La **PR #147** è stata
+mergiata in squash dall'utente: `main` è a **`8191681`**, e il lavoro della Dashboard è in
+produzione. ⚠️ **La #142 resta aperta**, e la PR non la chiudeva di proposito: la issue chiede
+quattro schermate e lì dentro c'era solo la Dashboard. Il passo seguente è **`/technologies`**.
+
+⚠️ **Il `main` locale era divergente e `git pull --ff-only` si è fermato.** Portava `31011c8`
+("Tenere l'handoff sotto le 100 righe"), committato in passato **diretto sul `main` locale** e mai
+pushato; stava anche nel ramo, quindi lo squash l'ha portato su `origin/main`, e `main` è stato
+allineato con `reset --hard` dopo aver verificato file per file che il contenuto fosse davvero
+lassù. La lezione per la prossima volta: **sul `main` locale non si committa**, nemmeno un
+documento.
 
 **La Dashboard è finita, tranne gli stati per colonna.** Per com'è fatta (il dominio nuovo
 `standing.ts` e `stream.ts`, il verdetto come somma delle righe per costruzione, i componenti che
@@ -71,8 +76,10 @@ e un errore resta quello di pagina.
    keyboard + release + technologies 43), ma il giro intero sul dev server dava **6 timeout di
    `page.goto` a 30s**, non asserzioni. Va rifatto **sulla build di produzione** prima di dire che
    la suite è verde.
-3. ⚠️ **`design/mocks/direction/` non è stata cancellata**: la modalità auto la nega. È dell'utente:
-   `git rm -r design/mocks/direction`. Quella cartella non è più la fonte.
+3. ⚠️ **Due cancellazioni sono dell'utente** (la modalità auto le nega): il ramo mergiato,
+   `git branch -d 142-app-visual-direction` e `git push origin --delete 142-app-visual-direction`,
+   e la cartella `design/mocks/direction/`, `git rm -r design/mocks/direction`, che non è più la
+   fonte.
 4. **Il peso delle pagine prima e dopo** (criterio della #142) non è stato misurato, e la #130
    (Core Web Vitals veri in produzione) resta senza misura di partenza.
 5. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
