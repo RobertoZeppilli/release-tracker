@@ -28,10 +28,16 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 ## Stato
 
 **Da dove ripartire (2026-10-14): `/technologies` è scritta in `DESIGN.md` e implementata, e il
-giro E2E della pagina è verde.** Il lavoro sta sul branch **`142-handoff-dopo-il-merge`**, non
-pushato, in due commit (il mock, e poi `DESIGN.md` più il codice). `main` è a `8191681`, la **#142
-resta aperta** e chiede ancora **Technology e Release**. Il passo seguente è **la PR di questa
-pagina**, e poi quelle due schermate, nello stesso ordine: mock, `DESIGN.md`, codice.
+giro E2E della pagina è verde.** Il lavoro sta sul branch **`142-handoff-dopo-il-merge`**, pushato,
+nella **PR #149**, che non chiude la #142: la issue chiede ancora **Technology e Release**. `main` è
+a **`207b4b9`**. Il passo seguente è il merge della #149, e poi quelle due schermate, nello stesso
+ordine: mock, `DESIGN.md`, codice.
+
+⚠️ **La #149 ha trovato conflitti perché `main` ha preso lo squash della #148** (`207b4b9`), lo
+stesso contenuto che sul ramo era già un commit suo: l'handoff arrivava due volte. Risolti con un
+**merge di `origin/main` dentro il ramo**, tenendo lo stato del ramo, perché quello di `main` era lo
+stato di prima, già sceso parola per parola in `docs/handoff/2026-10.md`. Niente rebase e niente
+force push su un ramo già pushato.
 
 **Che pagina è adesso.** Due colonne a 1240px, come la Dashboard: a sinistra `what you follow, by
 name`, sticky a 72px con la lista che scorre dentro sé, a destra il Catalogo per Categoria. Il
