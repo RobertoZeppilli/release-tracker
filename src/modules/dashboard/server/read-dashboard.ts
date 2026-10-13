@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import type { DashboardRelease, FollowedTechnology } from "../domain/build-dashboard";
+import type { DashboardRelease, FollowedTechnology } from "../domain/followed";
 import { SignificanceSchema, SummaryStatusSchema } from "@/modules/releases";
 import { judge, storedNotesHead, SummaryContentSchema } from "@/modules/summaries";
 

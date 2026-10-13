@@ -96,6 +96,11 @@
   --text-band: clamp(1.4rem, 2.6vw, 1.9rem);
   --text-band--line-height: 1.2;
   --text-band--letter-spacing: -0.03em;
+  /* The one verdict that lives inside a 360px column instead of across a page: the Dashboard's
+     (DESIGN.md, Column verdict). It never wraps, so the copy stays as short as the page-wide one. */
+  --text-column-verdict: clamp(1.15rem, 1.7vw, 1.45rem);
+  --text-column-verdict--line-height: 1.15;
+  --text-column-verdict--letter-spacing: -0.03em;
   --text-status: clamp(1.5rem, 3.6vw, 2.3rem);
   --text-status--line-height: 1.15;
   --text-status--letter-spacing: -0.03em;
@@ -240,6 +245,35 @@
       clip-path: none;
     }
   }
+}
+
+/* DESIGN.md, The hidden scrollbar and the fade: the Standing's list scrolls inside itself, and its
+   own scrollbar is hidden because a second bar 360px from the page's own asks the reader which one
+   they are in. What replaces it is a mask exactly as tall as the list's bottom padding, 18px, so at
+   the end of the list it lands on empty space and no row is ever dimmed for nothing. Tailwind does
+   not hide the bar on its own, and the result is measured, never assumed: `offsetWidth -
+   clientWidth` must be 0, or the column silently loses width to a bar nobody can see. */
+@utility stack-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 18px;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%);
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
+/* Below 1040px the two columns become one and the list stops scrolling inside itself, so the mask
+   goes with it: there is nothing below it any more (DESIGN.md, Responsive, Dashboard). */
+@utility stack-scroll-off {
+  overflow: visible;
+  padding-bottom: 0;
+  mask-image: none;
 }
 
 /* The landing's bench performs the same caret draw, but its quote sits below the fold, so the run

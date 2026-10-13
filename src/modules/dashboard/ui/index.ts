@@ -1,6 +1,5 @@
-export { DashboardSummary } from "./dashboard-summary";
 export { EmptyDashboard } from "./empty-dashboard";
-export { ReleaseSection } from "./release-section";
-export { Spotlight } from "./spotlight";
+export { StandingColumn } from "./standing-column";
+export { Stream } from "./stream";
 export { readOpenWeeks, WEEK_PARAM } from "./week-param";
-export { WeeklyDigest } from "./weekly-digest";
+export { windowLine } from "./dashboard-copy";

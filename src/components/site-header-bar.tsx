@@ -7,23 +7,17 @@ import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { loginPath } from "@/modules/auth";
 import { type Developer, useSession } from "@/modules/auth/ui";
+import { NAV, type NavItem } from "./site-nav";
 import { ThemeToggle } from "./theme-toggle";
 
 const PANEL_ID = "account-panel";
 
-// The quota in the bar at 430px and up, at the right edge of the strip below it under that, where
-// the three items did not fit on one line. It carries the strip's rule with it and sits beside the
-// sections, which hold the left edge: a strip of its own would be the third row the two-row rule
-// forbids. A quota only ever reaches a page behind sign-in.
-const QUOTA =
-  "ml-auto flex h-[56px] items-center max-[429px]:order-4 max-[429px]:h-[40px] max-[429px]:border-t max-[429px]:border-rule";
-
-// The line break of the strip below 430px, so the row forms there rather than wherever the wordmark
-// and the quota happen to stop. The four items no longer fit on one line at that width and flex
-// would wrap on its own, but where it wrapped would depend on how wide the quota's number reads: a
-// zero-height full-width item puts the break between the actions and the strip at every width under
-// the step. Above it the slot carries `w-full` and forms the row by itself.
-const BREAK = "hidden max-[429px]:order-2 max-[429px]:block max-[429px]:w-full";
+// The quota sits at the right of the one row the bar has, at every width. It used to come down into
+// a 40px strip below 430px, because the wordmark, the sections and the actions did not fit on one
+// line there and the bar grew a third row; with the sections out of the bar on a phone the line has
+// room to spare, and the quota reads `N followed` under 640px anyway. A quota only ever reaches a
+// page behind sign-in.
+const QUOTA = "ml-auto flex h-[56px] items-center";
 
 // A line of the panel. On a phone it is a 44px row of the full-screen sheet, with a rule under it;
 // in the panel above 640px it is the compact 24px line the bar has room for.
@@ -42,12 +36,22 @@ function inside(panel: HTMLElement | null): HTMLElement[] {
 }
 
 // The account panel holds what belongs to the viewer rather than to the page: who is signed in and
-// the way out. It held the two destinations too, because a public Technology or Release page gave
-// the bar's slot to the breadcrumb; the breadcrumb now sits in the content, so the slot carries them
-// on every page, in the open, and a copy here would be a second `dashboard` link (issue #119). The
-// theme toggle stays in the bar: those pages are readable signed out, and a visitor has no panel to
-// find it in.
-export function SiteHeaderBar({ children, quota, wide }: { children: ReactNode; quota?: ReactNode; wide?: boolean }) {
+// the way out. Below 640px it holds the two destinations as well, because that is where they live on
+// a phone (see `SLOT` in `site-header.tsx`): the row in the bar is `display: none` there and these
+// rows are `display: none` above it, so the page never has two `dashboard` links and a screen reader
+// never meets two copies of the same navigation. The theme toggle stays in the bar: the public pages
+// are readable signed out, and a visitor has no panel to find it in.
+export function SiteHeaderBar({
+  children,
+  quota,
+  section,
+  wide,
+}: {
+  children: ReactNode;
+  quota?: ReactNode;
+  section?: NavItem;
+  wide?: boolean;
+}) {
   const session = useSession();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
@@ -104,7 +108,11 @@ export function SiteHeaderBar({ children, quota, wide }: { children: ReactNode; 
       onKeyDown={(event) => {
         if (event.key === "Escape" && open) close();
       }}
-      className={`relative mx-auto flex ${wide ? "max-w-wide" : "max-w-content"} flex-wrap items-center gap-x-5 px-4 max-[429px]:gap-x-0 sm:h-[56px] sm:flex-nowrap sm:px-5`}
+      // The gap is 12px below 640px and 24px above it. With the sections gone from the line the row
+      // is the wordmark, the quota and the actions, and at 320px those three plus two 24px gaps
+      // come to within a couple of pixels of the screen: the row cannot wrap any more, so what it
+      // would do instead is overflow. 12px leaves it 25px of slack at the narrowest width measured.
+      className={`relative mx-auto flex h-[56px] ${wide ? "max-w-wide" : "max-w-content"} items-center gap-x-3 px-4 sm:gap-x-5 sm:px-5`}
     >
       <Link
         href="/"
@@ -115,11 +123,8 @@ export function SiteHeaderBar({ children, quota, wide }: { children: ReactNode; 
         verdict:
       </Link>
       {children}
-      <span aria-hidden className={BREAK} />
       {quota && <span className={QUOTA}>{quota}</span>}
-      <div
-        className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "max-[429px]:ml-auto" : "ml-auto"}`}
-      >
+      <div className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "" : "ml-auto"}`}>
         {/* Nothing renders until the session is known: a wrong state for an instant would offer the
             login to someone already signed in. */}
         {session.state === "visitor" && (
@@ -137,7 +142,7 @@ export function SiteHeaderBar({ children, quota, wide }: { children: ReactNode; 
             aria-expanded={open}
             aria-controls={PANEL_ID}
             onClick={() => setOpen((was) => !was)}
-            className="inline-flex size-[34px] items-center justify-center rounded-md border border-rule-strong text-text hover:border-text-faint hover:bg-raised"
+            className="inline-flex size-[34px] items-center justify-center overflow-hidden rounded-md border border-rule-strong text-text hover:border-text-faint hover:bg-raised"
           >
             <Portrait developer={session} />
             <span className="sr-only">Account{session.handle ? `, signed in as ${session.handle}` : ""}</span>
@@ -146,7 +151,14 @@ export function SiteHeaderBar({ children, quota, wide }: { children: ReactNode; 
         <ThemeToggle />
       </div>
       {open && session.state === "developer" && (
-        <AccountPanel ref={panel} developer={session} onClose={close} onTab={keepTabInside} />
+        <AccountPanel
+          ref={panel}
+          developer={session}
+          section={section}
+          onClose={close}
+          onFollow={() => setOpen(false)}
+          onTab={keepTabInside}
+        />
       )}
     </div>
   );
@@ -159,12 +171,16 @@ export function SiteHeaderBar({ children, quota, wide }: { children: ReactNode; 
 function AccountPanel({
   ref,
   developer,
+  section,
   onClose,
+  onFollow,
   onTab,
 }: {
   ref: React.Ref<HTMLDivElement>;
   developer: Developer;
+  section?: NavItem;
   onClose: () => void;
+  onFollow: () => void;
   onTab: (event: React.KeyboardEvent) => void;
 }) {
   return (
@@ -193,6 +209,26 @@ function AccountPanel({
           {developer.handle}
         </p>
       )}
+      {/* The destinations, on a phone and only there: above 640px they are the row in the bar and
+          this list is `display: none`, so there is one copy of each link on the page at any width.
+          They come first, before the way out, because reaching the other section is what a reader
+          opens this for and signing out is what they do once. */}
+      <nav aria-label="Sections" className="sm:hidden">
+        <ul>
+          {NAV.map((item) => (
+            <li key={item.label}>
+              <Link
+                href={item.href}
+                onClick={onFollow}
+                aria-current={item.label === section ? "page" : undefined}
+                className={`${ITEM} ${item.label === section ? "text-text" : ""}`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
       <form
         action="/auth/sign-out"
         method="post"
@@ -206,17 +242,21 @@ function AccountPanel({
   );
 }
 
-// The picture GitHub has, at the size of the button that holds it, squared like every other shape on
-// the page. Without one the initial stands in, and without a handle either, the neutral mark does.
+// The picture GitHub has, **filling the button that holds it**, squared like every other shape on
+// the page. It used to be a 24px picture with a 1px `rule` of its own inside a 34px bordered button,
+// which drew the same square twice, 4px apart, and left the picture floating in the middle of a
+// control it did not reach the edges of. The button's border stays, because a border is what
+// identifies a button (DESIGN.md, Colors: `rule-strong` carries that duty); what goes is the second
+// one. Without a picture the initial stands in, and without a handle either, the neutral mark does:
+// both are glyphs inside the control rather than a surface filling it, so they keep the button's
+// own padding and draw no square at all.
 function Portrait({ developer }: { developer: Developer }) {
   if (developer.avatarUrl) {
-    return (
-      <Image src={developer.avatarUrl} alt="" width={24} height={24} className="size-[24px] rounded-[4px] border border-rule" />
-    );
+    return <Image src={developer.avatarUrl} alt="" width={64} height={64} className="size-full object-cover" />;
   }
   if (developer.handle) {
     return (
-      <span aria-hidden className="flex size-[24px] items-center justify-center rounded-[4px] border border-rule font-mono text-meta">
+      <span aria-hidden className="font-mono text-label">
         {developer.handle.slice(0, 1).toUpperCase()}
       </span>
     );

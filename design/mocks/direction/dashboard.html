@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard, the direction · release-tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* The direction chosen for the app (#142), on the Dashboard. The page answers two
+   different questions and stops mixing them.
+   Left, and it does not scroll away: where your stack stands. Right: what happened, one
+   stream in date order, with no category sections at all. The two count boxes are gone,
+   because the left column is the counts, spelled out as the things they counted. */
+.bar-in, main { max-width: 1240px; }
+main { margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8); display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: var(--space-8); align-items: start; }
+
+/* Left: the standing. Sticky under the bar, because it is the thing you glance back at. */
+.standing { position: sticky; top: 72px; display: flex; flex-direction: column; max-height: calc(100vh - 72px - var(--space-6)); }
+.standing h2 { margin: 0 0 var(--space-3); font-family: var(--mono); font-size: 13px; font-weight: 400; color: var(--text-faint); }
+
+/* The stack scrolls inside itself, so the verdict above it and the totals below it never leave.
+   The scrollbar is hidden on purpose: the fading bottom edge is what says there is more, and it
+   says it without putting a second scrollbar next to the page's own. The rows are links, so the
+   keyboard reaches and scrolls the list without one. The fade matches the bottom padding,
+   so at the end of the list it lands on empty space and no row is ever dimmed for nothing. */
+.stack-scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; -ms-overflow-style: none;
+  padding-bottom: 18px; mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%); }
+.stack-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.verdict { margin: 0 0 var(--space-5); font-family: var(--mono); font-size: clamp(1.15rem, 1.7vw, 1.45rem); line-height: 1.15; white-space: nowrap; letter-spacing: -0.03em; color: var(--action); }
+.verdict .claim { color: var(--text); }
+.tech { display: block; padding: var(--space-3) var(--space-3) var(--space-3) 0; border-bottom: 1px solid var(--rule); text-decoration: none; }
+.stack-scroll { border-top: 1px solid var(--rule-strong); }
+.tech:last-child { border-bottom: 0; }
+.tech:hover { background: var(--raised); }
+.tech-top { display: flex; align-items: baseline; gap: var(--space-2); }
+.tech-top .name { font-weight: 500; }
+.tech-top .ver { margin-left: auto; font-family: var(--mono); font-size: 14px; color: var(--text-muted); }
+.tech-state { margin-top: 2px; font-family: var(--mono); font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: var(--space-2); }
+.tech[data-tone="warn"] .tech-state { color: var(--action); }
+.dist { flex: 1; height: 4px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+.dist span { display: block; height: 100%; background: var(--rule-strong); }
+.tech[data-tone="warn"] .dist span { background: var(--action); }
+.standing .note { margin: 0; padding-top: var(--space-3); border-top: 1px solid var(--rule-strong); font-family: var(--mono); font-size: 12px; color: var(--text-faint); line-height: 1.5; }
+
+/* Right: the stream. No sections. The date is the only ordering, and the significance glyph
+   is what the eye scans down. A day that asked something of you is marked at the margin. */
+.stream > h2 { margin: 0 0 var(--space-4); font-family: var(--mono); font-size: 13px; font-weight: 400; color: var(--text-faint); }
+.day { display: grid; grid-template-columns: 11ch minmax(0, 1fr); gap: var(--space-5); padding: var(--space-5) 0; border-top: 1px solid var(--rule); }
+.day:first-of-type { border-top: 1px solid var(--rule-strong); }
+.day-when { font-family: var(--mono); font-size: 12px; color: var(--text-faint); padding-top: 4px; }
+.day-when .wk { display: block; color: var(--text-muted); }
+.ev + .ev { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--rule); }
+.ev-head { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+.ev-head .glyph { font-family: var(--mono); }
+.ev-head .name { font-size: 1.1rem; font-weight: 500; }
+.ev-head .ver { font-family: var(--mono); font-size: 1rem; color: var(--text-muted); }
+.ev-what { margin: var(--space-2) 0 0; max-width: var(--measure); }
+.ev-state { margin: var(--space-2) 0 0; }
+.ev .breaks { margin: var(--space-3) 0 0; padding: 0 0 0 var(--space-4); list-style: none; border-left: 2px solid var(--breaking); }
+.ev .breaks li { padding: 2px 0; font-size: 14.5px; color: var(--text-muted); }
+.ev .breaks .code { font-family: var(--mono); font-size: 12.5px; color: var(--breaking); margin-right: var(--space-2); }
+.ev .go { display: inline-block; margin-top: var(--space-3); font-family: var(--mono); font-size: 14px; color: var(--help); text-decoration: none; border-bottom: 1px dashed currentColor; }
+.ev .go:hover { border-bottom-style: solid; }
+
+/* A week with nothing to say takes one line, not a section of its own. */
+.hush { display: grid; grid-template-columns: 11ch minmax(0, 1fr); gap: var(--space-5); padding: var(--space-3) 0; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 13px; color: var(--text-faint); }
+.hush a { text-decoration: none; }
+.foot { grid-column: 1 / -1; margin-top: var(--space-7); font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
+
+@media (max-width: 1040px) {
+  main { grid-template-columns: 1fr; gap: var(--space-7); }
+  .standing { position: static; max-height: none; }
+  .stack-scroll { mask-image: none; }
+}
+@media (max-width: 640px) {
+  .day, .hush { grid-template-columns: 1fr; gap: var(--space-2); }
+  .day-when .wk { display: inline; margin-left: var(--space-2); }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <span class="wordmark">verdict:</span>
+    <nav><a href="#" aria-current="page">dashboard</a><a href="#">technologies</a></nav>
+    <span class="right">14 <span class="q-dim"><span class="q-of">of 20 </span>followed</span> <button class="chip">R</button><button class="chip">☀</button></span>
+  </div>
+</header>
+
+<main>
+  <h1 class="sr-only">Dashboard</h1>
+
+  <aside class="standing" aria-labelledby="standing-h">
+    <p class="verdict">⚠ warning: <span class="claim">2 need action</span></p>
+    <h2 id="standing-h">where your stack stands · by distance</h2>
+
+    <div class="stack-scroll" role="group" aria-label="followed technologies">
+      <a class="tech" href="#" data-tone="warn">
+        <span class="tech-top"><span class="name">React</span><span class="ver">19.0.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:70%"></span></span> 1 needs action</span>
+      </a>
+      <a class="tech" href="#" data-tone="warn">
+        <span class="tech-top"><span class="name">Vite</span><span class="ver">6.0.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:55%"></span></span> 1 needs action</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Next.js</span><span class="ver">15.1.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:40%"></span></span> 4 behind 15.0.0</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Prisma</span><span class="ver">6.1.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:34%"></span></span> 3 behind 5.22.0</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Astro</span><span class="ver">5.1.1</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:28%"></span></span> 2 behind 5.0.9</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Node.js</span><span class="ver">23.4.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:22%"></span></span> no version declared</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Bun</span><span class="ver">1.1.42</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:18%"></span></span> no version declared</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Playwright</span><span class="ver">1.49.1</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:12%"></span></span> 1 behind 1.49.0</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">ESLint</span><span class="ver">9.17.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:8%"></span></span> 1 behind 9.16.0</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">TypeScript</span><span class="ver">5.7.2</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:0%"></span></span> up to date</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Vitest</span><span class="ver">2.0.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:0%"></span></span> up to date</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Tailwind CSS</span><span class="ver">3.0.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:0%"></span></span> up to date</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Zod</span><span class="ver">3.24.1</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:0%"></span></span> up to date</span>
+      </a>
+      <a class="tech" href="#">
+        <span class="tech-top"><span class="name">Svelte</span><span class="ver">5.15.0</span></span>
+        <span class="tech-state"><span class="dist"><span style="width:0%"></span></span> up to date</span>
+      </a>
+    </div>
+
+    <p class="note">23 releases behind in all · oldest version declared 2026-09-12<br>
+      the bar is the distance from the version you declared, not a score</p>
+  </aside>
+
+  <section class="stream" aria-labelledby="stream-h">
+    <h2 id="stream-h">what happened · last 30 days, 32 releases</h2>
+
+    <div class="day">
+      <p class="day-when">2024-12-05<span class="wk">this week</span></p>
+      <div>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-warn">◆</span> <span class="name">React</span> <span class="ver">19.0.0</span></p>
+          <p class="ev-what">Actions, the use API and ref as a prop arrive, while long-deprecated legacy APIs are removed.</p>
+          <p class="ev-state"><span class="sev sev-warn">⚠ warning: action required</span> <span class="meta">· 4 breaking changes</span></p>
+          <ul class="breaks">
+            <li><span class="code">breaking[1]:</span><code>propTypes</code> and <code>defaultProps</code> on function components are ignored</li>
+            <li><span class="code">breaking[2]:</span>String refs are removed</li>
+            <li><span class="code">breaking[3]:</span>Legacy context is removed</li>
+            <li><span class="code">breaking[4]:</span><code>ReactDOM.render</code> and <code>hydrate</code> are removed</li>
+          </ul>
+          <a class="go" href="#">migrate to react 19.0.0</a>
+        </article>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-pending">◇</span> <span class="name">Node.js</span> <span class="ver">23.4.0</span></p>
+          <p class="ev-state"><span class="sev sev-pending">◷ pending: summary queued</span> <a class="go" href="#" style="margin:0">read the release notes</a></p>
+        </article>
+      </div>
+    </div>
+
+    <div class="day">
+      <p class="day-when">2024-12-03<span class="wk">this week</span></p>
+      <div>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-ok">◇</span> <span class="name">Node.js</span> <span class="ver">22.12.0</span></p>
+          <p class="ev-what"><code>require(esm)</code> is enabled by default in the 22 LTS line.</p>
+          <p class="ev-state"><span class="sev sev-ok">⊙ ok: safe to upgrade</span></p>
+        </article>
+      </div>
+    </div>
+
+    <div class="day">
+      <p class="day-when">2024-11-28</p>
+      <div>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-ok">◇</span> <span class="name">Next.js</span> <span class="ver">15.1.0</span></p>
+          <p class="ev-what"><code>after()</code> becomes stable, with clearer error overlays and faster static builds.</p>
+          <p class="ev-state"><span class="sev sev-ok">⊙ ok: safe to upgrade</span> <span class="meta">· you are on 15.0.0, 4 behind</span></p>
+        </article>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-note">✧</span> <span class="name">Tailwind CSS</span> <span class="ver">4.0.0-beta.4</span></p>
+          <p class="ev-state"><span class="sev sev-note">ⓘ note:</span> <span class="meta">only the first v4 preview is summarized</span> <a class="go" href="#" style="margin:0">read 4.0.0-beta.1</a></p>
+        </article>
+      </div>
+    </div>
+
+    <div class="day">
+      <p class="day-when">2024-11-26</p>
+      <div>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-warn">◆</span> <span class="name">Vite</span> <span class="ver">6.0.0</span></p>
+          <p class="ev-what">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
+          <p class="ev-state"><span class="sev sev-warn">⚠ warning: action required</span> <span class="meta">· 4 breaking changes</span></p>
+          <ul class="breaks">
+            <li><span class="code">breaking[1]:</span>Custom <code>resolve.conditions</code> no longer include the defaults</li>
+            <li><span class="code">breaking[2]:</span><code>json.stringify</code> now defaults to <code>'auto'</code></li>
+            <li><span class="code">breaking[3]:</span>Sass uses the modern API by default</li>
+            <li><span class="code">breaking[4]:</span>Library mode CSS is named after the package</li>
+          </ul>
+          <a class="go" href="#">migrate to vite 6.0.0</a>
+        </article>
+      </div>
+    </div>
+
+    <div class="day">
+      <p class="day-when">2024-11-25</p>
+      <div>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-note">✧</span> <span class="name">Vitest</span> <span class="ver">3.0.0-beta.1</span></p>
+          <p class="ev-what">A new reporter lifecycle and project-level browser mode settings.</p>
+          <p class="ev-state"><span class="sev sev-ok">⊙ ok: safe to upgrade</span></p>
+        </article>
+      </div>
+    </div>
+
+    <div class="day">
+      <p class="day-when">2024-11-22</p>
+      <div>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-ok">◆</span> <span class="name">TypeScript</span> <span class="ver">5.7.2</span></p>
+          <p class="ev-what">Checks for never-initialized variables, path rewriting for relative imports and an ES2024 target.</p>
+          <p class="ev-state"><span class="sev sev-ok">⊙ ok: safe to upgrade</span></p>
+        </article>
+      </div>
+    </div>
+
+    <div class="day">
+      <p class="day-when">2024-11-20</p>
+      <div>
+        <article class="ev">
+          <p class="ev-head"><span class="glyph sev-ok">◇</span> <span class="name">Node.js</span> <span class="ver">23.3.0</span></p>
+          <p class="ev-what">Module loading gets a stable <code>process.features.require_module</code> flag.</p>
+          <p class="ev-state"><span class="sev sev-ok">⊙ ok: safe to upgrade</span></p>
+        </article>
+      </div>
+    </div>
+
+    <p class="hush"><span>weeks 46 to 49</span> <a href="#">23 more releases, none asking anything · open by week ›</a></p>
+  </section>
+
+  <p class="foot">window: last 30 days, 2024-11-07 to 2024-12-06 UTC · sample content for design review</p>
+</main>
+
+</body>
+</html>

@@ -45,27 +45,27 @@ test("at 390px a Release page climbs to its Technology and on to the Catalog", a
   await expect(page).toHaveURL(`/login?next=${encodeURIComponent("/technologies")}`);
 });
 
-test("at 390px the slot is a strip under the bar, and the page never gets wider than the phone", async ({ page }) => {
+// The bar carries no sections on a phone and does not grow a strip for them: they are lines of the
+// account instead. For a viewer with no account the way out of a public page is not the bar's job
+// either, and it is not missing: the breadcrumb sits in the content and climbs to the Technology and
+// on to the Catalog, which is what the test above walks. Both destinations are behind sign-in
+// anyway, so a link to them in a visitor's bar only ever bounced off it.
+test("at 390px the bar holds no sections, and the page never gets wider than the phone", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto(`/technologies/${technology.slug}/2.0.0`);
 
-  const wordmark = page.getByRole("link", { name: "verdict:" });
-  const sections = page.getByRole("navigation", { name: "Sections" });
-  const mark = await wordmark.boundingBox();
-  const strip = await sections.boundingBox();
-  expect(mark).not.toBeNull();
-  expect(strip).not.toBeNull();
-  if (!mark || !strip) return;
+  await expect(page.getByRole("navigation", { name: "Sections" })).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Breadcrumb" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "sign in" })).toBeVisible();
 
-  expect(strip.y, "the strip starts below the bar").toBeGreaterThanOrEqual(mark.y + mark.height);
-  expect(strip.x, "the strip starts at the gutter").toBeLessThan(mark.x + 1);
-  expect(strip.width, "the strip spans the content column").toBeGreaterThan(PHONE.width - 40);
+  const header = await page.locator("header").boundingBox();
+  expect(header?.height, "the bar is one row").toBeLessThanOrEqual(57);
 
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
     clientWidth: document.documentElement.clientWidth,
   }));
-  expect(scrollWidth, "the two-row header adds no horizontal overflow").toBeLessThanOrEqual(clientWidth);
+  expect(scrollWidth, "the one-row header adds no horizontal overflow").toBeLessThanOrEqual(clientWidth);
 });
 
 test("above 640px the slot stays inside the bar", async ({ page }) => {
@@ -146,31 +146,63 @@ test("the account takes the whole screen at 390px, and gives it back", async ({ 
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe("hidden");
 });
 
-// The sections are in the strip on every page now, the ones behind sign-in included, and the panel
-// no longer carries a copy: two copies would be two `dashboard` links on the same page (issue #119).
-test("a signed-in page keeps its sections in the strip at 390px, and the panel holds none", async ({ page }) => {
+// On a phone the sections are the account's, and there is still exactly one copy of each link on the
+// page: the row in the bar is `display: none` at this width and these rows are above it, so a screen
+// reader never meets the same navigation twice (the objection that kept them out of the panel in
+// issue #119, answered by the breakpoint instead of by leaving them in the open).
+test("at 390px the sections are in the account, one copy of each", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await signIn(page);
   await page.goto("/dashboard");
 
-  const sections = page.getByRole("navigation", { name: "Sections" });
-  await expect(sections.getByRole("link", { name: "technologies" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "technologies", exact: true })).toHaveCount(0);
 
   await page.getByRole("button", { name: /^Account/ }).click();
-  await expect(page.locator("#account-panel").getByRole("link", { name: "dashboard" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "dashboard" })).toHaveCount(1);
+  const panel = page.locator("#account-panel");
+  await expect(panel.getByRole("link", { name: "technologies", exact: true })).toBeVisible();
+  // The page it is on says so, and says it in the one place the links now are.
+  await expect(panel.getByRole("link", { name: "dashboard", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: "dashboard", exact: true })).toHaveCount(1);
+
+  // Following one closes the sheet, which otherwise stays over the page it just asked for.
+  await panel.getByRole("link", { name: "technologies", exact: true }).click();
+  await expect(page).toHaveURL("/technologies");
+  await expect(panel).toBeHidden();
+});
+
+// Above 640px the account holds none of them: there the row in the bar is the copy, and a second
+// `dashboard` in the panel would be the duplicate issue #119 removed.
+test("above 640px the account holds no sections", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await page.getByRole("button", { name: /^Account/ }).click();
+  await expect(page.locator("#account-panel").getByRole("link", { name: "dashboard", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "dashboard", exact: true })).toHaveCount(1);
 });
 
 // The token specimen that used to stand in for the landing had a header of its own with no links
-// at all: from there the app was unreachable.
-test("the home page offers both sections, at 390px too", async ({ page }) => {
-  await page.setViewportSize(PHONE);
+// at all: from there the app was unreachable. Above 640px the sections are in its bar; on a phone
+// they are not, and what leads into the app is the page's own entry action, which is the one thing
+// on the landing allowed to answer the unknown session with a guess (DESIGN.md, The Bench).
+test("the home page offers both sections above 640px", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");
 
   const sections = page.getByRole("navigation", { name: "Sections" });
-  await expect(sections.getByRole("link", { name: "dashboard" })).toBeVisible();
-  await expect(sections.getByRole("link", { name: "technologies" })).toBeVisible();
-  await expect(sections.getByRole("link", { name: "dashboard" })).toHaveAttribute("href", "/dashboard");
+  await expect(sections.getByRole("link", { name: "dashboard", exact: true })).toBeVisible();
+  await expect(sections.getByRole("link", { name: "technologies", exact: true })).toBeVisible();
+  await expect(sections.getByRole("link", { name: "dashboard", exact: true })).toHaveAttribute("href", "/dashboard");
+});
+
+test("the home page leads into the app at 390px, through its own action", async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto("/");
+
+  await expect(page.getByRole("navigation", { name: "Sections" })).toBeHidden();
+  const entry = page.getByRole("link", { name: /Sign in with GitHub|Go to your dashboard/ });
+  await expect(entry.first()).toBeVisible();
 });
 
 // Above 640px the panel is the one surface that floats over the page, and it has to hand the

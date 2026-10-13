@@ -182,11 +182,15 @@ test("the release notes keep scrolling for themselves", async ({ page }) => {
   await expect(page.locator("#release-notes ol")).toHaveCSS("overflow-x", "auto");
 });
 
-// The bar DESIGN.md specifies is two rows at 640px and below: 56px plus a 40px strip. It was three
-// on every common phone, 153px measured at 375 and 390, because the quota did not fit beside the
-// wordmark and the actions. Below 430px the quota comes down into the strip (issue #47, P1-5).
-test.describe("the top bar stays two rows on a phone", () => {
-  const TWO_ROWS = 56 + 40 + 1; // the rule under the strip belongs to the header too
+// The bar is **one 56px row at every width**. It was three on every common phone once, 153px
+// measured at 375 and 390, then two: 56px plus a 40px strip holding the sections, with the quota
+// coming down to share that strip below 430px (issue #47, #119). The strip is gone, because the
+// sections moved into the account on a phone and took their 40px with them: 96px held on a 667px
+// screen was a seventh of it spent on furniture. What the suite now guards is that the row it left
+// behind holds the wordmark, the quota and the actions without growing and without overflowing,
+// down to 320px, which is the narrowest width measured here.
+test.describe("the top bar is one row on a phone", () => {
+  const ONE_ROW = 56 + 1; // the rule under the bar belongs to the header too
 
   async function dashboardAt(page: Page, width: number): Promise<void> {
     await signIn(page);
@@ -196,55 +200,31 @@ test.describe("the top bar stays two rows on a phone", () => {
     await page.goto("/dashboard");
   }
 
-  for (const width of [320, 375, 390, 414, 429]) {
-    test(`is at most ${TWO_ROWS}px at ${width}px`, async ({ page }) => {
+  for (const width of [320, 375, 390, 414, 429, 430, 639]) {
+    test(`is at most ${ONE_ROW}px at ${width}px, with the quota in it`, async ({ page }) => {
       await dashboardAt(page, width);
       const header = await page.locator("header").boundingBox();
-      expect(header?.height).toBeLessThanOrEqual(TWO_ROWS);
-    });
-  }
+      expect(header?.height, "the header is one row").toBeLessThanOrEqual(ONE_ROW);
 
-  // The two phones the review measured. Above the step the quota is back in the bar, where the three
-  // items fit on one line and the strip is the sections alone.
-  for (const width of [375, 390]) {
-    test(`puts the quota in the strip at ${width}px`, async ({ page }) => {
-      await dashboardAt(page, width);
-      const quota = await page.getByLabel("Followed technologies").boundingBox();
-      expect(quota?.y).toBeGreaterThanOrEqual(56);
-    });
-  }
-
-  test("keeps the quota in the bar from 430px up", async ({ page }) => {
-    await dashboardAt(page, 430);
-    const quota = await page.getByLabel("Followed technologies").boundingBox();
-    expect(quota?.y).toBeLessThan(56);
-  });
-
-  // Below 430px the strip carries both the sections and the quota, on one line. Before issue #119
-  // the sections were in the account panel and the quota had the strip to itself; now they share it,
-  // sections at the left edge and quota at the right, and that sharing is what keeps the bar at two
-  // rows. 320px is the narrowest width the suite measures.
-  for (const width of [320, 375, 390]) {
-    test(`shares the strip between the sections and the quota at ${width}px`, async ({ page }) => {
-      await dashboardAt(page, width);
-      const sections = await page.getByRole("navigation", { name: "Sections" }).boundingBox();
-      const quota = await page.getByLabel("Followed technologies").boundingBox();
-      expect(sections, "the sections").not.toBeNull();
+      // The quota is what used to force the second row, so it is what this measures: it is in the
+      // bar, on the line, not under it.
+      // The Standing list carries a name of its own on this page, so the quota is asked for by name.
+      const quota = await page.getByLabel("Followed technologies", { exact: true }).boundingBox();
       expect(quota, "the quota").not.toBeNull();
-      if (!sections || !quota) return;
-
-      expect(sections.y, "the sections are in the strip, not the bar").toBeGreaterThanOrEqual(56);
-      // The middle of each, not the top: the quota is a link centred in the 40px line, so its own
-      // box starts lower than the strip it sits in.
-      const middle = (box: { y: number; height: number }) => box.y + box.height / 2;
-      expect(Math.abs(middle(quota) - middle(sections)), "the quota shares the line").toBeLessThan(1);
-      expect(quota.x, "and sits to the right of the sections").toBeGreaterThanOrEqual(sections.x + sections.width - 1);
+      expect(quota?.y, "the quota is in the bar").toBeLessThan(56);
 
       const { scrollWidth, clientWidth } = await page.evaluate(() => ({
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
       }));
-      expect(scrollWidth, "the shared strip adds no horizontal overflow").toBeLessThanOrEqual(clientWidth);
+      expect(scrollWidth, "and the one row adds no horizontal overflow").toBeLessThanOrEqual(clientWidth);
     });
   }
+
+  // The row the bar no longer has must not be hiding in the DOM at a height of its own: the
+  // sections are `display: none` below 640px, not merely moved.
+  test("holds no sections at 390px", async ({ page }) => {
+    await dashboardAt(page, 390);
+    await expect(page.getByRole("navigation", { name: "Sections" })).toBeHidden();
+  });
 });

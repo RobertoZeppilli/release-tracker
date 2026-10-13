@@ -61,17 +61,20 @@ svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; str
 /* Account: the picture opens a panel under the bar with what belongs to the viewer rather than to
    the page. It is the one surface allowed over the text, and it carries no shadow. */
 .topbar-actions { position: relative; }
-.account > summary { list-style: none; cursor: pointer; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.account > summary { list-style: none; cursor: pointer; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); overflow: hidden; }
 .account > summary::-webkit-details-marker { display: none; }
 .account > summary:hover { background: var(--raised); border-color: var(--text-faint); }
 /* The GitHub picture sits here at 24px; without one the initial stands in, as drawn. */
-.account .portrait { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--rule); border-radius: 4px; font: 400 12px var(--mono); color: var(--text); }
+.account .portrait { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font: 400 13px var(--mono); color: var(--text); }
 .account-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; min-width: 180px; padding: var(--space-2) 0; background: var(--raised); border: 1px solid var(--rule); border-radius: var(--radius); }
 .account-panel .who { margin: 0 0 var(--space-1); padding: 0 var(--space-3) var(--space-2); border-bottom: 1px solid var(--rule); font: 400 12px var(--mono); color: var(--text-faint); }
 .account-panel a, .account-panel button { display: flex; align-items: center; width: 100%; min-height: 24px; padding: 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; background: none; border: 0; cursor: pointer; }
 .account-panel a:hover, .account-panel button:hover { background: var(--sunken); color: var(--text); }
 .account-panel .out { margin-top: var(--space-1); padding-top: var(--space-1); border-top: 1px solid var(--rule); }
 .account-panel .sheet-head { display: none; }
+/* Above 640px the one copy of the sections is the row in the bar, so the sheet holds none; below it
+   the row is gone and these are the copy (DESIGN.md, Navigation). */
+.account-panel .sheet-nav { display: none; }
 
 main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 
@@ -153,6 +156,7 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
      card over a page that cannot be used is worse than a sheet that owns the screen while it is open. */
   .account-panel { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; padding: 0; background: var(--ground); border: 0; border-radius: 0; }
   .account-panel .who { display: none; }
+  .account-panel .sheet-nav { display: block; }
   .account-panel .sheet-head { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 var(--space-4); border-bottom: 1px solid var(--rule); font: 400 13px var(--mono); color: var(--text-faint); }
   .account-panel a, .account-panel button { min-height: 44px; padding: 0 var(--space-4); font-size: 16px; border-bottom: 1px solid var(--rule); }
   .account-panel .sheet-head button { width: 34px; min-height: 34px; padding: 0; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); color: var(--text); }
@@ -173,18 +177,9 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
   .row-status { grid-column: 1 / -1; grid-row: 3; }
   .review { left: var(--space-4); justify-content: space-between; }
 }
-/* Below 430px the quota comes down into the strip beside the links, so the bar keeps the two rows
-   it is specified as: the three items did not fit on one line, and the phones where the check
-   happens most often spent a third row on chrome (issue #47, P1-5). The strip has no column gap,
-   so its rule runs unbroken across the row. */
-@media (max-width: 429px) {
-  .topbar-inner { column-gap: 0; }
-  .topbar-actions { display: contents; }
-  .topbar-inner > nav { width: auto; flex: 1; }
-  .wordmark { margin-right: auto; }
-  .topbar-actions > * { margin-left: var(--space-4); }
-  .quota { order: 3; margin-left: 0; width: 100%; height: 40px; display: flex; align-items: center; column-gap: 0.5ch; border-top: 1px solid var(--rule); }
-}
+/* The quota stays in the bar at every width: with the sections in the account sheet on a phone,
+   the wordmark, the quota and the actions fit on one line down to 320px, and the bar keeps the
+   single 56px row DESIGN.md gives it (issue #47, #119, #142). */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -216,8 +211,10 @@ a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; 
         <div class="account-panel">
           <div class="sheet-head">robertozep<button type="button" aria-label="Close account"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
           <p class="who">robertozep</p>
-          <a href="dashboard.html">dashboard</a>
-          <a href="technologies.html">technologies</a>
+          <nav class="sheet-nav" aria-label="Sections">
+            <a href="dashboard.html">dashboard</a>
+            <a href="technologies.html">technologies</a>
+          </nav>
           <div class="out"><button type="button">sign out</button></div>
         </div>
       </details>

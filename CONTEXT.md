@@ -150,12 +150,12 @@ I quattro livelli, detti a parole, perché è così che la landing li definisce 
 dentro l'app la parola si vede sempre senza spiegazione:
 - _In evidenza_ (`featured`): la **Release** in cui la **Tecnologia** cambia direzione. Quale sia
   lo dice la sua **Strategia di classificazione**: una major nuova dove vale SemVer, una x.y nuova
-  per chi pubblica le novità lì. Apre la **Dashboard** ed è la sola **Rilevanza** che entra nel
-  **Verdetto della Dashboard** oltre al **Cammino di upgrade**.
+  per chi pubblica le novità lì. Porta il glifo pieno nel **Flusso**, e non ha più una sezione sua:
+  nel **Verdetto della Dashboard** entra come ogni altra **Rilevanza** della finestra.
 - _Novità_ (`notable`): lavoro nuovo senza cambio di direzione, cioè una minor dove vale SemVer e
   le major dispari di Node. Da leggere, raramente urgente.
 - _Digest_ (`digest`): quello che la regola tratta come ordinario, le patch in testa. Non
-  interrompe: si legge raggruppato per settimana ISO nel **Digest settimanale**.
+  interrompe: nel **Flusso** si legge piegato per settimana ISO, nel **Digest settimanale**.
 - _Anteprima_ (`preview`): una beta o una release candidate (vedi **Anteprima**). Solo la prima di
   una nuova major riceve una **Sintesi**; canary, nightly e alpha non sono **Release**.
 _Evitare_: priorità, severità, tipo SemVer.
@@ -253,17 +253,27 @@ _Evitare_: override manuale, forzatura.
 ## Dashboard
 
 **Dashboard**:
-La vista personale di uno sviluppatore con le **Release** delle **Tecnologie** che segue, divise
-per **Rilevanza** in sezioni: **In primo piano**, **Novità**, **Anteprime** e **Digest settimanale**.
-_Evitare_: home, feed (è una sola sezione).
+La vista personale di uno sviluppatore, divisa in **due parti che rispondono a due domande
+diverse**: la **Posizione dello stack**, cioè dove stanno le **Tecnologie** che segue, e il
+**Flusso**, cioè cos'è uscito.
+Non è divisa per **Rilevanza**. Le sezioni **In primo piano**, **Novità** e **Anteprime** non
+esistono più: una **Tecnologia** compariva fino a quattro volte nella stessa schermata, una volta
+per sezione, e il lettore doveva ricomporre da sé dove fosse il suo stack. La **Rilevanza** resta,
+sulla riga, come glifo.
+_Evitare_: home, sezioni per rilevanza, feed (il **Flusso** è metà pagina, non la pagina).
 
 **Verdetto della Dashboard**:
 La riga in testa alla **Dashboard**, che risponde a una domanda sola: fra le **Release** di cui la
 pagina rende conto, ce n'è qualcuna che richiede **Intervento richiesto**? L'insieme di cui rende
-conto è tutto quello che la pagina mostra come lavoro possibile, cioè le **Release** _In evidenza_
-degli ultimi 30 giorni e, per ogni **Tecnologia** seguita che ha una **Versione in uso**, le
-**Release** del suo **Cammino di upgrade**. Una **Release** che sta in entrambi conta una volta: il
-verdetto conta **Release**, non occorrenze.
+conto è tutto quello che la pagina mostra come lavoro possibile, e si legge **per Tecnologia
+seguita**: le sue **Release** nella finestra del **Flusso**, qualunque sia la loro **Rilevanza**, e
+quelle del suo **Cammino di upgrade** quando ha una **Versione in uso**. Una **Release** che sta in
+entrambi conta una volta: il verdetto conta **Release**, non occorrenze.
+**La somma delle righe della Posizione dello stack è il verdetto**, e lo è per costruzione: ogni
+riga conta le **Release** di quella **Tecnologia** che chiedono qualcosa, in uno dei due insiemi o
+in entrambi, e il verdetto le somma. Non è una coincidenza da verificare, è lo stesso conto fatto
+una volta per riga e una volta in testa. Prima i due vivevano su insiemi diversi, la finestra
+contro la **Versione in uso**, e la pagina arrivava a stampare `3` sopra due righe che dicevano `1`.
 Contano solo le **Release** che hanno un verdetto, con le regole delle **Note giudicabili**: quelle
 senza **Sintesi** _Pronta_ e quelle le cui note non sono giudicabili non contano né come sicure né
 come **Intervento richiesto**. Se nessuna **Release** dell'insieme ha un verdetto, **il verdetto non
@@ -275,14 +285,35 @@ numero che vive in un ambito più stretto, come le _In evidenza_ della finestra,
 ambito dove sta.
 _Evitare_: stato generale, riepilogo, tutto ok.
 
-**In primo piano**:
-La sezione della **Dashboard** con le **Release** _In evidenza_ degli ultimi 30 giorni; per ogni
-**Tecnologia** seguita che non ne ha, mostra in forma compatta la sua ultima major.
-_Evitare_: hero, highlights, breaking.
+**Posizione dello stack**:
+La prima delle due parti della **Dashboard**: una riga per ogni **Tecnologia** seguita, ordinata
+per **Distanza**, che dice dove sta lo stack e non cos'è uscito. Ogni **Tecnologia** seguita ha
+esattamente una riga, sempre, anche quando non ha niente da dire. È una vista calcolata.
+_Evitare_: riepilogo, sommario, pannello, scorecard, punteggio.
+
+**Distanza**:
+Quanto una **Tecnologia** seguita è lontana da dove sta andando, misurata dalla sua **Versione in
+uso**: il numero di **Release** stabili fra la **Versione in uso** e l'ultima, e a parte quelle che
+richiedono un **Intervento richiesto**, con le regole del **Cammino di upgrade**.
+**Senza Versione in uso dichiarata non c'è Distanza**: la riga lo dice e non ne mostra una. Una
+distanza stimata su una dichiarazione che non esiste sarebbe un numero inventato sulla cosa che il
+prodotto promette di non inventare.
+L'ordine della **Posizione dello stack** è: prima le **Tecnologie** che chiedono un **Intervento
+richiesto**, per numero; poi quelle con una **Distanza**, dalla più grande; poi quelle senza
+**Versione in uso** dichiarata; infine quelle in pari.
+_Evitare_: ritardo, debito, punteggio, salute, freschezza.
+
+**Flusso**:
+La seconda delle due parti della **Dashboard**: le **Release** delle **Tecnologie** seguite negli
+ultimi 30 giorni, **in ordine di data e senza divisioni per Rilevanza**. La **Rilevanza** si legge
+sulla riga, come glifo. È una vista calcolata.
+_Evitare_: timeline, cronologia, novità, attività.
 
 **Digest settimanale**:
 Le **Release** _Digest_ delle **Tecnologie** seguite, raggruppate per settimana ISO (UTC). È una
 vista calcolata, non qualcosa che viene salvato o inviato.
+Non è più una sezione della **Dashboard**: è **la piega in fondo al Flusso**, dove i periodi che non
+chiedono niente stanno su una riga invece che su una sezione, e da cui si aprono per settimana.
 _Evitare_: newsletter, riepilogo, archivio.
 
 **Cammino di upgrade**:
@@ -351,10 +382,10 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Importazione iniziale | `InitialImport` | |
 | Storico | `History` | |
 | Dashboard | `Dashboard` | |
-| In primo piano | `Spotlight` | |
-| Novità (sezione) | `Latest` | |
-| Anteprime (sezione) | `Previews` | |
-| Digest settimanale | `WeeklyDigest` | |
+| Posizione dello stack | `Standing` | la colonna sinistra della Dashboard |
+| Distanza | `Distance` | nulla senza una Versione in uso |
+| Flusso | `Stream` | la colonna destra della Dashboard |
+| Digest settimanale | `WeeklyDigest` | la piega in fondo al Flusso |
 | Cammino di upgrade | `UpgradePath` | parametro `?from=<version>` |
 | Sviluppatore | `Developer` | |
 | Visitatore | `Visitor` | |
@@ -367,8 +398,9 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
   `pageVerdict`, `rowVerdict`, `DashboardVerdict` e `SummaryVerdictSchema`. La parola "Verdict" non
   compare mai nell'interfaccia, dove il verdetto si legge come `ok:`, `warning:` o `note:`: solo il
   marchio in testa alla pagina la scrive. Nessun identificatore nuovo prende il nome del prodotto.
-- "Novità" è il nome della sezione (`Latest`); il valore di **Rilevanza** che la alimenta è
-  `notable`. Non usare `new` né come valore né come sezione.
+- "Novità" era il nome di una sezione (`Latest`) e ora è solo un valore di **Rilevanza**,
+  `notable`: la **Dashboard** non ha più sezioni per **Rilevanza**. Non usare `new` né come valore
+  né come sezione, e non reintrodurre `Spotlight`, `Latest` o `Previews`.
 - "Utente" copriva sia lo **Sviluppatore** sia il **Visitatore**. In codice `user` indica solo
   l'identità di autenticazione.
 - "MAJOR / MINOR / PATCH" nella specifica iniziale indicavano l'importanza. L'importanza è la
@@ -377,6 +409,6 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 
 ## Esempio
 
-> **Dev:** TypeScript 5.7 è una minor, quindi va nel feed Novità?
+> **Dev:** TypeScript 5.7 è una minor, quindi nel Flusso porta il glifo di Novità?
 > **Esperto:** La Versione è una minor, ma la Strategia di classificazione di TypeScript tratta
 > ogni x.y come In evidenza, perché introduce breaking changes. La Rilevanza è In evidenza.

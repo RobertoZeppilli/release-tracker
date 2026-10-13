@@ -1,22 +1,15 @@
 import Link from "next/link";
 import { SiteHeaderBar } from "./site-header-bar";
+import { NAV, type NavItem } from "./site-nav";
 
-// The signed-in pages, in the order DESIGN.md gives them.
-const NAV = [
-  { label: "dashboard", href: "/dashboard" },
-  { label: "technologies", href: "/technologies" },
-] as const;
-
-export type NavItem = (typeof NAV)[number]["label"];
-
-// Below 640px the slot leaves the bar and becomes a 40px strip under it, with the same links in the
-// same order: No Dead End Rule in DESIGN.md. Nothing is hidden and nothing opens, so the keyboard
-// reaches it in document order. Below 430px the quota shares that strip instead of taking one of its
-// own, so the bar stays the two rows DESIGN.md specifies: on an iPhone SE, an iPhone 14 or a Pixel
-// the three items did not fit on one line and the bar took a third row, 153px of chrome before the
-// verdict.
-const SLOT =
-  "max-sm:order-3 max-sm:flex max-sm:h-[40px] max-sm:items-center max-sm:border-t max-sm:border-rule min-[430px]:max-sm:w-full max-[429px]:grow";
+// Above 640px the slot is a row inside the bar. Below it the row is gone and the destinations are
+// lines of the account sheet instead, which is the second branch the No Dead End Rule always
+// allowed (DESIGN.md). It is what makes the bar **one 56px row at every width**: the 40px strip it
+// used to grow was a seventh of a 667px screen spent on furniture, and the two links were the part
+// a reader needs least often. A viewer with no account reaches both through `sign in`, which is
+// where either link would have sent them anyway, and the breadcrumb in the content is what says
+// where a public page sits.
+const SLOT = "max-sm:hidden";
 
 // The slot holds the two sections on every page, public ones included, and `section` only says which
 // of them is being read. Both sit behind sign-in and the links are there for a visitor all the same:
@@ -26,8 +19,8 @@ const SLOT =
 // Where the page sits is no longer in the bar: that is `PageBreadcrumb`, at the top of the content.
 // `quota` arrives as an element, not as a component: the header shows what a signed-in page hands
 // it and never learns what a Plan is, so the public pages simply pass nothing.
-// `wide` is the landing, the one page at the 1240px container: the bar carries the page's own width
-// so the wordmark sits over the first letter of the claim. Everywhere else it is the app's 1040.
+// `wide` is the landing and the Dashboard, the two pages at the 1240px container: the bar carries
+// the page's own width so the wordmark sits over the first letter of what it opens.
 export function SiteHeader({
   section,
   quota,
@@ -50,7 +43,7 @@ export function SiteHeader({
           reach the other destination. It keeps its height and its shape while the page moves under
           it: no shadow, no hiding on scroll, nothing that grows. */}
       <header className="sticky top-0 z-20 border-b border-rule bg-ground">
-        <SiteHeaderBar quota={quota} wide={wide}>
+        <SiteHeaderBar quota={quota} section={section} wide={wide}>
           <nav aria-label="Sections" className={SLOT}>
             <ul className="flex gap-4 font-mono text-label text-text-muted">
               {NAV.map((item) => (

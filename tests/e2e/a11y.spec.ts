@@ -232,7 +232,8 @@ for (const theme of THEMES) {
       await addFollows(developer.id, [technology.id]);
       await declareCurrentVersion(developer.id, technology.id, "1.8.9");
       await page.goto("/dashboard");
-      await expect(page.getByTestId("in-use-counts")).toContainText("version in use · 1 of 1");
+      // The declaration is read: the totals under the Standing name the day it was made.
+      await expect(page.getByText(/oldest version declared/)).toBeVisible();
       await scan(page, theme);
     });
   });

@@ -36,24 +36,24 @@ a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-of
 a:hover { text-decoration-color: currentColor; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
 * { scrollbar-color: var(--rule-strong) transparent; }
-.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; flex: none; }
+/* Significance Glyphs: 12px shapes on a 12-unit grid, neutral wherever they appear. */
 svg.sig { width: 12px; height: 12px; flex: none; }
 
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: var(--space-4); top: var(--space-4); background: var(--raised); padding: var(--space-2) var(--space-3); z-index: 10; }
 
-/* Top bar */
-.topbar { border-bottom: 1px solid var(--rule); }
-.topbar-inner, main { max-width: 1040px; margin: 0 auto; padding: 0 var(--space-5); }
+/* Top bar: the same 56px row at every width, sticky on every page (DESIGN.md, Layout). */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--ground); border-bottom: 1px solid var(--rule); }
+.topbar-inner, main { max-width: 1240px; margin: 0 auto; padding: 0 var(--space-5); }
 .topbar-inner { height: 56px; display: flex; align-items: center; gap: var(--space-5); }
 .wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; white-space: nowrap; }
 .nav { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); }
 .nav a { text-decoration: none; }
 .nav a:hover, .nav [aria-current] { color: var(--text); }
-.topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
+.topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; position: relative; }
 .quota { font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; margin-right: var(--space-2); white-space: nowrap; }
 .quota strong { color: var(--text); font-weight: 400; }
 .quota:hover { color: var(--text); }
@@ -62,180 +62,222 @@ svg.sig { width: 12px; height: 12px; flex: none; }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 /* Account: the picture opens a panel under the bar with what belongs to the viewer rather than to
    the page. It is the one surface allowed over the text, and it carries no shadow. */
-.topbar-actions { position: relative; }
-.account > summary { list-style: none; cursor: pointer; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.account > summary { list-style: none; cursor: pointer; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); overflow: hidden; }
 .account > summary::-webkit-details-marker { display: none; }
 .account > summary:hover { background: var(--raised); border-color: var(--text-faint); }
-/* The GitHub picture sits here at 24px; without one the initial stands in, as drawn. */
-.account .portrait { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--rule); border-radius: 4px; font: 400 12px var(--mono); color: var(--text); }
+/* The GitHub picture fills the button; without one the initial stands in, as drawn. */
+.account .portrait { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font: 400 13px var(--mono); color: var(--text); }
 .account-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; min-width: 180px; padding: var(--space-2) 0; background: var(--raised); border: 1px solid var(--rule); border-radius: var(--radius); }
 .account-panel .who { margin: 0 0 var(--space-1); padding: 0 var(--space-3) var(--space-2); border-bottom: 1px solid var(--rule); font: 400 12px var(--mono); color: var(--text-faint); }
 .account-panel a, .account-panel button { display: flex; align-items: center; width: 100%; min-height: 24px; padding: 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; background: none; border: 0; cursor: pointer; }
 .account-panel a:hover, .account-panel button:hover { background: var(--sunken); color: var(--text); }
 .account-panel .out { margin-top: var(--space-1); padding-top: var(--space-1); border-top: 1px solid var(--rule); }
 .account-panel .sheet-head { display: none; }
+/* Above 640px the one copy of the sections is the row in the bar, so the sheet holds none; below it
+   the row is gone and these are the copy (DESIGN.md, Navigation). */
+.account-panel .sheet-nav { display: none; }
 
-main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
+/* The split: two questions, a column each, and nothing printed in both
+   (DESIGN.md, The Two Questions Rule). */
+main { padding-top: var(--space-6); padding-bottom: var(--space-8); display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: var(--space-8); align-items: start; }
 
-/* Page verdict */
-.verdict-line { margin: 0; font: 400 clamp(1.9rem, 5.2vw, 3.4rem)/1.08 var(--mono); letter-spacing: -0.035em; text-wrap: balance; }
-.verdict-line .sev-action, .verdict-line .sev-ok { margin-right: 0.4ch; }
-.verdict-line .claim { display: inline-block; }
+/* Column titles: Meta, and each names its own ordering, because the ordering is the information. */
+.col-title { margin: 0 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-faint); }
+.stream > .col-title { margin-bottom: var(--space-4); }
+
+/* Left: the Standing. Sticky 72px under the bar, with the list scrolling inside itself so the
+   verdict above it and the totals below it never leave. */
+.standing { position: sticky; top: 72px; display: flex; flex-direction: column; max-height: calc(100vh - 72px - var(--space-6)); }
+/* The verdict slot keeps its height before there is a verdict: a page that has counted nothing
+   does not get to make a claim, not even a muted one (DESIGN.md, Dashboard States). */
+.verdict-slot { min-height: calc(clamp(1.15rem, 1.7vw, 1.45rem) * 1.15); margin-bottom: var(--space-5); }
+/* Column verdict: the one verdict that lives inside a 360px column, one line and no wrap. */
+.verdict-line { margin: 0; font: 400 clamp(1.15rem, 1.7vw, 1.45rem)/1.15 var(--mono); letter-spacing: -0.03em; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .verdict-line .glyph { width: 0.8em; height: 0.8em; stroke-width: 1.75; vertical-align: -0.08em; }
-.status-line { margin: 0; font: 400 clamp(1.5rem, 3.6vw, 2.3rem)/1.15 var(--mono); letter-spacing: -0.03em; color: var(--text-muted); }
-.status-line .glyph { width: 0.8em; height: 0.8em; stroke-width: 1.75; vertical-align: -0.08em; }
+.verdict-line .label { margin-right: 0.4ch; }
+.verdict-line .claim { color: var(--text); }
 .sev-action { color: var(--action); }
 .sev-ok { color: var(--ok); }
-/* Count boxes: a caption and rows of label left, number right. The facts used to run as one
-   sentence of items separated by a middle dot, which on a phone wrapped in the middle of them. */
-.boxes { display: grid; gap: var(--space-4); margin-top: var(--space-4); max-width: var(--measure); }
-@media (min-width: 641px) { .boxes { grid-template-columns: 1fr 1fr; } }
-.box { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--raised); padding: var(--space-3) var(--space-4); }
-.box .caption { margin: 0; font: 400 12px/1.6 var(--mono); color: var(--text-faint); }
-.box ul { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
-.box li, .box li > a { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); padding: var(--space-1) 0; font: 400 13px/1.6 var(--mono); color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.box li > a { padding: 0; text-decoration: none; color: inherit; }
-.box li > a:hover .label { color: var(--text); }
-.box li > a:hover .n { text-decoration: underline; }
-.box .n { color: var(--text); }
-.box .note strong { color: var(--text); font-weight: 400; }
-.in-use-line { margin: var(--space-2) 0 0; font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
-.row.compact .main p { margin: 0; }
+.sev-error { color: var(--breaking); }
+.sev-none { color: var(--text-muted); }
 
-/* Sections */
-.section { margin-top: var(--space-7); scroll-margin-top: var(--space-5); }
-.section-title { margin: 0 0 var(--space-2); display: flex; align-items: baseline; gap: var(--space-3); font: 600 13px var(--mono); color: var(--text-muted); letter-spacing: 0.02em; }
-.section-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
-.section-title .aside { order: 2; display: inline-flex; align-items: center; gap: 6px; font-weight: 400; color: var(--text-muted); letter-spacing: 0; }
-.section-title .aside .fact { color: var(--text-faint); }
+/* The hidden scrollbar and the fade: a mask exactly as tall as the list's bottom padding, so at
+   the end of the list it lands on empty space and no row is ever dimmed for nothing. The bar is
+   hidden because a second scrollbar 360px from the page's own asks which one you are in, and it
+   is measured and never assumed: offsetWidth - clientWidth must be 0 (DESIGN.md, Layout). */
+.stack-scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; -ms-overflow-style: none; border-top: 1px solid var(--rule-strong); padding-bottom: 18px; mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%); }
+.stack-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
-/* Release rows: technology | version | date | content */
-.rows { list-style: none; margin: 0; padding: 0; }
-.row { display: grid; grid-template-columns: 14ch 17ch 11ch minmax(0, 1fr); column-gap: var(--space-4); align-items: baseline; padding: var(--space-3) 0; border-bottom: 1px solid var(--rule); font: 400 16px/1.45 var(--sans); }
-.rows > .row:first-child { border-top: 1px solid var(--rule); }
-.tech { font: 600 16px/1.45 var(--sans); letter-spacing: -0.01em; color: var(--text); text-decoration: none; }
-a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; }
-.ver { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--text-muted); }
-.ver a { font: 400 16px var(--mono); color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
-.ver a:hover { text-decoration: underline; text-decoration-color: currentColor; }
-.when { display: flex; flex-direction: column; font: 400 13px/1.45 var(--mono); color: var(--text-faint); }
-.when .recent { color: var(--text-muted); font-size: 12px; }
-.main { min-width: 0; }
-.title { margin: 0; font: 500 16px/1.45 var(--sans); max-width: var(--measure); }
-.row-verdict { margin: 2px 0 0; font: 400 13px/1.6 var(--mono); }
+/* Standing Row: one per followed Technology, always, and never more than one. It carries no
+   significance glyph: a row is about a Technology, not about one of its Releases. */
+.standing-row { display: block; padding: var(--space-3) var(--space-3) var(--space-3) 0; border-bottom: 1px solid var(--rule); text-decoration: none; }
+.standing-row:last-child { border-bottom: 0; }
+.standing-row:hover, .standing-row:focus-visible { background: var(--raised); }
+.standing-row .top { display: flex; align-items: baseline; gap: var(--space-2); }
+.standing-row .name { font: 500 16px/1.45 var(--sans); letter-spacing: -0.01em; color: var(--text); }
+.standing-row .ver { margin-left: auto; font: 400 14px var(--mono); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.standing-row .state { margin-top: 2px; display: flex; align-items: center; gap: var(--space-2); font: 400 13px/1.6 var(--mono); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.standing-row[data-tone="action"] .state { color: var(--action); }
+/* The Distance bar: the only drawn measure in the system, and the number is always written beside
+   it in words. It is aria-hidden; the words are the content. */
+.dist { flex: 1; height: 4px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+.dist span { display: block; height: 100%; background: var(--rule-strong); }
+.standing-row[data-tone="action"] .dist span { background: var(--action); }
+
+/* The totals: what the whole is, and what the bar is. The second line is not a caption to drop
+   when space is tight: the bar is the one thing here a reader could mistake for a score. */
+.totals { padding-top: var(--space-3); border-top: 1px solid var(--rule-strong); font: 400 13px/1.6 var(--mono); color: var(--text-faint); }
+.totals p { margin: 0; }
+.totals .quota-note { display: none; margin-top: var(--space-2); }
+.totals .quota-note a { color: inherit; }
+
+/* Right: the Stream. One stream in date order, no sections, the date the only ordering. */
+.day { display: grid; grid-template-columns: 11ch minmax(0, 1fr); gap: var(--space-5); padding: var(--space-5) 0; border-top: 1px solid var(--rule); }
+.day:first-of-type { border-top-color: var(--rule-strong); }
+.day-when { margin: 0; padding-top: 3px; font: 400 13px/1.6 var(--mono); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+/* This Week Mark: it marks the day and not each Release of it, so it stacks in the date cell. */
+.day-when .this-week { display: block; font-size: 12px; color: var(--text-muted); }
+.ev + .ev { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--rule); }
+.ev-head { margin: 0; display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+/* Neutral whatever the verdict says: Significance is a shape, severity is a glyph of its own. */
+.ev-head .sig { color: var(--text-muted); }
+.ev[data-sig="featured"] .sig { color: var(--text); }
+.ev[data-sig="preview"] .sig { color: var(--rule-strong); }
+.ev-head .name { font: 500 1.1rem/1.3 var(--sans); letter-spacing: -0.01em; color: var(--text); }
+.ev-head .ver { font: 400 1rem var(--mono); color: var(--text-muted); text-decoration: none; }
+.ev-head .ver:hover { text-decoration: underline; text-decoration-color: currentColor; }
+.ev-title { margin: var(--space-2) 0 0; font: 500 16px/1.45 var(--sans); max-width: var(--measure); }
+.row-verdict { margin: var(--space-2) 0 0; font: 400 13px/1.6 var(--mono); }
 .row-verdict.none { color: var(--text-muted); }
-.row-verdict.none a { color: var(--text-muted); }
-.row-verdict.none a:hover { color: var(--text); }
+.row-verdict .meta { color: var(--text-faint); }
+.row-verdict.none a, .row-verdict .meta a { color: inherit; }
 .breaks { list-style: none; margin: var(--space-3) 0 0; padding: 0; font: 400 14px/1.6 var(--sans); }
 .breaks li { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-3); padding: 2px 0; }
 .breaks .code { font: 400 13px/1.75 var(--mono); color: var(--breaking); white-space: nowrap; }
+.mono { font-family: var(--mono); font-size: 0.9em; }
 .pointer { display: inline-flex; gap: 1ch; margin-top: var(--space-3); font: 400 13px var(--mono); color: var(--help); text-decoration: none; }
 .pointer .arrow { color: var(--text-faint); }
 .pointer .label { border-bottom: 1px dashed var(--help); }
 .pointer:hover .label { border-bottom-style: solid; }
 
-/* The quiet half of Spotlight: the Technologies with nothing featured in the window. The phrase
-   "latest major - none featured in 30 days" used to repeat on every one of these rows and spent the
-   whole content column saying the same thing; it is said once, here, and the rows keep only what
-   differs between them. */
-.quiet-note { margin: var(--space-5) 0 var(--space-2); font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
-.rows.quiet .row { padding: var(--space-2) 0; }
-.rows.quiet .row:first-child { border-top: 1px solid var(--rule); }
-
-/* The closing band: previews and the digest sit side by side from 900px, so the page ends on a block
-   instead of thinning out row by row down to nothing. */
-.tail { margin-top: var(--space-8); display: grid; gap: var(--space-7); align-items: start; }
-.tail > .section { margin-top: 0; }
-/* The band needs the full container to hold two readable halves: below 1040px the two sections
-   stack and keep the linear page they had. */
-@media (min-width: 1040px) {
-  .tail { grid-template-columns: 1fr 1fr; column-gap: var(--space-7); }
-  /* Half the column is too narrow for the four-column row, so a row in the band reflows exactly as
-     it does on a phone: name, version and date on the first line, the content across the width. */
-  .tail .row { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: var(--space-1); }
-  .tail .row .when { text-align: right; }
-  .tail .row .main { grid-column: 1 / -1; }
-  /* The week keeps its summary on one line in half a column, as it does on a phone. */
-  .tail .week summary .range { display: none; }
-  .tail .week summary > span { min-width: 0; }
-}
-
-/* Compact Spotlight row: the latest major, one line */
-.row.compact { padding: var(--space-2) 0; }
-.row.compact .main { font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
-.row.compact .tech { font-weight: 500; color: var(--text-muted); }
-.row.compact .tech:hover { color: var(--text); }
-
-/* Weekly digest */
-.week { border-bottom: 1px solid var(--rule); }
-.rows > .week:first-child { border-top: 1px solid var(--rule); }
-.week summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 14ch minmax(0, 1fr) auto; column-gap: var(--space-4); align-items: center; padding: var(--space-2) 0; font: 400 13px/1.6 var(--mono); color: var(--text-muted); }
-.week summary::-webkit-details-marker { display: none; }
-.week summary:hover { color: var(--text); }
-.week summary .wk { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
-.week summary .chev { transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); justify-self: end; }
-.week[open] summary .chev { transform: rotate(90deg); }
-.nowrap { white-space: nowrap; }
-.week-lines { list-style: none; margin: 0 0 var(--space-3); padding: 0 0 0 calc(14ch + var(--space-4)); display: grid; grid-template-columns: repeat(auto-fill, minmax(28ch, 1fr)); gap: 2px var(--space-4); font: 400 13px/1.6 var(--mono); }
+/* Weekly Digest: the quiet end of the Stream. One row for the whole quiet stretch and not one per
+   week, because four rows each saying a different week was silent is four rows saying nothing. */
+.hush { border-top: 1px solid var(--rule); font: 400 13px/1.6 var(--mono); color: var(--text-faint); }
+.hush > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 11ch minmax(0, 1fr); gap: var(--space-5); padding: var(--space-3) 0; }
+.hush > summary::-webkit-details-marker { display: none; }
+.hush > summary:hover .hush-in { color: var(--text); }
+.hush .hush-in { display: inline-flex; align-items: center; gap: 1ch; flex-wrap: wrap; }
+.hush .hush-in .way { color: var(--help); }
+.week { border-top: 1px solid var(--rule); }
+.week > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 14ch minmax(0, 1fr) auto; column-gap: var(--space-4); align-items: center; padding: var(--space-2) 0; color: var(--text-muted); }
+.week > summary::-webkit-details-marker { display: none; }
+.week > summary:hover { color: var(--text); }
+.week > summary .wk { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.week > summary .chev { transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); justify-self: end; }
+.week[open] > summary .chev { transform: rotate(90deg); }
+.week-lines { list-style: none; margin: 0 0 var(--space-3); padding: 0 0 0 calc(14ch + var(--space-4)); display: grid; grid-template-columns: repeat(auto-fill, minmax(28ch, 1fr)); gap: 2px var(--space-4); }
 .week-lines .t { color: var(--text-muted); }
 .week-lines a { color: var(--text); text-decoration: none; }
 .week-lines a:hover { text-decoration: underline; }
 .week-lines time { color: var(--text-faint); margin-left: 1ch; }
 
-.foot { margin-top: var(--space-7); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+/* The two column states that are not data. Both obey The Reserved Space Rule: no skeletons, and
+   nothing imitates the shape of what is coming. */
+.col-pending, .col-error { display: none; margin: 0; font: 400 14px/1.7 var(--mono); max-width: 900px; }
+.col-pending { color: var(--text-faint); }
+.col-error { color: var(--breaking); }
+/* The way out is its own line: a button inside the sentence that reports the failure reads as a
+   word of it, and the One Error Measure is a measure of prose. */
+.col-error .again { display: block; margin-top: var(--space-3); }
 
-/* Empty state: first follow */
+.foot { grid-column: 1 / -1; margin: var(--space-7) 0 0; font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+
+/* Empty state: one column, with the catalog picker rows, which are one component with the
+   Technologies page. */
+.section { margin-top: var(--space-7); }
+.section-title { margin: 0 0 var(--space-2); display: flex; align-items: baseline; gap: var(--space-3); font: 600 13px var(--mono); color: var(--text-muted); letter-spacing: 0.02em; }
+.section-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
+.status-line { margin: 0; font: 400 clamp(1.5rem, 3.6vw, 2.3rem)/1.15 var(--mono); letter-spacing: -0.03em; color: var(--text-muted); }
+.status-line .glyph { width: 0.8em; height: 0.8em; stroke-width: 1.75; vertical-align: -0.08em; }
+.status-line strong { color: var(--text); font-weight: 400; }
+.empty-intro { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); }
+.follow-count { margin: var(--space-3) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
+.follow-count strong { color: var(--text); font-weight: 400; }
+.open-dash { display: none; margin-left: var(--space-3); vertical-align: middle; }
+.has-follows .open-dash { display: inline-flex; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.catalog .row { display: grid; grid-template-columns: calc(16ch + 24px) minmax(0, 1fr) auto; column-gap: var(--space-4); align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--rule); }
+.catalog .rows > .row:first-child { border-top: 1px solid var(--rule); }
 .tech-cell { display: flex; min-width: 0; align-items: center; gap: var(--space-2); }
 /* Technology Mark: the brand's shape in the text's own ink, never its colour. The box is
    there whether the shape exists or not, so every name starts at the same x. */
 .mark { width: 16px; height: 16px; flex: none; fill: currentColor; }
-.empty-intro { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); }
-/* The same row as the catalogue picker in technologies.html: one component in the build. */
-.catalog .row { grid-template-columns: calc(16ch + 24px) minmax(0, 1fr) auto; align-items: center; }
-.catalog .facts { font: 400 13px/1.6 var(--mono); color: var(--text-faint); }
-.catalog .facts strong { color: var(--text-muted); font-weight: 400; }
-.catalog .desc { color: var(--text-muted); font-size: 16px; }
-.btn[aria-pressed="true"] { border-color: var(--rule); color: var(--text-muted); }
-.btn[aria-pressed="true"]:hover { color: var(--text); }
+.tech { font: 600 16px/1.45 var(--sans); letter-spacing: -0.01em; color: var(--text); text-decoration: none; }
+a.tech:hover { text-decoration: underline; text-decoration-color: currentColor; }
+.facts { font: 400 13px/1.6 var(--mono); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.facts strong { color: var(--text-muted); font-weight: 400; }
 .btn .when-on { display: none; }
 .btn .when-off, .btn[aria-pressed="true"] .when-on { display: inline-flex; align-items: center; gap: var(--space-2); }
-.open-dash { display: none; margin-left: var(--space-3); vertical-align: middle; }
-.has-follows .open-dash { display: inline-flex; }
 .btn[aria-pressed="true"] .when-off { display: none; }
-.follow-count { margin: var(--space-3) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
-.follow-count strong { color: var(--text); font-weight: 400; }
+.btn[aria-pressed="true"] { border-color: var(--rule); color: var(--text-muted); }
+.btn[aria-pressed="true"]:hover { color: var(--text); }
 
-/* States */
-.for-empty, .for-safe { display: none; }
+/* States. Loading and the two failures keep every title, because a title is a fact about the page
+   and not about the data. */
+.for-empty, .for-safe, .only-quota { display: none; }
+main[data-state="safe"] .for-action { display: none; }
+main[data-state="safe"] .for-safe { display: block; }
+main[data-state="loading"] .verdict-line,
+main[data-state="loading"] .stack-scroll,
+main[data-state="loading"] .totals,
+main[data-state="loading"] .days { display: none; }
+main[data-state="loading"] .col-pending { display: block; }
+main[data-state="loading"] .count,
+main[data-state="error-stream"] .count { display: none; }
+/* Error in one column only: the two columns are two queries, and one that failed must not take
+   down one that worked. When the Standing is the one that failed, the verdict goes with it: its
+   number is the Standing's sum, so there is nothing honest left to print over the Stream. */
+main[data-state="error-standing"] .verdict-line,
+main[data-state="error-standing"] .stack-scroll,
+main[data-state="error-standing"] .totals { display: none; }
+main[data-state="error-standing"] .standing .col-error { display: block; }
+main[data-state="error-stream"] .days { display: none; }
+main[data-state="error-stream"] .stream .col-error { display: block; }
+/* Quota: the Dashboard says nothing about the quota below 10, and at the wall it takes one Meta
+   line in the totals, with the Limit Note's own words, because it is the same fact. */
+main[data-state="quota"] .quota-note { display: block; }
+main[data-state="quota"] .only-quota { display: block; }
+/* With no follows the page is one column and not the split: the split separates two questions,
+   and with nothing followed neither has an answer. It is also the page a Developer sees first. */
+main[data-state="empty"] { display: block; max-width: 1040px; }
 main[data-state="empty"] .for-empty { display: block; }
 main[data-state="empty"] .for-stack { display: none; }
-main[data-state="safe"] .for-safe { display: inline; }
-main[data-state="safe"] .for-action { display: none; }
-/* Nothing featured in the window: Spotlight gives the space back instead of repeating itself. */
-main[data-state="silent"] #spotlight .rows,
-main[data-state="silent"] #spotlight .quiet-note { display: none; }
-main[data-state="silent"] #spotlight .line { display: block; }
-main[data-state="silent"] .for-action { display: none; }
-#spotlight .line { display: none; }
 
 /* Design-review control, not part of the product */
-.review { position: fixed; right: var(--space-4); bottom: var(--space-4); background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
+.review { position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 40; background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
 .review select { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 3px 4px; }
+
+/* Below 1040px the two questions stack and the Standing stops being sticky: a column that is no
+   longer beside the Stream has nothing to be glanced back at from. The fade goes with it, because
+   the list is no longer scrolling inside itself. */
+@media (max-width: 1040px) {
+  main { grid-template-columns: minmax(0, 1fr); gap: var(--space-7); }
+  .standing { position: static; max-height: none; }
+  .stack-scroll { overflow: visible; padding-bottom: 0; mask-image: none; }
+}
 
 @media (max-width: 640px) {
   .topbar-inner, main { padding: 0 var(--space-4); }
   .topbar-inner { gap: var(--space-3); }
-  .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
   .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
-  /* A page behind sign-in gives its two sections to the account panel, which is on every page: the
-     strip would be a second copy of them, and the bar keeps one row. */
+  /* A page behind sign-in gives its two sections to the account panel, which is on every page: a
+     strip under the bar would be a second copy of them, and the bar keeps its one row. */
   .topbar-inner > nav { display: none; }
-  .topbar-inner { position: relative; }
-  .topbar-actions { position: static; }
   /* On a phone the account takes the whole screen and gives it back: a card the size of a business
-     card over a page that cannot be used is worse than a sheet that owns the screen while it is open. */
+     card over a page that cannot be used is worse than a sheet that owns the screen while open. */
   .account-panel { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; padding: 0; background: var(--ground); border: 0; border-radius: 0; }
   .account-panel .who { display: none; }
+  .account-panel .sheet-nav { display: block; }
   .account-panel .sheet-head { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 var(--space-4); border-bottom: 1px solid var(--rule); font: 400 13px var(--mono); color: var(--text-faint); }
   .account-panel a, .account-panel button { min-height: 44px; padding: 0 var(--space-4); font-size: 16px; border-bottom: 1px solid var(--rule); }
   .account-panel .sheet-head button { width: 34px; min-height: 34px; padding: 0; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); color: var(--text); }
@@ -243,39 +285,25 @@ main[data-state="silent"] .for-action { display: none; }
   .quota { margin-right: 0; }
   .quota .of { display: none; }
   main { padding-top: var(--space-5); padding-bottom: 120px; }
-  .row { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: var(--space-1); }
-  .row .when { text-align: right; }
-  .row .main { grid-column: 1 / -1; }
-  .row.compact .main { grid-column: 1 / -1; }
-  .week summary { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .week summary .range { display: none; }
-  .week summary .sep { display: none; }
-  .week summary .na { display: block; }
-  .section-title { flex-wrap: wrap; row-gap: var(--space-1); }
-  .section-title::after { order: 1; }
-  .section-title .aside { order: 3; flex-basis: 100%; }
-  .week-lines { padding-left: 0; grid-template-columns: 1fr; }
-  .catalog .row { grid-template-columns: minmax(0, 1fr) auto; }
+  /* The date cell becomes the day's own line, and the week mark runs on beside the date. */
+  .day, .hush > summary { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .day-when { padding-top: 0; }
+  .day-when .this-week { display: inline; margin-left: 1ch; }
+  .week > summary { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .week > summary .range { display: none; }
+  .week-lines { padding-left: 0; grid-template-columns: minmax(0, 1fr); }
+  .catalog .row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 2px; }
   .catalog .row .facts { grid-column: 1 / 2; grid-row: 2; }
   .catalog .row .btn { grid-row: 1 / 3; grid-column: 2; }
   .review { left: var(--space-4); justify-content: space-between; }
 }
-/* Below 430px the quota comes down into the strip beside the links, so the bar keeps the two rows
-   it is specified as: the three items did not fit on one line, and the phones where the check
-   happens most often spent a third row on chrome (issue #47, P1-5). The strip has no column gap,
-   so its rule runs unbroken across the row. */
-@media (max-width: 429px) {
-  .topbar-inner { column-gap: 0; }
-  .topbar-actions { display: contents; }
-  .topbar-inner > nav { width: auto; flex: 1; }
-  .wordmark { margin-right: auto; }
-  .topbar-actions > * { margin-left: var(--space-4); }
-  .quota { order: 3; margin-left: 0; width: 100%; height: 40px; display: flex; align-items: center; column-gap: 0.5ch; border-top: 1px solid var(--rule); }
-}
+/* The quota stays in the bar at every width: with the sections in the account sheet on a phone,
+   the wordmark, the quota and the actions fit on one line down to 320px, and the bar keeps the
+   single 56px row DESIGN.md gives it (issue #47, #119, #142). */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .week summary .chev { transition: none; }
+  .week > summary .chev { transition: none; }
 }
 </style>
 </head>
@@ -286,10 +314,13 @@ main[data-state="silent"] .for-action { display: none; }
   <symbol id="g-breaking" viewBox="0 0 24 24"><path d="M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z"/><path d="M12 8v4M12 16h.01"/></symbol>
   <symbol id="g-note" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
   <symbol id="g-pending" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="g-error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
   <symbol id="s-featured" viewBox="0 0 12 12"><path d="M6 1 11 6 6 11 1 6Z" fill="currentColor"/></symbol>
   <symbol id="s-notable" viewBox="0 0 12 12"><path d="M6 1.7 10.3 6 6 10.3 1.7 6Z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
   <symbol id="s-digest" viewBox="0 0 12 12"><circle cx="6" cy="6" r="2" fill="currentColor"/></symbol>
   <symbol id="s-preview" viewBox="0 0 12 12"><path d="M6 1.7 10.3 6 6 10.3 1.7 6Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 1.6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
 </svg>
 <a class="skip" href="#content">Skip to content</a>
 
@@ -299,18 +330,20 @@ main[data-state="silent"] .for-action { display: none; }
     <nav aria-label="Sections">
       <ul class="nav">
         <li><a href="#" aria-current="page">dashboard</a></li>
-        <li><a href="#">technologies</a></li>
+        <li><a href="technologies.html">technologies</a></li>
       </ul>
     </nav>
     <div class="topbar-actions">
-      <a class="quota" href="#" id="quota"><strong id="quota-n">7</strong><span class="of"> of 10</span> followed</a>
+      <a class="quota" href="technologies.html" aria-label="Followed technologies"><strong id="quota-n">9</strong><span class="of"> of 10</span> followed</a>
       <details class="account">
         <summary aria-label="Account, signed in as robertozep"><span class="portrait" aria-hidden="true">R</span></summary>
         <div class="account-panel">
           <div class="sheet-head">robertozep<button type="button" aria-label="Close account"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
           <p class="who">robertozep</p>
-          <a href="dashboard.html">dashboard</a>
-          <a href="technologies.html">technologies</a>
+          <nav class="sheet-nav" aria-label="Sections">
+            <a href="#">dashboard</a>
+            <a href="technologies.html">technologies</a>
+          </nav>
           <div class="out"><button type="button">sign out</button></div>
         </div>
       </details>
@@ -324,248 +357,236 @@ main[data-state="silent"] .for-action { display: none; }
 <main id="content" data-state="action">
   <h1 class="sr-only">Dashboard</h1>
 
-  <!-- Followed stack -->
-  <div class="for-stack">
-    <section aria-labelledby="page-verdict">
-      <p class="verdict-line" id="page-verdict">
-        <span class="for-action"><span class="sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span class="claim">2 need action</span></span>
-        <span class="for-safe"><span class="sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok:</span><span class="claim">nothing needs action</span></span>
-      </p>
-      <div class="boxes">
-        <div class="box">
-          <p class="caption">last 30 days · 7 technologies</p>
-          <ul>
-            <li><a href="#spotlight"><span class="label">featured<span class="note for-action"> (<strong>2</strong> need action)</span></span><span class="n">3</span></a></li>
-            <li><a href="#latest"><span class="label">notable</span><span class="n">4</span></a></li>
-            <li><a href="#previews"><span class="label">previews</span><span class="n">2</span></a></li>
-            <li><a href="#digest"><span class="label">digest</span><span class="n">23</span></a></li>
-          </ul>
-        </div>
-        <div class="box in-use-box">
-          <p class="caption">version in use · 3 of 7</p>
-          <ul>
-            <li><span class="label">releases behind</span><span class="n">16</span></li>
-            <li><span class="label">need action</span><span class="n">3</span></li>
-            <li><span class="label">oldest declared</span><span class="n">2026-09-12</span></li>
-          </ul>
-        </div>
-      </div>
-    </section>
+  <!-- Where does my stack stand: per Technology, ordered by Distance, each one counted once. -->
+  <aside class="standing for-stack" aria-labelledby="standing-title">
+    <div class="verdict-slot">
+      <p class="verdict-line for-action"><span class="sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg><span class="label">warning:</span></span><span class="claim">2 need action</span></p>
+      <p class="verdict-line for-safe"><span class="sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg><span class="label">ok:</span></span><span class="claim">nothing needs action</span></p>
+    </div>
 
-    <section class="section" id="spotlight" aria-labelledby="spotlight-title">
-      <h2 class="section-title" id="spotlight-title">spotlight (<span id="spotlight-n">3</span>)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg>featured <span class="fact">· last 30 days</span></span></h2>
-      <p class="line"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: nothing featured in the last 30 days, across the <a href="technologies.html">7 technologies you follow</a></p>
-      <ul class="rows">
-        <li class="row">
-          <a class="tech" href="#">React</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="release.html">19.0.0</a></span>
-          <span class="when"><time datetime="2024-12-05">2024-12-05</time><span class="recent">this week</span></span>
-          <div class="main">
-            <p class="title">Actions, the use API and ref as a prop arrive, while long-deprecated legacy APIs are removed.</p>
-            <p class="row-verdict for-action sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required · 4 breaking changes</p>
-            <p class="row-verdict for-safe sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-            <ul class="breaks for-action" aria-label="Breaking changes in React 19.0.0">
+    <h2 class="col-title" id="standing-title">where your stack stands · by distance</h2>
+    <p class="col-pending"><svg class="glyph" aria-hidden="true"><use href="#g-pending"/></svg>pending: reading where your stack stands</p>
+    <p class="col-error"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: your stack could not be read · nothing changed<span class="again"><button class="btn" type="button">Try again</button></span></p>
+
+    <div class="stack-scroll" role="group" aria-label="Followed technologies">
+      <a class="standing-row" href="technology.html" data-tone="action">
+        <span class="top"><span class="name">React</span><span class="ver">19.0.0</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:100%"></span></span>1 needs action</span>
+      </a>
+      <a class="standing-row" href="technology.html" data-tone="action">
+        <span class="top"><span class="name">Vite</span><span class="ver">6.0.0</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:71%"></span></span>1 needs action</span>
+      </a>
+      <a class="standing-row" href="technology.html">
+        <span class="top"><span class="name">Next.js</span><span class="ver">15.1.0</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:57%"></span></span>4 behind 15.0.0</span>
+      </a>
+      <a class="standing-row" href="technology.html">
+        <span class="top"><span class="name">Prisma</span><span class="ver">6.1.0</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:43%"></span></span>3 behind 5.22.0</span>
+      </a>
+      <a class="standing-row" href="technology.html">
+        <span class="top"><span class="name">Vitest</span><span class="ver">2.1.8</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:29%"></span></span>2 behind 2.1.4</span>
+      </a>
+      <a class="standing-row" href="technology.html">
+        <span class="top"><span class="name">Playwright</span><span class="ver">1.49.1</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:14%"></span></span>1 behind 1.49.0</span>
+      </a>
+      <!-- No declaration means no Distance, so no bar at all, and the row sits after every row
+           that has one and before the ones that are up to date (DESIGN.md, Standing Row). -->
+      <a class="standing-row" href="technology.html">
+        <span class="top"><span class="name">Node.js</span><span class="ver">23.4.0</span></span>
+        <span class="state">no version declared</span>
+      </a>
+      <a class="standing-row" href="technology.html">
+        <span class="top"><span class="name">TypeScript</span><span class="ver">5.7.2</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:0%"></span></span>up to date</span>
+      </a>
+      <a class="standing-row" href="technology.html">
+        <span class="top"><span class="name">Tailwind CSS</span><span class="ver">3.4.16</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:0%"></span></span>up to date</span>
+      </a>
+      <a class="standing-row only-quota" href="technology.html">
+        <span class="top"><span class="name">Svelte</span><span class="ver">5.15.0</span></span>
+        <span class="state"><span class="dist" aria-hidden="true"><span style="width:0%"></span></span>up to date</span>
+      </a>
+    </div>
+
+    <div class="totals">
+      <p>22 releases behind in all · oldest version declared 2026-09-12</p>
+      <p>the bar is the distance from the version you declared, not a score</p>
+      <p class="quota-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: 10 of 10 followed · <a href="technologies.html">unfollow one to follow another</a></p>
+    </div>
+  </aside>
+
+  <!-- What came out: per Release, in date order, and nothing here counts how far behind you are. -->
+  <section class="stream for-stack" aria-labelledby="stream-title">
+    <!-- The window is a fact about the page and stays; the count is the data, so it goes while the
+         data is not there. A page that has not counted prints no count (DESIGN.md, Dashboard States). -->
+    <h2 class="col-title" id="stream-title">what happened · last 30 days<span class="count">, 32 releases</span></h2>
+    <p class="col-pending"><svg class="glyph" aria-hidden="true"><use href="#g-pending"/></svg>pending: reading what happened</p>
+    <p class="col-error"><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: the releases could not be read · nothing changed<span class="again"><button class="btn" type="button">Try again</button></span></p>
+
+    <div class="days">
+      <div class="day">
+        <p class="day-when"><time datetime="2024-12-05">2024-12-05</time><span class="this-week">this week</span></p>
+        <div>
+          <article class="ev" data-sig="featured">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="name">React</span><a class="ver" href="release.html">19.0.0</a></p>
+            <p class="ev-title">Actions, the use API and ref as a prop arrive, while long-deprecated legacy APIs are removed.</p>
+            <p class="row-verdict sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required <span class="meta">· 4 breaking changes</span></p>
+            <ul class="breaks">
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span><span class="mono">propTypes</span> and <span class="mono">defaultProps</span> on function components are ignored</span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span>String refs are removed</span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Legacy context is removed</span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span><span class="mono">ReactDOM.render</span> and <span class="mono">hydrate</span> are removed</span></li>
             </ul>
-            <a class="pointer for-action" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to react 19.0.0</span></a>
-          </div>
-        </li>
-        <li class="row">
-          <a class="tech" href="technology.html">Vite</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="release.html">6.0.0</a></span>
-          <span class="when"><time datetime="2024-11-26">2024-11-26</time></span>
-          <div class="main">
-            <p class="title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
-            <p class="row-verdict for-action sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required · 4 breaking changes</p>
-            <p class="row-verdict for-safe sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-            <p class="in-use-line">in use 5.4.11 since 2026-09-12 · 12 releases behind 6.0.3 · 2 need action</p>
-            <ul class="breaks for-action" aria-label="Breaking changes in Vite 6.0.0">
+            <a class="pointer" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to react 19.0.0</span></a>
+          </article>
+          <article class="ev" data-sig="notable">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg><span class="name">Node.js</span><a class="ver" href="release.html">23.4.0</a></p>
+            <p class="row-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-pending"/></svg>pending: summary queued · <a href="#">read the release notes</a></p>
+          </article>
+        </div>
+      </div>
+
+      <div class="day">
+        <p class="day-when"><time datetime="2024-12-03">2024-12-03</time><span class="this-week">this week</span></p>
+        <div>
+          <article class="ev" data-sig="notable">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg><span class="name">Node.js</span><a class="ver" href="release.html">22.12.0</a></p>
+            <p class="ev-title"><span class="mono">require(esm)</span> is enabled by default in the 22 LTS line.</p>
+            <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="day">
+        <p class="day-when"><time datetime="2024-11-28">2024-11-28</time></p>
+        <div>
+          <!-- `you are on 15.0.0` cites the declaration instead of counting from it: the count
+               belongs to the Standing, one column to the left (DESIGN.md, Stream Row). -->
+          <article class="ev" data-sig="featured">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="name">Next.js</span><a class="ver" href="release.html">15.1.0</a></p>
+            <p class="ev-title"><span class="mono">after()</span> becomes stable, with clearer error overlays and faster static builds.</p>
+            <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade <span class="meta">· you are on 15.0.0</span></p>
+          </article>
+          <article class="ev" data-sig="preview">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg><span class="name">Tailwind CSS</span><a class="ver" href="release.html">4.0.0-beta.4</a></p>
+            <p class="row-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: only the first v4 preview is summarized · <a href="release.html">read 4.0.0-beta.1</a></p>
+          </article>
+        </div>
+      </div>
+
+      <div class="day">
+        <p class="day-when"><time datetime="2024-11-26">2024-11-26</time></p>
+        <div>
+          <article class="ev" data-sig="featured">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="name">Vite</span><a class="ver" href="release.html">6.0.0</a></p>
+            <p class="ev-title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
+            <p class="row-verdict sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required <span class="meta">· 4 breaking changes</span></p>
+            <ul class="breaks">
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <span class="mono">resolve.conditions</span> no longer include the defaults</span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><span class="mono">json.stringify</span> now defaults to <span class="mono">'auto'</span></span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></li>
               <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></li>
             </ul>
-            <a class="pointer for-action" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
-          </div>
-        </li>
-        <li class="row">
-          <a class="tech" href="#">TypeScript</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="sr-only">featured</span><a href="#">5.7.2</a></span>
-          <span class="when"><time datetime="2024-11-22">2024-11-22</time></span>
-          <div class="main">
-            <p class="title">Checks for never-initialized variables, path rewriting for relative imports and an ES2024 target.</p>
-            <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-          </div>
-        </li>
-      </ul>
-      <p class="quiet-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: 4 of the 7 you follow had nothing featured · latest major below</p>
-      <ul class="rows quiet">
-        <li class="row compact">
-          <a class="tech" href="#">Next.js</a>
-          <span class="ver"><a href="#">15.0.0</a></span>
-          <span class="when"><time datetime="2024-10-21">2024-10-21</time></span>
-          <p class="main in-use-line">in use 15.0.0 since 2026-08-30 · 4 releases behind 15.0.4 · 1 needs action</p>
-        </li>
-        <li class="row compact">
-          <a class="tech" href="#">Node.js</a>
-          <span class="ver"><a href="#">23.0.0</a></span>
-          <span class="when"><time datetime="2024-10-16">2024-10-16</time></span>
-        </li>
-        <li class="row compact">
-          <a class="tech" href="#">Vitest</a>
-          <span class="ver"><a href="#">2.0.0</a></span>
-          <span class="when"><time datetime="2024-07-08">2024-07-08</time></span>
-        </li>
-        <li class="row compact">
-          <a class="tech" href="#">Tailwind CSS</a>
-          <span class="ver"><a href="#">3.0.0</a></span>
-          <span class="when"><time datetime="2021-12-09">2021-12-09</time></span>
-        </li>
-      </ul>
-    </section>
+            <a class="pointer" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
+          </article>
+        </div>
+      </div>
 
-    <section class="section" id="latest" aria-labelledby="latest-title">
-      <h2 class="section-title" id="latest-title">latest (4)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg>notable <span class="fact">· newest first</span></span></h2>
-      <ul class="rows">
-        <li class="row">
-          <a class="tech" href="#">Node.js</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg><span class="sr-only">notable</span><a href="#">23.4.0</a></span>
-          <span class="when"><time datetime="2024-12-05">2024-12-05</time><span class="recent">this week</span></span>
-          <div class="main">
-            <p class="row-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-pending"/></svg>pending: summary queued · <a href="#">read the release notes</a></p>
-          </div>
-        </li>
-        <li class="row">
-          <a class="tech" href="#">Node.js</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg><span class="sr-only">notable</span><a href="#">22.12.0</a></span>
-          <span class="when"><time datetime="2024-12-03">2024-12-03</time><span class="recent">this week</span></span>
-          <div class="main">
-            <p class="title"><span class="mono">require(esm)</span> is enabled by default in the 22 LTS line.</p>
+      <div class="day">
+        <p class="day-when"><time datetime="2024-11-25">2024-11-25</time></p>
+        <div>
+          <article class="ev" data-sig="preview">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg><span class="name">Vitest</span><a class="ver" href="release.html">3.0.0-beta.1</a></p>
+            <p class="ev-title">A new reporter lifecycle and project-level browser mode settings.</p>
             <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-          </div>
-        </li>
-        <li class="row">
-          <a class="tech" href="#">Next.js</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg><span class="sr-only">notable</span><a href="#">15.1.0</a></span>
-          <span class="when"><time datetime="2024-11-28">2024-11-28</time></span>
-          <div class="main">
-            <p class="title"><span class="mono">after()</span> becomes stable, with clearer error overlays and faster static builds.</p>
-            <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-          </div>
-        </li>
-        <li class="row">
-          <a class="tech" href="#">Node.js</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg><span class="sr-only">notable</span><a href="#">23.3.0</a></span>
-          <span class="when"><time datetime="2024-11-20">2024-11-20</time></span>
-          <div class="main">
-            <p class="title">Module loading gets a stable <span class="mono">process.features.require_module</span> flag.</p>
-            <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-          </div>
-        </li>
-      </ul>
-    </section>
+          </article>
+        </div>
+      </div>
 
-    <div class="tail">
-    <section class="section" id="previews" aria-labelledby="previews-title">
-      <h2 class="section-title" id="previews-title">previews (2)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg>preview <span class="fact">· betas and release candidates</span></span></h2>
-      <ul class="rows">
-        <li class="row">
-          <a class="tech" href="#">Tailwind CSS</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg><span class="sr-only">preview</span><a href="#">4.0.0-beta.4</a></span>
-          <span class="when"><time datetime="2024-11-28">2024-11-28</time></span>
-          <div class="main">
-            <p class="row-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: only the first v4 preview is summarized · <a href="#">read 4.0.0-beta.1</a></p>
-          </div>
-        </li>
-        <li class="row">
-          <a class="tech" href="#">Vitest</a>
-          <span class="ver"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg><span class="sr-only">preview</span><a href="#">3.0.0-beta.1</a></span>
-          <span class="when"><time datetime="2024-11-25">2024-11-25</time></span>
-          <div class="main">
-            <p class="title">A new reporter lifecycle and project-level browser mode settings.</p>
+      <div class="day">
+        <p class="day-when"><time datetime="2024-11-22">2024-11-22</time></p>
+        <div>
+          <article class="ev" data-sig="featured">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg><span class="name">TypeScript</span><a class="ver" href="release.html">5.7.2</a></p>
+            <p class="ev-title">Checks for never-initialized variables, path rewriting for relative imports and an ES2024 target.</p>
             <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-          </div>
-        </li>
-      </ul>
-    </section>
+          </article>
+        </div>
+      </div>
 
-    <section class="section" id="digest" aria-labelledby="digest-title">
-      <h2 class="section-title" id="digest-title">weekly digest (23)<span class="aside"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest <span class="fact">· by ISO week, UTC</span></span></h2>
-      <ul class="rows">
-        <li>
-          <details class="week">
-            <summary>
-              <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 49</span>
-              <span><span class="nowrap">9 digest releases</span><span class="range"> · Dec 2 to 8</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-            </summary>
-            <ul class="week-lines">
-              <li><span class="t">Vite</span> <a href="#">6.0.3</a><time datetime="2024-12-05">12-05</time></li>
-              <li><span class="t">Next.js</span> <a href="#">14.2.20</a><time datetime="2024-12-04">12-04</time></li>
-              <li><span class="t">React</span> <a href="#">18.3.2</a><time datetime="2024-12-04">12-04</time></li>
-              <li><span class="t">Next.js</span> <a href="#">15.0.4</a><time datetime="2024-12-03">12-03</time></li>
-              <li><span class="t">Tailwind CSS</span> <a href="#">3.4.16</a><time datetime="2024-12-03">12-03</time></li>
-              <li><span class="t">Node.js</span> <a href="#">20.18.1</a><time datetime="2024-12-03">12-03</time></li>
-              <li><span class="t">Vite</span> <a href="#">6.0.2</a><time datetime="2024-12-02">12-02</time></li>
-              <li><span class="t">Vitest</span> <a href="#">2.1.8</a><time datetime="2024-12-02">12-02</time></li>
-              <li><span class="t">Node.js</span> <a href="#">18.20.5</a><time datetime="2024-12-02">12-02</time></li>
-            </ul>
-          </details>
-        </li>
-        <li>
-          <details class="week">
-            <summary>
-              <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 48</span>
-              <span><span class="nowrap">6 digest releases</span><span class="range"> · Nov 25 to Dec 1</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-            </summary>
-            <ul class="week-lines">
-              <li><span class="t">Node.js</span> <a href="#">22.11.1</a><time datetime="2024-11-29">11-29</time></li>
-              <li><span class="t">Tailwind CSS</span> <a href="#">3.4.15</a><time datetime="2024-11-28">11-28</time></li>
-              <li><span class="t">Vite</span> <a href="#">6.0.1</a><time datetime="2024-11-27">11-27</time></li>
-              <li><span class="t">Vite</span> <a href="#">5.4.11</a><time datetime="2024-11-26">11-26</time></li>
-              <li><span class="t">Vitest</span> <a href="#">2.1.6</a><time datetime="2024-11-26">11-26</time></li>
-              <li><span class="t">Next.js</span> <a href="#">15.0.3</a><time datetime="2024-11-25">11-25</time></li>
-            </ul>
-          </details>
-        </li>
-        <li>
-          <details class="week">
-            <summary>
-              <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 47</span>
-              <span><span class="nowrap">5 digest releases</span><span class="range"> · Nov 18 to 24</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-            </summary>
-            <ul class="week-lines">
-              <li><span class="t">React</span> <a href="#">18.3.1</a><time datetime="2024-11-22">11-22</time></li>
-              <li><span class="t">Node.js</span> <a href="#">23.2.1</a><time datetime="2024-11-21">11-21</time></li>
-              <li><span class="t">Tailwind CSS</span> <a href="#">3.4.14</a><time datetime="2024-11-20">11-20</time></li>
-              <li><span class="t">Next.js</span> <a href="#">15.0.2</a><time datetime="2024-11-19">11-19</time></li>
-              <li><span class="t">Vitest</span> <a href="#">2.1.5</a><time datetime="2024-11-18">11-18</time></li>
-            </ul>
-          </details>
-        </li>
-        <li>
-          <details class="week">
-            <summary>
-              <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 46</span>
-              <span><span class="nowrap">3 digest releases</span><span class="range"> · Nov 11 to 17</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-            </summary>
-            <ul class="week-lines">
-              <li><span class="t">Node.js</span> <a href="#">23.2.0</a><time datetime="2024-11-14">11-14</time></li>
-              <li><span class="t">Vitest</span> <a href="#">2.1.4</a><time datetime="2024-11-13">11-13</time></li>
-              <li><span class="t">Vite</span> <a href="#">5.4.10</a><time datetime="2024-11-12">11-12</time></li>
-            </ul>
-          </details>
-        </li>
-      </ul>
-    </section>
+      <div class="day">
+        <p class="day-when"><time datetime="2024-11-20">2024-11-20</time></p>
+        <div>
+          <article class="ev" data-sig="notable">
+            <p class="ev-head"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg><span class="name">Node.js</span><a class="ver" href="release.html">23.3.0</a></p>
+            <p class="ev-title">Module loading gets a stable <span class="mono">process.features.require_module</span> flag.</p>
+            <p class="row-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
+          </article>
+        </div>
+      </div>
+
+      <!-- The quiet end of the Stream: one row for the whole stretch that asked nothing, and the
+           weeks only when the reader opens them (DESIGN.md, Weekly Digest). -->
+      <details class="hush">
+        <summary>
+          <span>weeks 46 to 49</span>
+          <span class="hush-in">23 more releases, none asking anything<span class="way">open by week ›</span></span>
+        </summary>
+        <details class="week">
+          <summary>
+            <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 49</span>
+            <span>9 digest releases <span class="range">· Dec 2 to 8 </span>· no action needed</span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="week-lines">
+            <li><span class="t">Prisma</span> <a href="release.html">6.0.1</a><time datetime="2024-12-06">12-06</time></li>
+            <li><span class="t">Playwright</span> <a href="release.html">1.49.1</a><time datetime="2024-12-04">12-04</time></li>
+            <li><span class="t">Vitest</span> <a href="release.html">2.1.8</a><time datetime="2024-12-03">12-03</time></li>
+          </ul>
+        </details>
+        <details class="week">
+          <summary>
+            <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 48</span>
+            <span>6 digest releases <span class="range">· Nov 25 to Dec 1 </span>· no action needed</span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="week-lines">
+            <li><span class="t">Tailwind CSS</span> <a href="release.html">3.4.16</a><time datetime="2024-11-29">11-29</time></li>
+            <li><span class="t">Node.js</span> <a href="release.html">23.2.0</a><time datetime="2024-11-27">11-27</time></li>
+          </ul>
+        </details>
+        <details class="week">
+          <summary>
+            <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 47</span>
+            <span>5 digest releases <span class="range">· Nov 18 to 24 </span>· no action needed</span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="week-lines">
+            <li><span class="t">Vite</span> <a href="release.html">5.4.11</a><time datetime="2024-11-21">11-21</time></li>
+            <li><span class="t">Prisma</span> <a href="release.html">5.22.0</a><time datetime="2024-11-19">11-19</time></li>
+          </ul>
+        </details>
+        <details class="week">
+          <summary>
+            <span class="wk"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>week 46</span>
+            <span>3 digest releases <span class="range">· Nov 11 to 17 </span>· no action needed</span>
+            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </summary>
+          <ul class="week-lines">
+            <li><span class="t">Node.js</span> <a href="release.html">23.1.0</a><time datetime="2024-11-14">11-14</time></li>
+            <li><span class="t">Vitest</span> <a href="release.html">2.1.5</a><time datetime="2024-11-12">11-12</time></li>
+          </ul>
+        </details>
+      </details>
     </div>
-  </div>
+  </section>
+
+  <p class="foot for-stack"><span>window: last 30 days, 2024-11-07 to 2024-12-06 UTC</span><span>sample content for design review</span></p>
 
   <!-- Empty state: 0 technologies followed -->
   <div class="for-empty">
@@ -589,17 +610,19 @@ main[data-state="silent"] .for-action { display: none; }
       </ul>
       <a class="pointer" href="#"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">browse all 42 technologies</span></a>
     </section>
+    <p class="foot"><span>sample content for design review</span></p>
   </div>
-
-  <p class="foot"><span>window: last 30 days, 2024-11-07 to 2024-12-06 UTC</span><span>sample content for design review</span></p>
 </main>
 
 <div class="review" role="group" aria-label="Design review controls">
   <label for="state-select">page state</label>
   <select id="state-select">
-    <option value="action">7 followed · 2 need action</option>
-    <option value="safe">7 followed · nothing needs action</option>
-    <option value="silent">7 followed · nothing featured</option>
+    <option value="action">9 followed · 2 need action</option>
+    <option value="safe">9 followed · nothing needs action</option>
+    <option value="loading">both columns loading</option>
+    <option value="error-standing">the standing failed</option>
+    <option value="error-stream">the stream failed</option>
+    <option value="quota">10 of 10 followed</option>
     <option value="empty">0 followed</option>
   </select>
 </div>
@@ -640,9 +663,7 @@ document.getElementById("state-select").addEventListener("change", (event) => {
   const state = event.target.value;
   main.dataset.state = state;
   if (state === "empty") syncFollowCount();
-  else quotaN.textContent = "7";
-  // The title counts Releases, so it is 0 when Spotlight has nothing featured to show.
-  document.getElementById("spotlight-n").textContent = state === "silent" ? "0" : "3";
+  else quotaN.textContent = state === "quota" ? "10" : "9";
 });
 </script>
 </body>

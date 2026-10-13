@@ -45,13 +45,15 @@ test("a version segment that is not a version answers 404", async ({ page }) => 
   await expect(page.getByRole("heading", { level: 1 })).toContainText("no page at this address");
 });
 
+// At 390px the bar carries no sections, so the ways out are the page's own: the help pointer it
+// ends on, which is why DESIGN.md gives both whole-page states one, and the wordmark back to the
+// landing. The state is the dead end this guards against, not the width.
 test("the 404 is no dead end, at 390px either", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto("/technologies/not-a-technology");
 
-  const sections = page.getByRole("navigation", { name: "Sections" });
-  await expect(sections.getByRole("link", { name: "dashboard" })).toBeVisible();
-  await expect(sections.getByRole("link", { name: "technologies" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "verdict:" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "browse the catalog" })).toBeVisible();
 
   await page.getByRole("link", { name: "browse the catalog" }).click();
   await expect(page).toHaveURL(`/login?next=${encodeURIComponent("/technologies")}`);
