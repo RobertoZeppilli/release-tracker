@@ -27,74 +27,60 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-13, dopo il codice della Dashboard).** Il lavoro sta sul branch
-**`142-app-visual-direction`**, **non pushato**, quattro commit avanti a `main`: la Dashboard nuova
-è tutta in **`bc6c0bc`** e l'albero è pulito. Il passo seguente: **gli stati per colonna** (sotto),
-poi le altre tre schermate.
+**Da dove ripartire (2026-10-13, sera, con la PR aperta).** Il branch
+**`142-app-visual-direction`** è **pushato**, otto commit avanti a `main`, e la **PR #147** è
+aperta: <https://github.com/RobertoZeppilli/release-tracker/pull/147>. ⚠️ **Non chiude la #142**: la
+issue chiede quattro schermate e lì dentro c'è solo la Dashboard, quindi il corpo cita la issue
+senza la parola chiave. **Merge e cancellazione del ramo sono dell'utente** (la modalità auto li
+nega): `gh pr merge 147 --squash --delete-branch`.
 
-**La Dashboard è riscritta sul mock ufficiale**, dominio compreso. Il dominio vecchio
-(`spotlight`, `latest`, `previews`, `counts`, `inUse`) non esiste più: al suo posto
-`domain/standing.ts` (**Posizione dello stack**: una riga per Tecnologia seguita, Distanza, ordine,
-totali) e `domain/stream.ts` (**Flusso**: i giorni, e i Digest piegati per settimana in fondo), con
-`domain/followed.ts` per i tipi letti dal server e `domain/fixtures.ts` per i test. In UI sono
-spariti `dashboard-summary`, `spotlight`, `release-section` e `row-parts`; ci sono
-`standing-column`, `standing-row`, `stream`, `stream-event`, `column-title`, `quota-note` e
-`weekly-digest` rifatto come piega del Flusso. `BreakingList` è stata estratta in
-`src/modules/releases/ui/` ed è una sola per la pagina Technology e per il Flusso.
+**La Dashboard è finita, tranne gli stati per colonna.** Per com'è fatta (il dominio nuovo
+`standing.ts` e `stream.ts`, il verdetto come somma delle righe per costruzione, i componenti che
+sono spariti e quelli nuovi, le tre cose corrette dalla pagina vera e i due scostamenti voluti dal
+mock) **non si riparte da qui**: sta tutto, parola per parola, in `docs/handoff/2026-10.md`,
+"Stato al 2026-10-13", e le regole stanno in `DESIGN.md`.
 
-**Il verdetto è la somma delle righe, per costruzione** (CONTEXT.md): ogni riga conta le Release
-della sua Tecnologia nella finestra più quelle del Cammino di upgrade, ognuna una volta, e il
-verdetto le somma, invece di essere un conto a parte che poteva smentirle.
+**Quello che la sessione del 13 sera ha aggiunto.** I totali della Posizione sono ora un **panel**
+in testa alla colonna, sul piano `raised`, col titolo della colonna e le cifre incolonnate
+(`totalsLines` è diventata `totalsRows`): prima erano una frase sola che a 360px andava a capo tre
+volte. Tre scostamenti dal mock li ha trovati la **misura e non l'occhio**: la riga della settimana
+del Digest era 14px invece di 13, la sua riga di separazione stava sotto invece che sopra, e il
+chevron era un SVG a mano senza la curva. Le righe a una riga sola (titoli di colonna, le due
+versioni, Help Pointer, piede) prendono `line-height: normal` come nei mock, e la regola sta in
+`DESIGN.md` sotto la scala tipografica.
 
-**Gli stati per colonna sono rimandati, per scelta dell'utente (2026-10-13).** Caricamento ed
+⚠️ **Prima di giudicare la tipografia di una schermata, controlla i font.** Il 2026-10-13 la pagina
+sembrava sbagliata nei font-size ed era in **Arial**: `next/font` non era riuscito a scaricare i
+font e Turbopack aveva messo in cache quel risultato, quindi il CSS servito aveva i soli `@font-face`
+di fallback mentre build e produzione avevano quelli veri. La verifica in due comandi e il rimedio
+(`rm -rf .next`) stanno in `docs/handoff/AMBIENTE.md`.
+
+**Gli stati per colonna restano rimandati, per scelta dell'utente (2026-10-13).** Caricamento ed
 errore per colonna (`pending:`, `Try again` che ricarica una colonna sola) vogliono **due query
 separate** al posto della sola `readDashboard`, con Suspense e error boundary per colonna. Si fanno
 in un passo loro, perché le due query si sovrappongono molto (**circa 1.7x sul database**) e vanno
 misurate senza mescolarle alla riscrittura. Finché non ci sono, la pagina arriva intera come prima
 e un errore resta quello di pagina.
 
-⚠️ **Tre cose le ha corrette la pagina vera, non il mock**, e sono scritte in `DESIGN.md` dove
-servono (Page verdict, Standing Column): la frase lunga del verdetto muto misura **516px in una
-colonna da 360** e quindi la copia si accorcia; una lista che scorre dentro una colonna flex deve
-poter rimpicciolirsi (`min-height: 0`) o la colonna sfonda il proprio massimo; un grid item
-`sticky` non viene fermato dalla sua cella e va messo dentro un div stirato all'altezza della riga.
-Le prime due stampavano sopra il contenuto accanto, la terza sopra la riga in fondo.
-
-**Due scostamenti voluti dal mock**, scritti in `DESIGN.md` con la ragione: lo **stato vuoto tiene
-il contenitore da 1240px** col contenuto a 1040 dentro (il mock centrava 1040 e lasciava logo e
-pannello account 100px fuori asse), e la lista ha un nome accessibile suo, perché la quota in barra
-si chiama già `Followed technologies`.
-
-**Le icone delle Tecnologie ci sono nelle righe della Posizione** (chieste dall'utente il
-2026-10-13), col Technology Mark del Catalogo. **Nel Flusso no**: lì la riga si apre col glifo di
-Rilevanza e due glifi attaccati litigherebbero; se le vuoi anche lì, va deciso l'ordine.
-
-**Misurato con Playwright**, a ogni larghezza: lo spacco è **360/760 a 1440px**, una colonna sotto
-i 1040 (il passo è `min-[1041px]:`, perché il mock scrive `max-width: 1040px`), la barra resta
-**57px** fino a 320px, niente scorrimento laterale, **`offsetWidth - clientWidth` della lista = 0**,
-e le 33 scansioni axe passano in chiaro e in scuro.
-
-**Gli E2E della Dashboard sono riscritti**, 15 test verdi, più le patch a `a11y.spec.ts` (il
-riquadro `in-use-counts` non esiste più), `current-version.spec.ts` (la dichiarazione si legge sulla
-riga e nei totali) e `overflow.spec.ts` (la quota si chiede per nome esatto). ⚠️ Il giro intero fa
-**186 verdi e 6 rossi, e i 6 sono timeout di `page.goto` a 30s sul dev server**, non asserzioni: le
-stesse suite passano una per una (dashboard 15/15, a11y 33/33, overflow 23/23, navigation 23/23).
-Va rifatto sulla build di produzione prima di dire che la suite è verde.
-
 ### Cosa resta
 
-1. **Gli stati per colonna**, come sopra. Poi `/technologies`, Technology e Release.
-2. ⚠️ **`design/mocks/direction/` non è stata cancellata**: la modalità auto la nega. E' dell'utente:
+1. **Le altre tre schermate della #142**: `/technologies`, Technology, Release. Poi gli stati per
+   colonna, come sopra.
+2. ⚠️ **Il giro intero degli E2E non è mai stato verde in una corsa sola.** Le suite passano una
+   per una (unitari 604; dashboard 19, current-version 5, a11y 33, overflow 23, navigation +
+   keyboard + release + technologies 43), ma il giro intero sul dev server dava **6 timeout di
+   `page.goto` a 30s**, non asserzioni. Va rifatto **sulla build di produzione** prima di dire che
+   la suite è verde.
+3. ⚠️ **`design/mocks/direction/` non è stata cancellata**: la modalità auto la nega. È dell'utente:
    `git rm -r design/mocks/direction`. Quella cartella non è più la fonte.
-3. **Il peso delle pagine prima e dopo** (criterio della #142) non è stato misurato, e la #130
+4. **Il peso delle pagine prima e dopo** (criterio della #142) non è stato misurato, e la #130
    (Core Web Vitals veri in produzione) resta senza misura di partenza.
-4. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
+5. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
    Non parte da zero: le Notifiche sono già un Pro post-MVP in `docs/DECISIONI.md` (ADR 0004).
-5. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
+6. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
    lavoro tocca Anthropic. Il `CRON_SECRET` di produzione non passa da questa chat.
-6. **Docker e il dev server erano attivi** a fine sessione (la 3000 risponde, Supabase locale in
-   piedi). Se la sessione nuova li trova spenti: `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
-7. **Rami, ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
+7. **Docker e il dev server erano attivi** a fine sessione, con la cache di `.next` ripulita e i font
+   veri in pagina. Se la sessione nuova li trova spenti: `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
+8. **Rami, ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
 
-Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e facciamo gli stati per colonna
-della Dashboard`.
+Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e facciamo /technologies della #142`.

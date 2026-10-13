@@ -18,6 +18,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-13 (dopo il codice della Dashboard): la Dashboard riscritta sul mock, il verdetto come somma delle righe
+  - ⚠️ La frase lunga del verdetto muto misura 516px in una colonna da 360: la copia si accorcia, non la scala
+  - ⚠️ Una lista che scorre dentro una colonna flex vuole `min-height: 0`, o la colonna sfonda il proprio massimo
+  - ⚠️ Un grid item `sticky` non è fermato dalla sua cella: va dentro un div stirato all'altezza della riga
+  - ⚠️ Gli stati per colonna vogliono due query separate, che si sovrappongono circa 1.7x sul database
 - Stato al 2026-10-10 (sera, dopo il mock ufficiale della Dashboard): il mock rifatto da `DESIGN.md`, misurato con Playwright
   - ⚠️ Il browser rifiuta `file://`: un mock si rivede servendolo via http
   - ⚠️ Lo schermo dell'utente ha `devicePixelRatio` 2.5: le larghezze vere si guardano con Playwright, non ridimensionando Chrome
