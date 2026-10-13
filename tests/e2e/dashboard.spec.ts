@@ -82,6 +82,12 @@ function streamEvent(page: Page, name: string) {
   return page.locator("article").filter({ hasText: name }).first();
 }
 
+// A figure of the Standing Panel, read by its label: the value sits in the `dd` beside its `dt`
+// (DESIGN.md, Standing Panel).
+function total(page: Page, label: string) {
+  return page.locator("dt", { hasText: label }).locator("+ dd");
+}
+
 async function signIn(page: Page): Promise<void> {
   const response = await page.request.post("/api/test/session", {
     data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
@@ -134,7 +140,7 @@ test("counts the work ahead of the Version in use, with nothing in the window", 
 
   await expect(page.locator("#page-verdict")).toContainText("1 needs action");
   await expect(standingRow(page, ahead.name)).toContainText("1 needs action");
-  await expect(page.getByText("1 release behind in all")).toBeVisible();
+  await expect(total(page, "releases behind in all")).toHaveText("1");
 });
 
 test("gives no verdict when nothing it accounts for can be judged", async ({ page }) => {
@@ -295,8 +301,8 @@ test("names the declared Version in use on the row, and the oldest declaration o
   await page.goto("/dashboard");
 
   await expect(standingRow(page, busy.name)).toContainText("2 behind 3.0.8");
-  await expect(page.getByText(/releases behind in all/)).toBeVisible();
-  await expect(page.getByText(/oldest version declared \d{4}-\d{2}-\d{2}/)).toBeVisible();
+  await expect(total(page, "releases behind in all")).toHaveText(/^\d+$/);
+  await expect(total(page, "oldest version declared")).toHaveText(/\d{4}-\d{2}-\d{2}/);
   // The Stream cites the declaration and never counts from it: the count belongs to the Standing.
   await expect(streamEvent(page, "3.1.0")).toContainText("you are on 3.0.8");
   await expect(streamEvent(page, "3.1.0")).not.toContainText("behind");

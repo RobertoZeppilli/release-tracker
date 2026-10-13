@@ -1,19 +1,13 @@
 import { SeverityLabel } from "@/modules/releases/ui";
 import type { DashboardVerdict } from "../domain/build-dashboard";
 import type { Standing } from "../domain/standing";
-import {
-  BAR_NOTE,
-  pageVerdict,
-  standingTitle,
-  totalsLines,
-} from "./dashboard-copy";
-import { ColumnTitle } from "./column-title";
-import { StandingQuotaNote } from "./quota-note";
+import { pageVerdict } from "./dashboard-copy";
+import { StandingPanel } from "./standing-panel";
 import { StandingRow } from "./standing-row";
 
 // The left half of the Dashboard, and the answer to *where does my stack stand* (DESIGN.md,
-// Standing Column). Three parts in fixed order: the verdict, the column's own title, then the list,
-// which scrolls inside itself so the verdict above it and the totals below it never leave.
+// Standing Column). Three parts in fixed order: the verdict, the panel that names the column and
+// counts the whole, then the list, which scrolls inside itself so the two above it never leave.
 export function StandingColumn({
   verdict,
   standing,
@@ -22,7 +16,6 @@ export function StandingColumn({
   standing: Standing;
 }) {
   const { tone, label, claim } = pageVerdict(verdict);
-  const totals = totalsLines(standing);
 
   // The sticky column lives inside a plain grid item stretched to the row's height: a sticky grid
   // item is not clamped by its own grid area, so the column used to slide past the end of the split
@@ -44,7 +37,7 @@ export function StandingColumn({
           </p>
         </div>
 
-        <ColumnTitle id="standing-title">{standingTitle()}</ColumnTitle>
+        <StandingPanel standing={standing} />
 
         {/* The list is a group with a name of its own: the quota in the top bar already answers to
           "Followed technologies", and two things on a page under one name is one name too many. */}
@@ -62,15 +55,6 @@ export function StandingColumn({
           ))}
         </div>
 
-        <div className="border-t border-rule-strong pt-3 font-mono text-label text-text-faint">
-          {totals.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-          {/* Not a caption to drop when space is tight: the bar is the one thing here a reader could
-            mistake for a score (DESIGN.md, The totals). It goes only where the bar goes. */}
-          {standing.scale !== null && <p>{BAR_NOTE}</p>}
-          <StandingQuotaNote />
-        </div>
       </aside>
     </div>
   );

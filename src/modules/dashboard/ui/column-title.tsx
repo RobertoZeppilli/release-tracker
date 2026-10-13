@@ -14,7 +14,7 @@ export function ColumnTitle({
   children: ReactNode;
 }) {
   return (
-    <h2 id={id} className={`${className} font-mono text-label text-text-faint`}>
+    <h2 id={id} className={`${className} font-mono text-label leading-[normal] text-text-faint`}>
       {children}
     </h2>
   );

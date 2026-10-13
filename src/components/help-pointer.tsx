@@ -17,7 +17,7 @@ function Pointer({ href, arrow, label }: { href: string; arrow: string; label: R
   // An absolute href leaves the app, and `Link` has no prefetch or client navigation to offer for it.
   const Tag = href.startsWith("http") ? "a" : Link;
   return (
-    <Tag href={href} className="font-mono text-label no-underline">
+    <Tag href={href} className="font-mono text-label leading-[normal] no-underline">
       <span aria-hidden className="mr-[1ch] text-text-faint [font-variant-ligatures:none]">
         {arrow}
       </span>

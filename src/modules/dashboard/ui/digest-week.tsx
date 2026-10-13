@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { WEEK_PARAM, withWeek } from "./week-param";
 
@@ -34,9 +35,9 @@ export function DigestWeek({
       onToggle={(event) => {
         if (event.currentTarget.open !== open) remember(event.currentTarget.open);
       }}
-      className="border-b border-rule"
+      className="border-t border-rule"
     >
-      <summary className="grid cursor-pointer list-none grid-cols-[14ch_minmax(0,1fr)_auto] items-center gap-x-4 py-2 font-mono text-diagnostic text-text-muted hover:text-text [&::-webkit-details-marker]:hidden max-[640px]:grid-cols-[auto_minmax(0,1fr)_auto]">
+      <summary className="grid cursor-pointer list-none grid-cols-[14ch_minmax(0,1fr)_auto] items-center gap-x-4 py-2 font-mono text-label text-text-muted hover:text-text [&::-webkit-details-marker]:hidden max-[640px]:grid-cols-[auto_minmax(0,1fr)_auto]">
         {summary}
         <Chevron open={open} />
       </summary>
@@ -47,17 +48,9 @@ export function DigestWeek({
 
 function Chevron({ open }: { open: boolean }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      width="16"
-      height="16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden="true"
-      className={`justify-self-end transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-90" : ""}`}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
+    <ChevronRight
+      aria-hidden
+      className={`size-4 justify-self-end transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${open ? "rotate-90" : ""}`}
+    />
   );
 }

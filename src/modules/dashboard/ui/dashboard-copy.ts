@@ -58,18 +58,22 @@ export function barShare(
   return scale === 0 ? 0 : Math.round((row.distance / scale) * 100);
 }
 
-// The totals, under the list. The first line counts the whole and names the oldest declaration,
-// because a total is only as fresh as the stalest thing under it; it is dropped where no row has a
-// Distance, since there is then no count to print. The second says what the bar is, and it goes
-// only with the bar (DESIGN.md, The totals).
-export function totalsLines(standing: Standing): string[] {
+export type TotalsRow = { label: string; value: string };
+
+// The figures of the Standing Panel, a label and a value each (DESIGN.md, Standing Panel). The
+// first counts the whole and the last names the oldest declaration, because a total is only as
+// fresh as the stalest thing under it; where nobody declared there is no count to print at all,
+// and the panel keeps its title alone. They are rows and not one sentence: these numbers are what
+// the column is read for, and a sentence that wraps three times hides them in prose.
+export function totalsRows(standing: Standing): TotalsRow[] {
   if (standing.since === null) return [];
-  const parts = [
-    `${plural(standing.behind, "release")} behind in all`,
-    ...(standing.missing > 0 ? [`${standing.missing} without a verdict`] : []),
-    `oldest version declared ${isoDate(standing.since)}`,
+  return [
+    { label: "releases behind in all", value: String(standing.behind) },
+    ...(standing.missing > 0
+      ? [{ label: "without a verdict", value: String(standing.missing) }]
+      : []),
+    { label: "oldest version declared", value: isoDate(standing.since) },
   ];
-  return [parts.join(" · ")];
 }
 
 export const BAR_NOTE =

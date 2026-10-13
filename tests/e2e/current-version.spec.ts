@@ -146,7 +146,7 @@ test.describe("the Version in use", () => {
       .getByRole("link")
       .filter({ hasText: technology.name });
     await expect(row).toContainText("1 needs action");
-    await expect(page.getByText("3 releases behind in all")).toBeVisible();
-    await expect(page.getByText(new RegExp(`oldest version declared ${TODAY.source}`))).toBeVisible();
+    await expect(page.locator("dt", { hasText: "releases behind in all" }).locator("+ dd")).toHaveText("3");
+    await expect(page.locator("dt", { hasText: "oldest version declared" }).locator("+ dd")).toHaveText(TODAY);
   });
 });

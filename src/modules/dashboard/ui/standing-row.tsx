@@ -32,7 +32,7 @@ export function StandingRow({
           {row.technology.name}
         </span>
         {row.latest && (
-          <span className="ml-auto font-mono text-diagnostic text-text-muted tabular-nums">
+          <span className="ml-auto font-mono text-diagnostic leading-[normal] text-text-muted tabular-nums">
             {row.latest}
           </span>
         )}

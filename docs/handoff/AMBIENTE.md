@@ -27,6 +27,15 @@ non stato: si aprono quando servono.
   un commit. Per un messaggio su più righe: heredoc in Bash (`-F - <<'EOF'`), here-string in
   PowerShell. E **guardare il messaggio prima del push** (`git log -1 --format=%B`): lì si rimedia con
   un `--amend`, dopo no.
+- ⚠️ **Il dev server può servire la pagina in Arial, e sembra un errore di font-size.** Il 2026-10-13
+  la Dashboard non somigliava al mock: Fragment Mono e Hanken Grotesk non erano in pagina, c'era solo
+  il loro fallback metrico (`local(Arial)`), quindi le dimensioni erano giuste e il carattere no. Il CSS
+  servito conteneva i soli `@font-face` di fallback, mentre il chunk della build e la produzione avevano
+  quelli veri: `next/font/google` non era riuscito a scaricare i font e Turbopack aveva messo in cache
+  quel risultato. **La verifica**: `curl -s localhost:3000/login | grep -o '/_next/static/[^"\]*\.css'`
+  e poi `grep "font-face" -A 3` sul foglio, oppure in pagina `Array.from(document.fonts)`, che elencava
+  solo `Fragment Mono Fallback` e `Hanken Grotesk Fallback`. **Il rimedio**: fermare il dev server,
+  `rm -rf .next`, riavviare. Prima di giudicare la tipografia di una schermata, controllare questo.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 

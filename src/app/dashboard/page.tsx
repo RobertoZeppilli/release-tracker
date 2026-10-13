@@ -66,7 +66,7 @@ function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWee
       <Stream stream={dashboard.stream} openWeeks={openWeeks} />
       {/* The window the page read, said once, at the end: the Stream's title names its size and
           this names its edges. */}
-      <p className="col-span-full mt-7 font-mono text-meta text-text-faint">
+      <p className="col-span-full mt-7 font-mono text-meta leading-[normal] text-text-faint">
         {windowLine(dashboard.window.start, dashboard.window.end)}
       </p>
     </>

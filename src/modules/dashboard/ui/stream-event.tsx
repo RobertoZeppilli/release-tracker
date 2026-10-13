@@ -35,7 +35,7 @@ export function StreamEvent({ technology, release }: DashboardRow) {
         <span className="text-[1.1rem] leading-[1.3] font-medium tracking-[-0.01em] text-text">
           {technology.name}
         </span>
-        <Link href={href} className="font-mono text-body text-text-muted no-underline hover:underline">
+        <Link href={href} className="font-mono text-body leading-[normal] text-text-muted no-underline hover:underline">
           {release.version}
         </Link>
       </p>

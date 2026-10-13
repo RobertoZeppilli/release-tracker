@@ -8,7 +8,7 @@ import {
   hushSpan,
   pageVerdict,
   standingWords,
-  totalsLines,
+  totalsRows,
 } from "./dashboard-copy";
 
 function row(options: Partial<StandingRow> = {}): StandingRow {
@@ -72,19 +72,24 @@ describe("barShare", () => {
   });
 });
 
-describe("totalsLines", () => {
+describe("totalsRows", () => {
   it("counts the whole and names the oldest declaration under it", () => {
-    expect(totalsLines(standing())).toEqual(["22 releases behind in all · oldest version declared 2026-09-12"]);
+    expect(totalsRows(standing())).toEqual([
+      { label: "releases behind in all", value: "22" },
+      { label: "oldest version declared", value: "2026-09-12" },
+    ]);
   });
 
   it("counts the Releases without a verdict apart", () => {
-    expect(totalsLines(standing({ behind: 1, missing: 3 }))).toEqual([
-      "1 release behind in all · 3 without a verdict · oldest version declared 2026-09-12",
+    expect(totalsRows(standing({ behind: 1, missing: 3 }))).toEqual([
+      { label: "releases behind in all", value: "1" },
+      { label: "without a verdict", value: "3" },
+      { label: "oldest version declared", value: "2026-09-12" },
     ]);
   });
 
   it("has no total to print where nobody declared a Version in use", () => {
-    expect(totalsLines(standing({ since: null, behind: 0 }))).toEqual([]);
+    expect(totalsRows(standing({ since: null, behind: 0 }))).toEqual([]);
   });
 });
 
