@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-13 (sera, la Dashboard su `main`): i totali diventano un pannello, e tre scostamenti trovati dalla misura
+  - ⚠️ Sul `main` locale non si committa, nemmeno un documento: `git pull --ff-only` si ferma e il ramo diverge
+  - ⚠️ Prima di giudicare la tipografia, controlla i font: `next/font` in cache serviva Arial
 - Stato al 2026-10-13 (dopo il codice della Dashboard): la Dashboard riscritta sul mock, il verdetto come somma delle righe
   - ⚠️ La frase lunga del verdetto muto misura 516px in una colonna da 360: la copia si accorcia, non la scala
   - ⚠️ Una lista che scorre dentro una colonna flex vuole `min-height: 0`, o la colonna sfonda il proprio massimo
