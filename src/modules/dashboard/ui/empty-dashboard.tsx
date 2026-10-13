@@ -12,13 +12,17 @@ import { SectionTitle } from "./section-title";
 export function EmptyDashboard({ shortlist, total }: { shortlist: readonly PickerTechnology[]; total: number }) {
   const { count } = useFollows();
   const router = useRouter();
+  // The claim counts what the viewer has done since the page arrived: the first follow makes the
+  // sentence about a stack instead of about an absence.
+  const claim =
+    count === 0 ? "you follow no technologies yet" : `you follow ${count} ${count === 1 ? "technology" : "technologies"}`;
 
   return (
     <>
       <section aria-labelledby="empty-status">
         <p id="empty-status" className="font-mono text-status text-text-muted">
           <Info aria-hidden className="mr-[0.35em] inline size-[0.8em] align-[-0.08em]" />
-          note: <span className="text-text">you follow no technologies yet</span>
+          note: <span className="text-text">{claim}</span>
         </p>
         <p className="mt-3 max-w-measure text-text-muted">
           Follow the tools in your stack. This page then shows, for each one, the releases that matter from
@@ -28,13 +32,17 @@ export function EmptyDashboard({ shortlist, total }: { shortlist: readonly Picke
           <span aria-live="polite">
             <span className="text-text">{count}</span> of {FREE_FOLLOW_LIMIT} followed
           </span>
-          <button
-            type="button"
-            onClick={() => router.refresh()}
-            className="rounded-md border border-rule-strong px-3 py-[6px] font-mono text-label text-text hover:border-text-faint"
-          >
-            Open dashboard
-          </button>
+          {/* The way on, and only once there is somewhere to go: with nothing followed the split
+              has no answer to either of its two questions (DESIGN.md, Empty State). */}
+          {count > 0 && (
+            <button
+              type="button"
+              onClick={() => router.refresh()}
+              className="rounded-md border border-rule-strong px-3 py-[6px] font-mono text-label text-text hover:border-text-faint"
+            >
+              Open dashboard
+            </button>
+          )}
         </p>
       </section>
 

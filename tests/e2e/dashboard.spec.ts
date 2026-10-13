@@ -30,16 +30,16 @@ test.beforeAll(async () => {
     seedTechnology([
       { version: "2.1.0", significance: "featured", origin: "detected", status: "ready", notes: "Notes.", actionRequired: false, publishedAt: daysAgo(5) },
     ]),
-    // One Release per section, and two digest Releases three weeks apart so the Digest has two
-    // weeks to fold and open.
+    // One Release of each Significance, and two digest Releases three weeks apart, so the quiet end
+    // of the Stream has two weeks to fold and to open.
     seedTechnology([
       { version: "3.1.0", significance: "notable", origin: "detected", status: "ready", notes: "Notes.", actionRequired: false, publishedAt: daysAgo(2) },
       { version: "3.2.0-beta.1", significance: "preview", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(4) },
       { version: "3.0.9", significance: "digest", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(1) },
       { version: "3.0.8", significance: "digest", origin: "detected", status: "skipped", notes: "Notes.", publishedAt: daysAgo(21) },
     ]),
-    // Issue #94: nothing featured inside the window, and real work ahead of the Version in use.
-    // The verdict used to read `ok: nothing needs action` over a line saying the opposite.
+    // Issue #94: nothing in the window, and real work ahead of the Version in use. The verdict used
+    // to read `ok: nothing needs action` over a line saying the opposite.
     seedTechnology([
       { version: "1.0.0", significance: "notable", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false, publishedAt: daysAgo(90) },
       { version: "1.1.0", significance: "notable", origin: "imported", status: "ready", notes: "Notes.", actionRequired: true, publishedAt: daysAgo(80) },
@@ -68,9 +68,18 @@ test.beforeEach(async () => {
   await developer.clearFollows();
 });
 
-// A row of a count box: the label on the left, its number on the right.
-function boxRow(page: Page, box: string, label: string) {
-  return page.getByTestId(box).getByRole("listitem").filter({ hasText: label });
+// One row per followed Technology, in the column that answers where the stack stands.
+function standingRow(page: Page, name: string) {
+  return page
+    .getByRole("group", { name: "Followed technologies, by distance" })
+    .getByRole("link")
+    .filter({ hasText: name });
+}
+
+// One block of the Stream per Release: an article, never a link, because it is a block of text with
+// links inside it.
+function streamEvent(page: Page, name: string) {
+  return page.locator("article").filter({ hasText: name }).first();
 }
 
 async function signIn(page: Page): Promise<void> {
@@ -86,10 +95,10 @@ test("says what needs action and shows the breaking changes", async ({ page }) =
   await page.goto("/dashboard");
 
   await expect(page.locator("#page-verdict")).toContainText("1 needs action");
-  await expect(page.getByRole("link", { name: breaking.name })).toBeVisible();
+  await expect(standingRow(page, breaking.name)).toContainText("1 needs action");
   await expect(page.getByText("action required · 1 breaking change")).toBeVisible();
   await expect(page.getByText("The default export is gone")).toBeVisible();
-  await expect(page.getByLabel("Followed technologies")).toContainText("1");
+  await expect(page.getByLabel("Followed technologies", { exact: true })).toContainText("1");
 });
 
 test("says nothing needs action when every featured Release is safe", async ({ page }) => {
@@ -101,17 +110,31 @@ test("says nothing needs action when every featured Release is safe", async ({ p
   await expect(page.getByText("safe to upgrade")).toBeVisible();
 });
 
+// CONTEXT.md, Verdetto della Dashboard: the verdict is the sum of the rows under it, by
+// construction. The page used to print a number over two rows that said something else.
+test("prints a verdict that is the sum of the rows under it", async ({ page }) => {
+  await addFollows(developer.id, [breaking.id, ahead.id, safe.id]);
+  await declareCurrentVersion(developer.id, ahead.id, "1.0.0");
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await expect(page.locator("#page-verdict")).toContainText("2 need action");
+  await expect(standingRow(page, breaking.name)).toContainText("1 needs action");
+  await expect(standingRow(page, ahead.name)).toContainText("1 needs action");
+  await expect(standingRow(page, safe.name)).toContainText("no version declared");
+});
+
 // CONTEXT.md, Verdetto della Dashboard: the verdict counts the Upgrade Path from the Version in use
-// too, so no line under it can say the opposite.
-test("counts the work ahead of the Version in use, with nothing featured in the window", async ({ page }) => {
+// too, so nothing need have happened in the window for the page to say there is work.
+test("counts the work ahead of the Version in use, with nothing in the window", async ({ page }) => {
   await addFollows(developer.id, [ahead.id]);
   await declareCurrentVersion(developer.id, ahead.id, "1.0.0");
   await signIn(page);
   await page.goto("/dashboard");
 
   await expect(page.locator("#page-verdict")).toContainText("1 needs action");
-  await expect(boxRow(page, "window-counts", "featured")).toContainText("0");
-  await expect(boxRow(page, "in-use-counts", "needs action")).toContainText("1");
+  await expect(standingRow(page, ahead.name)).toContainText("1 needs action");
+  await expect(page.getByText("1 release behind in all")).toBeVisible();
 });
 
 test("gives no verdict when nothing it accounts for can be judged", async ({ page }) => {
@@ -119,21 +142,40 @@ test("gives no verdict when nothing it accounts for can be judged", async ({ pag
   await signIn(page);
   await page.goto("/dashboard");
 
-  await expect(page.locator("#page-verdict")).toContainText("nothing here can be judged yet");
+  await expect(page.locator("#page-verdict")).toContainText("nothing judged yet");
   await expect(page.locator("#page-verdict")).not.toContainText("nothing needs action");
 });
 
-test("carries the counts line to the Spotlight section with the keyboard", async ({ page }) => {
-  await addFollows(developer.id, [breaking.id, safe.id]);
+// CONTEXT.md, Distanza: without a declaration there is no Distance, so the row says so and draws no
+// bar. A bar there would be the one number this product promises never to invent.
+test("says a Technology with no declaration has no distance, and draws no bar for it", async ({ page }) => {
+  // Two declarations, so the bar lane is drawn at all: with fewer than two Distances it goes
+  // rather than lies, every bar being 100% of itself (DESIGN.md, The Distance bar).
+  await addFollows(developer.id, [safe.id, busy.id, ahead.id]);
+  await declareCurrentVersion(developer.id, busy.id, "3.0.8");
+  await declareCurrentVersion(developer.id, safe.id, "2.1.0");
   await signIn(page);
   await page.goto("/dashboard");
 
-  const link = page.getByRole("link", { name: /featured/ });
-  await link.focus();
+  const row = standingRow(page, ahead.name);
+  await expect(row).toContainText("no version declared");
+  await expect(row.locator("span[aria-hidden='true']")).toHaveCount(0);
+  await expect(standingRow(page, busy.name)).toContainText("2 behind 3.0.8");
+  await expect(standingRow(page, busy.name).locator("span[aria-hidden='true']")).toHaveCount(1);
+  await expect(standingRow(page, safe.name)).toContainText("up to date");
+});
+
+// DESIGN.md, Standing Column: the rows are links, so the keyboard reaches and scrolls the list
+// without a scrollbar to drag.
+test("reaches a Technology from the Standing with the keyboard", async ({ page }) => {
+  await addFollows(developer.id, [breaking.id]);
+  await signIn(page);
+  await page.goto("/dashboard");
+
+  await standingRow(page, breaking.name).focus();
   await page.keyboard.press("Enter");
 
-  await expect(page).toHaveURL(/#spotlight$/);
-  await expect(page.getByRole("heading", { name: /spotlight \(2\)/ })).toBeVisible();
+  await expect(page).toHaveURL(`/technologies/${breaking.slug}`);
 });
 
 test("offers the Catalog when the Developer follows nothing, and follows from there", async ({ page }) => {
@@ -141,33 +183,39 @@ test("offers the Catalog when the Developer follows nothing, and follows from th
   await page.goto("/dashboard");
 
   await expect(page.getByText("you follow no technologies yet")).toBeVisible();
-  await expect(page.getByLabel("Followed technologies")).toContainText("0");
+  await expect(page.getByLabel("Followed technologies", { exact: true })).toContainText("0");
+  // DESIGN.md, Empty State: the split arrives with the first follow, and the way on with it.
+  await expect(page.getByRole("button", { name: "Open dashboard" })).toHaveCount(0);
 
   // Whichever Technology the shortlist happens to open with: the point is that following works
   // here exactly as it does on /technologies, and that the page then has a stack to show.
-  const first = page.getByRole("button", { name: /^Follow / }).first();
-  await first.click();
-  await expect(page.getByLabel("Followed technologies")).toContainText("1");
+  await page.getByRole("button", { name: /^Follow / }).first().click();
+  await expect(page.getByLabel("Followed technologies", { exact: true })).toContainText("1");
 
   await page.getByRole("button", { name: "Open dashboard" }).click();
   await expect(page.getByText("you follow no technologies yet")).toBeHidden();
-  // Spotlight counts Releases, not Technologies (issue #47, P1-4), and whichever Technology the
-  // shortlist opened with may have none featured in the window: the point here is that the section
-  // is there at all, which is what following from the Catalog bought.
-  await expect(page.getByRole("heading", { name: /spotlight \(\d+\)/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "where your stack stands · by distance" })).toBeVisible();
 });
 
-test("fills Latest, Previews and the Weekly Digest with the window", async ({ page }) => {
+// CONTEXT.md, Flusso: one stream in date order with no divisions by Significance, and the Digests
+// are the one thing that leaves it, folded at its quiet end.
+test("puts the window in one stream in date order, with the Digests folded at the end", async ({ page }) => {
   await addFollows(developer.id, [busy.id]);
   await signIn(page);
   await page.goto("/dashboard");
 
-  await expect(page.getByRole("heading", { name: "latest (1)" })).toBeVisible();
-  await expect(page.locator("#latest").getByRole("link", { name: "3.1.0" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "previews (1)" })).toBeVisible();
-  await expect(page.locator("#previews").getByRole("link", { name: "3.2.0-beta.1" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "weekly digest (2)" })).toBeVisible();
-  await expect(page.getByText("1 digest release")).toHaveCount(2);
+  await expect(page.getByRole("heading", { name: /what happened · last 30 days, 4 releases/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "3.1.0", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "3.2.0-beta.1", exact: true })).toBeVisible();
+  // The Digests are not among the days: they are behind the one row that folds the quiet stretch.
+  await expect(page.getByRole("link", { name: "3.0.9", exact: true })).toBeHidden();
+  await expect(page.getByText("2 more releases, none asking anything")).toBeVisible();
+
+  // The date cell of each day block, and not the dates inside the folded weeks under it.
+  const dates = await page
+    .locator("main section > div > p > time")
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("datetime") ?? ""));
+  expect(dates).toEqual([...dates].sort().reverse());
 });
 
 test("keeps an open week of the Digest in the URL, through a reload and in a shared link", async ({ page }) => {
@@ -175,66 +223,83 @@ test("keeps an open week of the Digest in the URL, through a reload and in a sha
   await signIn(page);
   await page.goto("/dashboard");
 
-  const week = page.locator("#digest details").first();
-  const line = page.getByRole("link", { name: "3.0.9" });
+  const line = page.getByRole("link", { name: "3.0.9", exact: true });
   await expect(line).toBeHidden();
 
-  await week.locator("summary").click();
+  // The quiet stretch is one row until it is opened, and the weeks are inside it.
+  await page.locator("#digest > summary").click();
+  await page.locator("#digest details").first().locator("summary").click();
   await expect(line).toBeVisible();
   await expect(page).toHaveURL(/\?week=\d{4}-W\d{2}$/);
 
   const shared = page.url();
   await page.reload();
-  await expect(page.getByRole("link", { name: "3.0.9" })).toBeVisible();
+  await page.locator("#digest > summary").click();
+  await expect(page.getByRole("link", { name: "3.0.9", exact: true })).toBeVisible();
 
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: "3.0.9" })).toBeHidden();
+  await page.locator("#digest > summary").click();
+  await expect(page.getByRole("link", { name: "3.0.9", exact: true })).toBeHidden();
   await page.goto(shared);
-  await expect(page.getByRole("link", { name: "3.0.9" })).toBeVisible();
+  await page.locator("#digest > summary").click();
+  await expect(page.getByRole("link", { name: "3.0.9", exact: true })).toBeVisible();
 
   // Closing the last open week takes the parameter out instead of leaving it empty.
   await page.locator("#digest details").first().locator("summary").click();
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 
-// DESIGN.md gives prose a 72ch measure, and the counts used to run the whole 992px column as one
-// sentence: 142 characters on one measure, which is the defect P2-9 of issue #47 named. They are a
-// box now, and what the measure holds is the pair of them.
-test("keeps the count boxes inside the 72ch measure", async ({ page }) => {
-  await addFollows(developer.id, [breaking.id, safe.id, busy.id]);
+// DESIGN.md: both of these are measured, never assumed. A second scrollbar 360px from the page's
+// own would ask the reader which one they are in, and a verdict that wrapped inside its column
+// would be a summary taller than the list it summarises (The One-Line Verdict Rule).
+test("keeps the verdict on one line, the list without a scrollbar and the columns apart", async ({ page }) => {
+  await addFollows(developer.id, [breaking.id, safe.id, busy.id, queued.id]);
   await signIn(page);
   await page.goto("/dashboard");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
-  const box = page.getByTestId("window-counts");
-  await expect(box).toBeVisible();
-  const measured = await box.evaluate((node) => {
-    const boxes = node.parentElement ?? node;
-    const probe = document.createElement("span");
-    probe.style.font = getComputedStyle(node).font;
-    probe.style.position = "absolute";
-    probe.style.whiteSpace = "pre";
-    probe.textContent = "0".repeat(72);
-    document.body.append(probe);
-    const budget = probe.getBoundingClientRect().width;
-    probe.remove();
-    return { width: boxes.getBoundingClientRect().width, budget };
+  const measured = await page.evaluate(() => {
+    const need = (selector: string) => {
+      const node = document.querySelector(selector);
+      if (!(node instanceof HTMLElement)) throw new Error(`no ${selector} on the page`);
+      return node;
+    };
+    const list = need('[aria-label="Followed technologies, by distance"]');
+    const verdict = need("#page-verdict");
+    const aside = need("main aside");
+    // The window line, the one paragraph the split carries under both its columns.
+    const foot = need("main > p");
+    return {
+      hiddenBar: list.offsetWidth - list.clientWidth,
+      lines: verdict.getBoundingClientRect().height / parseFloat(getComputedStyle(verdict).lineHeight),
+      insideColumn: aside.getBoundingClientRect().right - verdict.getBoundingClientRect().right,
+      // The sticky column stops at the end of the split instead of sliding over what is under it.
+      overlap: aside.getBoundingClientRect().bottom - foot.getBoundingClientRect().top,
+      sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
   });
 
-  expect(measured.width).toBeLessThanOrEqual(measured.budget + 1);
+  expect(measured.hiddenBar, "the width the Standing loses to a scrollbar").toBe(0);
+  expect(measured.lines, "the lines the verdict takes").toBeLessThan(1.5);
+  expect(measured.insideColumn, "the room left between the verdict and the Stream").toBeGreaterThanOrEqual(0);
+  expect(measured.overlap, "how far the Standing runs into the line under it").toBeLessThanOrEqual(0);
+  expect(measured.sideways, "how far the page scrolls sideways").toBe(0);
 });
 
-// The boxes hold the numbers the page opens with, so a row is a label and its number, never a
-// sentence: the label sits on the left and the number on the right of the same row.
-test("reads the window and the Version in use as rows of label and number", async ({ page }) => {
-  await addFollows(developer.id, [breaking.id, safe.id]);
-  await declareCurrentVersion(developer.id, breaking.id, "1.0.0");
+// DESIGN.md, In Use Line: the declaration shows up in one place, the row's own words, and the day
+// it was made is said once for the whole page, in the totals.
+test("names the declared Version in use on the row, and the oldest declaration once", async ({ page }) => {
+  await addFollows(developer.id, [busy.id]);
+  await declareCurrentVersion(developer.id, busy.id, "3.0.8");
   await signIn(page);
   await page.goto("/dashboard");
 
-  await expect(page.getByTestId("window-counts")).toContainText("last 30 days · 2 technologies");
-  await expect(boxRow(page, "window-counts", "digest")).toBeVisible();
-  await expect(page.getByTestId("in-use-counts")).toContainText("version in use · 1 of 2");
-  await expect(boxRow(page, "in-use-counts", "oldest declared")).toBeVisible();
+  await expect(standingRow(page, busy.name)).toContainText("2 behind 3.0.8");
+  await expect(page.getByText(/releases behind in all/)).toBeVisible();
+  await expect(page.getByText(/oldest version declared \d{4}-\d{2}-\d{2}/)).toBeVisible();
+  // The Stream cites the declaration and never counts from it: the count belongs to the Standing.
+  await expect(streamEvent(page, "3.1.0")).toContainText("you are on 3.0.8");
+  await expect(streamEvent(page, "3.1.0")).not.toContainText("behind");
 });
 
 // DESIGN.md, Neutral row verdicts. The Dashboard and the Technology page used to answer this in two
@@ -260,10 +325,10 @@ test.describe("a Release with no notes reads the same on both surfaces", () => {
     await signIn(page);
     await page.goto("/dashboard");
 
-    const row = page.getByRole("listitem").filter({ hasText: noteless.name }).first();
-    await expect(row).toContainText("note: no release notes to summarize");
-    await expect(row).not.toContainText("read the release notes");
-    await expect(row.getByRole("link", { name: "read the release notes" })).toHaveCount(0);
+    const event = streamEvent(page, noteless.name);
+    await expect(event).toContainText("note: no release notes to summarize");
+    await expect(event).not.toContainText("read the release notes");
+    await expect(event.getByRole("link", { name: "read the release notes" })).toHaveCount(0);
   });
 
   test("the Technology page says the same words", async ({ page }) => {
@@ -279,9 +344,9 @@ test.describe("a Release with no notes reads the same on both surfaces", () => {
     await signIn(page);
     await page.goto("/dashboard");
 
-    const row = page.getByRole("listitem").filter({ hasText: queued.name }).first();
-    await expect(row).toContainText("pending: summary queued");
-    await expect(row.getByRole("link", { name: "read the release notes" })).toHaveAttribute(
+    const event = streamEvent(page, queued.name);
+    await expect(event).toContainText("pending: summary queued");
+    await expect(event.getByRole("link", { name: "read the release notes" })).toHaveAttribute(
       "href",
       `/technologies/${queued.slug}/5.0.0`,
     );

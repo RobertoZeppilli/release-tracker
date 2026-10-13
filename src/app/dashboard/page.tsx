@@ -5,13 +5,12 @@ import { requireDeveloper } from "@/modules/auth/server";
 import { buildDashboard, type Dashboard } from "@/modules/dashboard";
 import { readDashboard } from "@/modules/dashboard/server";
 import {
-  DashboardSummary,
   EmptyDashboard,
   readOpenWeeks,
-  ReleaseSection,
-  Spotlight,
+  StandingColumn,
+  Stream,
   WEEK_PARAM,
-  WeeklyDigest,
+  windowLine,
 } from "@/modules/dashboard/ui";
 import { listPickerTechnologies, readFollows } from "@/modules/plans/server";
 import { FollowQuota, FollowsProvider } from "@/modules/plans/ui";
@@ -19,6 +18,17 @@ import { FollowQuota, FollowsProvider } from "@/modules/plans/ui";
 export const metadata: Metadata = { title: "Dashboard", robots: { index: false } };
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+// The two questions, a column each, and nothing printed in both (DESIGN.md, The Two Questions Rule).
+// The 1241px step and not 1240: the mock's own query is `max-width: 1040px`, so at exactly 1040px
+// the page is one column, which is what DESIGN.md says ("at 1040px and below").
+const SPLIT = "grid max-w-wide items-start gap-7 min-[1041px]:grid-cols-[minmax(0,360px)_minmax(0,1fr)] min-[1041px]:gap-8";
+// With no follows the page is one column and not the split: the split separates two questions, and
+// with nothing followed neither has an answer (DESIGN.md, Empty State). The container stays the
+// page's own 1240px and the content is capped inside it: the mock centred a 1040px column instead,
+// which left the wordmark and the account panel 100px off the content they open (DESIGN.md, Layout,
+// "The bar's container is the page's container").
+const ONE_COLUMN = "max-w-wide [&>*]:max-w-content";
 
 // Behind the login, so dynamic anyway: the window is read on the server and the page arrives whole.
 // The header lives inside the provider because the quota in the top bar is the same live count the
@@ -29,13 +39,21 @@ export default async function DashboardPage({ searchParams }: Props) {
   const db = await createRequestClient();
   const [{ followed, releases }, follows] = await Promise.all([readDashboard(db), readFollows(db)]);
   const dashboard = buildDashboard(followed, releases, new Date());
+  const empty = followed.length === 0;
 
   return (
     <FollowsProvider developerId={developer.id} follows={follows}>
-      <SiteHeader section="dashboard" quota={<FollowQuota />} />
-      <main id="content" className="mx-auto max-w-content px-4 pt-6 pb-8 sm:px-5">
+      <SiteHeader section="dashboard" quota={<FollowQuota />} wide />
+      <main
+        id="content"
+        className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${empty ? ONE_COLUMN : SPLIT}`}
+      >
         <h1 className="sr-only">Dashboard</h1>
-        {followed.length === 0 ? <EmptyState db={db} /> : <FollowedStack dashboard={dashboard} openWeeks={openWeeks} />}
+        {empty ? (
+          <EmptyState db={db} />
+        ) : (
+          <FollowedStack dashboard={dashboard} openWeeks={openWeeks} />
+        )}
       </main>
     </FollowsProvider>
   );
@@ -44,32 +62,13 @@ export default async function DashboardPage({ searchParams }: Props) {
 function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWeeks: string[] }) {
   return (
     <>
-      <DashboardSummary verdict={dashboard.verdict} counts={dashboard.counts} inUse={dashboard.inUse} />
-      <Spotlight entries={dashboard.spotlight} thisWeek={dashboard.thisWeek} />
-      <ReleaseSection
-        id="latest"
-        title="latest"
-        significance="notable"
-        fact="newest first"
-        rows={dashboard.latest}
-        thisWeek={dashboard.thisWeek}
-      />
-      {/* The closing band: previews and the digest side by side from 1040px, where the column is wide
-          enough for two readable halves. The page ends on a block instead of thinning out row by row
-          down to nothing. With only one of the two on the page the empty track collapses and the
-          section keeps the full width. */}
-      <div className="mt-7 grid items-start gap-7 min-[1040px]:mt-8 min-[1040px]:grid-cols-[repeat(auto-fit,minmax(29.5rem,1fr))] [&>section]:mt-[0px]">
-        <ReleaseSection
-          id="previews"
-          title="previews"
-          significance="preview"
-          fact="betas and release candidates"
-          rows={dashboard.previews}
-          thisWeek={dashboard.thisWeek}
-          band
-        />
-        <WeeklyDigest weeks={dashboard.digest} open={openWeeks} band />
-      </div>
+      <StandingColumn verdict={dashboard.verdict} standing={dashboard.standing} />
+      <Stream stream={dashboard.stream} openWeeks={openWeeks} />
+      {/* The window the page read, said once, at the end: the Stream's title names its size and
+          this names its edges. */}
+      <p className="col-span-full mt-7 font-mono text-meta text-text-faint">
+        {windowLine(dashboard.window.start, dashboard.window.end)}
+      </p>
     </>
   );
 }

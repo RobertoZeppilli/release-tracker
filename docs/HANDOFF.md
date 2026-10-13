@@ -27,71 +27,79 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-10, dopo il dominio e la direzione scritta della #142).** Il lavoro sta
-sul branch **`142-app-visual-direction`**, **non pushato**, due commit avanti a `main`: `c75969e`
-(dominio e direzione) e `a961308` (il menu su telefono e la foto profilo). ⚠️ **Gli E2E non sono mai
-stati eseguiti**: `typecheck`, `lint` e i 611 unitari sono verdi, ma la suite Playwright vuole il
-server di sviluppo e Docker, che li avvia l'utente. **La prima cosa della sessione nuova è
-`pnpm test:e2e`**, perché quattro file di test sono stati riscritti alla cieca.
+**Da dove ripartire (2026-10-13, dopo il codice della Dashboard).** Il lavoro sta sul branch
+**`142-app-visual-direction`**, **non pushato**, tre commit avanti a `main` (`c75969e`, `a961308`,
+`8dd532a`) e **tutto il codice della Dashboard nuova non è ancora committato**. Il passo seguente:
+**gli stati per colonna** (sotto), poi le altre tre schermate.
 
-**Cosa è stato deciso (2026-10-10).** Tre domande, tre risposte dell'utente:
+**La Dashboard è riscritta sul mock ufficiale**, dominio compreso. Il dominio vecchio
+(`spotlight`, `latest`, `previews`, `counts`, `inUse`) non esiste più: al suo posto
+`domain/standing.ts` (**Posizione dello stack**: una riga per Tecnologia seguita, Distanza, ordine,
+totali) e `domain/stream.ts` (**Flusso**: i giorni, e i Digest piegati per settimana in fondo), con
+`domain/followed.ts` per i tipi letti dal server e `domain/fixtures.ts` per i test. In UI sono
+spariti `dashboard-summary`, `spotlight`, `release-section` e `row-parts`; ci sono
+`standing-column`, `standing-row`, `stream`, `stream-event`, `column-title`, `quota-note` e
+`weekly-digest` rifatto come piega del Flusso. `BreakingList` è stata estratta in
+`src/modules/releases/ui/` ed è una sola per la pagina Technology e per il Flusso.
 
-1. **Lo stato vuoto della Dashboard resta a una colonna**, come oggi. Lo spacco separa due domande e
-   con zero follow nessuna ha una risposta: metà pagina sarebbe un buco, sulla pagina che chi arriva
-   vede per prima.
-2. **La barra della Distanza resta**, col numero scritto accanto in parole e la barra `aria-hidden`.
-3. ⚠️ **Il verdetto e le righe contano lo stesso insieme**, per Tecnologia seguita: le Release che
-   chiedono qualcosa nel Cammino di upgrade **oppure** nella finestra di 30 giorni, ogni Release una
-   volta. La somma delle righe **è** il verdetto, per costruzione: è la fine della contraddizione che
-   ha fatto nascere lo spacco (`need action 3` sopra due righe che dicevano `1`). Il prezzo accettato:
-   un `1 needs action` su una riga può venire da una Release fuori dal Cammino, e la riga non dice da
-   dove.
+**Il verdetto è la somma delle righe, per costruzione** (CONTEXT.md): ogni riga conta le Release
+della sua Tecnologia nella finestra più quelle del Cammino di upgrade, ognuna una volta, e il
+verdetto le somma. Non è più un conto a parte che poteva smentire le righe sotto.
 
-**Cos'è scritto.** `CONTEXT.md` ha i nomi nuovi (**Posizione dello stack** `Standing`, **Distanza**
-`Distance`, **Flusso** `Stream`) e ritira `Spotlight`, `Latest`, `Previews`; `docs/DECISIONI.md`
-registra il rovesciamento invece di cancellarlo; `PRODUCT.md` segue. `DESIGN.md` porta The Two
-Questions Rule, il token **Column verdict**, Standing Column, Stream Row e **Dashboard States**
-(caricamento, errore per colonna, quota, riga sotto il pointer), e la Dashboard passa a **1240px**.
+**Gli stati per colonna sono rimandati, per scelta dell'utente (2026-10-13).** Caricamento ed
+errore per colonna (`pending:`, `Try again` che ricarica una colonna sola) vogliono **due query
+separate** al posto della sola `readDashboard`, con Suspense e error boundary per colonna. Si fanno
+in un passo loro, perché le due query si sovrappongono molto (**circa 1.7x sul database**) e vanno
+misurate senza mescolarle alla riscrittura. Finché non ci sono, la pagina arriva intera come prima
+e un errore resta quello di pagina.
 
-⚠️ **Tre regole scritte *contro* il mock di direzione**, che quindi è dietro a `DESIGN.md` in tre
-punti e **non è più la fonte**: il glifo di Rilevanza resta neutro (la severità ha un glifo suo una
-riga sotto); senza Versione in uso dichiarata non c'è Distanza, quindi nessuna barra e posto suo
-nell'ordinamento; e `· you are on 15.0.0, 4 behind` perde il `4 behind`, che è un conto su un insieme
-della colonna sinistra. **Quando il mock ufficiale c'è, `design/mocks/direction/` va cancellata.**
+⚠️ **Tre cose le ha corrette la pagina vera, non il mock**, e sono scritte in `DESIGN.md` dove
+servono (Page verdict, Standing Column): la frase lunga del verdetto muto misura **516px in una
+colonna da 360** e quindi la copia si accorcia; una lista che scorre dentro una colonna flex deve
+poter rimpicciolirsi (`min-height: 0`) o la colonna sfonda il proprio massimo; un grid item
+`sticky` non viene fermato dalla sua cella e va messo dentro un div stirato all'altezza della riga.
+Le prime due stampavano sopra il contenuto accanto, la terza sopra la riga in fondo.
 
-**La barra, fuori dalla #142 e chiesta dall'utente.** Su telefono le due sezioni sono righe da 44px
-del foglio dell'account e **la strip da 40px non esiste più**: la barra è **una riga da 56px a ogni
-larghezza**, che chiude anche il punto 4 dello stato vecchio (i 96px di arredo). Una copia sola di
-ogni link, il breakpoint fa il lavoro. ⚠️ **Il gap è 12px sotto i 640px e non 24**: senza la strip la
-riga non può più andare a capo, quindi sborderebbe, e a 320px i tre pezzi arrivavano a 2px dallo
-schermo. La foto profilo riempie il bottone e ha perso il contorno suo; il bordo del bottone resta,
-perché è quello che dice che è un bottone. `design/mocks/technologies.html` è stato allineato, gli
-altri mock no.
+**Due scostamenti voluti dal mock**, scritti in `DESIGN.md` con la ragione: lo **stato vuoto tiene
+il contenitore da 1240px** con il contenuto a 1040 dentro (il mock centrava 1040 e lasciava il logo
+e il pannello account 100px fuori asse), e la lista della Posizione ha un nome accessibile suo,
+perché la quota in barra si chiama già `Followed technologies`.
+
+**Le icone delle Tecnologie ci sono nelle righe della Posizione** (richiesta dell'utente del
+2026-10-13), con il Technology Mark del Catalogo. **Nel Flusso no**: lì la riga si apre con il glifo
+di Rilevanza, e due glifi attaccati litigherebbero. Se le vuoi anche lì, va deciso l'ordine.
+
+**Misurato con Playwright**, su ogni larghezza: lo spacco è **360/760 a 1440px**, una colonna sotto
+i 1040 (il passo è `min-[1041px]:`, perché il mock scrive `max-width: 1040px`), la barra resta
+**57px** fino a 320px, il documento non scorre mai di lato, e **`offsetWidth - clientWidth` della
+lista vale 0**. La suite di accessibilità (33 scansioni axe, chiaro e scuro) passa.
+
+**Gli E2E della Dashboard sono riscritti**: 15 test, tutti verdi, più le patch a
+`a11y.spec.ts` (il riquadro `in-use-counts` non esiste più), `current-version.spec.ts` (la
+dichiarazione si legge sulla riga e nei totali), `overflow.spec.ts` (la quota si chiede per nome
+esatto). ⚠️ Il giro intero della suite fa **186 verdi e 6 rossi, e i 6 sono timeout di
+`page.goto` a 30s sul dev server**, non asserzioni: le stesse suite passano lanciate una per una
+(dashboard 15/15, a11y 33/33, overflow 23/23, navigation 23/23). Va rifatto il giro, meglio sulla
+build di produzione, prima di dire che la suite è verde.
 
 ### Cosa resta
 
-1. **Il mock ufficiale `design/mocks/dashboard.html`**, rifatto sulla direzione e con dentro i quattro
-   stati nuovi, da guardare in chiaro, a 390px e con la scrollbar **rimisurata**
-   (`offsetWidth - clientWidth` deve valere 0). Poi il codice, poi le altre tre schermate.
-2. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: **issue a parte, non aperta**,
-   da aprire su sua conferma. ⚠️ Non parte da zero: `docs/DECISIONI.md` ha già le **Notifiche** come
-   Pro post-MVP (ADR 0004, email/Slack, pagamenti insieme) e lo **stato "Visto" per Release**
-   rimandato proprio a loro. Un sistema *interno* è una cosa terza e va deciso prima di scriverlo.
-3. ⚠️ **La #130**: Core Web Vitals veri in produzione e lettura dal telefono. **La misura di partenza
-   non è mai stata presa**, e la barra a una riga sola l'ha appena cambiata di nuovo.
-4. **La cancellazione dei rami**, locali e remoti, resta dell'utente (`git branch -D <ramo>`):
-   `141-landing-redesign`, `139-detection-tag-variants`, `140-landing-entry-action`,
-   `137-tag-format-variants`, `137-coda-risparmio-chiamate`, `93-prompt-v7`, `57-haiku-summaries`,
-   `26-landing-page`, `80-notes-backfill`, `120-technology-icons`.
-5. **L'ordine consigliato per gli ambienti**, invariato: il **database separato per i preview** (oggi
-   un `catalog:sync` da un preview scriverebbe in produzione), poi la **#65** ridotta alla sola
-   strada 2 se lo stage si fa. ⚠️ La #65 **non è ancora decidibile**: dipende dallo stage, che sta
-   in `APERTE.md`.
-6. **A pagamento resta sotto il centesimo**: il submit a mano della #54, e nessuna issue aperta tocca
-   Anthropic. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere**, e **un merge
-   da solo non spende mai**. ⚠️ **Il `CRON_SECRET` di produzione non passa da questa chat**: i giri
-   in produzione li lancia l'utente dal suo terminale, nemmeno quando sono gratis.
-7. **Il server di sviluppo è fermo.** Va riavviato dall'utente con `pnpm dev`, uno solo e sulla 3000.
+1. **Gli stati per colonna**, come sopra. Poi `/technologies`, Technology e Release.
+2. ⚠️ **`design/mocks/direction/` non è stata cancellata**: la modalità auto la nega. E' dell'utente:
+   `git rm -r design/mocks/direction`. Quella cartella non è più la fonte.
+3. **Il peso delle pagine prima e dopo** (criterio della #142) non è stato misurato, e la #130
+   (Core Web Vitals veri in produzione) resta senza misura di partenza.
+4. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
+   Non parte da zero: le Notifiche sono già un Pro post-MVP in `docs/DECISIONI.md` (ADR 0004).
+5. **La cancellazione dei rami** resta dell'utente (`git branch -D <ramo>`): i dieci rami sono
+   elencati nello stato del 2026-10-10 in `docs/handoff/2026-10.md`.
+6. **L'ordine per gli ambienti**, invariato: prima il **database separato per i preview**, poi la
+   **#65** ridotta alla sola strada 2 se lo stage si fa (dipende dallo stage, in `APERTE.md`).
+7. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
+   lavoro tocca Anthropic. Il `CRON_SECRET` di produzione non passa da questa chat.
+8. **Docker e il dev server erano attivi** a fine sessione (la 3000 risponde, Supabase locale in
+   piedi). Se la sessione nuova li trova spenti: `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
+9. ⚠️ **Il flake di `technology.spec.ts:72` vive su `main`**, non è della #142.
 
-Il primo comando della sessione nuova: `leggi docs/HANDOFF.md, lancia pnpm test:e2e e ripartiamo dal
-mock ufficiale della Dashboard`.
+Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e facciamo gli stati per colonna
+della Dashboard`.

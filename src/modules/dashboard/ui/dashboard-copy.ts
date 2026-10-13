@@ -1,120 +1,154 @@
+import { compareVersions, parseVersion } from "@/modules/releases";
 import { isoDate, plural, type Tone } from "@/modules/releases/ui";
-import type {
-  BehindStanding,
-  DashboardCounts,
-  DashboardVerdict,
-  InUseTotals,
-} from "../domain/build-dashboard";
+import type { DashboardVerdict } from "../domain/build-dashboard";
+import type { DashboardRelease, FollowedTechnology } from "../domain/followed";
+import type { Standing, StandingRow } from "../domain/standing";
+import type { DigestWeek } from "../domain/stream";
+import { WINDOW_DAYS } from "../domain/build-dashboard";
 
-export type Verdict = { tone: Tone; label: string; claim: string; pending?: true };
+export type Verdict = { tone: Tone; label: string; claim: string };
 
 // The page verdict counts Releases, not Technologies, and a Release without a ready Summary is
 // never called safe: "nothing needs action" is what we know, not a promise that all is well.
 // A null verdict is the page with nothing it can judge, and there it says so instead of reassuring:
 // an empty set makes "nothing needs action" true of nothing (CONTEXT.md, Verdetto della Dashboard).
+// The muted claim is the short form of `nothing here can be judged yet`: shortened, never wrapped.
+// At Column verdict scale the long one measures 516px inside a 360px column, and the rule is that
+// the copy gives way, not the scale and not the one line (DESIGN.md, The One-Line Verdict Rule).
 export function pageVerdict(verdict: DashboardVerdict | null): Verdict {
-  if (verdict === null) return { tone: "muted", label: "note:", claim: "nothing here can be judged yet" };
+  if (verdict === null)
+    return { tone: "muted", label: "note:", claim: "nothing judged yet" };
   const { needsAction } = verdict;
-  if (needsAction === 0) return { tone: "ok", label: "ok:", claim: "nothing needs action" };
-  return { tone: "action", label: "warning:", claim: `${needsAction} ${needsAction === 1 ? "needs" : "need"} action` };
+  if (needsAction === 0)
+    return { tone: "ok", label: "ok:", claim: "nothing needs action" };
+  return {
+    tone: "action",
+    label: "warning:",
+    claim: `${needsAction} ${needsAction === 1 ? "needs" : "need"} action`,
+  };
 }
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// The words of a Standing Row's state line, and they are the content: the bar beside them is
+// `aria-hidden` (DESIGN.md, Standing Row). A row that needs action takes the ink, bar included.
+export function standingWords(row: StandingRow): {
+  words: string;
+  action: boolean;
+} {
+  if (row.needsAction > 0) {
+    return {
+      words: `${row.needsAction} ${row.needsAction === 1 ? "needs" : "need"} action`,
+      action: true,
+    };
+  }
+  // CONTEXT.md, Distanza: with no declaration there is no Distance, so there is nothing for a bar
+  // to be a share of and the row says exactly that.
+  if (row.distance === null)
+    return { words: "no version declared", action: false };
+  if (row.distance === 0) return { words: "up to date", action: false };
+  return { words: `${row.distance} behind ${row.declared}`, action: false };
+}
+
+// The bar's width: this row's Distance as a share of the longest in the list. Null wherever no bar
+// is drawn, which is a row with no Distance and a list too short for the lane to mean anything.
+export function barShare(
+  row: StandingRow,
+  scale: number | null,
+): number | null {
+  if (row.distance === null || scale === null) return null;
+  return scale === 0 ? 0 : Math.round((row.distance / scale) * 100);
+}
+
+// The totals, under the list. The first line counts the whole and names the oldest declaration,
+// because a total is only as fresh as the stalest thing under it; it is dropped where no row has a
+// Distance, since there is then no count to print. The second says what the bar is, and it goes
+// only with the bar (DESIGN.md, The totals).
+export function totalsLines(standing: Standing): string[] {
+  if (standing.since === null) return [];
+  const parts = [
+    `${plural(standing.behind, "release")} behind in all`,
+    ...(standing.missing > 0 ? [`${standing.missing} without a verdict`] : []),
+    `oldest version declared ${isoDate(standing.since)}`,
+  ];
+  return [parts.join(" · ")];
+}
+
+export const BAR_NOTE =
+  "the bar is the distance from the version you declared, not a score";
+
+export function standingTitle(): string {
+  return "where your stack stands · by distance";
+}
+
+// The Stream's title names its window and its size (DESIGN.md, Stream Row). The count is the data,
+// so a page that has not counted prints no count; the window is a fact about the page and stays.
+export function streamTitle(): string {
+  return `what happened · last ${WINDOW_DAYS} days`;
+}
+
+export function streamCount(total: number): string {
+  return `, ${plural(total, "release")}`;
+}
+
+export function windowLine(start: Date, end: Date): string {
+  return `window: last ${WINDOW_DAYS} days, ${isoDate(start)} to ${isoDate(end)} UTC`;
+}
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 // "Dec 2 to 8", and "Nov 25 to Dec 1" when the week changes month: the second month is named only
 // when it differs, because repeating it is noise on a line already dense with numbers.
 export function weekRange(start: Date, end: Date): string {
   const month = (date: Date) => MONTHS[date.getUTCMonth()];
-  const to = month(start) === month(end) ? `${end.getUTCDate()}` : `${month(end)} ${end.getUTCDate()}`;
+  const to =
+    month(start) === month(end)
+      ? `${end.getUTCDate()}`
+      : `${month(end)} ${end.getUTCDate()}`;
   return `${month(start)} ${start.getUTCDate()} to ${to}`;
 }
 
-// The two things built on the Version in use. Both name the day the declaration was made, because it
-// is the one fact that tells a reader whether the count in front of it still means anything: the app
-// never checks a declaration, so a count on top of it is exactly as old as the declaration is.
-function actionWords(count: number): string {
-  return count === 1 ? "needs action" : "need action";
+// The quiet end of the Stream: one row for the whole stretch that asked nothing, never one per week
+// (DESIGN.md, Weekly Digest). The weeks come newest first, so the span reads oldest to newest.
+export function hushSpan(weeks: readonly DigestWeek[]): string {
+  const numbers = weeks.map(({ week }) => week.week);
+  const oldest = numbers.at(-1);
+  const newest = numbers[0];
+  if (oldest === undefined || newest === undefined) return "";
+  return oldest === newest ? `week ${newest}` : `weeks ${oldest} to ${newest}`;
 }
 
-function needWord(count: number): string {
-  return `${count} ${actionWords(count)}`;
+export function hushClaim(total: number): string {
+  return total === 1
+    ? "1 more release, not asking anything"
+    : `${total} more releases, none asking anything`;
 }
 
-// The two count boxes. A box is a caption and a list of rows, each row a label on the left and its
-// number on the right: the facts used to run as one sentence of items separated by `·`, which on a
-// phone wrapped in the middle of the numbers (DESIGN.md, Count Box).
-export type CountRow = {
-  key: string;
-  label: string;
-  value: number;
-  href: string;
-  // A count points at a section only where that section exists; Spotlight is always on the page.
-  linked: boolean;
-  // Issue #94: a number of narrower scope says its own scope where it stands, so `need action` stays
-  // inside the `featured` row instead of becoming a row of its own.
-  note: { value: number; words: string } | null;
-};
+// Digest Releases are never summarized, so a week can only ever say that nothing in it asks for
+// work. It is a fact of the Significance, not a verdict read off a Summary.
+export const NO_ACTION = "no action needed";
 
-export type FactRow = { label: string; value: string };
-
-export function windowCaption(technologies: number): string {
-  return `last 30 days · ${technologies} ${technologies === 1 ? "technology" : "technologies"}`;
-}
-
-export function windowRows(counts: DashboardCounts): CountRow[] {
-  return [
-    {
-      key: "featured",
-      label: "featured",
-      value: counts.featured,
-      href: "#spotlight",
-      linked: true,
-      note:
-        counts.featuredNeedsAction > 0
-          ? { value: counts.featuredNeedsAction, words: actionWords(counts.featuredNeedsAction) }
-          : null,
-    },
-    { key: "notable", label: "notable", value: counts.notable, href: "#latest", linked: counts.notable > 0, note: null },
-    {
-      key: "previews",
-      label: counts.previews === 1 ? "preview" : "previews",
-      value: counts.previews,
-      href: "#previews",
-      linked: counts.previews > 0,
-      note: null,
-    },
-    { key: "digest", label: "digest", value: counts.digest, href: "#digest", linked: counts.digest > 0, note: null },
-  ];
-}
-
-export function inUseCaption(totals: InUseTotals, technologies: number): string {
-  return `version in use · ${totals.declared} of ${technologies}`;
-}
-
-export function inUseRows(totals: InUseTotals): FactRow[] {
-  return [
-    { label: totals.behind === 1 ? "release behind" : "releases behind", value: `${totals.behind}` },
-    ...(totals.needsAction > 0 ? [{ label: actionWords(totals.needsAction), value: `${totals.needsAction}` }] : []),
-    { label: "oldest declared", value: isoDate(totals.since) },
-  ];
-}
-
-// The quiet half of Spotlight. Every followed Technology is accounted for once, so the ones with
-// nothing featured keep a row; what they do not keep is the sentence saying it, which used to repeat
-// word for word on each of them and spent the whole content column saying the same nothing. The
-// group says it once, above the rows.
-export function quietNote(quiet: number, total: number): string {
-  return `${quiet} of the ${total} you follow had nothing featured`;
-}
-
-export function behindLine(standing: BehindStanding): string {
-  const parts =
-    standing.counts.total === 0
-      ? [`already on ${standing.to}`]
-      : [
-          `${plural(standing.counts.total, "release")} behind ${standing.to}`,
-          ...(standing.counts.actionRequired > 0 ? [needWord(standing.counts.actionRequired)] : []),
-          ...(standing.counts.missing > 0 ? [`${standing.counts.missing} without a verdict`] : []),
-        ];
-  return `in use ${standing.version} since ${isoDate(standing.declaredAt)} · ${parts.join(" · ")}`;
+// The one fact a Stream row may say about the declaration: it cites it instead of counting from it,
+// because a Distance is a count over a set and the set is the Standing's (DESIGN.md, Stream Row).
+export function declarationNote(
+  technology: FollowedTechnology,
+  release: DashboardRelease,
+): string | null {
+  const declared = technology.currentVersion?.version;
+  if (!declared) return null;
+  const left = parseVersion(declared);
+  const right = parseVersion(release.version);
+  if (!left || !right || compareVersions(left, right) >= 0) return null;
+  return `you are on ${declared}`;
 }

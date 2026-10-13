@@ -208,7 +208,8 @@ test.describe("the top bar is one row on a phone", () => {
 
       // The quota is what used to force the second row, so it is what this measures: it is in the
       // bar, on the line, not under it.
-      const quota = await page.getByLabel("Followed technologies").boundingBox();
+      // The Standing list carries a name of its own on this page, so the quota is asked for by name.
+      const quota = await page.getByLabel("Followed technologies", { exact: true }).boundingBox();
       expect(quota, "the quota").not.toBeNull();
       expect(quota?.y, "the quota is in the bar").toBeLessThan(56);
 

@@ -18,6 +18,14 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-10 (sera, dopo il mock ufficiale della Dashboard): il mock rifatto da `DESIGN.md`, misurato con Playwright
+  - ⚠️ Il browser rifiuta `file://`: un mock si rivede servendolo via http
+  - ⚠️ Lo schermo dell'utente ha `devicePixelRatio` 2.5: le larghezze vere si guardano con Playwright, non ridimensionando Chrome
+  - ⚠️ `technology.spec.ts:72` è un flake che vive già su `main`, non della #142
+- Stato al 2026-10-10 (pomeriggio, dopo il dominio e la direzione scritta della #142): i nomi nuovi e le tre regole scritte contro il mock di direzione
+  - ⚠️ Il verdetto e le righe contano lo stesso insieme, ogni Release una volta: è la fine della contraddizione che ha fatto nascere lo spacco
+  - ⚠️ Tre regole di `DESIGN.md` nate *contro* il mock di direzione, che da lì non è più la fonte
+  - ⚠️ Sotto i 640px il gap della barra è 12px e non 24: senza la strip la riga non può più andare a capo
 - Stato al 2026-10-10 (mattina, dopo la direzione scelta per la #142): lo spacco scelto fra quattro proposte
   - ⚠️ La dissolvenza di una lista che scorre va fatta cadere sul vuoto, alta quanto il padding in fondo
   - ⚠️ La scrollbar nascosta è misurata e non sperata: `offsetWidth - clientWidth` deve valere 0
