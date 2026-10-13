@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-13 (notte, il mock di `/technologies`): lo spacco scelto fra due proposte, e l'audit che lo ha prodotto
+  - ⚠️ Il quota stampato tre volte nei primi 60px, e ~270px di vuoto in ogni riga: misurato sulla pagina viva
+  - ⚠️ `/technologies` ha risposto una volta sola con la pagina di errore in dev, al primo colpo dopo l'avvio
 - Stato al 2026-10-13 (sera, la Dashboard su `main`): i totali diventano un pannello, e tre scostamenti trovati dalla misura
   - ⚠️ Sul `main` locale non si committa, nemmeno un documento: `git pull --ff-only` si ferma e il ramo diverge
   - ⚠️ Prima di giudicare la tipografia, controlla i font: `next/font` in cache serviva Arial

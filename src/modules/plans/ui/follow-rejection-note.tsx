@@ -1,7 +1,6 @@
 "use client";
 
 import { CircleX } from "lucide-react";
-import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import type { FollowRejection } from "../domain/follow-rejection";
 
 // What the database refused, said once for every page that can be refused: what did not happen, why,
@@ -31,7 +30,10 @@ export function FollowRejectionNote({
 
 function message(rejection: FollowRejection): string {
   if (rejection === "limit") {
-    return `not followed · you already follow ${FREE_FOLLOW_LIMIT} (one was added in another session) · unfollow one to follow another`;
+    // It says what happened and the way out, and it does not recount the quota: the figure is in
+    // the Stack Panel on `/technologies` and in the Limit Note everywhere else (DESIGN.md, Row
+    // Error Line).
+    return "not followed. your free plan filled up in another session, so let one go to follow another.";
   }
   if (rejection === "retired") {
     return "not followed · it has left the catalog · a retired technology can't be followed again";

@@ -1,6 +1,6 @@
 import type { Stream as StreamData } from "../domain/stream";
 import { streamCount, streamTitle } from "./dashboard-copy";
-import { ColumnTitle } from "./column-title";
+import { ColumnTitle } from "@/components/column-title";
 import { StreamEvent } from "./stream-event";
 import { WeeklyDigest } from "./weekly-digest";
 

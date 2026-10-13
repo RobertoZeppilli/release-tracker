@@ -27,62 +27,56 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-13, notte): il mock di `/technologies` è fatto e approvato, il codice
-no.** Il lavoro sta sul branch **`142-handoff-dopo-il-merge`**, **non pushato**. `main` è a
-`8191681` e la Dashboard è in produzione; la **#142 resta aperta** e chiede ancora tre schermate.
-Il passo seguente è **`DESIGN.md`, che viene prima del codice**, e poi la pagina vera dentro la
-forma del mock.
+**Da dove ripartire (2026-10-14): `/technologies` è scritta in `DESIGN.md` e implementata, e il
+giro E2E della pagina è verde.** Il lavoro sta sul branch **`142-handoff-dopo-il-merge`**, non
+pushato, in due commit (il mock, e poi `DESIGN.md` più il codice). `main` è a `8191681`, la **#142
+resta aperta** e chiede ancora **Technology e Release**. Il passo seguente è **la PR di questa
+pagina**, e poi quelle due schermate, nello stesso ordine: mock, `DESIGN.md`, codice.
 
-**La direzione, scelta dall'utente fra due proposte: lo spacco anche qui.** La pagina risponde a due
-domande e le mescolava in una colonna sola, *cosa seguo* e *cosa posso aggiungere*. Ora sono due
-colonne a 1240px, come la Dashboard: a sinistra, sticky a 72px e con la lista che scorre dentro sé,
-`what you follow, by name`; a destra il Catalogo. Il mock è `design/mocks/technologies.html`, 716
-righe, con il selettore **page state** in basso a destra (`six`, `none`, `full`, `rejected`,
-`retired`, `nomatch`).
+**Che pagina è adesso.** Due colonne a 1240px, come la Dashboard: a sinistra `what you follow, by
+name`, sticky a 72px con la lista che scorre dentro sé, a destra il Catalogo per Categoria. Il
+quota si conta **una volta sola**, nel pannello in testa alla colonna sinistra, e perciò **la barra
+non lo porta su questa pagina** (altrove sì) e la nota del limite nomina il muro senza numeri. Le
+righe del Catalogo sono a due righe; `rows | grid` e `by name | by latest release` stanno in
+`localStorage`, `?filter=` e `?category=` nell'indirizzo (The Address Rule, in `DESIGN.md`).
 
-**L'audit che l'ha prodotta, misurato sulla pagina viva e non dedotto:** il quota stampato **tre
-volte** nei primi 60px (barra, una nota a **36.8px** e il titolo di sezione), **~270px di vuoto** in
-ogni riga fra descrizione e bottone (cella dei fatti 674px per ~400px di testo), **quindici**
-elementi con un numero dentro, un titolo ogni tre righe (10 gruppi per 31 righe), pagina **3196px**
-e **8 righe su 37** sul primo schermo.
+### Le tre cose decise dall'utente mentre si scriveva il codice
 
-### Le decisioni del mock, da portare in `DESIGN.md` prima di scrivere codice
+1. **In `grid` la cella è un pannello, non una riga**: contorno 1px, raggio 6px, 16px d'aria, e la
+   riga sotto sparisce. Affiancate, le righe diventavano una dentellatura di trattini che non
+   chiudono niente. **Non è una card**: niente fondo, niente ombra, nessun hover.
+2. **Dentro il pannello versione e descrizione vanno su due righe**, e il `·` sparisce: il pallino
+   separa fatti sulla stessa riga, mai righe diverse.
+3. **Le punte di colore**: ce n'era margine per **una sola**, il Help Pointer `--> see them on your
+   dashboard` in fondo al pannello (freccia faint, etichetta `help` ciano). Il resto no, ed è
+   scritto in `DESIGN.md`: questa pagina non giudica niente, quindi colorare Categorie, chip o Mark
+   spenderebbe per decorazione l'unico canale riservato alla severità, che è ciò che fa leggere il
+   rosso della Dashboard come un verdetto.
 
-1. **Il quota si conta una volta sola**, nel pannello in testa alla colonna sinistra (`followed`,
-   `left on your free plan`, cifre incolonnate). Quindi **la barra non porta il quota su questa
-   pagina** (altrove resta) e la nota del limite a destra nomina il muro **senza ricontarlo**.
-2. **Righe del Catalogo a due righe** (nome e bottone sopra, fatti sotto): il vuoto sparisce.
-3. **`rows` o `grid`**, scelta ricordata in `localStorage`: la griglia è **2562px** contro 3172px.
-   Le celle di una fila sono alte uguali, o le righe di separazione restano sfalsate.
-4. **Il filtro**: label sopra (`find a technology`), campo 38ch alto 42px, sotto il conto e le
-   scorciatoie (`press / to find, esc to clear`). **Esc svuota** e tiene il focus.
-5. **Chip delle Categorie senza numeri** (i conti stanno nei titoli di gruppo) e **ordinamento**
-   `by name | by latest release`: per data **le Categorie spariscono** e la riga mostra la data,
-   perché il titolo della colonna nomina sempre l'ordinamento in corso.
-6. **`?filter=` e `?category=` nell'URL** con `replaceState`; **layout e ordinamento no**, stanno in
-   `localStorage`: la **#72** aveva deciso che uno stato di vista non merita l'indirizzo.
-7. **`unfollow` è un controllo di testo quieto** (24px, raggiungibile da tastiera), non un bottone
-   bordato: dieci bordi in una colonna da 360px sono un modulo, non una lista.
-8. **Le retired chiudono la colonna sinistra**, con la loro nota: sono lì solo perché seguite.
-9. **Pochi pallini**: `·` resta solo nei fatti di una riga, non nei titoli né nelle note.
+⚠️ **Il bottone che si accavallava sul testo in `grid` era un problema di layer**: le differenze
+della griglia stavano in `globals.css`, e **le utility di Tailwind stanno in un layer successivo**,
+quindi vincevano loro qualunque fosse la specificità. Ora la vista sta nelle classi del componente.
 
-Verificato nel browser: **overflow orizzontale 0** in tutt'e due le viste a 320, 360, 390, 414, 640,
-641, 1040 e 1240, barra 57px, scrollbar nascosta che ruba **0px** (`offsetWidth - clientWidth`).
+**Misurato sulla pagina viva, non dedotto**: overflow orizzontale **0** a 320, 360, 390, 414, 640,
+641, 1040 e 1240, barra **56.8px**, scrollbar nascosta che ruba **0px**, e il documento è **3020px**
+in griglia contro **3231px** a righe (31 righe di Catalogo, container 1240). ⚠️ A 320px una prova
+in iframe dava 11px di overflow: era **la scrollbar dell'iframe**, non la pagina.
 
 ### Cosa resta
 
-1. **`DESIGN.md` e poi il codice di `/technologies`**, poi Technology e Release (#142). Dopo, gli
-   stati per colonna della Dashboard, rimandati per scelta dell'utente: vogliono **due query
-   separate** che si sovrappongono **circa 1.7x** sul database.
-2. ⚠️ **Il giro intero degli E2E non è mai stato verde in una corsa sola**: le suite passano una per
-   una, ma il giro intero sul dev server dava **6 timeout di `page.goto` a 30s**. Va rifatto **sulla
+1. **PR di `/technologies`**, poi Technology e Release (#142). Dopo, gli stati per colonna della
+   Dashboard, rimandati per scelta dell'utente: vogliono **due query separate** che si sovrappongono
+   **circa 1.7x** sul database.
+2. ⚠️ **Il giro intero degli E2E non è mai stato verde in una corsa sola**: qui sono passati
+   `technologies` (19) più a11y, keyboard, overflow, navigation, retired e technology-follow (84),
+   ma il giro intero sul dev server dava **6 timeout di `page.goto` a 30s**. Va rifatto **sulla
    build di produzione** prima di dire che la suite è verde.
 3. ⚠️ **Due cancellazioni sono dell'utente** (la modalità auto le nega): `git branch -d
    142-app-visual-direction` con il suo `git push origin --delete`, e `git rm -r
    design/mocks/direction`, che non è più la fonte.
-4. ⚠️ **Una volta sola, `/technologies` ha risposto con la pagina di errore in dev**, al primo colpo
-   dopo l'avvio, e non si è più ripetuta nella stessa sessione. Sospetto la prima compilazione. Se
-   torna, è un difetto vero e va aperta una issue.
+4. ⚠️ **Una volta sola, `/technologies` ha risposto con la pagina di errore in dev**, al primo
+   colpo dopo l'avvio, nella sessione del mock. Non si è ripetuta in questa. Se torna, è un difetto
+   vero e va aperta una issue.
 5. **Il peso delle pagine prima e dopo** (criterio della #142) non è stato misurato, e la **#130**
    (Core Web Vitals veri in produzione) resta senza misura di partenza.
 6. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
@@ -91,6 +85,3 @@ Verificato nel browser: **overflow orizzontale 0** in tutt'e due le viste a 320,
 8. **Docker e il dev server erano attivi** a fine sessione. Se la sessione nuova li trova spenti:
    `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
 9. **Rami, ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
-
-Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e scriviamo DESIGN.md per
-/technologies, poi il codice`.

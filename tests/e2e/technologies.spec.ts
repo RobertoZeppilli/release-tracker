@@ -48,17 +48,36 @@ function toggle(page: Page, action: "Follow" | "Unfollow"): Locator {
   return page.getByRole("button", { name: `${action} ${technology.name}`, exact: true });
 }
 
-// The announced form of the count, the one an assistive technology reads.
+// The two questions, a column each (DESIGN.md, The Two Questions Rule): what is in the stack, and
+// what could go in it. The Catalog's own title names the ordering in force, so it is matched by its
+// opening words.
+function stack(page: Page): Locator {
+  return page.getByRole("region", { name: "what you follow, by name" });
+}
+
+function catalog(page: Page): Locator {
+  return page.getByRole("region", { name: /^what you could add/ });
+}
+
+function retired(page: Page): Locator {
+  return page.getByRole("region", { name: "retired, still yours" });
+}
+
+// The quota is counted once on this page, in the panel at the head of the left column.
 function followed(page: Page): Locator {
   return page.getByTestId("follow-status");
 }
 
-function section(page: Page, name: "following" | "catalog" | "retired"): Locator {
-  return page.getByRole("region", { name: new RegExp(`^${name} `) });
+function rows(page: Page): Locator {
+  return catalog(page).getByRole("listitem");
 }
 
-function rows(page: Page): Locator {
-  return page.getByRole("region", { name: /^(following|catalog|retired) / }).getByRole("listitem");
+function filter(page: Page): Locator {
+  return page.getByRole("searchbox", { name: "find a technology" });
+}
+
+function matches(page: Page): Locator {
+  return page.locator("#matches");
 }
 
 test.beforeEach(async ({ page }) => {
@@ -68,44 +87,44 @@ test.beforeEach(async ({ page }) => {
 
 test("a Developer follows a Technology, and the follow is still there after a reload", async ({ page }) => {
   await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(/^you follow 0 of your \d+ free follows$/);
+  await expect(followed(page)).toHaveText("0");
   await expect(
-    section(page, "catalog").getByRole("link", { name: technology.name, exact: true }),
+    catalog(page).getByRole("link", { name: technology.name, exact: true }),
   ).toHaveAttribute("href", `/technologies/${technology.slug}`);
 
   await toggle(page, "Follow").click();
-  // The row answers at once, and it has already moved: the section that holds it is the one it
-  // belongs to, without a reload (issue #64).
+  // The row answers at once, and it has already crossed the split: the column that holds it is the
+  // one it belongs to, without a reload (issue #64).
   await expect(toggle(page, "Unfollow")).toHaveAttribute("aria-pressed", "true");
-  await expect(followed(page)).toHaveText(/^you follow 1 of your \d+ free follows$/);
-  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
-  await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
+  await expect(followed(page)).toHaveText("1");
+  await expect(stack(page).getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(catalog(page).getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
 
   // The reload reads the database, which the press has not reached yet.
   await followWritten(toggle(page, "Unfollow"));
   await page.reload();
-  await expect(followed(page)).toHaveText(/^you follow 1 of your \d+ free follows$/);
-  await expect(section(page, "following").getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
+  await expect(followed(page)).toHaveText("1");
+  await expect(stack(page).getByRole("button", { name: `Unfollow ${technology.name}` })).toBeVisible();
 });
 
 test("a Developer unfollows a Technology and it stays unfollowed after a reload", async ({ page }) => {
   await page.goto("/technologies");
   await toggle(page, "Follow").click();
-  await expect(followed(page)).toHaveText(/^you follow 1 of your \d+ free follows$/);
+  await expect(followed(page)).toHaveText("1");
   // The Toggle refuses a second press while the first is in flight, so the unfollow below waits for
   // the follow to be written, and the reload after it waits for the unfollow.
   await followWritten(toggle(page, "Unfollow"));
 
   await toggle(page, "Unfollow").click();
   await expect(toggle(page, "Follow")).toHaveAttribute("aria-pressed", "false");
-  await expect(followed(page)).toHaveText(/^you follow 0 of your \d+ free follows$/);
-  // The trip the other way: back in the Catalog, and out of `following`, on the same press.
-  await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
-  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
+  await expect(followed(page)).toHaveText("0");
+  // The trip the other way: back in the Catalog, and out of the stack, on the same press.
+  await expect(catalog(page).getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(stack(page).getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
 
   await followWritten(toggle(page, "Follow"));
   await page.reload();
-  await expect(followed(page)).toHaveText(/^you follow 0 of your \d+ free follows$/);
+  await expect(followed(page)).toHaveText("0");
   await expect(toggle(page, "Follow")).toBeVisible();
 });
 
@@ -114,45 +133,45 @@ function group(page: Page, category: string): Locator {
   return page.getByRole("region", { name: new RegExp(`^${category} \\(`) });
 }
 
-test("the press keeps its place when the row moves, in both directions", async ({ page }) => {
+test("the press keeps its place when the row crosses the split, in both directions", async ({ page }) => {
   await page.goto("/technologies");
 
-  // Pressed from the keyboard, so the focus is the thing the move could take away. The toggle is
-  // torn down in `catalog` and built again in `following`, and it comes back with the focus: that
-  // is what pays for letting the row move at all (issue #64).
+  // Pressed from the keyboard, so the focus is the thing the move could take away. The control is
+  // torn down in the Catalog and built again in the stack, and the focus follows it: that is what
+  // pays for letting the row move at all (issue #64).
   await toggle(page, "Follow").focus();
   await page.keyboard.press("Enter");
   const unfollow = toggle(page, "Unfollow");
-  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(stack(page).getByRole("link", { name: technology.name, exact: true })).toBeVisible();
   await expect(unfollow).toBeFocused();
 
   // And on the way back, which is the same trip and the same hand on the keyboard.
   await followWritten(unfollow);
   await page.keyboard.press("Enter");
   const follow = toggle(page, "Follow");
-  await expect(section(page, "catalog").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(catalog(page).getByRole("link", { name: technology.name, exact: true })).toBeVisible();
   await expect(follow).toBeFocused();
   await followWritten(follow);
 });
 
-test("the Catalog is grouped by Category, and the filter works inside the groups", async ({ page }) => {
+test("the Catalog is grouped by Category, and a followed row leaves its group", async ({ page }) => {
   await page.goto("/technologies");
 
   // The fixture is a `library` and the fillers are a `platform`, so both groups are on the page and
-  // the row sits in its own one. The Catalog keeps its own title above them.
+  // the row sits in its own one.
   const library = group(page, "library");
   await expect(library.getByRole("link", { name: technology.name, exact: true })).toBeVisible();
   await expect(group(page, "platform").getByRole("link", { name: technology.name })).toHaveCount(0);
-  await expect(section(page, "catalog")).toContainText("catalog (");
 
-  // `following` and `retired` are never grouped: the Category is the Catalog's way of being read.
+  // The stack is never grouped: the Category answers "what could go in my stack", which is a
+  // question only the Catalog is asked.
   await toggle(page, "Follow").click();
   await page.reload();
-  await expect(section(page, "following").getByRole("link", { name: technology.name, exact: true })).toBeVisible();
-  await expect(section(page, "following").getByRole("region")).toHaveCount(0);
+  await expect(stack(page).getByRole("link", { name: technology.name, exact: true })).toBeVisible();
+  await expect(stack(page).getByRole("region", { name: /\(/ })).toHaveCount(0);
 
   // A group loses the row the moment it is followed, and its count says so on the same tick the
-  // Catalog count does.
+  // panel's figure does.
   await developer.clearFollows();
   await page.goto("/technologies");
   const before = await library.getByRole("heading").textContent();
@@ -166,54 +185,102 @@ test("the Catalog is grouped by Category, and the filter works inside the groups
 
 test("a filter with no match in a group hides that group, and counts over the whole Catalog", async ({ page }) => {
   await page.goto("/technologies");
-  const filter = page.getByRole("searchbox", { name: "filter" });
-  const matches = page.locator("#matches");
-  const total = Number(/^(\d+) technologies$/.exec((await matches.textContent()) ?? "")?.[1]);
+  const total = Number(/^(\d+) technologies$/.exec((await matches(page).textContent()) ?? "")?.[1]);
 
-  await filter.fill(technology.name);
-  // The only group left is the one holding the match; the Catalog still counts over all of itself.
+  await filter(page).fill(technology.name);
+  // The only group left is the one holding the match; the count is over the whole Catalog.
   await expect(group(page, "library")).toBeVisible();
   await expect(group(page, "platform")).toBeHidden();
-  await expect(matches).toHaveText(`1 of ${total} match`);
-  await expect(section(page, "catalog").getByRole("heading").first()).toHaveText(/^catalog \(1 of \d+\)$/);
+  await expect(matches(page)).toHaveText(`1 of ${total} match`);
   await expect(rows(page)).toHaveCount(1);
 
-  await filter.fill("");
+  await filter(page).fill("");
   await expect(group(page, "platform")).toBeVisible();
 });
 
 test("the filter narrows the rows, counts the matches and says when nothing matches", async ({ page }) => {
   await page.goto("/technologies");
-  const matches = page.locator("#matches");
-  const total = Number(/^(\d+) technologies$/.exec((await matches.textContent()) ?? "")?.[1]);
+  const total = Number(/^(\d+) technologies$/.exec((await matches(page).textContent()) ?? "")?.[1]);
   expect(total).toBeGreaterThan(1);
 
-  const filter = page.getByRole("searchbox", { name: "filter" });
-  await filter.fill(technology.name);
-  await expect(matches).toHaveText(`1 of ${total} match`);
+  await filter(page).fill(technology.name);
+  await expect(matches(page)).toHaveText(`1 of ${total} match`);
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page).first()).toContainText(technology.name);
 
-  await filter.fill("not-a-technology");
-  await expect(matches).toHaveText(`0 of ${total} match`);
+  await filter(page).fill("not-a-technology");
+  await expect(matches(page)).toHaveText(`0 of ${total} match`);
   await expect(rows(page)).toHaveCount(0);
   // The Catalog is curated: the note names the query and offers no form and no link.
-  const noMatch = page.locator("section", { hasText: "The catalog is curated" });
+  const noMatch = page.locator("#no-match");
   await expect(noMatch).toBeVisible();
   await expect(noMatch).toContainText("no technology matches");
   await expect(noMatch).toContainText("not-a-technology");
   await expect(noMatch.getByRole("link")).toHaveCount(0);
   await expect(noMatch.locator("form")).toHaveCount(0);
+  // The filter belongs to the Catalog and empties the Catalog alone: the stack stays where it is.
+  await expect(stack(page).getByRole("listitem")).toHaveCount(0);
+  await expect(followed(page)).toHaveText("0");
+});
+
+test("Esc empties the filter and leaves the focus in it", async ({ page }) => {
+  await page.goto("/technologies");
+  await filter(page).fill(technology.name);
+  await expect(rows(page)).toHaveCount(1);
+
+  await filter(page).press("Escape");
+  await expect(filter(page)).toHaveValue("");
+  await expect(filter(page)).toBeFocused();
+  await expect(page).toHaveURL("/technologies");
+});
+
+// DESIGN.md, Category Chips and The Address Rule: the chosen Category is what the page is showing,
+// so it is in the address; the count says where it is counting.
+test("a Category chip narrows the Catalog, says where it counts and lands in the URL", async ({ page }) => {
+  await page.goto("/technologies");
+  await page.getByRole("button", { name: "library", exact: true }).click();
+
+  await expect(page).toHaveURL("/technologies?category=library");
+  await expect(group(page, "library")).toBeVisible();
+  await expect(group(page, "platform")).toHaveCount(0);
+  await expect(matches(page)).toHaveText(/^\d+ technologies in library$/);
+
+  // `all` is the way back, and it takes the parameter out instead of writing it empty.
+  await page.getByRole("button", { name: "all", exact: true }).click();
+  await expect(page).toHaveURL("/technologies");
+  await expect(group(page, "platform")).toBeVisible();
+});
+
+// DESIGN.md, Catalog Ordering and Catalog Layout: how one reader reads is remembered in this
+// browser and never written to the address.
+test("the ordering and the layout are remembered, and stay out of the address", async ({ page }) => {
+  await page.goto("/technologies");
+  await page.getByRole("button", { name: "latest release" }).click();
+
+  // By latest release the Categories go: one group, named by the one ordering there is.
+  await expect(group(page, "latest release first")).toBeVisible();
+  await expect(group(page, "library")).toHaveCount(0);
+  await expect(catalog(page)).toContainText("what you could add, by latest release");
+
+  await page.getByRole("button", { name: "grid" }).click();
+  await expect(page).toHaveURL("/technologies");
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: "latest release" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "grid" })).toHaveAttribute("aria-pressed", "true");
+  await expect(group(page, "latest release first")).toBeVisible();
 });
 
 test("at ten of ten the other toggles are blocked, still reachable, and say why", async ({ page }) => {
   await addFollows(developer.id, fillers.ids);
   await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT} of your ${FREE_LIMIT} free follows`);
+  await expect(followed(page)).toHaveText(String(FREE_LIMIT));
 
   const note = page.locator("#limit-note");
   await expect(note).toBeVisible();
-  await expect(note).toContainText("unfollow one to follow another");
+  await expect(note).toContainText("let one go in what you follow to follow another");
+  // It names the wall and does not recount it: the figure is in the panel across the split.
+  await expect(note).not.toContainText(/\d/);
   // Nothing about a paid Plan: the remedy is in the Developer's hands.
   await expect(note).not.toContainText(/pro/i);
 
@@ -226,11 +293,11 @@ test("at ten of ten the other toggles are blocked, still reachable, and say why"
   // `force` because Playwright refuses to click an `aria-disabled` button, which is the point.
   await blocked.click({ force: true });
   await expect(blocked).toHaveAttribute("aria-pressed", "false");
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT} of your ${FREE_LIMIT} free follows`);
+  await expect(followed(page)).toHaveText(String(FREE_LIMIT));
 
-  // Room again: the note goes with the block.
-  await section(page, "following").getByRole("button", { name: /^Unfollow / }).first().click();
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of your ${FREE_LIMIT} free follows`);
+  // Room again: the note goes with the block, and the way out of a follow is in the stack.
+  await stack(page).getByRole("button", { name: /^Unfollow / }).first().click();
+  await expect(followed(page)).toHaveText(String(FREE_LIMIT - 1));
   await expect(note).toBeHidden();
   await expect(blocked).not.toHaveAttribute("aria-disabled", "true");
 });
@@ -238,7 +305,7 @@ test("at ten of ten the other toggles are blocked, still reachable, and say why"
 test("a follow the database refuses puts the row back and says what to do", async ({ page }) => {
   await addFollows(developer.id, fillers.ids.slice(0, FREE_LIMIT - 1));
   await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of your ${FREE_LIMIT} free follows`);
+  await expect(followed(page)).toHaveText(String(FREE_LIMIT - 1));
 
   // The tenth arrives from another session, so this page still believes there is room.
   await addFollows(developer.id, fillers.ids.slice(FREE_LIMIT - 1));
@@ -247,29 +314,29 @@ test("a follow the database refuses puts the row back and says what to do", asyn
   const error = page.locator(`#err-${technology.slug}`);
   await expect(error).toBeVisible();
   await expect(error).toContainText("not followed");
-  await expect(error).toContainText("unfollow one to follow another");
+  await expect(error).toContainText("let one go to follow another");
   await expect(error).not.toContainText(/pro/i);
 
   const back = toggle(page, "Follow");
   await expect(back).toHaveAttribute("aria-pressed", "false");
   await expect(back).toHaveAttribute("aria-describedby", new RegExp(`err-${technology.slug}`));
-  await expect(followed(page)).toHaveText(`you follow ${FREE_LIMIT - 1} of your ${FREE_LIMIT} free follows`);
+  await expect(followed(page)).toHaveText(String(FREE_LIMIT - 1));
 });
 
-test("a retired Technology can only be unfollowed, and the row says so", async ({ page }) => {
+test("a retired Technology closes the stack, can only be let go, and the row says so", async ({ page }) => {
   await addFollows(developer.id, [leaving.id]);
   await retireTechnology(leaving.id);
   await page.goto("/technologies");
 
-  const retired = section(page, "retired");
-  await expect(retired).toContainText("They still count toward your 10");
-  const row = retired.getByRole("listitem").filter({ hasText: leaving.name });
-  await expect(row).toContainText("retired");
+  // It is in the left column, because being followed is the only reason it is shown at all.
+  await expect(retired(page)).toContainText(`they still count toward your ${FREE_LIMIT}`);
+  const row = retired(page).getByRole("listitem").filter({ hasText: leaving.name });
+  await expect(row).toContainText("last");
 
   await row.getByRole("button", { name: `Unfollow ${leaving.name}` }).click();
-  await expect(row).toContainText("can't be followed again");
+  await expect(row).toContainText("let go, for good");
   await expect(row.getByRole("button")).toHaveCount(0);
-  await expect(followed(page)).toHaveText(`you follow 0 of your ${FREE_LIMIT} free follows`);
+  await expect(followed(page)).toHaveText("0");
 
   // And it is gone on the next visit, because nobody follows it any more.
   await page.reload();
@@ -278,18 +345,17 @@ test("a retired Technology can only be unfollowed, and the row says so", async (
 
 test("the filter lands in the URL, survives a reload and leaves the history alone", async ({ page }) => {
   await page.goto("/technologies");
-  const filter = page.getByRole("searchbox", { name: "filter" });
-  await filter.fill(technology.name);
+  await filter(page).fill(technology.name);
   await expect(rows(page)).toHaveCount(1);
   await expect(page).toHaveURL(`/technologies?${new URLSearchParams({ filter: technology.name })}`);
 
   await page.reload();
-  await expect(filter).toHaveValue(technology.name);
+  await expect(filter(page)).toHaveValue(technology.name);
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page).first()).toContainText(technology.name);
 
   // Typing replaces the entry instead of adding one, so back leaves the page.
-  await filter.fill("");
+  await filter(page).fill("");
   await expect(page).toHaveURL("/technologies");
   await expect(rows(page).first()).toBeVisible();
   await page.goBack();
@@ -298,35 +364,34 @@ test("the filter lands in the URL, survives a reload and leaves the history alon
 
 test("a filtered address opened from scratch shows the same view as typing", async ({ page }) => {
   await page.goto(`/technologies?${new URLSearchParams({ filter: technology.name })}`);
-  const matches = page.locator("#matches");
-  await expect(matches).toHaveText(/^1 of \d+ match$/);
+  await expect(matches(page)).toHaveText(/^1 of \d+ match$/);
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page).first()).toContainText(technology.name);
-  await expect(page.getByRole("searchbox", { name: "filter" })).toHaveValue(technology.name);
+  await expect(filter(page)).toHaveValue(technology.name);
 
   // An empty parameter is the unfiltered page.
   await page.goto("/technologies?filter=");
-  await expect(matches).toHaveText(/^\d+ technologies$/);
+  await expect(matches(page)).toHaveText(/^\d+ technologies$/);
   await expect(rows(page).first()).toBeVisible();
 });
 
 test("a filtered address that matches nothing says so, like typing it does", async ({ page }) => {
   await page.goto("/technologies?filter=not-a-technology&stray=1");
-  await expect(page.locator("#matches")).toHaveText(/^0 of \d+ match$/);
+  await expect(matches(page)).toHaveText(/^0 of \d+ match$/);
   await expect(rows(page)).toHaveCount(0);
-  const noMatch = page.locator("section", { hasText: "The catalog is curated" });
+  const noMatch = page.locator("#no-match");
   await expect(noMatch).toContainText("not-a-technology");
 
   // An unrelated parameter is left where it was.
-  await page.getByRole("searchbox", { name: "filter" }).fill("");
+  await filter(page).fill("");
   await expect(page).toHaveURL("/technologies?stray=1");
 });
 
 test("the filter answers to `/`, and leaves the key alone to whoever is typing", async ({ page }) => {
   await page.goto("/technologies");
-  const field = page.getByRole("searchbox", { name: "filter" });
-  // The `h1` is `sr-only`, so somewhere else on the page is the follow status: static text, nothing to press.
-  const elsewhere = page.getByRole("region", { name: "Follow status" });
+  const field = filter(page);
+  // The `h1` is `sr-only`, so somewhere else on the page is the panel: static text, nothing to press.
+  const elsewhere = page.getByText("left on your free plan");
   await expect(field).toHaveAttribute("aria-keyshortcuts", "/");
 
   // From anywhere on the page, the key lands in the field and nothing is typed into it.

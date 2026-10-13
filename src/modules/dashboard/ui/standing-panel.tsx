@@ -1,6 +1,6 @@
 import type { Standing } from "../domain/standing";
 import { BAR_NOTE, standingTitle, totalsRows } from "./dashboard-copy";
-import { ColumnTitle } from "./column-title";
+import { ColumnTitle } from "@/components/column-title";
 import { StandingQuotaNote } from "./quota-note";
 
 // DESIGN.md, Standing Panel: the head of the Standing column, on the one raised surface the system
