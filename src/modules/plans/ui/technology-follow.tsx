@@ -77,7 +77,7 @@ function FollowControl({ technologyId, name, retired }: { technologyId: string; 
       <span className={PLACE}>
         <FollowToggle technologyId={technologyId} name={name} errorId={rejection ? ERROR_ID : undefined} />
       </span>
-      <FollowToggleLimitNote technologyId={technologyId} className={NOTE} />
+      <FollowToggleLimitNote technologyId={technologyId} counted className={NOTE} />
       {rejection && <FollowRejectionNote id={ERROR_ID} rejection={rejection} className={NOTE} />}
     </>
   );

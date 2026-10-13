@@ -27,67 +27,73 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-13, sera, la Dashboard è su `main`).** La **PR #147** è stata
-mergiata in squash dall'utente: `main` è a **`8191681`**, e il lavoro della Dashboard è in
-produzione. ⚠️ **La #142 resta aperta**, e la PR non la chiudeva di proposito: la issue chiede
-quattro schermate e lì dentro c'era solo la Dashboard. Il passo seguente è **`/technologies`**.
+**Da dove ripartire (2026-10-14): `/technologies` è scritta in `DESIGN.md` e implementata, e il
+giro E2E della pagina è verde.** Il lavoro sta sul branch **`142-handoff-dopo-il-merge`**, pushato,
+nella **PR #149**, che non chiude la #142: la issue chiede ancora **Technology e Release**. `main` è
+a **`207b4b9`**. Il passo seguente è il merge della #149, e poi quelle due schermate.
 
-⚠️ **Il `main` locale era divergente e `git pull --ff-only` si è fermato.** Portava `31011c8`
-("Tenere l'handoff sotto le 100 righe"), committato in passato **diretto sul `main` locale** e mai
-pushato; stava anche nel ramo, quindi lo squash l'ha portato su `origin/main`, e `main` è stato
-allineato con `reset --hard` dopo aver verificato file per file che il contenuto fosse davvero
-lassù. La lezione per la prossima volta: **sul `main` locale non si committa**, nemmeno un
-documento.
+**Technology e Release si auditano e si mockano insieme, per scelta dell'utente del 2026-10-14**, e
+si scrivono in codice una per volta, la Technology per prima. La ragione: la Release è il contenuto
+che la Technology elenca, e le due condividono la riga di Release, il verdetto e i glifi di
+Significance, quindi deciderle separate è il modo sicuro di scrivere due volte le stesse regole in
+`DESIGN.md`. Il giro resta quello di `/technologies`: audit misurato sulla pagina viva, mock,
+approvazione dell'utente, `DESIGN.md`, codice, E2E. ⚠️ I loro mock (`design/mocks/technology.html`
+e `release.html`) sono fermi all'**8 ottobre**, cioè alla direzione di prima: nella direzione nuova
+ci sono solo `landing`, `dashboard` e `technologies`.
 
-**La Dashboard è finita, tranne gli stati per colonna.** Per com'è fatta (il dominio nuovo
-`standing.ts` e `stream.ts`, il verdetto come somma delle righe per costruzione, i componenti che
-sono spariti e quelli nuovi, le tre cose corrette dalla pagina vera e i due scostamenti voluti dal
-mock) **non si riparte da qui**: sta tutto, parola per parola, in `docs/handoff/2026-10.md`,
-"Stato al 2026-10-13", e le regole stanno in `DESIGN.md`.
+**Che pagina è adesso.** Due colonne a 1240px, come la Dashboard: a sinistra `what you follow, by
+name`, sticky a 72px con la lista che scorre dentro sé, a destra il Catalogo per Categoria. Il
+quota si conta **una volta sola**, nel pannello in testa alla colonna sinistra, e perciò **la barra
+non lo porta su questa pagina** (altrove sì) e la nota del limite nomina il muro senza numeri. Le
+righe del Catalogo sono a due righe; `rows | grid` e `by name | by latest release` stanno in
+`localStorage`, `?filter=` e `?category=` nell'indirizzo (The Address Rule, in `DESIGN.md`).
 
-**Quello che la sessione del 13 sera ha aggiunto.** I totali della Posizione sono ora un **panel**
-in testa alla colonna, sul piano `raised`, col titolo della colonna e le cifre incolonnate
-(`totalsLines` è diventata `totalsRows`): prima erano una frase sola che a 360px andava a capo tre
-volte. Tre scostamenti dal mock li ha trovati la **misura e non l'occhio**: la riga della settimana
-del Digest era 14px invece di 13, la sua riga di separazione stava sotto invece che sopra, e il
-chevron era un SVG a mano senza la curva. Le righe a una riga sola (titoli di colonna, le due
-versioni, Help Pointer, piede) prendono `line-height: normal` come nei mock, e la regola sta in
-`DESIGN.md` sotto la scala tipografica.
+### Le tre cose decise dall'utente mentre si scriveva il codice
 
-⚠️ **Prima di giudicare la tipografia di una schermata, controlla i font.** Il 2026-10-13 la pagina
-sembrava sbagliata nei font-size ed era in **Arial**: `next/font` non era riuscito a scaricare i
-font e Turbopack aveva messo in cache quel risultato, quindi il CSS servito aveva i soli `@font-face`
-di fallback mentre build e produzione avevano quelli veri. La verifica in due comandi e il rimedio
-(`rm -rf .next`) stanno in `docs/handoff/AMBIENTE.md`.
+1. **In `grid` la cella è un pannello, non una riga**: contorno 1px, raggio 6px, 16px d'aria, e la
+   riga sotto sparisce. Affiancate, le righe diventavano una dentellatura di trattini che non
+   chiudono niente. **Non è una card**: niente fondo, niente ombra, nessun hover.
+2. **Dentro il pannello versione e descrizione vanno su due righe**, e il `·` sparisce: il pallino
+   separa fatti sulla stessa riga, mai righe diverse.
+3. **Le punte di colore**: ce n'era margine per **una sola**, il Help Pointer `--> see them on your
+   dashboard` in fondo al pannello (freccia faint, etichetta `help` ciano). Il resto no, ed è
+   scritto in `DESIGN.md`: questa pagina non giudica niente, quindi colorare Categorie, chip o Mark
+   spenderebbe per decorazione l'unico canale riservato alla severità, che è ciò che fa leggere il
+   rosso della Dashboard come un verdetto.
 
-**Gli stati per colonna restano rimandati, per scelta dell'utente (2026-10-13).** Caricamento ed
-errore per colonna (`pending:`, `Try again` che ricarica una colonna sola) vogliono **due query
-separate** al posto della sola `readDashboard`, con Suspense e error boundary per colonna. Si fanno
-in un passo loro, perché le due query si sovrappongono molto (**circa 1.7x sul database**) e vanno
-misurate senza mescolarle alla riscrittura. Finché non ci sono, la pagina arriva intera come prima
-e un errore resta quello di pagina.
+⚠️ **Il bottone che si accavallava sul testo in `grid` era un problema di layer**: le differenze
+della griglia stavano in `globals.css`, e **le utility di Tailwind stanno in un layer successivo**,
+quindi vincevano loro qualunque fosse la specificità. Ora la vista sta nelle classi del componente.
+
+**Misurato sulla pagina viva, non dedotto**: overflow orizzontale **0** a 320, 360, 390, 414, 640,
+641, 1040 e 1240, barra **56.8px**, scrollbar nascosta che ruba **0px**, e il documento è **3020px**
+in griglia contro **3231px** a righe (31 righe di Catalogo, container 1240). ⚠️ A 320px una prova
+in iframe dava 11px di overflow: era **la scrollbar dell'iframe**, non la pagina.
 
 ### Cosa resta
 
-1. **Le altre tre schermate della #142**: `/technologies`, Technology, Release. Poi gli stati per
-   colonna, come sopra.
-2. ⚠️ **Il giro intero degli E2E non è mai stato verde in una corsa sola.** Le suite passano una
-   per una (unitari 604; dashboard 19, current-version 5, a11y 33, overflow 23, navigation +
-   keyboard + release + technologies 43), ma il giro intero sul dev server dava **6 timeout di
-   `page.goto` a 30s**, non asserzioni. Va rifatto **sulla build di produzione** prima di dire che
-   la suite è verde.
-3. ⚠️ **Due cancellazioni sono dell'utente** (la modalità auto le nega): il ramo mergiato,
-   `git branch -d 142-app-visual-direction` e `git push origin --delete 142-app-visual-direction`,
-   e la cartella `design/mocks/direction/`, `git rm -r design/mocks/direction`, che non è più la
-   fonte.
-4. **Il peso delle pagine prima e dopo** (criterio della #142) non è stato misurato, e la #130
-   (Core Web Vitals veri in produzione) resta senza misura di partenza.
-5. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
-   Non parte da zero: le Notifiche sono già un Pro post-MVP in `docs/DECISIONI.md` (ADR 0004).
-6. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
-   lavoro tocca Anthropic. Il `CRON_SECRET` di produzione non passa da questa chat.
-7. **Docker e il dev server erano attivi** a fine sessione, con la cache di `.next` ripulita e i font
-   veri in pagina. Se la sessione nuova li trova spenti: `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
-8. **Rami, ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
+1. **Merge della #149**, poi l'audit di **Technology e Release insieme** (#142). Dopo, gli stati per
+   colonna della Dashboard, rimandati per scelta dell'utente: vogliono **due query separate** che si
+   sovrappongono **circa 1.7x** sul database.
+2. ⚠️ **Il giro intero degli E2E non è mai stato verde in una corsa sola**: qui sono passati
+   `technologies` (19) più a11y, keyboard, overflow, navigation, retired e technology-follow (84),
+   ma il giro intero sul dev server dava **6 timeout di `page.goto` a 30s**. Va rifatto **sulla
+   build di produzione** prima di dire che la suite è verde.
+3. ⚠️ **Due cancellazioni sono dell'utente** (la modalità auto le nega): `git branch -d
+   142-app-visual-direction` con il suo `git push origin --delete`, e `git rm -r
+   design/mocks/direction`, che non è più la fonte.
+4. ⚠️ **Una volta sola, `/technologies` ha risposto con la pagina di errore in dev**, al primo
+   colpo dopo l'avvio, nella sessione del mock. Non si è ripetuta in questa. Se torna, è un difetto
+   vero e va aperta una issue.
+5. **Due criteri della #142 ancora da soddisfare**, oltre alle due schermate: il peso delle pagine
+   prima e dopo, mai misurato (e la **#130**, Core Web Vitals veri in produzione, resta senza misura
+   di partenza), e il giro a mano nel browser su tutta l'app alla fine, col metro della facilità d'uso.
+6. **Un sistema di notifiche interno**, idea dell'utente del 2026-10-10: issue a parte, non aperta.
+7. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
+   lavoro tocca Anthropic.
+8. **Docker e il dev server erano attivi** a fine sessione. Se la sessione nuova li trova spenti:
+   `pnpm db:start` e `pnpm dev`, uno solo sulla 3000.
+9. **Rami, ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
 
-Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e facciamo /technologies della #142`.
+Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e facciamo l'audit di Technology e
+Release insieme`.

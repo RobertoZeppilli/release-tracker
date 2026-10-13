@@ -153,7 +153,7 @@ test("Following: the toggle is reached and flipped with the keyboard", async ({ 
   await page.keyboard.type(technology.name);
 
   const toggle = page.getByRole("button", { name: `Follow ${technology.name}` });
-  await tabTo(page, toggle, "the Follow toggle", 10);
+  await tabTo(page, toggle, "the Follow toggle", 20);
   await expectFocusRing(page, "the Follow toggle");
   await page.keyboard.press("Enter");
 

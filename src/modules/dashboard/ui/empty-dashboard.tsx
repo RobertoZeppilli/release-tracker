@@ -4,7 +4,7 @@ import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FREE_FOLLOW_LIMIT, type PickerTechnology } from "@/modules/plans";
-import { FollowToggleLimitNote, PickerRow, useFollows } from "@/modules/plans/ui";
+import { CatalogRow, FollowToggleLimitNote, useFollows } from "@/modules/plans/ui";
 import { SectionTitle } from "./section-title";
 
 // The Catalog has no measure of popularity, so the shortlist is simply the first Technologies in
@@ -50,10 +50,10 @@ export function EmptyDashboard({ shortlist, total }: { shortlist: readonly Picke
         <SectionTitle id="catalog-title" title={`in the catalog (${shortlist.length})`} />
         <ul className="border-t border-rule">
           {shortlist.map((technology) => (
-            <PickerRow key={technology.id} technology={technology} hidden={false} />
+            <CatalogRow key={technology.id} technology={technology} hidden={false} />
           ))}
         </ul>
-        <FollowToggleLimitNote />
+        <FollowToggleLimitNote counted />
         <p className="mt-4 font-mono text-diagnostic">
           <Link href="/technologies" className="text-text no-underline hover:underline">
             <span aria-hidden className="mr-[1ch] text-text-faint [font-variant-ligatures:none]">

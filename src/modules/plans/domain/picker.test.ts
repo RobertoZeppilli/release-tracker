@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  countMatches,
   groupByCategory,
   liveSections,
   matchesQuery,
@@ -16,6 +15,7 @@ function technology(name: string, options: Partial<PickerTechnology> = {}): Pick
     name,
     description: `${name} description`,
     latest: "1.0.0",
+    latestAt: "2026-01-01",
     retired: false,
     category: "library",
     ...options,
@@ -60,16 +60,6 @@ describe("matchesQuery", () => {
   it("matches everything while the filter is empty", () => {
     expect(matchesQuery(vite, "")).toBe(true);
     expect(matchesQuery(vite, "   ")).toBe(true);
-  });
-});
-
-describe("countMatches", () => {
-  const sections = splitPicker([vite, react, angular, cra], [react.id, cra.id]);
-
-  it("counts across the sections that are shown, retired ones included", () => {
-    expect(countMatches(sections, "")).toEqual({ shown: 4, total: 4 });
-    expect(countMatches(sections, "react")).toEqual({ shown: 2, total: 4 });
-    expect(countMatches(sections, "qwik")).toEqual({ shown: 0, total: 4 });
   });
 });
 

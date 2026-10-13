@@ -39,6 +39,17 @@ non stato: si aprono quando servono.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
 
+## Lo squash di una PR mentre un ramo e' aperto
+
+Spostato qui da `docs/HANDOFF.md` il 2026-10-14, parola per parola, per tenere lo stato vivo sotto
+le 100 righe.
+
+⚠️ **La #149 ha trovato conflitti perché `main` ha preso lo squash della #148** (`207b4b9`), lo
+stesso contenuto che sul ramo era già un commit suo: l'handoff arrivava due volte. Risolti con un
+**merge di `origin/main` dentro il ramo**, tenendo lo stato del ramo, perché quello di `main` era lo
+stato di prima, già sceso parola per parola in `docs/handoff/2026-10.md`. Niente rebase e niente
+force push su un ramo già pushato.
+
 ## Preferenze dell'utente
 
 - Vuole consigli motivati con una raccomandazione; approva spesso le raccomandazioni.

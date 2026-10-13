@@ -9,6 +9,9 @@ export type PickerTechnology = {
   name: string;
   description: string;
   latest: string | null;
+  // The day that Version came out, as an ISO day, for the Catalog's other ordering. It is null
+  // wherever `latest` is, because it is that Release's own date and not the newest date there is.
+  latestAt: string | null;
   retired: boolean;
   category: Category;
 };
@@ -48,16 +51,9 @@ export function matchesQuery(technology: PickerTechnology, query: string): boole
   return `${technology.name} ${technology.description}`.toLowerCase().includes(needle);
 }
 
-// The filter counts the rows the page holds, so an empty filter says how big the Catalog is.
-export function countMatches(sections: PickerSections, query: string): { shown: number; total: number } {
-  const rows = [...sections.following, ...sections.catalog, ...sections.retired];
-  return { shown: rows.filter((row) => matchesQuery(row, query)).length, total: rows.length };
-}
-
-// Where every row belongs by the follows the page holds now, which is not where it sits: a row
-// followed during the visit keeps its place until the next visit, so the section counts are the only
-// thing that can tell the truth about it in the meantime. The rule is the one `splitPicker` uses, so
-// the live count and the next visit can never disagree.
+// Where every row belongs by the follows the page holds now. A press moves the row across the split
+// on the tick it is pressed, so this is what both columns are painted from, and it is the rule
+// `splitPicker` uses: what the page shows and what the next visit finds can never disagree.
 export function liveSections(sections: PickerSections, followed: readonly string[]): PickerSections {
   return splitPicker([...sections.following, ...sections.catalog, ...sections.retired], followed);
 }
