@@ -16,7 +16,9 @@ test("a Technology page lists the Releases by major, newest first", async ({ pag
   await page.goto("/technologies/vite");
   await expect(page.getByText(/^latest \d+\.\d+\.\d+$/)).toBeVisible();
 
-  const majors = page.getByRole("heading", { level: 2, name: /^v\d+ \d+ releases?$/ });
+  // Every group title is a stat row now, so it is an `h3` under the column's own `h2` and it
+  // carries the counts after the major (DESIGN.md, Stat Row).
+  const majors = page.locator("h3[id^='v']");
   await expect(majors.first()).toBeVisible();
   const numbers = (await majors.allTextContents()).map((text) => Number(/^v(\d+)/.exec(text)?.[1]));
   expect(numbers).toEqual([...numbers].sort((a, b) => b - a));
@@ -80,10 +82,14 @@ test.describe("the Release rows of the plain list", () => {
 
     const history = page.getByRole("region", { name: "Recorded history" });
     await expect(history).toContainText("note: the whole recorded history, 3 releases in 2 majors.");
-    await expect(history.getByRole("list", { name: "Releases per major version" })).toContainText("2 releases");
+    // The counts sit in the group titles of the list, not in a block of the other column.
+    await expect(page.locator("h3[id^='v']")).toHaveText([
+      "v2|2 releases · 1 featured · 1 digest, 1 needs action",
+      "v1|1 release · 1 featured",
+    ]);
     // No verdict here: there is no start, so there is no upgrade to judge.
     await expect(history.getByRole("heading")).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: /^(warning|ok|note):/ })).toHaveCount(0);
+    await expect(page.locator("#path-verdict")).toHaveCount(0);
 
     await history.getByRole("link", { name: "back to the upgrade path" }).click();
     await expect(page).toHaveURL(`/technologies/${technology.slug}`);

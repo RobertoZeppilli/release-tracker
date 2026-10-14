@@ -40,7 +40,17 @@ test("ready with action required: verdict, title, key points and numbered breaki
   await expect(points.nth(1)).toHaveText("note[2]: init() returns a promise.");
   await expect(points.nth(1).locator("code")).toHaveText("init()");
 
-  await expect(page.getByRole("heading", { level: 2, name: "breaking changes (2)" })).toBeVisible();
+  // DESIGN.md, Counts Panel: the section title carries no count, because the panel under the
+  // verdict already says the numbers once. The aside promises the fix, and promises the citation
+  // only where every breaking change carries one, which this Summary does not.
+  const breakingTitle = page.getByRole("heading", { level: 2, name: "breaking changes" });
+  await expect(breakingTitle).toBeVisible();
+  await expect(breakingTitle).toContainText("each with a fix");
+  await expect(breakingTitle).not.toContainText("(2)");
+  // The work comes first: with `action required` the breaking changes sit above the key points.
+  const breakingBox = await page.locator("#breaking").boundingBox();
+  const pointsBox = await page.locator("#key-points").boundingBox();
+  expect(breakingBox?.y ?? 0, "the breaking changes come before the key points").toBeLessThan(pointsBox?.y ?? 0);
   const second = page.getByRole("article", { name: "breaking[2]: init() is async" });
   await expect(second).toContainText("help: Await init() before using the client.");
   await expect(page.getByRole("region", { name: "Summary status" })).toHaveCount(0);
