@@ -29,8 +29,8 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 ## Stato
 
 **Da dove ripartire (2026-10-14, sera): la PR della #142 è aperta, non è ancora stata unita.**
-È la **PR #150**, `142-technology-release` su `main`, con `Closes #142` in inglese e **nove commit**,
-l'ultimo `c923ce0` (i panel con un titolo solo). Il ramo ora ha un upstream suo, quindi il push è un
+È la **PR #150**, `142-technology-release` su `main`, con `Closes #142` in inglese e **undici**
+**commit**, gli ultimi due `c923ce0` (i panel con un titolo solo) e `4f924b3` (questo handoff). Il ramo ora ha un upstream suo, quindi il push è un
 `git push` secco. ⚠️ **Il merge e la cancellazione del ramo sono dell'utente**: la modalità auto li
 nega, i comandi vanno dati a lui.
 `pnpm lint`, `pnpm typecheck`, **620 unitari** e **195 E2E verdi in una corsa sola**, axe compreso,
