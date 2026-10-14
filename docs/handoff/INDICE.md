@@ -18,6 +18,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-14 (Technology in codice e misurata, prima del codice della Release): lo spacco, il contenitore unico a 1240, la Stat Row dentro il titolo
+  - ⚠️ `max-[Npx]:` di Tailwind è esclusivo: a 1040px esatti il pannello correva 992px
+  - ⚠️ Le misure di Technology su 18 larghezze: prima Release a 158px contro i 646 della pagina viva
+  - ⚠️ I 43 `max-[640px]` del resto dell'app non erano ancora convertiti
 - Stato al 2026-10-14 (il peso "prima" preso e il codice di Technology iniziato): i mock chiusi, le misure del mock A di Release
   - ⚠️ Le quattro misure del mock A sono il metro del codice della pagina Release
   - ⚠️ La prosa a 72ch dentro il bordo unico a 1192: decisa dall'agente, lasciata passare dall'utente
