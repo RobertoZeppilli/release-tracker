@@ -15,7 +15,10 @@ export function ReleaseVerdict({ slug, release }: { slug: string; release: Summa
 }
 
 // DESIGN.md, Neutral row verdicts: a neutral status is followed by `· read the release notes` as an
-// underlined link, and nothing follows it where there are none to read.
+// underlined link, and nothing follows it where there are none to read. It carries the label
+// treatment of the Help Pointer -- interactive green, 1px dashed underline, solid on hover -- and
+// not `text-muted` alone: muted beside the row's own `text` measured 2.1:1, and a link inside a
+// sentence has to be told apart from it without colour (WCAG 1.4.1, axe `link-in-text-block`).
 export function RowVerdictLine({ verdict, href }: { verdict: RowVerdict; href: string }) {
   return (
     <>
@@ -24,7 +27,7 @@ export function RowVerdictLine({ verdict, href }: { verdict: RowVerdict; href: s
       {verdict.notes && (
         <>
           <span className="text-text-muted"> · </span>
-          <Link href={href} className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current">
+          <Link href={href} className="border-b border-dashed border-current text-link no-underline hover:border-solid">
             read the release notes
           </Link>
         </>
