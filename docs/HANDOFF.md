@@ -28,69 +28,69 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-14, sera): le due pagine sono finite e i verdetti stanno in un panel
-uguale sulle due pagine; manca la PR.** Branch **`142-technology-release`**, albero pulito e **otto
-commit in coda** su `origin/main`, gli ultimi due `900968a` (il peso misurato dopo) e **`95688ef`
-(i panel)**. ⚠️ **Il ramo non ha un upstream suo**: traccia `origin/main`, quindi il push è
-`git push -u origin 142-technology-release`, non un `git push` secco.
+**Da dove ripartire (2026-10-14, sera): la PR della #142 è aperta, non è ancora stata unita.**
+È la **PR #150**, `142-technology-release` su `main`, con `Closes #142` in inglese e **nove commit**,
+l'ultimo `c923ce0` (i panel con un titolo solo). Il ramo ora ha un upstream suo, quindi il push è un
+`git push` secco. ⚠️ **Il merge e la cancellazione del ramo sono dell'utente**: la modalità auto li
+nega, i comandi vanno dati a lui.
 `pnpm lint`, `pnpm typecheck`, **620 unitari** e **195 E2E verdi in una corsa sola**, axe compreso,
-nei due temi.
+nei due temi. ⚠️ `release.spec.ts:100` è caduto una volta sola in una corsa piena e ripetuto due
+volte passa: è un click su un `summary` che arriva prima dell'idratazione, non una regressione.
+⚠️ **Le due immagini dell'utente in `docs/` sono state cancellate** su sua richiesta, mai committate.
 
-⚠️ **Il peso prima e dopo** (le due pagine non pesano, ma `/login` porta 14 KB di UI delle Release)
-sta in `docs/handoff/PESO.md` e, per come è stato trovato, in `docs/handoff/2026-10.md`.
+### La riga unica del verdetto, rimessa in piedi (e cosa è costato)
 
-### I panel, e la regola che hanno piegato
+1. **Il tetto di `column-verdict` scende da 1.45rem a 1.2rem**, ed è questo che compra la riga
+   unica dentro un panel. La ragione è misurata: il clamp cresceva col viewport mentre la colonna
+   resta 360px, così **sopra ~1340px** `ok: nothing needs action` chiedeva **346px dentro 326px** di
+   panel. A 1.2rem la frase più larga che i due panel possono dire, `note: 12 without a verdict`,
+   **misura 319**. Sotto ~1130px di viewport non si è mosso niente.
+2. ⚠️ **Non è la scala che cede alla copia**, che è la regola scritta: la copia non è cresciuta, era
+   un clamp in `vw` dentro una colonna fissa a misurare la cosa sbagliata. `DESIGN.md` lo dice così,
+   in The One-Line Verdict Rule, e il limite vale **solo per i tre titoli dei panel**.
+3. **Il test misura a 1600px**, dove il clamp arriva al tetto: a 1280px (il viewport di Playwright)
+   non ci arrivava e **non aveva mai visto l'andata a capo**. Misura anche la coppia più lunga che
+   i due panel possono dire, scambiando etichetta e frase nel DOM.
+4. **Come si misura una frase** senza indovinare: uno script Playwright su `/login`, che è pubblica
+   e porta i font veri, con uno `span` `inline-block` e `white-space: nowrap` dentro un box di 360px.
+   Lo `scrollWidth` non serve, perché con `overflow: visible` resta incollato al contenitore.
 
-1. **I verdetti sono il titolo di un panel**, sulla Technology e sulla Dashboard, e i conteggi dietro
-   di loro sono righe della stessa forma: **nome a sinistra, numero a destra incolonnato**, che è la
-   disposizione con cui lo Standing Panel contava già i suoi totali. Decisione dell'utente: le due
-   pagine devono essere la stessa scatola. Niente `·` nelle righe.
-2. Sulla Dashboard sono spariti **la didascalia `where your stack stands · by distance`**, la
-   funzione che la scriveva e **lo slot vuoto riservato** sopra il panel. L'`aside` prende ora il
-   nome dal verdetto (`aria-labelledby="page-verdict"`).
-3. **`read the release notes` prende una riga sua** e il `·` se n'è andato con lui: sulla riga
-   condivisa le sue quattro parole si rompevano in un punto diverso a ogni larghezza. Vale anche per
-   la riga del flusso in Dashboard, stesso componente.
-4. ⚠️ **La regola della riga unica del verdetto è stata piegata, non ignorata**: nel panel
-   `ok: nothing needs action` ha **328px e ne misura 365**, e per stare su una riga le tre frasi
-   dovrebbero scendere a **21 caratteri**. Cede la riga, non la scala, e `DESIGN.md` ora dice che la
-   riga unica è una regola del contenitore della pagina, non di un panel. Il test E2E è passato da
-   1,5 a 2,5 righe tenendo le altre tre misure. **Se l'utente la rivuole, il prezzo è la copy.**
-5. ⚠️ Il `whitespace-nowrap` dei verdetti è andato via con la cornice: fuori da una scatola una
-   frase lunga sconfinava nel margine senza che nessuno se ne accorgesse, dentro stampava 16px oltre
-   il bordo.
+### Il resto di questo giro
 
-⚠️ **Il tema chiaro è stato guardato e misurato** sulle due pagine, e le misure di quello che axe
-non guarda stanno in `docs/handoff/2026-10.md`, "Il tema chiaro delle due pagine (2026-10-14)".
+1. La Dashboard **dice cosa manca** quando nessuno ha dichiarato una versione, invece di restare un
+   titolo su una scatola vuota; il panel di `/technologies` **si intitola alla stessa scala** degli
+   altri due; le righe delle due liste di sinistra prendono **12px di padding su tutti i lati**.
+2. La riga in fondo alla Dashboard: la colonna delle date era **fissa a 11ch** dove `weeks 38 to 40`
+   sono 14 caratteri, e la dicitura si stampava sopra la frase accanto. Ora 11ch è un minimo e
+   **tutta la frase è un controllo solo**, nella cornice dei chip delle Categorie.
+   ⚠️ **Niente verde nei controlli**: quel verde è l'inchiostro dei link, e il `help` che c'era prima
+   è il teal con cui il sistema **cita le fonti**. Regola dell'utente, vale ovunque.
+3. In `sorted by` la prima voce dice `category`, come il titolo della colonna accanto; il valore
+   resta `name`.
 
 ### Cosa resta
 
-1. **La PR che chiude la #142** (`Closes #142` in inglese): è la prossima cosa, non resta altro
-   lavoro di codice sulle due pagine. ⚠️ In `docs/` ci sono **due immagini dell'utente**,
-   `INFO IN LINEA.JPG` e `INFO IN BASSO A SINISTRA.JPG`, mai committate: sono le due schermate da cui
-   sono nati i panel, da cancellare o da spostare, **lo decide l'utente**.
+1. **Il merge della PR #150**, che chiude la #142, e la cancellazione del ramo: tutt'e due
+   dell'utente.
 2. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: lavoro suo, di chunking e
-   di import dai barrel, **non deciso**, e da pesare contro la regola delle Script KB prima di dire
-   che la #142 è chiusa bene.
-3. ⚠️ **`DESIGN.md` va riletto col sospetto, non citato**: tre sessioni di fila l'hanno trovato
-   indietro. **La tabella dei token ora è tenuta da un test**; la prosa no, e l'ultima volta diceva
-   58 e 72 dove sono 57 e 71, il Counts Panel 24px dove il mock ne mette 16, e Help Pointer Link si
-   contraddiceva con Neutral row verdicts.
+   di import dai barrel, **non deciso**, e da pesare contro la regola delle Script KB.
+3. ⚠️ **`DESIGN.md` va riletto col sospetto, non citato**: quattro sessioni di fila l'hanno trovato
+   indietro. **La tabella dei colori è tenuta da un test**; la prosa e la tabella della tipografia
+   no, e quest'ultima diceva ancora `whiteSpace: nowrap` per un token che non lo porta più.
 4. ⚠️ **Le conversioni `max-[]` del resto dell'app non sono decise**: 43 `max-[640px]`, 19
    `max-[1040px]`, 7 `max-[880px]` tra Dashboard, `/technologies`, landing e barra. I file di
    Technology e di Release sono convertiti. ⚠️ **La barra usa ancora `sm:px-5`**, quindi a 640px
-   esatti ha 24px di padding dove la pagina Release ne ha 16: un pixel di disallineamento, l'unico
-   posto dove le due conversioni si incontrano.
+   esatti ha 24px di padding dove la pagina Release ne ha 16.
 5. **Il mock disegna due righe che il modello non produce**, la spiegazione di cosa cambia e il fix
-   diff: lo schema dà solo `change` e `migration`, quindi non sono state scritte. Sarebbero dominio
-   nuovo, da fissare prima in `CONTEXT.md`.
+   diff: lo schema dà solo `change` e `migration`. Sarebbero dominio nuovo, da fissare prima in
+   `CONTEXT.md`.
 6. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa e la pagina
    Technology chiama entrambe. Si uniscono quando conviene, non subito.
 7. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
    lavoro tocca Anthropic. **Le cose dell'utente** stanno in `APERTE.md`, **l'ambiente** in
-   `AMBIENTE.md` e **come si misura una pagina** in `PESO.md`. ⚠️ Per guardare la pagina Release
-   serve una Sintesi `ready`: l'`update` e il `restore` sono in `PESO.md`, in `pnpm dev` basta
-   l'`update`, e **il database locale è stato rimesso come era** (zero Sintesi `ready`). Docker e il
-   dev server sulla 3000 erano attivi a fine sessione.
+   `AMBIENTE.md`, **come si misura una pagina** in `PESO.md` e il resto di questa sessione in
+   `docs/handoff/2026-10.md`. ⚠️ Per guardare la pagina Release serve una Sintesi `ready`: l'`update`
+   e il `restore` sono in `PESO.md`, e **il database locale è come era** (zero Sintesi `ready`).
+   Docker e il dev server sulla 3000 erano attivi a fine sessione.
 
-Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e apriamo la PR della #142`.
+Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`, dopo aver unito la PR #150.

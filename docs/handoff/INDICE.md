@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-14 (le due pagine finite, prima della PR): i panel, e la regola che hanno piegato
+  - ⚠️ La riga unica del verdetto ceduta dentro un panel, e rimessa in piedi lo stesso giorno abbassando il tetto del token
+  - ⚠️ Le due immagini dell'utente in `docs/`, mai committate: cancellate il 2026-10-14 su sua richiesta
 - Il tema chiaro delle due pagine (2026-10-14), guardato e misurato: le misure di quello che axe non guarda
   - ⚠️ `DESIGN.md` indietro per la terza sessione di fila, la tabella dei token ora è tenuta da un test
 - Stato al 2026-10-14 (il peso misurato prima e dopo, prima dei panel): le due pagine non pesano, ma `/login` porta 14 KB di Release
