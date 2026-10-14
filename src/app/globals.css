@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* The three widths DESIGN.md names, as variants of their own, because Tailwind's `max-[Npx]:` is
+   **exclusive**: it compiles to `@media not (min-width: Npx)`, which is *below* N and not "N and
+   below". Measured on this page: at exactly 1040px `max-[1040px]:max-w-measure` did not apply and
+   the Upgrade Panel ran 992px wide inside a one-column page. DESIGN.md says "at 1040px and below"
+   everywhere it sets a step, so the step is written once, inclusively, and named after what it does.
+   `split` is the other side of the same line, so the two can never drift apart by a pixel. */
+@custom-variant split (@media (width >= 1041px));
+@custom-variant stacked (@media (width <= 1040px));
+@custom-variant narrow (@media (width <= 880px));
+@custom-variant phone (@media (width <= 640px));
+
 :root {
   --ground: #0f1115;
   --raised: #161a20;
@@ -134,11 +145,15 @@
   --text-section-title--letter-spacing: 0.02em;
   --text-meta: 12px;
 
-  --container-content: 1040px;
-  /* The landing alone (DESIGN.md, Layout): the width that lets the argument and the Proof Panel
-     stand side by side on the first screen. The measures inside it are unchanged. */
-  --container-wide: 1240px;
+  /* One container for the whole app (DESIGN.md, Layout): it was 1040px with three exceptions, and
+     the exception list grew until it held every page. A rule with no cases left is not a rule, so
+     what varies inside it is the measure and never the container. The bar shares it, which is why
+     the wordmark no longer moves between pages. */
+  --container-content: 1240px;
   --container-measure: 72ch;
+  /* What the empty Dashboard caps its one column at, inside the page's own container: a centred
+     1040px column would leave the wordmark 100px off the content it opens (DESIGN.md, Empty State). */
+  --container-column: 1040px;
 }
 
 @layer base {

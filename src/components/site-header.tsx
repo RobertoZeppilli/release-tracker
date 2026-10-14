@@ -19,16 +19,15 @@ const SLOT = "max-sm:hidden";
 // Where the page sits is no longer in the bar: that is `PageBreadcrumb`, at the top of the content.
 // `quota` arrives as an element, not as a component: the header shows what a signed-in page hands
 // it and never learns what a Plan is, so the public pages simply pass nothing.
-// `wide` is the landing and the Dashboard, the two pages at the 1240px container: the bar carries
-// the page's own width so the wordmark sits over the first letter of what it opens.
+// The bar takes no width of its own any more: every page of the app shares the one container, so
+// the wordmark sits over the first letter of what it opens without being told where that is
+// (DESIGN.md, Layout, "The bar's container is the page's container").
 export function SiteHeader({
   section,
   quota,
-  wide,
 }: {
   section?: NavItem;
   quota?: React.ReactNode;
-  wide?: boolean;
 }) {
   return (
     <>
@@ -43,7 +42,7 @@ export function SiteHeader({
           reach the other destination. It keeps its height and its shape while the page moves under
           it: no shadow, no hiding on scroll, nothing that grows. */}
       <header className="sticky top-0 z-20 border-b border-rule bg-ground">
-        <SiteHeaderBar quota={quota} section={section} wide={wide}>
+        <SiteHeaderBar quota={quota} section={section}>
           <nav aria-label="Sections" className={SLOT}>
             <ul className="flex gap-4 font-mono text-label text-text-muted">
               {NAV.map((item) => (

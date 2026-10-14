@@ -45,12 +45,10 @@ export function SiteHeaderBar({
   children,
   quota,
   section,
-  wide,
 }: {
   children: ReactNode;
   quota?: ReactNode;
   section?: NavItem;
-  wide?: boolean;
 }) {
   const session = useSession();
   const [open, setOpen] = useState(false);
@@ -112,7 +110,7 @@ export function SiteHeaderBar({
       // is the wordmark, the quota and the actions, and at 320px those three plus two 24px gaps
       // come to within a couple of pixels of the screen: the row cannot wrap any more, so what it
       // would do instead is overflow. 12px leaves it 25px of slack at the narrowest width measured.
-      className={`relative mx-auto flex h-[56px] ${wide ? "max-w-wide" : "max-w-content"} items-center gap-x-3 px-4 sm:gap-x-5 sm:px-5`}
+      className="relative mx-auto flex h-[56px] max-w-content items-center gap-x-3 px-4 sm:gap-x-5 sm:px-5"
     >
       <Link
         href="/"

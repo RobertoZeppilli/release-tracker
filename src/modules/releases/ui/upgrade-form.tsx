@@ -11,8 +11,10 @@ export type FormMessage = { tone: "breaking" | "muted"; label: string; body: Rea
 export const VERSION_BUTTON_CLASS =
   "inline-flex h-[34px] cursor-pointer items-center rounded-md border border-rule-strong bg-transparent px-3 font-sans text-diagnostic font-medium text-text hover:border-text-faint hover:bg-raised disabled:cursor-not-allowed disabled:border-rule disabled:text-text-faint";
 
+// 11ch inside the 360px column of the split, where the field and its two buttons share one line,
+// and 14ch where the panel has the width of the page (DESIGN.md, Technology, the split).
 export const VERSION_INPUT_CLASS =
-  "h-[38px] w-[14ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text placeholder:text-text-faint hover:border-text-faint aria-invalid:border-breaking";
+  "h-[38px] w-[11ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text placeholder:text-text-faint hover:border-text-faint aria-invalid:border-breaking stacked:w-[14ch]";
 
 // A plain GET form: `?from=<version>` lands in the URL, so the path can be shared and reloaded. One
 // row of the Upgrade Panel: the label is `from`, the row's share of the panel's grammar, while the

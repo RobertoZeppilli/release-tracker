@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-14 (il peso "prima" preso e il codice di Technology iniziato): i mock chiusi, le misure del mock A di Release
+  - ⚠️ Le quattro misure del mock A sono il metro del codice della pagina Release
+  - ⚠️ La prosa a 72ch dentro il bordo unico a 1192: decisa dall'agente, lasciata passare dall'utente
 - Stato al 2026-10-14 (notte, il mock A di Release scritto e misurato): il bordo destro unico a 880 e il verde interattivo
   - ⚠️ 880 è misurato e non scelto: una citazione da 88 caratteri vuole 871,5px di colonna
   - ⚠️ Le misure di quel mock sono il "prima" dell'allargamento a 1240 deciso subito dopo

@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Technologies", robots: { index: fals
 // Technologies, the split). The 1041px step and not 1240: DESIGN.md says "at 1040px and below" the
 // two columns become one, so the split starts one pixel above it.
 const SPLIT =
-  "grid max-w-wide items-start gap-7 min-[1041px]:grid-cols-[minmax(0,360px)_minmax(0,1fr)] min-[1041px]:gap-8";
+  "grid max-w-content items-start gap-7 min-[1041px]:grid-cols-[minmax(0,360px)_minmax(0,1fr)] min-[1041px]:gap-8";
 
 // The page is behind the login, so it is dynamic anyway: the columns are split on the server and
 // arrive already right, and the browser only writes follows from there on.
@@ -30,7 +30,7 @@ export default async function TechnologiesRoute() {
 
   return (
     <FollowsProvider developerId={developer.id} follows={follows}>
-      <SiteHeader section="technologies" wide />
+      <SiteHeader section="technologies" />
       <main id="content" className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${SPLIT}`}>
         <h1 className="sr-only">Technologies</h1>
         <TechnologiesPage sections={sections} />

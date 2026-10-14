@@ -19,7 +19,8 @@
     "summary:try": "tsx --conditions=react-server scripts/summarize-release.mts",
     "summary:eval": "tsx --conditions=react-server scripts/evaluate-summaries.mts",
     "summary:reimport": "tsx --conditions=react-server scripts/reimport-summaries.mts",
-    "icons:sync": "tsx scripts/sync-technology-marks.mts"
+    "icons:sync": "tsx scripts/sync-technology-marks.mts",
+    "page:weight": "tsx scripts/page-weight.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

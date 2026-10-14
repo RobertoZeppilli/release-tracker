@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
-import { HelpPointer } from "@/components/help-pointer";
+import { ColumnTitle } from "@/components/column-title";
 import type { DefaultStartReason } from "../domain/default-upgrade-start";
-import { computeUpgradePath, recordedHistory, type SummarizedRelease, type UpgradePath } from "../domain/upgrade-path";
+import {
+  computeUpgradePath,
+  type PathCounts,
+  type PathMajor,
+  recordedHistory,
+  type SummarizedRelease,
+  type UpgradePath,
+} from "../domain/upgrade-path";
 import { HistoryOverview } from "./history-overview";
-import { Group, plural, ReleaseRow, Row, rowKey } from "./release-rows";
+import { BarLegend, MajorBar, MajorWords } from "./major-bar";
+import { Group, ReleaseRow, Row, rowKey } from "./release-rows";
 import { ReleaseRowContent } from "./release-row-content";
 import { type FormMessage, UpgradeForm } from "./upgrade-form";
 import { UpgradePanel } from "./upgrade-panel";
@@ -28,6 +36,11 @@ type Props = {
   retired: boolean;
   releases: SummarizedRelease[];
   start: PathStart;
+  // The breadcrumb and the Technology's own header, passed as an element because they belong at the
+  // top of the left column and not in a band over the split: the name, the sources and the Follow
+  // go with the panel and the verdict, and the right column names its own ordering (DESIGN.md,
+  // Technology, the split).
+  head?: ReactNode;
   // The Version in use row of the panel, passed as an element: declaring one belongs to the `plans`
   // module, and the Upgrade Path has no reason to know what following is. It renders nothing for a
   // Visitor, which is every reader of the cached page until the session is known.
@@ -36,8 +49,14 @@ type Props = {
   children: ReactNode;
 };
 
-function formMessage(path: UpgradePath<SummarizedRelease>, name: string, base: string, start: PathStart): FormMessage | null {
-  if (path.type === "invalid") return { tone: "breaking", label: "error:", body: invalidMessage(path.reason, path.from, path.latest) };
+function formMessage(
+  path: UpgradePath<SummarizedRelease>,
+  name: string,
+  base: string,
+  start: PathStart,
+): FormMessage | null {
+  if (path.type === "invalid")
+    return { tone: "breaking", label: "error:", body: invalidMessage(path.reason, path.from, path.latest) };
   // The counts below are built on a start nobody asked for, so the line that introduces them says
   // where it comes from (CONTEXT.md, Cammino di upgrade). A declared start needs no line of its own
   // any more: the `in use` row of the panel carries the version and the day it was declared, two
@@ -57,73 +76,153 @@ function formMessage(path: UpgradePath<SummarizedRelease>, name: string, base: s
     label: "note:",
     body: (
       <>
-        {path.from} is not a recorded {name} release, so the path counts the recorded releases after it. Did you mean {links}?
+        {path.from} is not a recorded {name} release, so the path counts the recorded releases after
+        it. Did you mean {links}?
       </>
     ),
   };
 }
 
-// The Upgrade Path as it is drawn: the form, then either the path from `start` or the plain list.
+// The two questions of the page, a column each (DESIGN.md, The Two Questions Rule): *what do I have
+// to do about this Technology* on the left, as the header, the panel and the verdict, and *what has
+// changed in it* on the right, as the list. They are the two grid items of the page's split, so
+// this renders them as siblings and nothing is printed in both.
+//
 // It takes the start already chosen, so the same markup serves the page's first render and the
 // client that reads `?from=` out of the URL.
-export function UpgradePathBlock({ slug, name, latest, retired, releases, start, declaration, children }: Props) {
+export function UpgradePathBlock({
+  slug,
+  name,
+  latest,
+  retired,
+  releases,
+  start,
+  head,
+  declaration,
+  children,
+}: Props) {
   const base = `/technologies/${slug}`;
-  const path = start.kind === "none" ? null : computeUpgradePath(releases, start.version);
+  const computed = start.kind === "none" ? null : computeUpgradePath(releases, start.version);
+  // The path as the page walks it, or null in every state where the list is the whole history: no
+  // start, and a refused one, which keeps the list it already had.
+  const path = computed?.type === "path" ? computed : null;
   // Counted on the Releases the list below prints, not on the ones recorded: a link that promises
   // completeness has to promise the number the reader can count.
   const history = recordedHistory(releases);
   const versions = releases.filter(({ version }) => !version.includes("-")).map(({ version }) => version);
   // An empty `?from=` is how the form says "no path": the way back to the whole history.
-  const hidden = path?.type === "path" ? releases.length - path.range.length - path.previews.length : 0;
+  const hidden = path ? releases.length - path.range.length - path.previews.length : 0;
 
   return (
     <>
-      <UpgradePanel latest={latest}>
-        {declaration}
-        <UpgradeForm
-          action={base}
-          latest={latest}
-          versions={versions}
-          value={start.kind === "none" ? "" : start.version}
-          message={path && formMessage(path, name, base, start)}
-        />
-      </UpgradePanel>
-      {path?.type === "path" ? (
-        <>
-          <UpgradeVerdict from={path.from} to={path.to} counts={path.counts} majors={path.majors} />
-          {path.majors.map((group) => (
-            <Group
-              key={group.major}
-              id={`v${group.major}`}
-              title={`v${group.major}`}
-              detail={`${plural(group.counts.total, "release")}${path.from.startsWith(`${group.major}.`) ? ` after ${path.from}` : ""}`}
-            >
-              {group.rows.map((row) => (
-                <Row key={rowKey(row)} slug={slug} row={row} verdict={(release) => <ReleaseRowContent slug={slug} release={release} />} />
-              ))}
-            </Group>
-          ))}
-          {!retired && path.previews.length > 0 && (
-            <Group id="previews" title="previews" detail={`ahead of ${path.to}`}>
-              {path.previews.map((release) => (
-                <ReleaseRow key={release.version} slug={slug} release={release}>
-                  <ReleaseRowContent slug={slug} release={release} />
-                </ReleaseRow>
-              ))}
-            </Group>
-          )}
-          {hidden > 0 && (
-            <p className="mt-3">
-              <HelpPointer href={`${base}?from=`}>show all {plural(history.listed, "release")}</HelpPointer>
-            </p>
-          )}
-        </>
-      ) : (
-        <>
-          {!path && <HistoryOverview history={history} base={base} />}
-          {children}
-        </>
-      )}
+      {/* The cell takes the height of the row and the block inside it sticks: a sticky grid item is
+          free to ride past the bottom of its own row, and at the end of a short page it printed
+          itself over the footer (DESIGN.md, Technology, the split). */}
+      <div className="self-stretch">
+        <div className="split:sticky split:top-[72px]">
+          {head}
+          <section aria-labelledby="plan-title" className="mt-5 stacked:mt-7">
+            <h2 id="plan-title" className="sr-only">
+              What to do
+            </h2>
+            <UpgradePanel latest={latest}>
+              {declaration}
+              <UpgradeForm
+                action={base}
+                latest={latest}
+                versions={versions}
+                value={start.kind === "none" ? "" : start.version}
+                message={computed && formMessage(computed, name, base, start)}
+              />
+            </UpgradePanel>
+            {path ? (
+              <UpgradeVerdict
+                from={path.from}
+                to={path.to}
+                counts={path.counts}
+                showAll={hidden > 0 ? { href: `${base}?from=`, total: history.listed } : null}
+              />
+            ) : (
+              !computed && <HistoryOverview history={history} base={base} />
+            )}
+          </section>
+        </div>
+      </div>
+
+      <section aria-labelledby="stream-title">
+        {/* The column names its own ordering, because the ordering is information: a path is read in
+            the direction the upgrade is performed, the recorded history newest major first. */}
+        <ColumnTitle id="stream-title">
+          {path ? "what has changed, in the order you upgrade" : "what has changed, newest major first"}
+        </ColumnTitle>
+        <BarLegend counts={legendCounts(path ? path.majors : history.majors)} />
+        {path ? (
+          <PathGroups
+            slug={slug}
+            majors={path.majors}
+            from={path.from}
+            to={path.to}
+            previews={retired ? [] : path.previews}
+          />
+        ) : (
+          children
+        )}
+      </section>
     </>
+  );
+}
+
+// The legend explains a fill, so it is there only where a bar draws one: with a single major there
+// are no bars, and the gutter, the bar and the legend go together (DESIGN.md, Stat Row).
+function legendCounts(majors: PathMajor<SummarizedRelease>[]): PathCounts[] {
+  return majors.length > 1 ? majors.map((group) => group.counts) : [];
+}
+
+function PathGroups({
+  slug,
+  majors,
+  from,
+  to,
+  previews,
+}: {
+  slug: string;
+  majors: PathMajor<SummarizedRelease>[];
+  from: string;
+  to: string;
+  previews: SummarizedRelease[];
+}) {
+  const widest = Math.max(1, ...majors.map((group) => group.counts.total));
+  const bars = majors.length > 1;
+
+  return (
+    <div className="[&>section+section]:mt-7">
+      {majors.map((group) => (
+        <Group
+          key={group.major}
+          id={`v${group.major}`}
+          title={`v${group.major}`}
+          words={<MajorWords counts={group.counts} after={from.startsWith(`${group.major}.`) ? from : undefined} />}
+          bar={bars ? <MajorBar counts={group.counts} widest={widest} /> : undefined}
+        >
+          {group.rows.map((row) => (
+            <Row
+              key={rowKey(row)}
+              slug={slug}
+              row={row}
+              verdict={(release) => <ReleaseRowContent slug={slug} release={release} />}
+            />
+          ))}
+        </Group>
+      ))}
+      {previews.length > 0 && (
+        <Group id="previews" title="previews" words={`ahead of ${to}`}>
+          {previews.map((release) => (
+            <ReleaseRow key={release.version} slug={slug} release={release}>
+              <ReleaseRowContent slug={slug} release={release} />
+            </ReleaseRow>
+          ))}
+        </Group>
+      )}
+    </div>
   );
 }
