@@ -75,7 +75,7 @@ export default async function ReleasePage({ params }: Props) {
   return (
     <>
       <SiteHeader />
-      <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
+      <main id="content" className="mx-auto max-w-content px-5 pt-5 pb-8 phone:px-4 phone:pt-4">
         <PageBreadcrumb
           path={[TECHNOLOGIES_CRUMB, { label: technology.slug, href: `/technologies/${technology.slug}` }, release.version]}
         />

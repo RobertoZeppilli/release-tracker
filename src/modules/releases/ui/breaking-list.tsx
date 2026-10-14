@@ -11,7 +11,7 @@ export function BreakingList({ label, changes }: { label: string; changes: reado
   return (
     <ul aria-label={`Breaking changes in ${label}`} className="mt-3 text-diagnostic leading-[1.6]">
       {changes.map((change, index) => (
-        <li key={change.change} className="grid grid-cols-[auto_1fr] gap-x-3 py-[2px] max-[640px]:grid-cols-1">
+        <li key={change.change} className="grid grid-cols-[auto_1fr] gap-x-3 py-[2px] phone:grid-cols-1">
           <span className="font-mono text-label leading-[1.75] whitespace-nowrap text-breaking">
             <OctagonAlert aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.8em] align-[-0.08em]" />
             breaking[{index + 1}]:
