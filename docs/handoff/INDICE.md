@@ -18,6 +18,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- I panel con un titolo solo (2026-10-14), e la regola rimessa in piedi: il tetto di `column-verdict` da 1.45rem a 1.2rem
+  - ⚠️ Non è la scala che cede alla copia: era un clamp in `vw` dentro una colonna fissa a 360px
+  - ⚠️ Il test misurava a 1280px, dove il clamp non arriva al tetto: non aveva mai visto l'andata a capo
+  - ⚠️ Niente verde nei controlli, e il `help` teal è l'inchiostro delle citazioni
 - Stato al 2026-10-14 (le due pagine finite, prima della PR): i panel, e la regola che hanno piegato
   - ⚠️ La riga unica del verdetto ceduta dentro un panel, e rimessa in piedi lo stesso giorno abbassando il tetto del token
   - ⚠️ Le due immagini dell'utente in `docs/`, mai committate: cancellate il 2026-10-14 su sua richiesta
