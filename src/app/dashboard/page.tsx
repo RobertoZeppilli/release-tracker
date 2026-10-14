@@ -22,13 +22,13 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 // The two questions, a column each, and nothing printed in both (DESIGN.md, The Two Questions Rule).
 // The 1241px step and not 1240: the mock's own query is `max-width: 1040px`, so at exactly 1040px
 // the page is one column, which is what DESIGN.md says ("at 1040px and below").
-const SPLIT = "grid max-w-wide items-start gap-7 min-[1041px]:grid-cols-[minmax(0,360px)_minmax(0,1fr)] min-[1041px]:gap-8";
+const SPLIT = "grid max-w-content items-start gap-7 min-[1041px]:grid-cols-[minmax(0,360px)_minmax(0,1fr)] min-[1041px]:gap-8";
 // With no follows the page is one column and not the split: the split separates two questions, and
 // with nothing followed neither has an answer (DESIGN.md, Empty State). The container stays the
 // page's own 1240px and the content is capped inside it: the mock centred a 1040px column instead,
 // which left the wordmark and the account panel 100px off the content they open (DESIGN.md, Layout,
 // "The bar's container is the page's container").
-const ONE_COLUMN = "max-w-wide [&>*]:max-w-content";
+const ONE_COLUMN = "max-w-content [&>*]:max-w-column";
 
 // Behind the login, so dynamic anyway: the window is read on the server and the page arrives whole.
 // The header lives inside the provider because the quota in the top bar is the same live count the
@@ -43,7 +43,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <FollowsProvider developerId={developer.id} follows={follows}>
-      <SiteHeader section="dashboard" quota={<FollowQuota />} wide />
+      <SiteHeader section="dashboard" quota={<FollowQuota />} />
       <main
         id="content"
         className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${empty ? ONE_COLUMN : SPLIT}`}

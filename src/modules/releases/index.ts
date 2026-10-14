@@ -24,6 +24,8 @@ export {
   type PathCounts,
   type PathMajor,
   type PathRelease,
+  type RecordedHistory,
+  recordedHistory,
   type SummarizedRelease,
   type UpgradePath,
   upgradeStartRejection,

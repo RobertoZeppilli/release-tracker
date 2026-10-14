@@ -30,11 +30,11 @@ export default async function LandingPage() {
 
   return (
     <>
-      <SiteHeader wide />
-      {/* The landing is the one page at the wide container (DESIGN.md, Layout): the 200px over the
-          app's 1040 are what lets the argument and the proof stand side by side on the first
-          screen. The measures inside it do not move. */}
-      <main id="content" className="mx-auto max-w-wide px-4 pb-8 sm:px-5">
+      <SiteHeader />
+      {/* The landing was the first page at this container and is no longer the only one
+          (DESIGN.md, Layout): the 200px that let the argument and the proof stand side by side here
+          are now the app's own width. The measures inside it do not move. */}
+      <main id="content" className="mx-auto max-w-content px-4 pb-8 sm:px-5">
         <section className="grid grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] items-start gap-8 py-8 pb-7 max-[1040px]:grid-cols-1 max-[1040px]:gap-7 max-sm:pt-6">
           <HeadingBlock />
           <ProofPanel />
@@ -47,7 +47,7 @@ export default async function LandingPage() {
         <p className="mt-8 flex flex-wrap gap-4 border-t border-rule pt-4 font-mono text-meta text-text-faint">
           <span>verdict:</span>
           <span>content read from public release notes</span>
-          <a href={SPECIMEN.notesUrl}>
+          <a href={SPECIMEN.notesUrl} className="text-link">
             {SPECIMEN.technology.slug} {SPECIMEN.version} notes
           </a>
         </p>

@@ -74,7 +74,7 @@ export function CatalogFilter({
         autoComplete="off"
         spellCheck={false}
         aria-describedby="matches"
-        className="block h-[42px] w-full max-w-[38ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text caret-help hover:border-text-faint focus-visible:border-text-faint placeholder:text-text-faint max-sm:max-w-none"
+        className="block h-[42px] w-full max-w-[38ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text caret-link hover:border-text-faint focus-visible:border-text-faint placeholder:text-text-faint max-sm:max-w-none"
       />
       <p className="mt-2 flex items-baseline gap-3 font-mono text-label leading-[normal] text-text-muted">
         <span id="matches" aria-live="polite" className="tabular-nums">

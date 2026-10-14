@@ -7,6 +7,7 @@ import {
   barHasAction,
   legendLevels,
   majorWords,
+  pathRows,
   pathSentence,
   pathVerdict,
 } from "./upgrade-path-copy";
@@ -49,6 +50,39 @@ describe("upgrade path copy", () => {
     expect(pathVerdict({ ...none, total: 2, notable: 1, digest: 1, safe: 1 }).claim).toBe("safe to upgrade");
     expect(pathVerdict(none).claim).toBe("up to date");
     expect(pathSentence("6.0.3", "6.0.3", none)).toBe("6.0.3 is already the latest stable release.");
+  });
+
+  // The panel holding the verdict reads the same counts as the sentence, one number per line. The
+  // total is the only row that stays at zero, because a path with nothing in it has no rows at all.
+  it("lays the same reading out as panel rows, in the order of the sentence", () => {
+    const counts = { ...none, total: 36, featured: 1, notable: 2, digest: 33, actionRequired: 1, safe: 1, missing: 1 };
+    expect(pathRows("5.2.0", "6.0.3", counts)).toEqual([
+      { count: 36, words: "releases, 5.2.0 to 6.0.3" },
+      { count: 1, words: "needs action" },
+      { count: 1, words: "safe to upgrade" },
+      { count: 1, words: "no summary yet" },
+      { count: 33, words: "digest fixes you can skip" },
+    ]);
+  });
+
+  it("splits the two silences in the rows, and counts one release in the singular", () => {
+    const counts = { ...none, total: 1, notable: 1, missing: 1, unjudged: 1 };
+    expect(pathRows("6.0.0", "6.0.1", counts)).toEqual([
+      { count: 1, words: "release, 6.0.0 to 6.0.1" },
+      { count: 1, words: "notes too thin to judge" },
+    ]);
+  });
+
+  // A path with nothing in it has nothing to count: the panel falls back to the sentence, which says
+  // the one thing worth saying there.
+  it("gives no rows for an empty path", () => {
+    expect(pathRows("6.0.3", "6.0.3", none)).toEqual([]);
+  });
+
+  // DESIGN.md, Upgrade Panel: a `·` separates facts on one line, and these facts are lines.
+  it("puts no separator dot in a row", () => {
+    const counts = { ...none, total: 4, featured: 1, digest: 3, actionRequired: 1, missing: 1, unjudged: 1 };
+    for (const row of pathRows("1.0.0", "1.1.0", counts)) expect(row.words).not.toContain("·");
   });
 
   it("writes the counts of a major in words, leaving out the zeros", () => {

@@ -163,10 +163,10 @@ for (const theme of THEMES) {
 
       // The path arrives on a client that reads `?from=`, while the Suspense fallback beside it is the
       // same markup with the same ids (#83, #100): an id can name both copies while the second
-      // arrives. Waiting for the sentence that opens the path at the version asked waits for the
+      // arrives. Waiting for the row that counts the path from the version asked waits for the
       // only render that can say it, and would fail if the page ever stopped reading `?from=`.
       await page.goto(`/technologies/${technology.slug}?from=1.8.9`);
-      await expect(page.getByText("Between 1.8.9 and 2.0.0 there are 2 releases")).toBeVisible();
+      await expect(page.getByText("releases, 1.8.9 to 2.0.0")).toBeVisible();
       await scan(page, theme);
     });
 

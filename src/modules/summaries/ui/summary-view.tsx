@@ -3,6 +3,7 @@ import { locateCitation } from "../domain/citations";
 import type { StoredSummary } from "../domain/summary-content";
 import { BreakingChangeItem } from "./breaking-change-item";
 import { CitePointer } from "./cite-pointer";
+import { SectionTitle } from "./section-title";
 import { Glyph } from "./glyph";
 import { InlineCode } from "./inline-code";
 import { provenanceLine } from "./summary-copy";
@@ -32,6 +33,9 @@ export function SummaryView({
   const breaking = content.breakingChanges.length;
   const body = notes.join("\n");
   const cite = (quote: string | undefined) => (quote ? locateCitation(body, quote) : null);
+  // `migration` is required by the schema, so every breaking change has a fix; `quote` is not, so
+  // the claim that they are all cited is only made where it holds.
+  const allCited = content.breakingChanges.every((change) => cite(change.quote) !== null);
   const verdict = VERDICTS[unjudged ? "unjudged" : content.actionRequired ? "action" : "safe"];
   return (
     <section aria-labelledby="verdict" className="mt-6">
@@ -51,10 +55,16 @@ export function SummaryView({
           none. The notes are below, with the link they point to.
         </p>
       )}
-      {/* The counts row is `diagnostic`, the same as the Dashboard's: 15px was never in the scale. */}
-      <p className="mt-3 flex flex-wrap gap-4 font-mono text-diagnostic text-text-muted">
+      {/* DESIGN.md, Counts Panel: the two numbers the Summary claims, in a mini-panel 16px under
+          the verdict and as wide as its content, never running to the rule. Beside the verdict they
+          were a second thing on the display line and capped its scale; under it they cost the line
+          nothing. They carry no ink, the breaking one included: the verdict above is already amber
+          or green, and a second colour claiming the same fact would make the reader decide which of
+          the two is the page's judgement. In the seventh state the panel follows the paragraph that
+          withdraws the verdict, which is the order these three are written in here. */}
+      <p className="mt-4 flex w-max max-w-full flex-wrap items-baseline gap-x-4 gap-y-1 rounded-md border border-rule bg-raised px-3 py-2 font-mono text-diagnostic text-text-muted">
         {breaking > 0 ? (
-          <a href="#breaking" className="border-b border-rule-strong no-underline">
+          <a href="#breaking" className="border-b border-rule-strong no-underline hover:border-current">
             <strong className="font-normal text-text">{breaking}</strong> {plural(breaking, "breaking change")}
           </a>
         ) : (
@@ -62,9 +72,9 @@ export function SummaryView({
             <strong className="font-normal text-text">0</strong> breaking changes
           </span>
         )}
-        <span>
+        <a href="#key-points" className="border-b border-rule-strong no-underline hover:border-current">
           <strong className="font-normal text-text">{content.keyPoints.length}</strong> key points
-        </span>
+        </a>
       </p>
 
       <h2 className="mt-5 max-w-measure font-sans text-summary-title font-medium text-balance">
@@ -72,7 +82,23 @@ export function SummaryView({
       </h2>
       <p className="mt-2 font-mono text-meta text-text-faint">{provenanceLine(summary)}</p>
 
-      <ul aria-label="Key points" className="mt-5 max-w-measure border-t border-rule">
+      {/* The order is the one cut the mock makes, and the reason it exists: with `action required`
+          the breaking changes are the work and the key points are the surround, so the work comes
+          first. On the old page the first breaking change stood at 811px, under the fold of a
+          laptop, behind four key points nobody had asked to read yet. Where there are none the
+          section is not there at all and the key points follow the title directly, which is the same
+          order read from the other end: whatever this Release asks of you, first. */}
+      {breaking > 0 && (
+        <>
+          <SectionTitle id="breaking" title="breaking changes" aside={allCited ? "all cited, each with a fix" : "each with a fix"} />
+          {content.breakingChanges.map((change, index) => (
+            <BreakingChangeItem key={index} number={index + 1} change={change} lines={notes} citation={cite(change.quote)} />
+          ))}
+        </>
+      )}
+
+      <SectionTitle id="key-points" title="key points" />
+      <ul aria-labelledby="key-points" className="border-t border-rule">
         {content.keyPoints.map((point, index) => {
           const citation = cite(point.quote);
           const number = index + 1;
@@ -84,13 +110,13 @@ export function SummaryView({
               key={index}
               id={id}
               tabIndex={-1}
-              className="grid scroll-mt-6 grid-cols-[11.5ch_1fr] gap-3 border-b border-rule py-2 max-[640px]:grid-cols-1 max-[640px]:gap-0"
+              className="grid scroll-mt-6 grid-cols-[11.5ch_1fr] gap-3 border-b border-rule py-2 phone:grid-cols-1 phone:gap-0"
             >
               <span className="whitespace-nowrap font-mono text-[14px] leading-[1.6] text-text-muted">
                 <Glyph Icon={Info} />
                 note[{number}]:
               </span>{" "}
-              <span>
+              <span className="max-w-measure">
                 <InlineCode text={point.text} />
                 {citation && <CitePointer citation={citation} severity="note" origin={{ id, label: `note[${number}]` }} className="ml-2" />}
               </span>
@@ -99,19 +125,6 @@ export function SummaryView({
         })}
       </ul>
 
-      {breaking > 0 && (
-        <>
-          <h2
-            id="breaking"
-            className="mt-7 mb-4 flex items-baseline gap-3 font-mono text-section-title font-semibold text-text-muted after:h-px after:flex-1 after:-translate-y-1 after:bg-rule after:content-['']"
-          >
-            breaking changes ({breaking})
-          </h2>
-          {content.breakingChanges.map((change, index) => (
-            <BreakingChangeItem key={index} number={index + 1} change={change} lines={notes} citation={cite(change.quote)} />
-          ))}
-        </>
-      )}
     </section>
   );
 }

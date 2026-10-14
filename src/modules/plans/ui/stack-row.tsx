@@ -24,7 +24,7 @@ export function StackRow({
   const gone = retired && !follows.isFollowing(technology.id);
 
   return (
-    <li className="group border-b border-rule py-3 last:border-b-0">
+    <li className="group border-b border-rule p-3 last:border-b-0">
       <span className="flex items-center gap-2">
         <span className="text-text-muted">
           <TechnologyMark slug={technology.slug} />

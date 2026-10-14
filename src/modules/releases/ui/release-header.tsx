@@ -28,7 +28,7 @@ export function ReleaseHeader({
         <time dateTime={date}>{date}</time>
         <SignificanceLabel significance={release.significance} />
       </p>
-      <div className="ml-auto max-[640px]:ml-[0]">
+      <div className="ml-auto phone:ml-[0]">
         {release.notes ? (
           <OpenNotesLink className={BUTTON}>
             <FileText aria-hidden className="size-4" />

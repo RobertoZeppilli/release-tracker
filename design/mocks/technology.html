@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vite releases and upgrade path</title>
+<title>Vite releases · release-tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #676d77;
   --text: #e7e9ec; --text-muted: #9aa3ad; --text-faint: #7b848f;
   --breaking: #ff7b6b; --action: #f2c14e; --help: #6cc4d8; --ok: #7bd88f;
-  --focus: #da6b6b; --selection: rgba(108, 196, 216, 0.28);
+  --focus: #4af262; --link: var(--focus); --selection: rgba(108, 196, 216, 0.28);
   --mono: "Fragment Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --sans: "Hanken Grotesk", system-ui, sans-serif;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
@@ -24,19 +24,22 @@
   --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #82827b;
   --text: #16181c; --text-muted: #525a63; --text-faint: #636b74;
   --breaking: #b42a1f; --action: #8a5a00; --help: #0b6b80; --ok: #1d7a3a;
-  --focus: #ad4b4b; --selection: rgba(11, 107, 128, 0.18);
+  --focus: #276d1a; --selection: rgba(11, 107, 128, 0.18);
   color-scheme: light;
 }
 
 * { box-sizing: border-box; }
-html { background: var(--ground); }
+html { background: var(--ground); scroll-behavior: smooth; }
 body { margin: 0; background: var(--ground); color: var(--text); font: 400 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--selection); color: var(--text); }
 a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
 a:hover { text-decoration-color: currentColor; }
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+/* The interactive green: the focus ring and a link inside a sentence, the one place the
+   keyboard and the pointer act on. A pointer into the release notes stays `help` cyan, because
+   there the cyan is the citation's colour and not the link's (DESIGN.md, Interactive Green). */
+:focus-visible { outline: 2px solid var(--focus); border-radius: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-* { scrollbar-color: var(--rule-strong) transparent; }
 svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; flex: none; }
 svg.sig { width: 12px; height: 12px; flex: none; }
@@ -44,25 +47,43 @@ svg.sig { width: 12px; height: 12px; flex: none; }
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: var(--space-4); top: var(--space-4); background: var(--raised); padding: var(--space-2) var(--space-3); z-index: 10; }
 
-.topbar { border-bottom: 1px solid var(--rule); }
-.topbar-inner, main { max-width: 1040px; margin: 0 auto; padding: 0 var(--space-5); }
+/* Top bar: the same 56px row at every width, sticky on every page (DESIGN.md, Layout). Its container
+   is the page's container, so the wordmark sits over the first letter of the heading: this page is
+   1240px now, like the Dashboard and the Catalog, and the bar follows it. */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--ground); border-bottom: 1px solid var(--rule); }
+.topbar-inner, main { max-width: 1240px; margin: 0 auto; padding: 0 var(--space-5); }
 .topbar-inner { height: 56px; display: flex; align-items: center; gap: var(--space-5); }
-.wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; }
-.path { list-style: none; margin: 0; padding: 0; font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); }
-.path a { text-decoration: none; }
-.path a:hover, .path [aria-current] { color: var(--text); }
+.wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; white-space: nowrap; }
 .nav { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); }
 .nav a { text-decoration: none; }
 .nav a:hover, .nav [aria-current] { color: var(--text); }
-.crumb { margin: 0 0 var(--space-5); }
-.topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
+.topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; position: relative; }
+.quota { font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; margin-right: var(--space-2); white-space: nowrap; }
+.quota strong { color: var(--text); font-weight: 400; }
+.quota:hover { color: var(--text); }
 .btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
 .btn:hover { background: var(--raised); border-color: var(--text-faint); }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
+.account > summary { list-style: none; cursor: pointer; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); overflow: hidden; }
+.account > summary::-webkit-details-marker { display: none; }
+.account > summary:hover { background: var(--raised); border-color: var(--text-faint); }
+.account .portrait { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font: 400 13px var(--mono); color: var(--text); }
+.account-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; min-width: 180px; padding: var(--space-2) 0; background: var(--raised); border: 1px solid var(--rule); border-radius: var(--radius); }
+.account-panel .who { margin: 0 0 var(--space-1); padding: 0 var(--space-3) var(--space-2); border-bottom: 1px solid var(--rule); font: 400 12px var(--mono); color: var(--text-faint); }
+.account-panel a, .account-panel button { display: flex; align-items: center; width: 100%; min-height: 24px; padding: 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-muted); text-decoration: none; background: none; border: 0; cursor: pointer; }
+.account-panel a:hover, .account-panel button:hover { background: var(--sunken); color: var(--text); }
+.account-panel .out { margin-top: var(--space-1); padding-top: var(--space-1); border-top: 1px solid var(--rule); }
+.account-panel .sheet-head, .account-panel .sheet-nav { display: none; }
 
-main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
-
-/* Technology header */
+/* The page head sits above the split and across both columns, because it names the subject of both:
+   the breadcrumb, the Technology and the one action the header carries. It is one row, so the two
+   columns start 100px under the bar instead of 650px under it, which is where the first Release used
+   to begin on the live page. */
+.page-head { padding-top: 0; }
+.crumb { margin: 0 0 var(--space-4); }
+.path { list-style: none; margin: 0; padding: 0; font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); }
+.path a { text-decoration: none; }
+.path a:hover, .path [aria-current] { color: var(--text); }
 .tech-head { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
 .tech-head h1 { margin: 0; display: flex; align-items: center; gap: var(--space-2); font: 600 22px/1.2 var(--sans); letter-spacing: -0.01em; }
 /* Technology Mark: the brand's shape in the headline's own ink, 24px beside it. */
@@ -71,72 +92,108 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .tech-facts strong { color: var(--text); font-weight: 400; }
 .tech-head .follow { margin-left: auto; }
 
-/* Upgrade panel: one box for the two controls and the facts they work on. The treatment is the
-   Count Box of the Dashboard, with the value column left-aligned behind a 9ch label column, because
-   two of these values are a field and its buttons and not a number. */
-.panel { margin-top: var(--space-6); max-width: var(--measure); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--raised); padding: var(--space-3) var(--space-4); }
+/* The split: two questions, a column each, and nothing printed in both (DESIGN.md, The Two Questions
+   Rule). This page asks *what do I have to do about this Technology* and *what has changed in it*,
+   and it answered both down one 1040px column: the first Release stood at 646px on the live page,
+   the same partition was written three times inside 166px (the verdict sentence, the stat list and
+   the group title, with `32 releases` printed twice 85px apart), and everything above the list used
+   the left 650px of the column while the right half stayed empty. The empty half is the list now. */
+main { padding-top: var(--space-5); padding-bottom: var(--space-8); display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: var(--space-8); align-items: start; }
+.col-title { margin: 0 0 var(--space-3); font: 400 13px var(--mono); color: var(--text-faint); }
+
+/* Left: who it is and what to do, as one block. The name of the Technology belongs to this column
+   and not to a band above the split: the right column names its own ordering, so nothing up there
+   was shared. Sticky 72px under the bar, the offset every anchor uses, because the whole column is
+   what a reader glances back at while reading the list. It does not scroll inside itself and carries
+   no mask: it is a name, four rows and a verdict, so there is never anything below its own fold. */
+/* The cell takes the height of the row and the block inside it sticks: a sticky grid item is free
+   to ride past the bottom of its own row, and at the end of a short page it printed itself over the
+   footer. Measured: 24px of overlap at 1280x647. */
+.col-plan { align-self: stretch; }
+.col-sticky { position: sticky; top: 72px; }
+.plan { margin-top: var(--space-5); }
+
+/* In a 360px column the name takes the first line with Follow at its end, and the facts drop under
+   it: the one-line row of the full-width band would have wrapped three times here. */
+.tech-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; row-gap: var(--space-3); column-gap: var(--space-4); }
+.tech-head h1 { grid-area: 1 / 1; }
+.tech-head .follow { grid-area: 1 / 2; margin-left: 0; }
+.tech-facts { grid-area: 2 / 1 / 3 / -1; }
+
+/* The Upgrade Panel, now the width of its column: the same treatment the Source View and the fix
+   diff carry, 1px rule on raised with a 6px radius, and a caption that names the region. */
+.panel { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--raised); padding: var(--space-3) var(--space-4); }
 .panel .caption { margin: 0; font: 400 12px/1.6 var(--mono); color: var(--text-faint); }
 .panel .rows { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
 .panel form { display: flex; flex-direction: column; gap: var(--space-2); }
-.panel .row { margin: 0; display: grid; grid-template-columns: 9ch 1fr; align-items: baseline; column-gap: var(--space-3); row-gap: var(--space-2); font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
-.panel .cell { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.panel .row { margin: 0; display: grid; grid-template-columns: 7ch 1fr; align-items: baseline; column-gap: var(--space-3); row-gap: var(--space-2); font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
+.panel .cell { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .panel .v { color: var(--text); }
-.panel input { width: 14ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+.panel input { width: 11ch; height: 38px; padding: 0 var(--space-3); font: 400 16px var(--mono); color: var(--text); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); }
 .panel input:hover { border-color: var(--text-faint); }
 .panel input[aria-invalid="true"] { border-color: var(--breaking); }
 .panel .clear { display: none; }
 .panel .declared, .panel .undeclared { color: var(--text-faint); }
 .panel .declared { display: none; }
-/* The lines that belong to the row above them: they keep the value column and have no label. */
-.field-error a { color: inherit; }
 .panel .field-error { color: var(--breaking); display: none; }
 .panel .field-note { color: var(--text-muted); display: none; }
 .panel .label { color: var(--text-muted); }
-/* A line under a row gives the indent up on a phone and takes the width: a sentence in a column 9ch
-   narrower than the panel wraps a line more for nothing. */
-@media (max-width: 640px) {
-  .panel .row.sub { grid-template-columns: 1fr; }
-  .panel .row.sub .gutter { display: none; }
-}
+.field-error a { color: inherit; }
+/* A line that belongs to the row above it keeps the value column and has no label of its own. In a
+   360px column it gives that indent up and takes the width, the way it already did on a phone: a
+   sentence in a column 7ch from the edge is a column 7ch too narrow. */
+.panel .sub { font-size: 13px; }
+.panel .sub .gutter { display: none; }
+.panel .sub > span:last-child { grid-column: 1 / -1; }
 
-/* Range verdict */
-.verdict { margin-top: var(--space-6); }
-.verdict-line { margin: 0; font: 400 clamp(1.9rem, 5.2vw, 3.4rem)/1.08 var(--mono); letter-spacing: -0.035em; text-wrap: balance; }
+/* The verdict of the path, at Column verdict scale and not at Verdict scale: inside a 360px column
+   the display size wraps over three lines, and the Dashboard already settled this for a verdict that
+   sits in a column (DESIGN.md, Verdict Line). It is still the first thing the column says. */
+.verdict { margin-top: var(--space-5); }
+.verdict-line { margin: 0; font: 400 clamp(1.15rem, 1.7vw, 1.45rem)/1.15 var(--mono); letter-spacing: -0.03em; white-space: nowrap; }
 .verdict-line > span:first-child { margin-right: 0.4ch; }
-.verdict-line .claim { display: inline-block; }
-.verdict-line .glyph { vertical-align: -0.08em; }
-.verdict-line .glyph { width: 0.8em; height: 0.8em; stroke-width: 1.75; }
+.verdict-line .glyph { width: 0.85em; height: 0.85em; stroke-width: 1.75; vertical-align: -0.08em; }
 .sev-action { color: var(--action); }
 .sev-ok { color: var(--ok); }
 .sev-breaking { color: var(--breaking); }
-.range-sentence { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); font-size: 16px; }
-.range-sentence strong { color: var(--text); font-weight: 600; }
+.sev-none { color: var(--text-muted); }
+/* The sentence counts the whole path, which is the one thing no row of the list counts: the groups
+   on the right count themselves, and their sum is this. It is the Dashboard's rule, read the other
+   way round (DESIGN.md, Verdict Line, "the rows are the breakdown"). */
+.range-sentence { margin: var(--space-3) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
+.range-sentence strong { color: var(--text); font-weight: 400; }
 
-/* Stat rows */
-.stat { list-style: none; margin: var(--space-5) 0 0; padding: 0; max-width: 820px; border-top: 1px solid var(--rule); }
-.stat li { display: grid; grid-template-columns: 3ch 1ch minmax(120px, 1fr) auto; gap: var(--space-4); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--rule); font: 400 14px var(--mono); }
-.stat .major { color: var(--text); }
-.bar-track { display: flex; flex-direction: column; gap: 2px; min-width: 28px; }
-.bar { display: flex; height: 8px; gap: 2px; }
-/* The one hue in a bar: `action` already means action required everywhere else, and it cuts
-   across the partition instead of dividing it, so it is a rule under the bar. */
-.needs { display: block; height: 2px; background: var(--action); }
-.bar span { display: block; height: 100%; }
-.bar .b-featured { background: var(--text); }
-.bar .b-notable { background: var(--text-muted); }
-.stat .pipe { color: var(--text-faint); }
-.bar .b-digest { background: var(--rule-strong); }
-.stat .words { color: var(--text-muted); white-space: nowrap; }
-.stat .words .n-action { color: var(--action); white-space: nowrap; }
-.legend { margin: var(--space-2) 0 0; padding: 0; list-style: none; display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 12px var(--mono); color: var(--text-faint); }
+/* Right: what has changed. The column names its own ordering, because the ordering is information. */
+.stream .col-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+/* The legend sits at the head of the column, before the bars it explains, and it is read out as well
+   as seen: it is the one place shape, fill and word are mapped to each other (DESIGN.md, Stat Row).
+   It carries only the levels the bars actually draw. */
+.legend { margin: 0 0 var(--space-5); padding: 0; list-style: none; display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 12px var(--mono); color: var(--text-faint); }
 .legend li { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { display: inline-block; width: 10px; height: 8px; }
 
-/* Major groups */
+/* The Stat Row is the title of its group now, and not a list of its own above the list. The two
+   counted the same Releases 300px apart, and the group title under them said the count a third
+   time. One row per major: the major, the bar, and the counts in words, with the rule running out
+   to the right edge the way every section title in the app does. */
 .group { margin-top: var(--space-7); }
-.group-title { margin: 0 0 var(--space-3); display: flex; align-items: baseline; gap: var(--space-3); font: 600 13px var(--mono); color: var(--text-muted); letter-spacing: 0.02em; }
-.group-title .major { color: var(--text); font-size: 16px; }
-.group-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
+.group:first-of-type { margin-top: 0; }
+.group-title { margin: 0 0 var(--space-2); display: grid; grid-template-columns: 3ch 1ch minmax(80px, 120px) auto 1fr; gap: var(--space-3); align-items: center; font: 400 14px var(--mono); color: var(--text-muted); padding-bottom: var(--space-2); }
+.group-title .major { color: var(--text); font: 600 16px var(--mono); letter-spacing: 0.02em; }
+.group-title .pipe { color: var(--text-faint); }
+.group-title::after { content: ""; height: 1px; background: var(--rule); }
+.bar-track { display: flex; flex-direction: column; gap: 2px; min-width: 28px; }
+.bar { display: flex; height: 8px; gap: 2px; }
+.bar span { display: block; height: 100%; }
+.bar .b-featured { background: var(--text); }
+.bar .b-notable { background: var(--text-muted); }
+.bar .b-digest { background: var(--rule-strong); }
+/* The one hue a bar carries: `action` already means action required everywhere else, and it counts
+   Releases the segments have counted, so it is a rule under the bar and not a fourth segment. */
+.needs { display: block; height: 2px; background: var(--action); }
+.group-title .words { color: var(--text-muted); }
+.group-title .words .n-action { color: var(--action); white-space: nowrap; }
+
 .releases { list-style: none; margin: 0; padding: 0; }
 .rel { display: grid; grid-template-columns: 11ch 14ch 11ch 1fr; column-gap: var(--space-4); align-items: baseline; padding: var(--space-3) 0; border-bottom: 1px solid var(--rule); }
 .rel-sig { display: inline-flex; align-items: center; gap: 6px; font: 400 13px var(--mono); color: var(--text-muted); }
@@ -150,17 +207,10 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .breaks { list-style: none; margin: var(--space-3) 0 0; padding: 0; font: 400 14px/1.6 var(--sans); }
 .breaks li { display: grid; grid-template-columns: auto 1fr; column-gap: var(--space-3); padding: 2px 0; }
 .breaks .code { font: 400 13px/1.75 var(--mono); color: var(--breaking); white-space: nowrap; }
-.read-more { display: inline-flex; gap: 1ch; margin-top: var(--space-3); font: 400 13px var(--mono); color: var(--help); text-decoration: none; }
+.read-more { display: inline-flex; gap: 1ch; margin-top: var(--space-3); font: 400 13px var(--mono); color: var(--link); text-decoration: none; }
 .read-more .arrow { color: var(--text-faint); }
-.read-more .label { border-bottom: 1px dashed var(--help); }
+.read-more .label { border-bottom: 1px dashed var(--link); }
 .read-more:hover .label { border-bottom-style: solid; }
-
-/* The way back to the whole recorded history, under the last group of the path */
-.show-all { display: none; margin: 0; }
-.show-all .help-pointer { display: inline-flex; gap: 1ch; margin-top: var(--space-3); font: 400 13px var(--mono); color: var(--help); text-decoration: none; }
-.show-all .arrow { color: var(--text-faint); }
-.show-all .label { border-bottom: 1px dashed var(--help); }
-.show-all .help-pointer:hover .label { border-bottom-style: solid; }
 
 .digest { border-bottom: 1px solid var(--rule); }
 .digest summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 11ch 1fr auto; column-gap: var(--space-4); align-items: center; padding: var(--space-2) 0; font: 400 13px var(--mono); color: var(--text-muted); }
@@ -175,66 +225,105 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 .digest-lines time { color: var(--text-faint); margin-left: 1ch; }
 
 .previews { margin-top: var(--space-7); }
-.previews p { margin: 0; color: var(--text-muted); }
+.previews .group-title { grid-template-columns: auto auto 1fr; }
 .previews .rel { border-top: 1px solid var(--rule); }
 
-.foot { margin-top: var(--space-7); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+/* Shown in every state, the refusal and the retired Technology included: it is a reading control
+   and not a result of the form. On a refusal it is the way out of the refusal, and on a Technology
+   that is no longer tracked the recorded history is the only thing left to read. */
+.show-all { margin: var(--space-5) 0 0; }
+.show-all .help-pointer { display: inline-flex; gap: 1ch; font: 400 13px var(--mono); color: var(--link); text-decoration: none; }
+.show-all .arrow { color: var(--text-faint); }
+.show-all .label { border-bottom: 1px dashed var(--link); }
+.show-all .help-pointer:hover .label { border-bottom-style: solid; }
+
+.foot { grid-column: 1 / -1; margin-top: var(--space-7); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
 
 /* States */
-.retired-note { display: none; margin-top: var(--space-5); padding: var(--space-3) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-.retired-note p { margin: 0; color: var(--text-muted); }
+.retired-note { display: none; margin-top: var(--space-4); padding: var(--space-3) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.retired-note p { margin: 0; max-width: var(--measure); color: var(--text-muted); }
 .retired-note .label { font: 400 14px var(--mono); color: var(--text-muted); }
-main[data-state="retired"] .retired-note { display: block; }
-main[data-state="retired"] .tech-head .follow { display: none; }
-main[data-state="retired"] .previews { display: none; }
-main[data-state="invalid"] .field-error { display: grid; }
+body[data-state="retired"] .retired-note { display: block; }
+body[data-state="retired"] .tech-head .follow { display: none; }
+body[data-state="retired"] .previews { display: none; }
+body[data-state="invalid"] .field-error { display: grid; }
 .panel .in-use { display: none; }
-main[data-state="following"] .in-use, main[data-state="in-use"] .in-use { display: flex; }
-main[data-state="in-use"] .clear { display: inline-flex; }
-main[data-state="in-use"] .declared { display: inline; }
-main[data-state="in-use"] .undeclared { display: none; }
-main[data-state="derived"] .derived-note { display: grid; }
-main[data-state="derived"] .show-all, main[data-state="range"] .show-all,
-main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { display: block; }
+body[data-state="following"] .in-use, body[data-state="in-use"] .in-use { display: flex; }
+body[data-state="in-use"] .clear { display: inline-flex; }
+body[data-state="in-use"] .declared { display: inline; }
+body[data-state="in-use"] .undeclared { display: none; }
+body[data-state="derived"] .derived-note { display: grid; }
+/* The quota belongs to a Developer: a Visitor's bar carries the way in instead. */
+/* The list on the right is the path, not the archive: when the path starts at 6.0.0, or at the last
+   release of the previous major, v5 is outside it and the sentence on the left would have counted
+   releases nobody can see. `show all 53 releases` is what brings the older majors back. */
+body[data-state="in-use"] .g-v5, body[data-state="following"] .g-v5,
+body[data-state="derived"] .g-v5 { display: none; }
 
-.verdict-safe { display: none; }
+body[data-state="range"] .signed, body[data-state="derived"] .signed { display: none; }
+body:not([data-state="range"]):not([data-state="derived"]) .visitor { display: none; }
 
 /* Design-review control, not part of the product */
-.review { position: fixed; right: var(--space-4); bottom: var(--space-4); background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
+.review { position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 40; background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
 .review select { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 3px 4px; }
 
+/* Below 1040px the two questions stack, in source order, and the plan stops being sticky: a column
+   that is no longer beside the list has nothing to be glanced back at from. */
+@media (max-width: 1040px) {
+  main { grid-template-columns: minmax(0, 1fr); gap: var(--space-7); }
+  .col-sticky { position: static; }
+  .plan { margin-top: var(--space-7); }
+  .tech-head { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+  .tech-head .follow { margin-left: auto; }
+  .verdict-line { white-space: normal; }
+  .range-sentence { max-width: var(--measure); }
+  .panel { max-width: var(--measure); }
+  .panel .row { grid-template-columns: 9ch 1fr; }
+  .panel .sub .gutter { display: block; }
+  .panel .sub > span:last-child { grid-column: 2; }
+  .panel input { width: 14ch; }
+}
 @media (max-width: 880px) {
   .rel { grid-template-columns: auto auto 1fr; row-gap: var(--space-1); }
   .rel-date { justify-self: end; }
-  .stat .words { white-space: normal; }
   .rel-main { grid-column: 1 / -1; }
+  .group-title { grid-template-columns: 3ch 1ch minmax(90px, 1fr); row-gap: var(--space-1); }
+  .group-title .words { grid-column: 1 / -1; }
+  .group-title::after { display: none; }
 }
 @media (max-width: 640px) {
   .topbar-inner, main { padding: 0 var(--space-4); }
-  main { padding-top: var(--space-5); padding-bottom: 120px; }
-  /* The slot drops to a 40px strip under the bar: same links, no drawer (The No Dead End Rule). */
-  .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
-  .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
-  .topbar-inner > nav { order: 3; width: 100%; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
+  main { padding-top: var(--space-4); padding-bottom: 120px; }
+  /* A page behind sign-in gives its two sections to the account panel: the bar keeps one 56px row. */
+  .topbar-inner > nav { display: none; }
+  .account-panel { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; padding: 0; background: var(--ground); border: 0; border-radius: 0; }
+  .account-panel .who { display: none; }
+  .account-panel .sheet-nav { display: block; }
+  .account-panel .sheet-head { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 var(--space-4); border-bottom: 1px solid var(--rule); font: 400 13px var(--mono); color: var(--text-faint); }
+  .account-panel a, .account-panel button { min-height: 44px; padding: 0 var(--space-4); font-size: 16px; border-bottom: 1px solid var(--rule); }
+  .account-panel .sheet-head button { width: 34px; min-height: 34px; padding: 0; justify-content: center; border: 1px solid var(--rule-strong); border-radius: var(--radius); color: var(--text); }
+  .account-panel .out { margin-top: auto; padding-top: 0; }
   .tech-head .follow { margin-left: 0; }
-  .stat li { grid-template-columns: 3ch 1ch 1fr; row-gap: var(--space-1); }
-  .stat .words { grid-column: 1 / -1; white-space: normal; }
-  .rel { grid-template-columns: auto auto 1fr; row-gap: var(--space-1); }
-  .rel-date { justify-self: end; }
-  .rel-main { grid-column: 1 / -1; }
+  .panel { max-width: none; }
+  .panel .row { grid-template-columns: 1fr; }
+  .panel .sub .gutter { display: none; }
+  .panel .sub > span:last-child { grid-column: 1; }
   .digest summary { grid-template-columns: auto 1fr auto; }
   .digest summary .range, .digest summary .sep { display: none; }
+  /* The count keeps the line and `no action needed` drops under it: at 320px the two on one line
+     were 50px of horizontal overflow, measured, not guessed. */
   .digest summary .na { display: block; }
   .digest summary > span { min-width: 0; }
   .digest-lines { padding-left: 0; }
   .review { left: var(--space-4); justify-content: space-between; }
 }
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   .digest summary .chev { transition: none; }
 }
 </style>
 </head>
-<body>
+<body data-state="in-use">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="g-warning" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></symbol>
   <symbol id="g-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
@@ -259,18 +348,34 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
       </ul>
     </nav>
     <div class="topbar-actions">
+      <a class="quota signed" href="technologies.html" aria-label="Followed technologies, 6 of 10"><strong>6</strong>/10 followed</a>
+      <details class="account signed">
+        <summary aria-label="Account, signed in as robertozep"><span class="portrait" aria-hidden="true">R</span></summary>
+        <div class="account-panel">
+          <div class="sheet-head">robertozep<button type="button" aria-label="Close account"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+          <p class="who">robertozep</p>
+          <nav class="sheet-nav" aria-label="Sections">
+            <a href="dashboard.html">dashboard</a>
+            <a href="technologies.html">technologies</a>
+          </nav>
+          <div class="out"><button type="button">sign out</button></div>
+        </div>
+      </details>
       <button class="btn btn-icon" type="button" id="theme" aria-label="Switch to light theme">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
       </button>
-      <a class="btn" href="#">Sign in</a>
+      <a class="btn visitor" href="#">Sign in</a>
     </div>
   </div>
 </header>
 
-<main id="content" data-state="range">
+<main id="content">
+  <div class="col-plan">
+  <div class="col-sticky">
+  <div class="page-head">
   <nav class="crumb" aria-label="Breadcrumb">
     <ol class="path">
-      <li><a href="#">technologies</a></li><li aria-hidden="true">/</li>
+      <li><a href="technologies.html">technologies</a></li><li aria-hidden="true">/</li>
       <li><span aria-current="page">vite</span></li>
     </ol>
   </nav>
@@ -283,200 +388,203 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
     </div>
     <a class="btn follow" href="#">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      <span class="follow-label">Follow</span>
+      <span class="follow-label">Following</span>
     </a>
   </div>
-
   <div class="retired-note" role="note">
     <p><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> Vite is no longer tracked. Releases up to 6.0.3 stay readable, but new versions are not detected.</p>
   </div>
+  </div>
 
-  <!-- The two controls and the facts they work on, in one panel. The page state selector decides
-       which of the two readers is on the screen: the `in use` row exists only behind the login, for
-       a Developer who follows this Technology, and never for the Visitor the other states show. -->
-  <section class="panel" aria-labelledby="upgrade-panel">
-    <p class="caption" id="upgrade-panel">upgrade path</p>
-    <div class="rows">
+  <section class="plan" aria-labelledby="plan-title">
+    <h2 class="sr-only" id="plan-title">What to do</h2>
 
-    <form class="in-use" action="#" method="get" id="in-use-form" aria-label="Version of Vite in use">
-      <div class="row">
-        <label for="current-version">in use</label>
-        <span class="cell">
-          <input id="current-version" name="current-version" aria-label="Version in use" value="6.0.0" placeholder="6.0.3" autocomplete="off" spellcheck="false" aria-describedby="current-version-note">
-          <button class="btn" type="submit">Save</button>
-          <button class="btn clear" type="button">Clear</button>
-        </span>
+    <section class="panel" aria-labelledby="upgrade-panel">
+      <p class="caption" id="upgrade-panel">upgrade path</p>
+      <div class="rows">
+
+      <form class="in-use" action="#" method="get" id="in-use-form" aria-label="Version of Vite in use">
+        <div class="row">
+          <label for="current-version">in use</label>
+          <span class="cell">
+            <input id="current-version" name="current-version" aria-label="Version in use" value="6.0.0" placeholder="6.0.3" autocomplete="off" spellcheck="false" aria-describedby="current-version-note">
+            <button class="btn" type="submit">Save</button>
+            <button class="btn clear" type="button">Clear</button>
+          </span>
+        </div>
+        <p class="row sub"><span class="gutter" aria-hidden="true"></span><span id="current-version-note"><span class="declared">declared 2026-09-12</span><span class="undeclared">not declared</span></span></p>
+      </form>
+
+      <form class="range-form" action="#" method="get" id="range-form">
+        <div class="row">
+          <label for="from">from</label>
+          <span class="cell">
+            <input id="from" name="from" aria-label="Upgrade from" value="6.0.0" list="versions" autocomplete="off" spellcheck="false">
+            <datalist id="versions"><option value="5.2.0"><option value="5.3.0"><option value="5.4.0"><option value="5.4.11"><option value="6.0.0"><option value="6.0.1"><option value="6.0.2"><option value="6.0.3"></datalist>
+            <button class="btn" type="submit">Check</button>
+          </span>
+        </div>
+        <p class="row sub field-note derived-note" id="from-derived"><span class="gutter" aria-hidden="true"></span><span><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 5.4.11, the last release of the previous major, because no version was given.</span></p>
+        <p class="row sub field-error" id="from-error"><span class="gutter" aria-hidden="true"></span><span><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href="#">5.4.0</a> or <a href="#">5.4.11</a>? The path below is still from 5.2.0.</span></p>
+      </form>
+
+        <p class="row"><span>latest</span><span class="v">6.0.3</span></p>
       </div>
-      <p class="row sub"><span class="gutter" aria-hidden="true"></span><span id="current-version-note"><span class="declared">declared 2026-09-12</span><span class="undeclared">not declared</span></span></p>
-    </form>
+    </section>
 
-  <form class="range-form" action="#" method="get" id="range-form">
-    <div class="row">
-    <label for="from">from</label>
-    <span class="cell">
-    <input id="from" name="from" aria-label="Upgrade from" value="5.2.0" list="versions" autocomplete="off" spellcheck="false">
-    <datalist id="versions"><option value="5.2.0"><option value="5.2.1"><option value="5.2.2"><option value="5.2.3"><option value="5.2.4"><option value="5.2.5"><option value="5.2.6"><option value="5.2.7"><option value="5.2.8"><option value="5.2.9"><option value="5.2.10"><option value="5.2.11"><option value="5.2.12"><option value="5.2.13"><option value="5.2.14"><option value="5.3.0"><option value="5.3.1"><option value="5.3.2"><option value="5.3.3"><option value="5.3.4"><option value="5.3.5"><option value="5.4.0"><option value="5.4.1"><option value="5.4.2"><option value="5.4.3"><option value="5.4.4"><option value="5.4.5"><option value="5.4.6"><option value="5.4.7"><option value="5.4.8"><option value="5.4.9"><option value="5.4.10"><option value="5.4.11"><option value="6.0.0"><option value="6.0.1"><option value="6.0.2"><option value="6.0.3"></datalist>
-    <button class="btn" type="submit">Check</button>
-    </span>
-    </div>
-    <p class="row sub field-note derived-note" id="from-derived"><span class="gutter" aria-hidden="true"></span><span><span class="label"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span> starting from 5.4.11, the last release of the previous major, because no version was given.</span></p>
-    <p class="row sub field-error" id="from-error"><span class="gutter" aria-hidden="true"></span><span><svg class="glyph" aria-hidden="true"><use href="#g-error"/></svg>error: 5.9.0 is not a Vite version. Did you mean <a href="#">5.4.0</a> or <a href="#">5.4.11</a>? The path below is still from 5.2.0.</span></p>
-  </form>
-
-      <p class="row"><span>latest</span><span class="v">6.0.3</span></p>
+    <div class="verdict">
+      <p class="verdict-line" id="range-verdict"><span class="sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span class="claim">1 needs action</span></p>
+      <p class="range-sentence">Between <strong>6.0.0</strong> and <strong>6.0.3</strong>: <strong>4 releases</strong>, 1 needs action, 3 are digest fixes you can skip.</p>
+      <!-- The way to the whole recorded history sits with the path and not under the list: it is the
+           control that empties the `from` field, so it belongs to the question on this side. -->
+      <p class="show-all"><a class="help-pointer" href="#"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">show all 53 releases</span></a></p>
     </div>
   </section>
+  </div>
+  </div>
 
-  <section class="verdict" aria-labelledby="range-verdict">
-    <p class="verdict-line" id="range-verdict"><span class="sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span class="claim">1 needs action</span></p>
-    <p class="range-sentence">Between <strong class="mono">5.2.0</strong> and <strong class="mono">6.0.3</strong> there are <strong><span class="mono">36</span> releases</strong>: <strong><span class="mono">1</span> needs action</strong>, <span class="mono">2</span> are notable (<span class="mono">1</span> safe, <span class="mono">1</span> with no summary: check its notes), and <span class="mono">33</span> are digest fixes you can skip.</p>
-
-    <ul class="stat" aria-label="Releases per major version">
-      <li>
-        <span class="major">v6</span><span class="pipe" aria-hidden="true">|</span>
-        <span class="bar-track" style="width:12.5%" aria-hidden="true"><span class="bar"><span class="b-featured" style="flex:1"></span><span class="b-digest" style="flex:3"></span></span><span class="needs" style="width:25%"></span></span>
-        <span class="words">4 releases · 1 featured · 3 digest, <span class="n-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>1 needs action</span></span>
-      </li>
-      <li>
-        <span class="major">v5</span><span class="pipe" aria-hidden="true">|</span>
-        <span class="bar-track" style="width:100%" aria-hidden="true"><span class="bar"><span class="b-notable" style="flex:2"></span><span class="b-digest" style="flex:30"></span></span></span>
-        <span class="words">32 releases · 2 notable · 30 digest, 1 not summarized</span>
-      </li>
-    </ul>
-    <!-- Read out as well as seen: it is the only place shape, fill and word are mapped to each
-         other, so it is a list with a name instead of three bare words. It carries only the levels
-         the bars above actually use, and `needs action` last, where the amber lane is drawn. -->
+  <section class="stream" aria-labelledby="stream-title">
+    <div class="col-head">
+      <h2 class="col-title" id="stream-title">what has changed, newest major first</h2>
+    </div>
     <ul class="legend" aria-label="Bar fills">
       <li><svg class="sig" style="color:var(--text)" aria-hidden="true"><use href="#s-featured"/></svg><i style="background:var(--text)"></i>featured</li>
       <li><svg class="sig" style="color:var(--text-muted)" aria-hidden="true"><use href="#s-notable"/></svg><i style="background:var(--text-muted)"></i>notable</li>
       <li><svg class="sig" style="color:var(--text-faint)" aria-hidden="true"><use href="#s-digest"/></svg><i style="background:var(--rule-strong)"></i>digest</li>
       <li><i style="height:2px;background:var(--action)"></i>needs action</li>
     </ul>
-  </section>
 
-  <section class="group" aria-labelledby="g6">
-    <h2 class="group-title" id="g6"><span class="major">v6</span>4 releases</h2>
-    <ul class="releases">
-      <li class="rel">
-        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg>featured</span>
-        <a class="rel-version" href="release.html">6.0.0</a>
-        <time class="rel-date" datetime="2024-11-26">2024-11-26</time>
-        <div class="rel-main">
-          <p class="rel-title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
-          <p class="rel-verdict sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required · 4 breaking changes</p>
-          <ul class="breaks" aria-label="Breaking changes in 6.0.0">
-            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <span class="mono">resolve.conditions</span> no longer include the defaults</span></li>
-            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><span class="mono">json.stringify</span> now defaults to <span class="mono">'auto'</span></span></li>
-            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></li>
-            <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></li>
-          </ul>
-          <a class="read-more" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
-        </div>
-      </li>
-      <li>
-        <details class="digest">
-          <summary>
-            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
-            <span><span class="nowrap">3 digest releases</span><span class="range"> · 6.0.1 to 6.0.3</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </summary>
-          <ul class="digest-lines">
-            <li><a href="#">6.0.1</a><time datetime="2024-11-27">2024-11-27</time></li>
-            <li><a href="#">6.0.2</a><time datetime="2024-12-02">2024-12-02</time></li>
-            <li><a href="#">6.0.3</a><time datetime="2024-12-05">2024-12-05</time></li>
-          </ul>
-        </details>
-      </li>
-    </ul>
-  </section>
+    <section class="group" aria-labelledby="g6">
+      <h3 class="group-title" id="g6">
+        <span class="major">v6</span><span class="pipe" aria-hidden="true">|</span>
+        <span class="bar-track" id="bar-v6" style="width:100%" aria-hidden="true"><span class="bar"><span class="b-featured" style="flex:1"></span><span class="b-digest" style="flex:3"></span></span><span class="needs" style="width:25%"></span></span>
+        <span class="words">4 releases · 1 featured · 3 digest, <span class="n-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>1 needs action</span></span>
+      </h3>
+      <ul class="releases">
+        <li class="rel">
+          <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-featured"/></svg>featured</span>
+          <a class="rel-version" href="release.html">6.0.0</a>
+          <time class="rel-date" datetime="2024-11-26">2024-11-26</time>
+          <div class="rel-main">
+            <p class="rel-title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</p>
+            <p class="rel-verdict sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning: action required · 4 breaking changes</p>
+            <ul class="breaks" aria-label="Breaking changes in 6.0.0">
+              <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <span class="mono">resolve.conditions</span> no longer include the defaults</span></li>
+              <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><span class="mono">json.stringify</span> now defaults to <span class="mono">'auto'</span></span></li>
+              <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></li>
+              <li><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></li>
+            </ul>
+            <a class="read-more" href="release.html"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">migrate to vite 6.0.0</span></a>
+          </div>
+        </li>
+        <li>
+          <details class="digest">
+            <summary>
+              <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+              <span><span class="nowrap">3 digest releases</span><span class="range"> · 6.0.1 to 6.0.3</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </summary>
+            <ul class="digest-lines">
+              <li><a href="#">6.0.1</a><time datetime="2024-11-27">2024-11-27</time></li>
+              <li><a href="#">6.0.2</a><time datetime="2024-12-02">2024-12-02</time></li>
+              <li><a href="#">6.0.3</a><time datetime="2024-12-05">2024-12-05</time></li>
+            </ul>
+          </details>
+        </li>
+      </ul>
+    </section>
 
-  <section class="group" aria-labelledby="g5">
-    <h2 class="group-title" id="g5"><span class="major">v5</span>32 releases after 5.2.0</h2>
-    <ul class="releases">
-      <li>
-        <details class="digest">
-          <summary>
-            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
-            <span><span class="nowrap">14 digest releases</span><span class="range"> · 5.2.1 to 5.2.14</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </summary>
-          <ul class="digest-lines">
-            <li><a href="#">5.2.1</a><time datetime="2024-03-21">2024-03-21</time></li><li><a href="#">5.2.2</a><time datetime="2024-03-24">2024-03-24</time></li>
-            <li><a href="#">5.2.3</a><time datetime="2024-04-02">2024-04-02</time></li><li><a href="#">5.2.4</a><time datetime="2024-04-03">2024-04-03</time></li>
-            <li><a href="#">5.2.5</a><time datetime="2024-04-04">2024-04-04</time></li><li><a href="#">5.2.6</a><time datetime="2024-04-04">2024-04-04</time></li>
-            <li><a href="#">5.2.7</a><time datetime="2024-04-05">2024-04-05</time></li><li><a href="#">5.2.8</a><time datetime="2024-04-05">2024-04-05</time></li>
-            <li><a href="#">5.2.9</a><time datetime="2024-04-15">2024-04-15</time></li><li><a href="#">5.2.10</a><time datetime="2024-04-20">2024-04-20</time></li>
-            <li><a href="#">5.2.11</a><time datetime="2024-05-02">2024-05-02</time></li><li><a href="#">5.2.12</a><time datetime="2024-05-28">2024-05-28</time></li>
-            <li><a href="#">5.2.13</a><time datetime="2024-06-06">2024-06-06</time></li><li><a href="#">5.2.14</a><time datetime="2024-08-08">2024-08-08</time></li>
-          </ul>
-        </details>
-      </li>
-      <li class="rel">
-        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg>notable</span>
-        <a class="rel-version" href="#">5.3.0</a>
-        <time class="rel-date" datetime="2024-06-13">2024-06-13</time>
-        <div class="rel-main">
-          <p class="rel-title">Dev server warmup and HMR improvements, with new options for asset handling.</p>
-          <p class="rel-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
-        </div>
-      </li>
-      <li>
-        <details class="digest">
-          <summary>
-            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
-            <span><span class="nowrap">5 digest releases</span><span class="range"> · 5.3.1 to 5.3.5</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </summary>
-          <ul class="digest-lines">
-            <li><a href="#">5.3.1</a><time datetime="2024-06-14">2024-06-14</time></li><li><a href="#">5.3.2</a><time datetime="2024-06-27">2024-06-27</time></li>
-            <li><a href="#">5.3.3</a><time datetime="2024-07-03">2024-07-03</time></li><li><a href="#">5.3.4</a><time datetime="2024-07-16">2024-07-16</time></li>
-            <li><a href="#">5.3.5</a><time datetime="2024-07-25">2024-07-25</time></li>
-          </ul>
-        </details>
-      </li>
-      <li class="rel">
-        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg>notable</span>
-        <a class="rel-version" href="#">5.4.0</a>
-        <time class="rel-date" datetime="2024-08-07">2024-08-07</time>
-        <div class="rel-main">
-          <p class="rel-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: no summary for this older release · <a href="#">read the release notes</a></p>
-        </div>
-      </li>
-      <li>
-        <details class="digest">
-          <summary>
-            <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
-            <span><span class="nowrap">11 digest releases</span><span class="range"> · 5.4.1 to 5.4.11</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
-            <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </summary>
-          <ul class="digest-lines">
-            <li><a href="#">5.4.1</a><time datetime="2024-08-15">2024-08-15</time></li><li><a href="#">5.4.2</a><time datetime="2024-08-20">2024-08-20</time></li>
-            <li><a href="#">5.4.3</a><time datetime="2024-09-03">2024-09-03</time></li><li><a href="#">5.4.4</a><time datetime="2024-09-11">2024-09-11</time></li>
-            <li><a href="#">5.4.5</a><time datetime="2024-09-16">2024-09-16</time></li><li><a href="#">5.4.6</a><time datetime="2024-09-16">2024-09-16</time></li>
-            <li><a href="#">5.4.7</a><time datetime="2024-09-20">2024-09-20</time></li><li><a href="#">5.4.8</a><time datetime="2024-09-25">2024-09-25</time></li>
-            <li><a href="#">5.4.9</a><time datetime="2024-10-14">2024-10-14</time></li><li><a href="#">5.4.10</a><time datetime="2024-10-24">2024-10-24</time></li>
-            <li><a href="#">5.4.11</a><time datetime="2024-11-11">2024-11-11</time></li>
-          </ul>
-        </details>
-      </li>
-    </ul>
-  </section>
+    <section class="group g-v5" aria-labelledby="g5">
+      <h3 class="group-title" id="g5">
+        <span class="major">v5</span><span class="pipe" aria-hidden="true">|</span>
+        <span class="bar-track" style="width:100%" aria-hidden="true"><span class="bar"><span class="b-notable" style="flex:2"></span><span class="b-digest" style="flex:30"></span></span></span>
+        <span class="words">32 releases · 2 notable · 30 digest, 1 not summarized</span>
+      </h3>
+      <ul class="releases">
+        <li>
+          <details class="digest">
+            <summary>
+              <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+              <span><span class="nowrap">14 digest releases</span><span class="range"> · 5.2.1 to 5.2.14</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </summary>
+            <ul class="digest-lines">
+              <li><a href="#">5.2.1</a><time datetime="2024-03-21">2024-03-21</time></li><li><a href="#">5.2.2</a><time datetime="2024-03-24">2024-03-24</time></li>
+              <li><a href="#">5.2.3</a><time datetime="2024-04-02">2024-04-02</time></li><li><a href="#">5.2.4</a><time datetime="2024-04-03">2024-04-03</time></li>
+              <li><a href="#">5.2.5</a><time datetime="2024-04-04">2024-04-04</time></li><li><a href="#">5.2.6</a><time datetime="2024-04-04">2024-04-04</time></li>
+              <li><a href="#">5.2.7</a><time datetime="2024-04-05">2024-04-05</time></li><li><a href="#">5.2.8</a><time datetime="2024-04-05">2024-04-05</time></li>
+              <li><a href="#">5.2.9</a><time datetime="2024-04-15">2024-04-15</time></li><li><a href="#">5.2.10</a><time datetime="2024-04-20">2024-04-20</time></li>
+              <li><a href="#">5.2.11</a><time datetime="2024-05-02">2024-05-02</time></li><li><a href="#">5.2.12</a><time datetime="2024-05-28">2024-05-28</time></li>
+              <li><a href="#">5.2.13</a><time datetime="2024-06-06">2024-06-06</time></li><li><a href="#">5.2.14</a><time datetime="2024-08-08">2024-08-08</time></li>
+            </ul>
+          </details>
+        </li>
+        <li class="rel">
+          <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg>notable</span>
+          <a class="rel-version" href="#">5.3.0</a>
+          <time class="rel-date" datetime="2024-06-13">2024-06-13</time>
+          <div class="rel-main">
+            <p class="rel-title">Dev server warmup and HMR improvements, with new options for asset handling.</p>
+            <p class="rel-verdict sev-ok"><svg class="glyph" aria-hidden="true"><use href="#g-ok"/></svg>ok: safe to upgrade</p>
+          </div>
+        </li>
+        <li>
+          <details class="digest">
+            <summary>
+              <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+              <span><span class="nowrap">5 digest releases</span><span class="range"> · 5.3.1 to 5.3.5</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </summary>
+            <ul class="digest-lines">
+              <li><a href="#">5.3.1</a><time datetime="2024-06-14">2024-06-14</time></li><li><a href="#">5.3.2</a><time datetime="2024-06-27">2024-06-27</time></li>
+              <li><a href="#">5.3.3</a><time datetime="2024-07-03">2024-07-03</time></li><li><a href="#">5.3.4</a><time datetime="2024-07-16">2024-07-16</time></li>
+              <li><a href="#">5.3.5</a><time datetime="2024-07-25">2024-07-25</time></li>
+            </ul>
+          </details>
+        </li>
+        <li class="rel">
+          <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-notable"/></svg>notable</span>
+          <a class="rel-version" href="#">5.4.0</a>
+          <time class="rel-date" datetime="2024-08-07">2024-08-07</time>
+          <div class="rel-main">
+            <p class="rel-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note: no summary for this older release · <a href="#">read the release notes</a></p>
+          </div>
+        </li>
+        <li>
+          <details class="digest">
+            <summary>
+              <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-digest"/></svg>digest</span>
+              <span><span class="nowrap">11 digest releases</span><span class="range"> · 5.4.1 to 5.4.11</span><span class="nowrap na"><span class="sep"> · </span>no action needed</span></span>
+              <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </summary>
+            <ul class="digest-lines">
+              <li><a href="#">5.4.1</a><time datetime="2024-08-15">2024-08-15</time></li><li><a href="#">5.4.2</a><time datetime="2024-08-20">2024-08-20</time></li>
+              <li><a href="#">5.4.3</a><time datetime="2024-09-03">2024-09-03</time></li><li><a href="#">5.4.4</a><time datetime="2024-09-11">2024-09-11</time></li>
+              <li><a href="#">5.4.5</a><time datetime="2024-09-16">2024-09-16</time></li><li><a href="#">5.4.6</a><time datetime="2024-09-16">2024-09-16</time></li>
+              <li><a href="#">5.4.7</a><time datetime="2024-09-20">2024-09-20</time></li><li><a href="#">5.4.8</a><time datetime="2024-09-25">2024-09-25</time></li>
+              <li><a href="#">5.4.9</a><time datetime="2024-10-14">2024-10-14</time></li><li><a href="#">5.4.10</a><time datetime="2024-10-24">2024-10-24</time></li>
+              <li><a href="#">5.4.11</a><time datetime="2024-11-11">2024-11-11</time></li>
+            </ul>
+          </details>
+        </li>
+      </ul>
+    </section>
 
-  <section class="previews" aria-labelledby="pv">
-    <h2 class="group-title" id="pv"><span class="major">previews</span>ahead of 6.0.3</h2>
-    <ul class="releases">
-      <li class="rel">
-        <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg>preview</span>
-        <a class="rel-version" href="#">6.1.0-beta.0</a>
-        <time class="rel-date" datetime="2025-01-08">2025-01-08</time>
-        <div class="rel-main">
-          <p class="rel-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-pending"/></svg>pending: summary queued · <a href="#">read the release notes</a></p>
-        </div>
-      </li>
-    </ul>
-  </section>
+    <section class="previews" aria-labelledby="pv">
+      <h3 class="group-title" id="pv"><span class="major">previews</span><span class="words">ahead of 6.0.3</span></h3>
+      <ul class="releases">
+        <li class="rel">
+          <span class="rel-sig"><svg class="sig" aria-hidden="true"><use href="#s-preview"/></svg>preview</span>
+          <a class="rel-version" href="#">6.1.0-beta.0</a>
+          <time class="rel-date" datetime="2025-01-08">2025-01-08</time>
+          <div class="rel-main">
+            <p class="rel-verdict none"><svg class="glyph" aria-hidden="true"><use href="#g-pending"/></svg>pending: summary queued · <a href="#">read the release notes</a></p>
+          </div>
+        </li>
+      </ul>
+    </section>
 
-  <p class="show-all"><a class="help-pointer" href="#"><span class="arrow" aria-hidden="true">--&gt;</span><span class="label">show all 53 releases</span></a></p>
+  </section>
 
   <p class="foot"><span>releases detected via npm · notes from GitHub</span><span>sample content for design review</span></p>
 </main>
@@ -484,10 +592,10 @@ main[data-state="in-use"] .show-all, main[data-state="following"] .show-all { di
 <div class="review" role="group" aria-label="Design review controls">
   <label for="state-select">page state</label>
   <select id="state-select">
+    <option value="in-use" selected>following, version in use declared</option>
+    <option value="following">following, no version in use</option>
     <option value="range">upgrade path from 5.2.0</option>
     <option value="derived">upgrade path, no version given</option>
-    <option value="following">following, no version in use</option>
-    <option value="in-use">following, version in use declared</option>
     <option value="invalid">invalid from version</option>
     <option value="retired">retired technology</option>
   </select>
@@ -502,22 +610,39 @@ themeButton.addEventListener("click", () => {
   themeButton.setAttribute("aria-label", `Switch to ${next === "dark" ? "light" : "dark"} theme`);
 });
 
-const main = document.getElementById("content");
 const fromInput = document.getElementById("from");
 const followLabel = document.querySelector(".follow-label");
 const currentVersion = document.getElementById("current-version");
-const FROM = { invalid: "5.9.0", "in-use": "6.0.0", derived: "5.4.11" };
+const FROM = { invalid: "5.9.0", "in-use": "6.0.0", following: "5.4.11", derived: "5.4.11" };
+// The sentence is the one thing no row of the list counts, so it has to count the path of the state
+// it is in: a refusal keeps the path it already had, which is why `invalid` reads from 5.2.0.
+const SHORT = "1 needs action, 3 are digest fixes you can skip.";
+const LONG = "1 needs action, 33 are digest fixes you can skip.";
+const PATH = {
+  "in-use": { from: "6.0.0", releases: "4 releases", tail: SHORT },
+  following: { from: "5.4.11", releases: "4 releases", tail: SHORT },
+  derived: { from: "5.4.11", releases: "4 releases", tail: SHORT },
+  range: { from: "5.2.0", releases: "36 releases", tail: LONG },
+  invalid: { from: "5.2.0", releases: "36 releases", tail: LONG },
+  retired: { from: "5.2.0", releases: "36 releases", tail: LONG },
+};
+const sentence = document.querySelector(".range-sentence");
+// The bar is a share of the largest major in the list, so it is redrawn when the list is the path
+// alone: 4 of 4 fills the track, 4 of 32 is the stub it was next to v5.
+const barV6 = document.getElementById("bar-v6");
 document.getElementById("state-select").addEventListener("change", (event) => {
   const state = event.target.value;
-  main.dataset.state = state;
+  document.body.dataset.state = state;
   fromInput.value = FROM[state] ?? "5.2.0";
   fromInput.setAttribute("aria-invalid", String(state === "invalid"));
-  // A declared start has no line of its own any more: the `in use` row above carries the version and
-  // the day, so only a derived start and a refusal describe the field.
+  // A declared start has no line of its own: the `in use` row above carries the version and the day,
+  // so only a derived start and a refusal describe the field.
   const describes = { derived: "from-derived", invalid: "from-error" }[state];
   if (describes) fromInput.setAttribute("aria-describedby", describes);
   else fromInput.removeAttribute("aria-describedby");
-  // The control only exists for a Developer who follows the Technology.
+  const path = PATH[state];
+  sentence.innerHTML = `Between <strong>${path.from}</strong> and <strong>6.0.3</strong>: <strong>${path.releases}</strong>, ${path.tail}`;
+  barV6.style.width = path.releases === "4 releases" ? "100%" : "12.5%";
   followLabel.textContent = state === "following" || state === "in-use" ? "Following" : "Follow";
   currentVersion.value = state === "in-use" ? "6.0.0" : "";
 });

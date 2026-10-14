@@ -16,6 +16,9 @@ type Props = {
   // The start the page derived, already drawn on the server: without `?from=` and without a
   // declaration it is what stays on the screen, so the two renders agree.
   fallback: DefaultStart | null;
+  // The head of the left column, and the declaration row of the panel: both arrive as elements, so
+  // this view passes them through without knowing what either one is.
+  head?: ReactNode;
   declaration?: ReactNode;
   children: ReactNode;
 };
@@ -29,7 +32,7 @@ function chooseStart(typed: string | null, declared: { version: string; declared
 }
 
 // Reads `?from` on the client so the Technology page itself stays cached (ISR).
-export function UpgradePathView({ slug, name, latest, retired, releases, fallback, declaration, children }: Props) {
+export function UpgradePathView({ slug, name, latest, retired, releases, fallback, head, declaration, children }: Props) {
   const typed = useSearchParams().get("from");
   const start = chooseStart(typed, useUpgradeStart(), fallback);
 
@@ -41,6 +44,7 @@ export function UpgradePathView({ slug, name, latest, retired, releases, fallbac
       retired={retired}
       releases={releases}
       start={start}
+      head={head}
       declaration={declaration}
     >
       {children}

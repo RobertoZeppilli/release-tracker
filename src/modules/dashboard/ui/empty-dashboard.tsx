@@ -55,7 +55,7 @@ export function EmptyDashboard({ shortlist, total }: { shortlist: readonly Picke
         </ul>
         <FollowToggleLimitNote counted />
         <p className="mt-4 font-mono text-diagnostic">
-          <Link href="/technologies" className="text-text no-underline hover:underline">
+          <Link href="/technologies" className="text-link no-underline hover:underline">
             <span aria-hidden className="mr-[1ch] text-text-faint [font-variant-ligatures:none]">
               --&gt;
             </span>

@@ -10,19 +10,23 @@
 // derived from a nominal 0.6em: the first guess was 8.4px, and the 0.6px it was short by let quotes of
 // exactly the width of a step through, which is how three pages still overflowed after the first fix.
 const CHAR = 9;
-// The `5ch` gutter of the quote grid plus the `pr-3` the quote text keeps on its right.
-const GUTTER = 5 * CHAR + 12;
+// The `5ch` gutter of the quote grid, the `1.5ch` of padding inside it, and the `pr-3` the quote text
+// keeps on its right: 70.5px. The padding was missing here while the column was capped at 900px, and
+// the cap hid it; with the column at 1192 the budget is what decides, so it is counted.
+const GUTTER = 5 * CHAR + 1.5 * CHAR + 12;
 // One character of slack, so a quote that lands exactly on a step does not depend on sub-pixel luck.
 const MARGIN = 1;
 
-// The content column is 1040px at most with 24px of padding a side, and diagnostics stop at 900px.
+// The content column is the page's own: 1240px with 24px of padding a side, capped at 1192px, and
+// nothing structural caps the diagnostics below it any more (DESIGN.md, Release, the one structural
+// edge).
 function column(viewport: number): number {
-  return Math.min(900, Math.min(1040, viewport) - 48);
+  return Math.min(1192, viewport - 48);
 }
 
 // The widths the caret row is switched at. Below 641px caret rows do not exist at all, and above
-// 1024px the column has already reached its 900px cap, so nothing wider would change the answer.
-export const CARET_WIDTHS = [641, 768, 900, 1024] as const;
+// 1240px the column has already reached its 1192px cap, so nothing wider would change the answer.
+export const CARET_WIDTHS = [641, 768, 900, 1024, 1240] as const;
 export type CaretWidth = (typeof CARET_WIDTHS)[number];
 
 // `null` when the quote never fits on one line and the underline carries the citation at every width.

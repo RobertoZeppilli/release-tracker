@@ -18,6 +18,45 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-14 (le due pagine finite, prima della PR): i panel, e la regola che hanno piegato
+  - ⚠️ La riga unica del verdetto ceduta dentro un panel, e rimessa in piedi lo stesso giorno abbassando il tetto del token
+  - ⚠️ Le due immagini dell'utente in `docs/`, mai committate: cancellate il 2026-10-14 su sua richiesta
+- Il tema chiaro delle due pagine (2026-10-14), guardato e misurato: le misure di quello che axe non guarda
+  - ⚠️ `DESIGN.md` indietro per la terza sessione di fila, la tabella dei token ora è tenuta da un test
+- Stato al 2026-10-14 (il peso misurato prima e dopo, prima dei panel): le due pagine non pesano, ma `/login` porta 14 KB di Release
+  - ⚠️ `Script KB` +1.2 KB su ogni rotta, da un chunk solo, trovato al byte
+  - ⚠️ Il "prima" ripreso ricostruendo `28bc49e`: a quel commit `pnpm page:weight` non esiste ancora
+- Gli E2E delle due pagine (2026-10-14), com'è andata: da quale fatto nel markup legge ogni asserzione
+  - ⚠️ axe bocciava il link della riga di verdetto, 2,1:1 contro il 3:1 di `link-in-text-block`
+  - ⚠️ `DESIGN.md` si contraddiceva: Help Pointer Link contro Neutral row verdicts, vince il secondo
+- Stato al 2026-10-14 (le due pagine in codice e misurate, prima degli E2E): il Counts Panel, l'ordine invertito, il budget delle caret row rifatto
+  - ⚠️ Il budget delle caret row era sbagliato in due modi: mancava il padding di 1.5ch e il cap era ancora 900
+  - ⚠️ Il codice commuta sui cinque passi, il mock sulla larghezza della singola citazione
+  - ⚠️ `DESIGN.md` indietro sul mock in tre punti, la seconda sessione di fila
+- Stato al 2026-10-14 (Technology in codice e misurata, prima del codice della Release): lo spacco, il contenitore unico a 1240, la Stat Row dentro il titolo
+  - ⚠️ `max-[Npx]:` di Tailwind è esclusivo: a 1040px esatti il pannello correva 992px
+  - ⚠️ Le misure di Technology su 18 larghezze: prima Release a 158px contro i 646 della pagina viva
+  - ⚠️ I 43 `max-[640px]` del resto dell'app non erano ancora convertiti
+- Stato al 2026-10-14 (il peso "prima" preso e il codice di Technology iniziato): i mock chiusi, le misure del mock A di Release
+  - ⚠️ Le quattro misure del mock A sono il metro del codice della pagina Release
+  - ⚠️ La prosa a 72ch dentro il bordo unico a 1192: decisa dall'agente, lasciata passare dall'utente
+- Stato al 2026-10-14 (notte, il mock A di Release scritto e misurato): il bordo destro unico a 880 e il verde interattivo
+  - ⚠️ 880 è misurato e non scelto: una citazione da 88 caratteri vuole 871,5px di colonna
+  - ⚠️ Le misure di quel mock sono il "prima" dell'allargamento a 1240 deciso subito dopo
+- Il verde interattivo, com'è finito (2026-10-14): lo stesso verde per l'anello di focus e per i link nel testo
+  - ⚠️ Il verde del tema scuro misura 1.24:1 nel chiaro: due colori, non lo stesso a due luminosità
+  - ⚠️ Il `-->` diceva due cose in un colore solo: destinazione verde, citazione ciano
+  - ⚠️ Il verde vuol dire due cose, e la Severity-Only Colour Rule ora dichiara l'eccezione
+- Stato al 2026-10-14 (sera, il mock di Technology chiuso): Release misurata e il piano dei due mock
+  - ⚠️ Due righe di conteggio visibili insieme, e la regola di base che viene scavalcata
+- Il mock di Technology, com'è finito (2026-10-14): il nome dentro la colonna sticky, la lista che è il cammino, la barra misurata su quello che la lista contiene
+  - ⚠️ Un grid item sticky non si ferma in fondo alla propria riga: 24px stampati sopra il footer
+  - ⚠️ `newPage({ viewportSize })` non esiste e viene ignorato: si misura a 1280 credendo di essere a 390
+- Stato al 2026-10-14 (il mock di Technology, da approvare): l'audit misurato sulle pagine vive, e lo spacco scelto per Technology
+  - ⚠️ In locale non c'è nessun Summary `ready`: gli stati pieni si seminano con `seedTechnology`
+- Stato al 2026-10-14 (il codice di `/technologies`, nella PR #149): lo spacco in codice, misurato, e le tre cose decise mentre si scriveva
+  - ⚠️ Il bottone che si accavallava in `grid` era un layer: le utility di Tailwind vincono su `globals.css` qualunque sia la specificità
+  - ⚠️ A 320px una prova in iframe dava 11px di overflow: era la scrollbar dell'iframe, non la pagina
 - Stato al 2026-10-13 (notte, il mock di `/technologies`): lo spacco scelto fra due proposte, e l'audit che lo ha prodotto
   - ⚠️ Il quota stampato tre volte nei primi 60px, e ~270px di vuoto in ogni riga: misurato sulla pagina viva
   - ⚠️ `/technologies` ha risposto una volta sola con la pagina di errore in dev, al primo colpo dopo l'avvio

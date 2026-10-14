@@ -1,4 +1,5 @@
-import { type CaretWidth, caretWidth } from "@/modules/summaries";
+import { caretWidth } from "@/modules/summaries";
+import { caretClasses } from "@/modules/summaries/ui";
 import { CITATION, citedSpan } from "../domain/specimen";
 import { CaretDraw } from "./caret-draw";
 
@@ -6,23 +7,16 @@ import { CaretDraw } from "./caret-draw";
 // where it would wrap and the cited stretch carries the coral underline instead (DESIGN.md). The
 // quote here is short enough to hold at every width a caret row exists at, and `caretWidth` is the
 // same answer the Release page asks for, so a change to the font or the column moves both.
-const CARET: Record<CaretWidth | "never", { caret: string; cited: string }> = {
-  641: { caret: "max-[640px]:hidden", cited: "max-[640px]:cited-quote" },
-  768: { caret: "max-[767px]:hidden", cited: "max-[767px]:cited-quote" },
-  900: { caret: "max-[899px]:hidden", cited: "max-[899px]:cited-quote" },
-  1024: { caret: "max-[1023px]:hidden", cited: "max-[1023px]:cited-quote" },
-  never: { caret: "hidden", cited: "cited-quote" },
-};
 
 // The id `CaretDraw` arms, and the one the mock used for the same well.
 const WELL_ID = "cited-quote";
 
-const GUTTER = "grid grid-cols-[5ch_1fr] max-[640px]:grid-cols-[4.5ch_1fr]";
-const LABEL = "pr-[1.5ch] text-right text-text-faint [font-variant-ligatures:none] select-none max-[640px]:pr-[1ch]";
+const GUTTER = "grid grid-cols-[5ch_1fr] phone:grid-cols-[4.5ch_1fr]";
+const LABEL = "pr-[1.5ch] text-right text-text-faint [font-variant-ligatures:none] select-none phone:pr-[1ch]";
 
 export function CiteWell() {
   const span = citedSpan(CITATION.quote, CITATION.cited);
-  const { caret, cited } = CARET[span ? (caretWidth(CITATION.quote.length) ?? "never") : "never"];
+  const { caret, cited } = caretClasses[span ? (caretWidth(CITATION.quote.length) ?? "never") : "never"];
 
   return (
     <>

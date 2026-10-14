@@ -22,7 +22,7 @@ function reveal(panel: HTMLDetailsElement | null, line: number) {
 }
 
 // The gutter the line numbers are counted into, shared with the back pointer so the two stay aligned.
-const GUTTER = "grid grid-cols-[6ch_1fr] max-[640px]:grid-cols-[4.5ch_1fr]";
+const GUTTER = "grid grid-cols-[6ch_1fr] phone:grid-cols-[4.5ch_1fr]";
 
 // The return leg of a cite pointer (issue #85). It sits on a row of its own above the active range,
 // washed and inked like it, and names the diagnostic that cited rather than a generic way up. A
@@ -34,7 +34,7 @@ function BackToDiagnostic({ to, wash }: { to: CiteOrigin; wash: string }) {
     <li className={`${GUTTER} ${wash}`}>
       <span
         aria-hidden
-        className="pr-[2ch] text-right text-text-faint [font-variant-ligatures:none] select-none max-[640px]:pr-[1.2ch]"
+        className="pr-[2ch] text-right text-text-faint [font-variant-ligatures:none] select-none phone:pr-[1.2ch]"
       >
         {"<--"}
       </span>
@@ -77,7 +77,7 @@ export function ReleaseNotesSource({ lines, url }: { lines: string[]; url: strin
           className="size-4 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-open:rotate-90 motion-reduce:transition-none"
         />
         release-notes
-        <span className="ml-auto text-label text-text-muted max-[640px]:hidden">{meta}</span>
+        <span className="ml-auto text-label text-text-muted phone:hidden">{meta}</span>
       </summary>
       <ol className="overflow-x-auto border-t border-rule py-3 font-mono text-source text-text-muted [counter-reset:line]">
         {lines.map((line, index) => {
@@ -88,7 +88,7 @@ export function ReleaseNotesSource({ lines, url }: { lines: string[]; url: strin
               <li
                 id={`L${index + 1}`}
                 tabIndex={-1}
-                className={`${GUTTER} scroll-mt-[30vh] [counter-increment:line] before:pr-[2ch] before:text-right before:text-text-faint before:content-[counter(line)] before:select-none max-[640px]:before:pr-[1.2ch] ${span ? wash : ""}`}
+                className={`${GUTTER} scroll-mt-[30vh] [counter-increment:line] before:pr-[2ch] before:text-right before:text-text-faint before:content-[counter(line)] before:select-none phone:before:pr-[1.2ch] ${span ? wash : ""}`}
               >
                 <span className={`pr-4 whitespace-pre-wrap [overflow-wrap:anywhere] ${line.startsWith("#") ? "text-text" : ""}`}>
                   {span ? (

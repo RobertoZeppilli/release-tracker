@@ -17,7 +17,7 @@ export function StandingQuotaNote() {
     <p className="mt-2" role="status">
       <Info aria-hidden className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
       note: <span className="text-text-muted">{FREE_FOLLOW_LIMIT}</span> of {FREE_FOLLOW_LIMIT} followed ·{" "}
-      <Link href="/technologies" className="text-inherit decoration-rule-strong hover:text-text hover:decoration-current">
+      <Link href="/technologies" className="text-link decoration-current">
         unfollow one to follow another
       </Link>
     </p>

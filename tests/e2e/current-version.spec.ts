@@ -87,7 +87,7 @@ test.describe("the Version in use", () => {
     const panel = page.getByRole("region", { name: "upgrade path" });
     await expect(panel.getByLabel("Version in use", { exact: true })).toBeVisible();
     await expect(panel.getByLabel("Upgrade from")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "warning: 1 needs action" })).toBeVisible();
+    await expect(page.locator("#path-verdict")).toHaveText("warning: 1 needs action");
 
     // And it is still the start on the next visit, without anything in the URL.
     await page.reload();
@@ -102,7 +102,7 @@ test.describe("the Version in use", () => {
 
     await page.goto(`/technologies/${technology.slug}?from=1.1.1`);
     await expect(page.getByLabel("Upgrade from")).toHaveValue("1.1.1");
-    await expect(page.getByRole("heading", { name: "note: 1 without a verdict" })).toBeVisible();
+    await expect(page.locator("#path-verdict")).toHaveText("note: 1 without a verdict");
     // The saved declaration is untouched: the field still holds it, and so does the path once the
     // query string is gone.
     await expect(field(page)).toHaveValue("1.0.0");

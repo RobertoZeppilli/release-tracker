@@ -14,20 +14,29 @@ export function ReleaseVerdict({ slug, release }: { slug: string; release: Summa
   );
 }
 
-// DESIGN.md, Neutral row verdicts: a neutral status is followed by `· read the release notes` as an
-// underlined link, and nothing follows it where there are none to read.
+// DESIGN.md, Neutral row verdicts: a neutral status is followed by `read the release notes` as an
+// underlined link, and nothing follows it where there are none to read. It carries the label
+// treatment of the Help Pointer -- interactive green, 1px dashed underline, solid on hover -- and
+// not `text-muted` alone: muted beside the row's own `text` measured 2.1:1, and a link inside a
+// sentence has to be told apart from it without colour (WCAG 1.4.1, axe `link-in-text-block`).
+//
+// ⚠️ The link takes a line of its own, and the `·` that introduced it is gone with it. On the line
+// it used to share, the four words broke wherever the column ran out -- `read` on one line and `the
+// release notes` on the next, a different place at every width -- so what the reader saw split was
+// the link itself. A `·` separates facts on one line and never two lines (DESIGN.md, Upgrade Panel),
+// so once the link is a line there is nothing for it to separate.
 export function RowVerdictLine({ verdict, href }: { verdict: RowVerdict; href: string }) {
   return (
     <>
       <SeverityLabel tone={verdict.tone} label={verdict.label} pending={verdict.pending} />{" "}
       <span className={verdict.tone === "muted" ? "text-text-muted" : undefined}>{verdict.claim}</span>
       {verdict.notes && (
-        <>
-          <span className="text-text-muted"> · </span>
-          <Link href={href} className="text-text-muted decoration-rule-strong hover:text-text hover:decoration-current">
-            read the release notes
-          </Link>
-        </>
+        <Link
+          href={href}
+          className="mt-[2px] block w-fit border-b border-dashed border-current text-link no-underline hover:border-solid"
+        >
+          read the release notes
+        </Link>
       )}
     </>
   );

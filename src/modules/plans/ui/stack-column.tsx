@@ -55,7 +55,13 @@ function StackPanel() {
 
   return (
     <div className="mb-5 rounded-md border border-rule bg-raised p-4">
-      <ColumnTitle id="stack-title">what you follow, by name</ColumnTitle>
+      {/* The title is the panel's, at the scale the other two panels title themselves with: on the
+          Dashboard and on a Technology page that line is a verdict, and this page has none to make,
+          so it is the question the column answers plus the ordering in force. Same box, same first
+          line, one page to the next (DESIGN.md, Stack Panel). */}
+      <h2 id="stack-title" className="mb-3 font-mono text-column-verdict text-text">
+        what you follow, by name
+      </h2>
       {/* The figures are the announcement: a press moves a row and the focus follows it, which tells
           the eye, and this tells the ear. The Status-scale line that used to carry it is gone, and
           its job is not (DESIGN.md, Stack Panel). */}
