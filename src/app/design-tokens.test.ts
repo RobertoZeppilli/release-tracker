@@ -80,3 +80,66 @@ describe.each(THEMES)("$name tokens", ({ name, selector }) => {
     }
   });
 });
+
+// The same tie for the type scale, and for the same reason: the typography table is quoted when an
+// agent writes a size, and nothing held it to the CSS. On 2026-10-14 it still said
+// `whiteSpace: nowrap` for a token whose one line is bought by its cap, not by a `nowrap`. Only
+// what the tokens actually carry is checked here, which is the size, the line height and the
+// letter spacing: the weight and the family are classes, not tokens, and live in the prose.
+const TYPE_ALIASES: Record<string, string> = { "band-title": "band" };
+
+function designType(): Record<string, Record<string, string>> {
+  const start = DESIGN.search(/^typography:\s*$/m);
+  const end = DESIGN.search(/^rounded:\s*$/m);
+  if (start < 0 || end < 0) throw new Error("no typography block in DESIGN.md");
+  const found: Record<string, Record<string, string>> = {};
+  let current = "";
+  for (const line of DESIGN.slice(start, end).split("\n")) {
+    const entry = /^ {2}([\w-]+):\s*$/.exec(line);
+    if (entry) {
+      current = entry[1];
+      found[current] = {};
+      continue;
+    }
+    const property = /^ {4}([\w-]+): "?([^"]+?)"?\s*$/.exec(line);
+    if (property && current) found[current][property[1]] = property[2];
+  }
+  return found;
+}
+
+// A `--text-*` token that carries a length is a type scale; one that carries a colour is the ink.
+const isSize = (value: string): boolean => !/^(#|rgb|var\()/.test(value);
+
+describe("type scale", () => {
+  // The type scale lives in `@theme inline`, not in `:root`: the two `--text-` families are told
+  // apart by their value, since `--text-muted` is an ink and `--text-meta` is a size.
+  const css = cssTokens("@theme inline {");
+  const documented = designType();
+
+  it("says in DESIGN.md what globals.css renders", () => {
+    for (const [name, entry] of Object.entries(documented)) {
+      const token = `text-${TYPE_ALIASES[name] ?? name}`;
+      const pairs = [
+        ["fontSize", css[token]],
+        ["lineHeight", css[`${token}--line-height`]],
+        ["letterSpacing", css[`${token}--letter-spacing`]],
+      ] as const;
+      for (const [property, rendered] of pairs) {
+        const found = entry[property];
+        if (found === undefined && rendered === undefined) continue;
+        expect(
+          found,
+          `${name}: DESIGN.md says ${found}, globals.css renders ${rendered}`,
+        ).toBe(rendered);
+      }
+    }
+  });
+
+  it("declares no size the CSS does not have, and leaves none of its own out", () => {
+    const rendered = Object.keys(css).filter(
+      (token) => token.startsWith("text-") && !token.includes("--") && isSize(css[token]),
+    );
+    const names = Object.keys(documented).map((name) => `text-${TYPE_ALIASES[name] ?? name}`);
+    expect(names.toSorted()).toEqual(rendered.toSorted());
+  });
+});
