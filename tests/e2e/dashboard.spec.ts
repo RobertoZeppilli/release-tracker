@@ -200,7 +200,9 @@ test("offers the Catalog when the Developer follows nothing, and follows from th
 
   await page.getByRole("button", { name: "Open dashboard" }).click();
   await expect(page.getByText("you follow no technologies yet")).toBeHidden();
-  await expect(page.getByRole("heading", { name: "where your stack stands · by distance" })).toBeVisible();
+  // The panel is titled by the verdict now, and with a stack followed the page has one to make
+  // (DESIGN.md, Standing Panel).
+  await expect(page.locator("#page-verdict")).toBeVisible();
 });
 
 // CONTEXT.md, Flusso: one stream in date order with no divisions by Significance, and the Digests
@@ -256,9 +258,9 @@ test("keeps an open week of the Digest in the URL, through a reload and in a sha
 });
 
 // DESIGN.md: both of these are measured, never assumed. A second scrollbar 360px from the page's
-// own would ask the reader which one they are in, and a verdict that wrapped inside its column
-// would be a summary taller than the list it summarises (The One-Line Verdict Rule).
-test("keeps the verdict on one line, the list without a scrollbar and the columns apart", async ({ page }) => {
+// own would ask the reader which one they are in, and a verdict that ran past two lines would be a
+// summary taller than the list it summarises (The One-Line Verdict Rule).
+test("keeps the verdict short, the list without a scrollbar and the columns apart", async ({ page }) => {
   await addFollows(developer.id, [breaking.id, safe.id, busy.id, queued.id]);
   await signIn(page);
   await page.goto("/dashboard");
@@ -286,7 +288,10 @@ test("keeps the verdict on one line, the list without a scrollbar and the column
   });
 
   expect(measured.hiddenBar, "the width the Standing loses to a scrollbar").toBe(0);
-  expect(measured.lines, "the lines the verdict takes").toBeLessThan(1.5);
+  // Two lines at most: the verdict titles the panel now, and inside it `ok: nothing needs action`
+  // has 328px where it measures 365 (DESIGN.md, The One-Line Verdict Rule). Three lines would mean
+  // the claim grew back into the sentence the short form replaced.
+  expect(measured.lines, "the lines the verdict takes").toBeLessThan(2.5);
   expect(measured.insideColumn, "the room left between the verdict and the Stream").toBeGreaterThanOrEqual(0);
   expect(measured.overlap, "how far the Standing runs into the line under it").toBeLessThanOrEqual(0);
   expect(measured.sideways, "how far the page scrolls sideways").toBe(0);

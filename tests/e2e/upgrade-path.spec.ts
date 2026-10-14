@@ -68,11 +68,20 @@ test("entering a Version gives the verdict for the range and leads to its Releas
 
   await expect(page).toHaveURL(`/technologies/${technology.slug}?from=1.0.0`);
   await expect(page.locator("#path-verdict")).toHaveText("warning: 1 needs action");
-  await expect(
-    page.getByText(
-      "Between 1.0.0 and 2.1.0 there are 5 releases: 1 needs action, 1 is safe to upgrade, 1 has no summary yet (check its notes) and 2 are digest fixes you can skip.",
-    ),
-  ).toBeVisible();
+  // The counts are the rows of the panel the verdict titles, laid out as the Standing Panel lays its
+  // totals out: the name on the left, the number right-aligned on the right, and no `·` anywhere
+  // (DESIGN.md, Path Panel). They were one sentence until 2026-10-14. Read as two lists, the
+  // assertion holds the order as well as the pairing, so a row that disappeared cannot pass.
+  const verdict = page.getByRole("region", { name: "warning: 1 needs action" });
+  await expect(verdict.getByRole("term")).toHaveText([
+    "releases, 1.0.0 to 2.1.0",
+    "needs action",
+    "safe to upgrade",
+    "no summary yet",
+    "digest fixes you can skip",
+  ]);
+  await expect(verdict.getByRole("definition")).toHaveText(["5", "1", "1", "1", "2"]);
+  await expect(verdict).not.toContainText("·");
   // The cross-cutting counts come after a comma, the partition after a dot: 1 + 1 + 1 is the 3 the
   // row opens with, and the two numbers that count the same Releases again stay outside that sum
   // (DESIGN.md, Stat Row). The `|` is the bar's own lane, and two majors is what earns it.

@@ -8,7 +8,9 @@ import type { ReactNode } from "react";
 // In the split the panel is the width of its column, so it carries no cap of its own: the 72ch
 // measure comes back only where the two columns become one and the panel would otherwise run the
 // width of the page (DESIGN.md, Technology, the split).
-const PANEL =
+// Exported because the verdict under it is a panel of the same chrome (DESIGN.md, Path Panel): two
+// boxes in one column that differ by a pixel are worse than two that are plainly the same box.
+export const PANEL =
   "rounded-md border border-rule bg-raised px-4 py-3 stacked:max-w-measure phone:max-w-none";
 const CAPTION = "m-0 font-mono text-meta text-text-faint";
 

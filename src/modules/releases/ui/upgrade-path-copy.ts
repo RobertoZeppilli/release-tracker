@@ -51,6 +51,28 @@ export function pathSentence(from: string, to: string, counts: PathCounts): stri
   return `Between ${from} and ${to} there ${counts.total === 1 ? "is 1 release" : `are ${counts.total} releases`}: ${list}.`;
 }
 
+export type PathRow = { count: number; words: string };
+
+// The same reading as `pathSentence`, as the rows of the panel that holds the verdict: one number
+// per line, the numbers in a column of their own. A sentence had to carry the clauses with commas,
+// an "and" and a trailing stop, and a reader counting what they face had to parse the prose to find
+// the numbers again; the rows put the numbers where the eye goes first. ⚠️ No `·` anywhere here: a
+// `·` earns its place between facts on one line, never between lines (DESIGN.md, Upgrade Panel).
+//
+// The total keeps the two Versions beside it, because that is what the clauses are counted over, and
+// it is the only row whose number has no clause of its own.
+export function pathRows(from: string, to: string, counts: PathCounts): PathRow[] {
+  if (counts.total === 0) return [];
+  return [
+    { count: counts.total, words: `${counts.total === 1 ? "release" : "releases"}, ${from} to ${to}` },
+    { count: counts.actionRequired, words: counts.actionRequired === 1 ? "needs action" : "need action" },
+    { count: counts.safe, words: "safe to upgrade" },
+    { count: counts.missing - counts.unjudged, words: "no summary yet" },
+    { count: counts.unjudged, words: "notes too thin to judge" },
+    { count: counts.digest, words: counts.digest === 1 ? "digest fix you can skip" : "digest fixes you can skip" },
+  ].filter((row, index) => index === 0 || row.count > 0);
+}
+
 // The note over the whole recorded history. It names what is on the screen and claims nothing about
 // an upgrade, because this view has no start to measure one from.
 export function historySentence({ stable, previews, majors }: RecordedHistory<unknown>): string {

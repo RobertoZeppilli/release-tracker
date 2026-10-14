@@ -79,10 +79,6 @@ export function totalsRows(standing: Standing): TotalsRow[] {
 export const BAR_NOTE =
   "the bar is the distance from the version you declared, not a score";
 
-export function standingTitle(): string {
-  return "where your stack stands · by distance";
-}
-
 // The Stream's title names its window and its size (DESIGN.md, Stream Row). The count is the data,
 // so a page that has not counted prints no count; the window is a fact about the page and stays.
 export function streamTitle(): string {
