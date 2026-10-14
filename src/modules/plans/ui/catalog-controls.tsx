@@ -45,7 +45,10 @@ export function SortChoice({
   onSort: (sort: CatalogSort) => void;
 }) {
   const options: { value: CatalogSort; label: string }[] = [
-    { value: "name", label: "name" },
+    // ⚠️ The word is `category`, which is what this ordering shows: the groups are the Categories
+    // and the column title says `by category`. The value stays `name`, which is how the rows are
+    // ordered inside each group and what is written in the address and in the stored preference.
+    { value: "name", label: "category" },
     { value: "release", label: "latest release" },
   ];
 

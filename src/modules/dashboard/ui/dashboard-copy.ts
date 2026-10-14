@@ -65,6 +65,12 @@ export type TotalsRow = { label: string; value: string };
 // fresh as the stalest thing under it; where nobody declared there is no count to print at all,
 // and the panel keeps its title alone. They are rows and not one sentence: these numbers are what
 // the column is read for, and a sentence that wraps three times hides them in prose.
+// What the panel says where there is nothing to count: with no declaration anywhere there is no
+// Distance, so the totals have no row to print and the panel used to be a title over nothing. It
+// names the gap and the one move that closes it, in the words the empty Stack column already uses.
+export const NO_TOTALS =
+  "no version declared yet. declare one on a technology page and the totals land here.";
+
 export function totalsRows(standing: Standing): TotalsRow[] {
   if (standing.since === null) return [];
   return [

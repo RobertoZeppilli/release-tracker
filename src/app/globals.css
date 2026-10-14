@@ -120,8 +120,11 @@
   --text-band--line-height: 1.2;
   --text-band--letter-spacing: -0.03em;
   /* The one verdict that lives inside a 360px column instead of across a page: the Dashboard's
-     (DESIGN.md, Column verdict). It never wraps, so the copy stays as short as the page-wide one. */
-  --text-column-verdict: clamp(1.15rem, 1.7vw, 1.45rem);
+     (DESIGN.md, Column verdict). It titles a panel and it holds one line there, which is what the
+     cap is for: the clamp grew with the viewport while the column under it never did, so above
+     ~1340px `ok: nothing needs action` ran 346px wide inside 326px of panel. At 1.2rem the widest
+     claim the two panels can say, `note: 12 without a verdict`, measures 319. The copy is unchanged. */
+  --text-column-verdict: clamp(1.15rem, 1.7vw, 1.2rem);
   --text-column-verdict--line-height: 1.15;
   --text-column-verdict--letter-spacing: -0.03em;
   --text-status: clamp(1.5rem, 3.6vw, 2.3rem);

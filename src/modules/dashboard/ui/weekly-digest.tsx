@@ -16,11 +16,18 @@ export function WeeklyDigest({ weeks, open }: { weeks: readonly Week[]; open: re
 
   return (
     <details id="digest" className="border-t border-rule font-mono text-label text-text-faint">
-      <summary className="group grid cursor-pointer list-none grid-cols-[11ch_minmax(0,1fr)] gap-5 py-3 [&::-webkit-details-marker]:hidden max-[640px]:grid-cols-[minmax(0,1fr)] max-[640px]:gap-2">
-        <span className="whitespace-nowrap">{hushSpan(weeks)}</span>
-        <span className="inline-flex flex-wrap items-center gap-[1ch] group-hover:text-text">
-          {hushClaim(total)}
-          <span className="text-help">open by week ›</span>
+      {/* ⚠️ The first column has 11ch as a floor and not as a width: it is the Stream's date column,
+          and `weeks 38 to 40` is 14 characters, so a fixed 11ch printed the span over the claim
+          beside it. It grows on this one row and the dates above it keep their x. */}
+      <summary className="group grid cursor-pointer list-none grid-cols-[minmax(11ch,auto)_minmax(0,1fr)] gap-5 py-3 [&::-webkit-details-marker]:hidden max-[640px]:grid-cols-[minmax(0,1fr)] max-[640px]:gap-2">
+        <span className="self-center whitespace-nowrap">{hushSpan(weeks)}</span>
+        {/* ⚠️ The claim and the way in are **one control**, in the Category chip's own chrome:
+            they were two things on one line, a sentence and a green `open by week ›` beside it, and
+            the green is this app's link ink, which a control never wears. What is pressable is the
+            whole sentence, so the whole sentence is the button. It is a span: the `summary` around
+            it takes the press, and a button inside it would be a control inside a control. */}
+        <span className="inline-flex min-h-7 items-center justify-self-start rounded-md border border-rule px-3 text-text-muted group-hover:border-text-faint group-hover:text-text">
+          {hushClaim(total)} ›
         </span>
       </summary>
       {weeks.map((week) => (

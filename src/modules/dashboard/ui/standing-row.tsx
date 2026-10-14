@@ -19,7 +19,7 @@ export function StandingRow({
   return (
     <Link
       href={`/technologies/${row.technology.slug}`}
-      className="block border-b border-rule py-3 pr-3 no-underline last:border-b-0 hover:bg-raised focus-visible:bg-raised"
+      className="block border-b border-rule p-3 no-underline last:border-b-0 hover:bg-raised focus-visible:bg-raised"
     >
       <span className="flex items-baseline gap-2">
         {/* DESIGN.md, Technology Mark: the brand's shape in the text's own ink, never its colour,

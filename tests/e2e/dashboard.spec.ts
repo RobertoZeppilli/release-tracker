@@ -114,6 +114,10 @@ test("says nothing needs action when every featured Release is safe", async ({ p
 
   await expect(page.locator("#page-verdict")).toContainText("nothing needs action");
   await expect(page.getByText("safe to upgrade")).toBeVisible();
+  // DESIGN.md, The Standing Panel: nothing is declared here, so there is no total to print and the
+  // panel says that instead of standing as a title over an empty box.
+  await expect(page.getByText("no version declared yet.", { exact: false })).toBeVisible();
+  await expect(total(page, "releases behind in all")).toHaveCount(0);
 });
 
 // CONTEXT.md, Verdetto della Dashboard: the verdict is the sum of the rows under it, by
@@ -288,13 +292,36 @@ test("keeps the verdict short, the list without a scrollbar and the columns apar
   });
 
   expect(measured.hiddenBar, "the width the Standing loses to a scrollbar").toBe(0);
-  // Two lines at most: the verdict titles the panel now, and inside it `ok: nothing needs action`
-  // has 328px where it measures 365 (DESIGN.md, The One-Line Verdict Rule). Three lines would mean
-  // the claim grew back into the sentence the short form replaced.
-  expect(measured.lines, "the lines the verdict takes").toBeLessThan(2.5);
+  // One line, inside the panel it titles (DESIGN.md, The One-Line Verdict Rule).
+  expect(measured.lines, "the lines the verdict takes").toBeLessThan(1.5);
   expect(measured.insideColumn, "the room left between the verdict and the Stream").toBeGreaterThanOrEqual(0);
   expect(measured.overlap, "how far the Standing runs into the line under it").toBeLessThanOrEqual(0);
   expect(measured.sideways, "how far the page scrolls sideways").toBe(0);
+
+  // ⚠️ Measured where the clamp reaches its cap, which 1280px never does: the column stays 360px
+  // while the scale used to keep growing with the viewport, so the wrap only ever showed up on a
+  // wide screen. The longest claim the two panels can say stands in for the one this fixture
+  // happens to show, because what is being measured is the font against 326px of panel, not this
+  // page's counts.
+  await page.setViewportSize({ width: 1600, height: 900 });
+  const widest = await page.evaluate(() => {
+    const verdict = document.querySelector("#page-verdict");
+    if (!(verdict instanceof HTMLElement)) throw new Error("no verdict on the page");
+    const lines = () =>
+      verdict.getBoundingClientRect().height / parseFloat(getComputedStyle(verdict).lineHeight);
+    const asIs = lines();
+    // The longest pair either panel can say, label included: `note:` is five characters where this
+    // fixture shows `warning:`, so the claim cannot be swapped without the label it comes with.
+    const label = verdict.firstElementChild?.lastChild;
+    const claim = verdict.lastChild;
+    if (!label || !claim) throw new Error("the verdict has no label and claim");
+    label.textContent = "note:";
+    claim.textContent = " 12 without a verdict";
+    return { asIs, longest: lines() };
+  });
+
+  expect(widest.asIs, "the lines the verdict takes at 1600px").toBeLessThan(1.5);
+  expect(widest.longest, "the lines the longest claim takes at 1600px").toBeLessThan(1.5);
 });
 
 // DESIGN.md, In Use Line: the declaration shows up in one place, the row's own words, and the day
