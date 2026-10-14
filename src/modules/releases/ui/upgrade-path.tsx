@@ -47,7 +47,7 @@ function formMessage(path: UpgradePath<SummarizedRelease>, name: string, base: s
   const links = path.suggestions.map((version, index) => (
     <Fragment key={version}>
       {index > 0 && " or "}
-      <Link href={`${base}?from=${encodeURIComponent(version)}`} className="text-inherit underline">
+      <Link href={`${base}?from=${encodeURIComponent(version)}`} className="text-link underline">
         {version}
       </Link>
     </Fragment>

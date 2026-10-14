@@ -12,7 +12,7 @@
   --ground: #0f1115; --raised: #161a20; --sunken: #0b0d10; --rule: #262b33; --rule-strong: #676d77;
   --text: #e7e9ec; --text-muted: #9aa3ad; --text-faint: #7b848f;
   --breaking: #ff7b6b; --action: #f2c14e; --help: #6cc4d8; --ok: #7bd88f;
-  --focus: #da6b6b; --selection: rgba(108, 196, 216, 0.28);
+  --focus: #4af262; --link: var(--focus); --selection: rgba(108, 196, 216, 0.28);
   --mono: "Fragment Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --sans: "Hanken Grotesk", system-ui, sans-serif;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
@@ -24,7 +24,7 @@
   --ground: #f6f6f3; --raised: #ffffff; --sunken: #eeeeea; --rule: #dcdcd6; --rule-strong: #82827b;
   --text: #16181c; --text-muted: #525a63; --text-faint: #636b74;
   --breaking: #b42a1f; --action: #8a5a00; --help: #0b6b80; --ok: #1d7a3a;
-  --focus: #ad4b4b; --selection: rgba(11, 107, 128, 0.18);
+  --focus: #276d1a; --selection: rgba(11, 107, 128, 0.18);
   color-scheme: light;
 }
 
@@ -34,7 +34,10 @@ body { margin: 0; background: var(--ground); color: var(--text); font: 400 16px/
 ::selection { background: var(--selection); color: var(--text); }
 a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
 a:hover { text-decoration-color: currentColor; }
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+/* The interactive green: the focus ring and a link inside a sentence, the one place the
+   keyboard and the pointer act on. A pointer into the release notes stays `help` cyan, because
+   there the cyan is the citation's colour and not the link's (DESIGN.md, Interactive Green). */
+:focus-visible { outline: 2px solid var(--focus); border-radius: 3px; }
 * { scrollbar-color: var(--rule-strong) transparent; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
@@ -167,7 +170,7 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); display: gri
 .intro { margin: 0 0 var(--space-5); max-width: 90ch; font: 400 13px/1.6 var(--mono); color: var(--text-faint); }
 .filter { margin: 0 0 var(--space-5); }
 .filter label { display: block; margin-bottom: var(--space-2); font: 400 13px var(--mono); color: var(--text-faint); }
-.filter input { display: block; width: 100%; max-width: 38ch; height: 42px; padding: 0 var(--space-3); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); color: var(--text); font: 400 16px var(--mono); caret-color: var(--help); }
+.filter input { display: block; width: 100%; max-width: 38ch; height: 42px; padding: 0 var(--space-3); background: var(--sunken); border: 1px solid var(--rule-strong); border-radius: var(--radius); color: var(--text); font: 400 16px var(--mono); caret-color: var(--link); }
 .filter input::placeholder { color: var(--text-faint); }
 .filter input:hover, .filter input:focus-visible { border-color: var(--text-faint); }
 .filter .under { margin: var(--space-2) 0 0; display: flex; align-items: baseline; gap: var(--space-3); font: 400 13px var(--mono); color: var(--text-muted); }

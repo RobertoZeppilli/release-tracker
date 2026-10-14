@@ -15,7 +15,14 @@
   --help: #6cc4d8;
   --help-wash: rgba(108, 196, 216, 0.1);
   --ok: #7bd88f;
-  --focus: #da6b6b;
+  /* The interactive green: the focus ring and a link inside a sentence are the same ink, because
+     they are the same thing seen twice, the one place on the page the keyboard and the pointer act
+     on. It is measured, not picked: 12.75:1 on `ground`, 11.78 on `raised`, 13.13 on `sunken`, so it
+     passes 1.4.11 as a ring and 1.4.3 as text. ⚠️ Green already means `ok: safe to upgrade` in this
+     system, so the two are kept apart by weight and not by hue: the interactive green is neon and a
+     verdict's green is pastel (`ok`), and no verdict is ever underlined. */
+  --focus: #4af262;
+  --link: var(--focus);
   --selection: rgba(108, 196, 216, 0.28);
   color-scheme: dark;
 }
@@ -35,7 +42,11 @@
   --help: #0b6b80;
   --help-wash: rgba(11, 107, 128, 0.08);
   --ok: #1d7a3a;
-  --focus: #ad4b4b;
+  /* ⚠️ The light theme cannot take the same green: #4af626 measured 1.24-1.45:1, which fails both
+     roles. This one is 6.14:1 on `ground`, 6.65 on `raised` and 5.72 on `sunken`, and its hue sits
+     28 degrees off `ok` (#1d7a3a) and 80 off `help` (#0b6b80), the two colours it would otherwise be
+     read as: in this theme every usable green is dark, so the distance has to come from the hue. */
+  --focus: #276d1a;
   --selection: rgba(11, 107, 128, 0.18);
   color-scheme: light;
 }
@@ -58,6 +69,7 @@
   --color-help-wash: var(--help-wash);
   --color-ok: var(--ok);
   --color-focus: var(--focus);
+  --color-link: var(--link);
   --color-selection: var(--selection);
   --color-transparent: transparent;
   --color-current: currentColor;
@@ -162,9 +174,10 @@
     text-decoration-color: currentColor;
   }
 
+  /* No offset of its own: the user's choice of 2026-10-14. Measured, the computed offset is the
+     browser's own 1px and not 0, so the ring sits on the element's edge rather than inside it. */
   :focus-visible {
     outline: 2px solid var(--focus);
-    outline-offset: 3px;
     border-radius: 3px;
   }
 

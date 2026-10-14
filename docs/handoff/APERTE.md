@@ -97,6 +97,18 @@ le 100 righe. Non sono stato: sono vive e restano qui finché non le chiude l'ut
   path". La corsa è fra il client che legge `?from=` (`src/modules/releases/ui/upgrade-path-view.tsx:33`)
   e la navigazione soffice. Da guardare prima o poi, **non blocca niente**.
 
+Spostate qui da `docs/HANDOFF.md` il 2026-10-14, parola per parola, per tenere lo stato vivo
+sotto le 100 righe.
+
+- ⚠️ **Tre cancellazioni sono dell'utente** (la modalità auto le nega): `git branch -d
+  142-app-visual-direction` e `142-handoff-dopo-il-merge` (mergiato nella #149) con i loro
+  `git push origin --delete`, e `git rm -r design/mocks/direction`, che non è più la fonte.
+- ⚠️ **Una volta sola, `/technologies` ha risposto con la pagina di errore in dev**, al primo colpo
+  dopo l'avvio. Non si è ripetuta. Se torna, è un difetto vero e va aperta una issue.
+- **Il giro a mano nel browser su tutta l'app alla fine**, col metro della facilità d'uso, e **un
+  sistema di notifiche interno** (idea del 2026-10-10, issue a parte, non aperta). ⚠️ **Rami,
+  ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
+
 ## Code da non perdere
 
 Tre cose vive che fino al 2026-09-30 stavano **solo** in fondo a questo documento, sotto un titolo

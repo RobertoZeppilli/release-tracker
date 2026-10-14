@@ -7,7 +7,7 @@ const ROW = "grid grid-cols-[24ch_1fr] gap-5 items-baseline border-b border-rule
 const WHO = "flex items-baseline gap-2 font-sans text-title font-semibold";
 const VERSION = "font-mono text-diagnostic text-text-muted";
 const WHAT = "font-mono text-diagnostic leading-[1.75] text-text-muted max-w-measure";
-const LINK = "border-b border-dashed border-current whitespace-nowrap text-help no-underline hover:border-solid";
+const LINK = "border-b border-dashed border-current whitespace-nowrap text-link no-underline hover:border-solid";
 
 // DESIGN.md, Short Specimen: two more real Releases, one row each, and they are the honest half of
 // the argument. A landing that shows only its best case teaches a visitor to distrust the first

@@ -47,7 +47,7 @@ export default async function LandingPage() {
         <p className="mt-8 flex flex-wrap gap-4 border-t border-rule pt-4 font-mono text-meta text-text-faint">
           <span>verdict:</span>
           <span>content read from public release notes</span>
-          <a href={SPECIMEN.notesUrl}>
+          <a href={SPECIMEN.notesUrl} className="text-link">
             {SPECIMEN.technology.slug} {SPECIMEN.version} notes
           </a>
         </p>

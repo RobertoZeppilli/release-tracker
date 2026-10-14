@@ -23,7 +23,8 @@
   --help: #6cc4d8;
   --help-wash: rgba(108, 196, 216, 0.10);
   --ok: #7bd88f;
-  --focus: #da6b6b;
+  --focus: #4af262;
+  --link: var(--focus);
   --selection: rgba(108, 196, 216, 0.28);
   --mono: "Fragment Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --sans: "Hanken Grotesk", system-ui, sans-serif;
@@ -48,7 +49,7 @@
   --help: #0b6b80;
   --help-wash: rgba(11, 107, 128, 0.08);
   --ok: #1d7a3a;
-  --focus: #ad4b4b;
+  --focus: #276d1a;
   --selection: rgba(11, 107, 128, 0.18);
   color-scheme: light;
 }
@@ -59,7 +60,10 @@ body { margin: 0; background: var(--ground); color: var(--text); font: 400 16px/
 ::selection { background: var(--selection); color: var(--text); }
 a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
 a:hover { text-decoration-color: currentColor; }
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+/* The interactive green: the focus ring and a link inside a sentence, the one place the
+   keyboard and the pointer act on. A pointer into the release notes stays `help` cyan, because
+   there the cyan is the citation's colour and not the link's (DESIGN.md, Interactive Green). */
+:focus-visible { outline: 2px solid var(--focus); border-radius: 3px; }
 code, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 code { font-size: 0.92em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
 * { scrollbar-color: var(--rule-strong) transparent; }
@@ -84,7 +88,7 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border: 1px solid var(--rule-strong); border-radius: var(--radius); background: transparent; color: var(--text); font: 500 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
 .btn:hover { background: var(--raised); border-color: var(--text-faint); }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
-.pointer { font: 400 13px var(--mono); color: var(--help); text-decoration: none; display: inline-flex; gap: 1ch; align-items: baseline; }
+.pointer { font: 400 13px var(--mono); color: var(--link); text-decoration: none; display: inline-flex; gap: 1ch; align-items: baseline; }
 .pointer .arrow { color: var(--text-faint); font-variant-ligatures: none; }
 .pointer .plabel { border-bottom: 1px dashed currentColor; }
 .pointer:hover .plabel { border-bottom-style: solid; }

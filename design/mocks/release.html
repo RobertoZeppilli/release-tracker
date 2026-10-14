@@ -23,13 +23,29 @@
   --help: #6cc4d8;
   --help-wash: rgba(108, 196, 216, 0.10);
   --ok: #7bd88f;
-  --focus: #da6b6b;
+  --focus: #4af262;
+  --link: var(--focus);
   --selection: rgba(108, 196, 216, 0.28);
   --mono: "Fragment Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --sans: "Hanken Grotesk", system-ui, sans-serif;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
   --space-6: 32px; --space-7: 48px; --space-8: 72px;
   --radius: 6px;
+  /* One structural right edge, and the page is as wide as the rest of the app. The audit found four
+     edges (the head and the Source View at 1116px, the summary title at 988, the key points at 772,
+     the diagnostic wells at 1024), and they were not four mistakes: they were one measure written in
+     `ch` at four type sizes, plus the 900px cap the wells carry. A single pixel width is the only
+     way they coincide, so everything that is structure (the rules, the section titles, the wells,
+     the Source View) ends at `--col` and nothing structural sets a cap of its own. The column is
+     1192px and the container is that plus its two paddings, i.e. **1240px, the width of the
+     landing, the Dashboard and the Catalog**: the user asked for one width across the app, and the
+     bar's container rule then aligns the wordmark with the heading on this page too.
+     The prose is the one thing that does *not* take the width: a 1192px line of Grotesk runs about
+     149 characters, so the 72ch measure is back, for the paragraphs, the key points and the titles.
+     It is not a second edge but the measure every other page keeps: prose stopping short of the
+     rule is typography, while four structural elements stopping at four places was the bug.
+     1192 also holds every caret row with 35 characters to spare (see The Caret Budget). */
+  --col: 1192px;
   --measure: 72ch;
   color-scheme: dark;
 }
@@ -48,7 +64,7 @@
   --help: #0b6b80;
   --help-wash: rgba(11, 107, 128, 0.08);
   --ok: #1d7a3a;
-  --focus: #ad4b4b;
+  --focus: #276d1a;
   --selection: rgba(11, 107, 128, 0.18);
   color-scheme: light;
 }
@@ -59,9 +75,16 @@ body { margin: 0; background: var(--ground); color: var(--text); font: 400 16px/
 ::selection { background: var(--selection); color: var(--text); }
 a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
 a:hover { text-decoration-color: currentColor; }
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+/* The interactive green: the focus ring and a link inside a sentence, the one place the
+   keyboard and the pointer act on. A pointer into the release notes stays `help` cyan, because
+   there the cyan is the citation's colour and not the link's (DESIGN.md, Interactive Green). */
+:focus-visible { outline: 2px solid var(--focus); border-radius: 3px; }
 code, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-code { font-size: 0.92em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
+/* ⚠️ Inline code breaks inside the token rather than widening the page. Measured on the old mock
+   and on this one: `css.preprocessorOptions.sass.api: 'legacy'` in a help line is 302px, and at
+   320px it stood 39px past the right edge of the document. A config path has no spaces to wrap at,
+   so the only alternatives were a horizontal scrollbar on the page or a break inside the name. */
+code { font-size: 0.92em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
 * { scrollbar-color: var(--rule-strong) transparent; }
 svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.12em; margin-right: 0.35em; flex: none; }
@@ -69,15 +92,18 @@ svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; str
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: var(--space-4); top: var(--space-4); background: var(--raised); padding: var(--space-2) var(--space-3); z-index: 10; }
 
-.topbar { border-bottom: 1px solid var(--rule); }
-.topbar-inner, main { max-width: 1040px; margin: 0 auto; padding: 0 var(--space-5); }
+/* The bar is sticky at every width and its container is the page's container, so the wordmark sits
+   over the first letter of the heading (DESIGN.md, Layout). That rule is why the column is the
+   page: a 1240px bar over a narrower column puts the wordmark that far off the title. */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--ground); border-bottom: 1px solid var(--rule); }
+.topbar-inner, main { max-width: calc(var(--col) + 2 * var(--space-5)); margin: 0 auto; padding: 0 var(--space-5); }
 .topbar-inner { height: 56px; display: flex; align-items: center; gap: var(--space-5); }
 .wordmark { font: 400 14px var(--mono); text-decoration: none; font-variant-ligatures: none; }
 .path { list-style: none; margin: 0; padding: 0; font: 400 13px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .nav { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font: 400 13px var(--mono); color: var(--text-muted); }
 .nav a { text-decoration: none; }
 .nav a:hover, .nav [aria-current] { color: var(--text); }
-.crumb { margin: 0 0 var(--space-5); }
+.crumb { margin: 0 0 var(--space-4); }
 .path a { text-decoration: none; }
 .path a:hover, .path [aria-current] { color: var(--text); }
 .topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
@@ -85,7 +111,7 @@ svg.glyph { width: 0.95em; height: 0.95em; stroke: currentColor; fill: none; str
 .btn:hover { background: var(--raised); border-color: var(--text-faint); }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 
-main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
+main { padding-top: var(--space-5); padding-bottom: var(--space-8); }
 
 .release-head { display: flex; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; }
 .release-head h1 { margin: 0; font: 600 22px/1.2 var(--sans); letter-spacing: -0.01em; }
@@ -95,7 +121,12 @@ main { padding-top: var(--space-6); padding-bottom: var(--space-8); }
 svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .head-action { margin-left: auto; }
 
-/* Verdict */
+/* Verdict. It keeps the token scale, `clamp(1.9rem, 5.2vw, 3.4rem)`, and that is what moving the
+   counts off its line bought: beside the verdict they were a second thing on the display line and
+   they capped it at 2.8rem (at 3.1rem the line was 742px, which with the gap and the 160px of
+   counts did not fit the old 880px column, so the counts wrapped under it and the row they existed
+   to be did not exist). Under it they cost the line nothing, and the rule needs no exception on
+   this page (DESIGN.md, The One-Line Verdict Rule). */
 .verdict { margin: var(--space-6) 0 0; }
 .verdict-line { margin: 0; font: 400 clamp(1.9rem, 5.2vw, 3.4rem)/1.08 var(--mono); letter-spacing: -0.035em; display: flex; flex-wrap: wrap; column-gap: 0.4ch; align-items: baseline; }
 .verdict-line .sev { display: inline-flex; align-items: baseline; }
@@ -104,15 +135,19 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .sev-ok { color: var(--ok); }
 /* The seventh state carries no ink: a judgement we cannot make is an absence, not a failure. */
 .sev-note { color: var(--text-muted); }
-.only-unjudged { display: none; }
-.verdict-why { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); }
 .sev-breaking { color: var(--breaking); }
-/* The counts row is 14px/1.7, the same as .counts on dashboard.html: 15px is not in the scale. */
-.verdict-count { margin: var(--space-3) 0 0; font: 400 14px/1.7 var(--mono); color: var(--text-muted); display: flex; gap: var(--space-4); flex-wrap: wrap; }
-.verdict-count strong { color: var(--text); font-weight: 400; }
-.verdict-count a { text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
+.verdict-why { margin: var(--space-3) 0 0; max-width: var(--measure); color: var(--text-muted); }
+/* The counts are a mini-panel under the verdict: the panel treatment the Source View, the fix diff
+   and the Upgrade Path already carry (1px `rule` on `raised`, 6px radius), shrunk to its content
+   and set at the 14px Mono the counts use on the Dashboard. It is as wide as the two numbers and no
+   wider, because a panel that ran to the rule would read as a section of the page instead of as
+   the breakdown of the line above it. */
+.counts { margin: var(--space-4) 0 0; width: max-content; max-width: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-4); padding: var(--space-2) var(--space-3); background: var(--raised); border: 1px solid var(--rule); border-radius: var(--radius); font: 400 14px/1.7 var(--mono); color: var(--text-muted); }
+.counts strong { color: var(--text); font-weight: 400; }
+.counts a { text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
+.counts a:hover { border-bottom-color: currentColor; }
 
-.summary-title { max-width: var(--measure); margin: var(--space-5) 0 0; font: 500 clamp(1.15rem, 2.2vw, 1.4rem)/1.4 var(--sans); text-wrap: balance; }
+.summary-title { margin: var(--space-5) 0 0; max-width: var(--measure); font: 500 clamp(1.15rem, 2.2vw, 1.4rem)/1.4 var(--sans); text-wrap: balance; }
 .provenance { margin: var(--space-2) 0 0; font: 400 12px var(--mono); color: var(--text-faint); }
 
 .label { font: 400 14px/1.6 var(--mono); white-space: nowrap; }
@@ -121,17 +156,18 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .cite { font: 400 13px var(--mono); color: var(--help); text-decoration: none; border-bottom: 1px dashed currentColor; white-space: nowrap; }
 .cite:hover { border-bottom-style: solid; }
 
-/* Key points */
-.notes { list-style: none; margin: var(--space-5) 0 0; padding: 0; max-width: var(--measure); border-top: 1px solid var(--rule); }
-.notes li { display: grid; grid-template-columns: 11.5ch 1fr; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--rule); }
-.notes .cite { margin-left: var(--space-2); }
+/* A section title is the title, the rule out to the one right edge, and whatever that section has
+   to say about itself. The number is not repeated here: the counts beside the verdict already say
+   it, and the old `.tally` under the diagnostics said it a third time. */
+.section-title { margin: var(--space-7) 0 var(--space-4); font: 600 13px var(--mono); letter-spacing: 0.02em; color: var(--text-muted); display: flex; gap: var(--space-3); align-items: baseline; }
+.section-title .fill { flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
+.section-title .meta { color: var(--text-faint); font-weight: 400; }
 
 /* Diagnostics */
-.section-title { margin: var(--space-7) 0 var(--space-4); font: 600 13px var(--mono); letter-spacing: 0.02em; color: var(--text-muted); display: flex; gap: var(--space-3); align-items: baseline; }
-.section-title::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
-.diag { margin: 0 0 var(--space-6); max-width: 900px; }
+.diag { margin: 0 0 var(--space-6); }
 .diag-head { margin: 0; font: 500 18px/1.45 var(--sans); display: grid; grid-template-columns: auto 1fr; column-gap: var(--space-3); }
 .diag-head .code { font: 400 16px/1.7 var(--mono); color: var(--breaking); white-space: nowrap; }
+.diag-head > span:last-child { max-width: var(--measure); }
 .diag-body { margin-top: var(--space-2); font: 400 14px/1.7 var(--mono); }
 .gut { display: grid; grid-template-columns: 5ch 1fr; }
 .gut > span:first-child { color: var(--text-faint); text-align: right; padding-right: 1.5ch; user-select: none; font-variant-ligatures: none; white-space: nowrap; }
@@ -142,22 +178,36 @@ svg.sig-glyph { width: 12px; height: 12px; flex: none; }
 .carets > span:last-child { white-space: pre-wrap; padding-right: var(--space-3); }
 .carets .pad { visibility: hidden; }
 .carets .car { color: var(--breaking); }
-/* The caret row is `^` once per cited character, so it reads right only while the quote stays on one
-   line: wrapped, the carets sit under the wrong words and their unbreakable run widens the page.
-   Each well says the narrowest viewport where its own quote still fits; below that the caret row goes
-   and the cited stretch takes the coral underline, which stays right however the quote wraps. */
+/* The Caret Budget. The caret row is `^` once per cited character, so it reads right only while the
+   quote stays on one line: wrapped, the carets sit under the wrong words and their unbreakable run
+   widens the page. The budget is `floor((col - 70.5) / 9) - 1` characters, where 9px is the advance
+   measured on the live font at 14px, 70.5px is the 5ch gutter plus its 1.5ch padding plus the 12px
+   on the right, and one character is kept back so a quote that lands on the step does not depend on
+   sub-pixel luck. The column is `min(1192px, 100vw - 48px)`, which holds 123 characters at the cap
+   and so holds every quote on this page with 35 to spare; the thresholds below are therefore about
+   the *viewport*, and each well says the narrowest one its own quote survives: 920px for the two
+   88-character quotes, 866 for the 82 and 848 for the 80. They are unchanged by the page going from
+   880 to 1192, because a cap above the quote's own need never binds: 88 characters want 871.5px of
+   column, which is `100vw - 48` at 919.5px of viewport. Above those widths every caret row is
+   drawn, below them they go one length at a time, and where one goes the cited stretch takes the
+   coral underline, which stays right however the quote wraps. */
 .well[data-fits="none"] .carets { display: none; }
 .well[data-fits="none"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; }
-@media (max-width: 1023px) { .well[data-fits="1024"] .carets { display: none; } .well[data-fits="1024"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
-@media (max-width: 899px) { .well[data-fits="900"] .carets { display: none; } .well[data-fits="900"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
-@media (max-width: 767px) { .well[data-fits="768"] .carets { display: none; } .well[data-fits="768"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
-.diag-what { font-family: var(--sans); font-size: 16px; line-height: 1.6; color: var(--text); padding: var(--space-2) 0; max-width: 68ch; }
-.help-line > span:last-child { font-family: var(--sans); font-size: 16px; }
+@media (max-width: 919px) { .well[data-fits="920"] .carets { display: none; } .well[data-fits="920"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
+@media (max-width: 865px) { .well[data-fits="866"] .carets { display: none; } .well[data-fits="866"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
+@media (max-width: 847px) { .well[data-fits="848"] .carets { display: none; } .well[data-fits="848"] .q-span { color: var(--text); text-decoration: underline 2px var(--breaking); text-underline-offset: 4px; } }
+.diag-what { max-width: var(--measure); font-family: var(--sans); font-size: 16px; line-height: 1.6; color: var(--text); padding: var(--space-2) 0; }
+.help-line > span:last-child { max-width: var(--measure); font-family: var(--sans); font-size: 16px; }
 .help-line .label-help { font-family: var(--mono); font-size: 14px; }
 pre.fix { margin: var(--space-2) 0 0; padding: var(--space-3) var(--space-4); background: var(--sunken); border: 1px solid var(--rule); border-radius: var(--radius); overflow-x: auto; font: 400 13.5px/1.6 var(--mono); }
 pre.fix .del { color: var(--breaking); }
 pre.fix .add { color: var(--ok); }
-.tally { margin: 0; font: 400 14px var(--mono); color: var(--text-muted); max-width: 900px; }
+
+/* Key points */
+.notes { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.notes li { display: grid; grid-template-columns: 11.5ch 1fr; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--rule); }
+.notes li > span:last-child { max-width: var(--measure); }
+.notes .cite { margin-left: var(--space-2); }
 
 /* Release notes source view */
 .source { margin-top: var(--space-7); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--raised); }
@@ -167,7 +217,7 @@ pre.fix .add { color: var(--ok); }
 .source[open] summary .chev { transform: rotate(90deg); }
 .source summary .meta { margin-left: auto; color: var(--text-muted); font-size: 13px; }
 .source-lines { border-top: 1px solid var(--rule); padding: var(--space-3) 0; margin: 0; list-style: none; font: 400 13.5px/1.75 var(--mono); counter-reset: line; overflow-x: auto; }
-.source-lines li { display: grid; grid-template-columns: 6ch 1fr; counter-increment: line; color: var(--text-muted); scroll-margin-top: 30vh; }
+.source-lines li { display: grid; grid-template-columns: 6ch 1fr; counter-increment: line; color: var(--text-muted); scroll-margin-top: 72px; }
 .source-lines li::before { content: counter(line); color: var(--text-faint); text-align: right; padding-right: 2ch; user-select: none; }
 .source-lines li > span { white-space: pre-wrap; padding-right: var(--space-4); }
 .source-lines .h { color: var(--text); }
@@ -185,42 +235,46 @@ pre.fix .add { color: var(--ok); }
 
 .foot { margin-top: var(--space-7); font: 400 12px var(--mono); color: var(--text-faint); display: flex; gap: var(--space-4); flex-wrap: wrap; }
 
-/* Summary states */
-.state, .only-unavailable { display: none; }
-main[data-state^="ready"] .state-ready { display: block; }
-main[data-state="ready-safe"] .only-action,
-main[data-state="ready-unjudged"] .only-action { display: none; }
-main[data-state="ready-action"] .only-safe,
-main[data-state="ready-unjudged"] .only-safe { display: none; }
-main[data-state="ready-unjudged"] .only-unjudged { display: block; }
-/* The two lines that are flex rows keep being flex rows when this state reveals them. */
-main[data-state="ready-unjudged"] .only-unjudged.verdict-line,
-main[data-state="ready-unjudged"] .only-unjudged.verdict-count { display: flex; }
-main[data-state="pending"] .state-pending,
-main[data-state="unavailable"] .state-unavailable,
-main[data-state="skipped"] .state-skipped,
-main[data-state="failed"] .state-failed { display: block; }
+/* Summary states, written as `main:not([data-state])` and never as a base rule that a later one has
+   to beat. ⚠️ The old page printed two counts rows at once in `ready-action`, because
+   `.only-unjudged { display: none }` stood *before* `.verdict-count { display: flex }` with the same
+   specificity and lost. Hiding from the state has one more class than the element's own rule, so
+   whatever display an element asks for, hidden wins and the order of the sheet stops mattering. */
+main:not([data-state="ready-action"]) .only-action { display: none; }
+main:not([data-state="ready-safe"]) .only-safe { display: none; }
+main:not([data-state="ready-unjudged"]) .only-unjudged { display: none; }
+main:not([data-state^="ready"]) .state-ready { display: none; }
+main:not([data-state="pending"]) .state-pending { display: none; }
+main:not([data-state="unavailable"]) .state-unavailable { display: none; }
+main:not([data-state="skipped"]) .state-skipped { display: none; }
+main:not([data-state="failed"]) .state-failed { display: none; }
+main:not([data-state="unavailable"]) .only-unavailable { display: none; }
 main[data-state="unavailable"] .source,
 main[data-state="unavailable"] [data-open-notes] { display: none; }
-main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
-.status-block { margin: var(--space-6) 0 0; max-width: var(--measure); }
+.status-block { margin: var(--space-6) 0 0; }
 .status-line { margin: 0; font: 400 clamp(1.5rem, 3.6vw, 2.3rem)/1.15 var(--mono); letter-spacing: -0.03em; }
 .status-line .glyph { width: 0.8em; height: 0.8em; stroke-width: 1.75; }
-.status-block p:not(.status-line) { color: var(--text-muted); margin: var(--space-3) 0 0; }
+.status-block p:not(.status-line) { max-width: var(--measure); color: var(--text-muted); margin: var(--space-3) 0 0; }
 .status-muted { color: var(--text-muted); }
 
 /* Design-review control, not part of the product */
-.review { position: fixed; right: var(--space-4); bottom: var(--space-4); background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
-.review select { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 3px 4px; }
+.review { position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 40; background: var(--raised); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font: 400 12px var(--mono); color: var(--text-muted); display: flex; gap: var(--space-2); align-items: center; }
+.review { max-width: calc(100vw - 2 * var(--space-4)); }
+.review select { font: inherit; color: var(--text); background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 3px 4px; flex: 1; min-width: 0; }
 
 @media (max-width: 640px) {
   .topbar-inner, main { padding: 0 var(--space-4); }
-  main { padding-top: var(--space-5); padding-bottom: 120px; }
+  main { padding-top: var(--space-4); padding-bottom: 120px; }
   /* The slot drops to a 40px strip under the bar: same links, no drawer (The No Dead End Rule). */
   .topbar-inner { flex-wrap: wrap; height: auto; row-gap: 0; }
   .wordmark, .topbar-actions { height: 56px; display: flex; align-items: center; }
   .topbar-inner > nav { order: 3; width: 100%; height: 40px; display: flex; align-items: center; border-top: 1px solid var(--rule); }
   .head-action { margin-left: 0; }
+  /* The title keeps its line and what the section says about itself drops under it: side by side
+     in a 342px column the title wrapped to two lines and the rule between them collapsed. */
+  .section-title { flex-wrap: wrap; row-gap: var(--space-1); }
+  .section-title .fill { display: none; }
+  .section-title .meta { flex-basis: 100%; }
   .notes li { grid-template-columns: 1fr; gap: 0; }
   .diag-head { grid-template-columns: 1fr; }
   .gut { grid-template-columns: 4.5ch 1fr; }
@@ -235,6 +289,7 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .source-lines li[class*="cited"] .span::after { animation: none; clip-path: none; }
+  .source summary .chev { transition: none; }
 }
 </style>
 </head>
@@ -293,7 +348,7 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
     <a class="btn head-action only-unavailable" href="#">View on GitHub</a>
   </div>
 
-  <section class="state state-ready" aria-labelledby="verdict">
+  <section class="state state-ready" aria-labelledby="summary-title">
     <div class="verdict">
       <p class="verdict-line only-action" id="verdict">
         <span class="sev sev-action"><svg class="glyph" aria-hidden="true"><use href="#g-warning"/></svg>warning:</span><span>action required</span>
@@ -304,43 +359,47 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
       <p class="verdict-line only-unjudged">
         <span class="sev sev-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note:</span><span>not enough notes to judge</span>
       </p>
+      <p class="counts only-action">
+        <a href="#breaking"><strong>4</strong> breaking changes</a>
+        <a href="#key-points"><strong>4</strong> key points</a>
+      </p>
+      <p class="counts only-safe">
+        <span><strong>0</strong> breaking changes</span>
+        <a href="#key-points"><strong>4</strong> key points</a>
+      </p>
       <p class="verdict-why only-unjudged">
         These release notes point somewhere else instead of describing what changed, so neither verdict
         would be honest: we found no breaking changes, which is not the same as there being none. The
         notes are below, with the link they point to.
       </p>
-      <p class="verdict-count only-unjudged">
+      <!-- The seventh state is the one place the panel does not follow the verdict line directly: it
+           follows the paragraph. `0 breaking changes` read before the sentence that says the zero is
+           not a claim is the misreading the paragraph exists to prevent (DESIGN.md, The seventh
+           state). In this state the verdict is the line plus the paragraph that withdraws it, and
+           the panel is under the verdict either way. -->
+      <p class="counts only-unjudged">
         <span><strong>0</strong> breaking changes</span>
-        <span><strong>4</strong> key points</span>
-      </p>
-      <p class="verdict-count only-action">
-        <a href="#breaking"><strong>4</strong> breaking changes</a>
-        <span><strong>4</strong> key points</span>
-      </p>
-      <p class="verdict-count only-safe">
-        <span><strong>0</strong> breaking changes</span>
-        <span><strong>4</strong> key points</span>
+        <a href="#key-points"><strong>4</strong> key points</a>
       </p>
     </div>
 
-    <h2 class="summary-title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</h2>
+    <h2 class="summary-title" id="summary-title">Environment API arrives as experimental, while defaults change for resolve conditions, JSON imports and Sass.</h2>
     <p class="provenance">summary · from the release notes only · claude-opus-5 · prompt v3</p>
 
-    <ul class="notes" aria-label="Key points">
-      <li id="n1" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[1]:</span><span>The new <code>Environment API</code> lets frameworks run code in environments closer to production. It is experimental and opt-in. <a class="cite" href="#L7" data-cite="7" data-sev="note" data-origin="n1" data-origin-label="note[1]">release-notes:7</a></span></li>
-      <li id="n2" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[2]:</span><span>Supported Node.js versions are 18, 20 and 22 or later; Node 21 is no longer supported. <a class="cite" href="#L10" data-cite="10" data-sev="note" data-origin="n2" data-origin-label="note[2]">release-notes:10</a></span></li>
-      <li id="n3" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[3]:</span><span>Asset references are now processed in more HTML elements, such as <code>&lt;video poster&gt;</code> and <code>&lt;meta content&gt;</code>. <a class="cite" href="#L28" data-cite="28" data-sev="note" data-origin="n3" data-origin-label="note[3]">release-notes:28</a></span></li>
-      <li id="n4" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[4]:</span><span>TypeScript PostCSS configs now load through <code>tsx</code> or <code>jiti</code> via postcss-load-config v6. <a class="cite" href="#L31" data-cite="31" data-sev="note" data-origin="n4" data-origin-label="note[4]">release-notes:31</a></span></li>
-    </ul>
-
+    <!-- The order is the one cut this mock makes, and the reason it exists. With `action required`
+         the breaking changes are the work and the key points are the surround, so the work comes
+         first: on the old page the first breaking change stood at 811px, under the fold of a laptop,
+         behind four key points nobody had asked to read yet. In the two states that have no breaking
+         changes the section is not there at all and the key points follow the title directly, which
+         is the same order read from the other end: whatever this Release asks of you, first. -->
     <div class="only-action">
-      <h2 class="section-title" id="breaking">breaking changes (4)</h2>
+      <h2 class="section-title" id="breaking">breaking changes<span class="fill"></span><span class="meta">all cited, each with a fix</span></h2>
 
       <article class="diag" aria-labelledby="b1">
         <h3 class="diag-head" id="b1" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[1]:</span><span>Custom <code>resolve.conditions</code> no longer include the defaults</span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L12" data-cite="12-13" data-sev="breaking" data-origin="b1" data-origin-label="breaking[1]">release-notes:12-13</a></span></div>
-          <div class="well" data-fits="1024">
+          <div class="well" data-fits="920">
             <div class="gut quote"><span>12</span><span>The default value of <span class="q-span">resolve.conditions has changed</span>; custom values replace the defaults.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The default value of </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
           </div>
@@ -355,7 +414,7 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
         <h3 class="diag-head" id="b2" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[2]:</span><span><code>json.stringify</code> now defaults to <code>'auto'</code></span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L16" data-cite="16-17" data-sev="breaking" data-origin="b2" data-origin-label="breaking[2]">release-notes:16-17</a></span></div>
-          <div class="well" data-fits="900">
+          <div class="well" data-fits="848">
             <div class="gut quote"><span>16</span><span>json.stringify: <span class="q-span">'auto' is now the default</span> and only stringifies large JSON files.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">json.stringify: </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
           </div>
@@ -368,7 +427,7 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
         <h3 class="diag-head" id="b3" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[3]:</span><span>Sass uses the modern API by default</span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L20" data-cite="20-21" data-sev="breaking" data-origin="b3" data-origin-label="breaking[3]">release-notes:20-21</a></span></div>
-          <div class="well" data-fits="900">
+          <div class="well" data-fits="866">
             <div class="gut quote"><span>20</span><span>The <span class="q-span">modern API is now used by default for Sass</span>. The legacy API is still available.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">The </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
           </div>
@@ -381,7 +440,7 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
         <h3 class="diag-head" id="b4" tabindex="-1"><span class="code"><svg class="glyph" aria-hidden="true"><use href="#g-breaking"/></svg>breaking[4]:</span><span>Library mode CSS is named after the package</span></h3>
         <div class="diag-body">
           <div class="gut"><span>--&gt;</span><span><a class="cite" href="#L24" data-cite="24-25" data-sev="breaking" data-origin="b4" data-origin-label="breaking[4]">release-notes:24-25</a></span></div>
-          <div class="well" data-fits="1024">
+          <div class="well" data-fits="920">
             <div class="gut quote"><span>24</span><span>In library mode the CSS file is now <span class="q-span">named from package.json "name"</span> instead of style.css.</span></div>
             <div class="gut carets" aria-hidden="true"><span>|</span><span><span class="pad">In library mode the CSS file is now </span><span class="car">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></span></div>
           </div>
@@ -389,9 +448,15 @@ main[data-state="unavailable"] .only-unavailable { display: inline-flex; }
           <div class="gut help-line"><span>=</span><span><span class="label-help"><svg class="glyph" aria-hidden="true"><use href="#g-help"/></svg>help:</span> set <code>build.lib.cssFileName: 'style'</code> to keep the old file name.</span></div>
         </div>
       </article>
-
-      <p class="tally"><span class="sev-breaking">4 breaking changes</span>, 4 with a suggested migration, all cited from the release notes</p>
     </div>
+
+    <h2 class="section-title" id="key-points">key points<span class="fill"></span></h2>
+    <ul class="notes" aria-label="Key points">
+      <li id="n1" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[1]:</span><span>The new <code>Environment API</code> lets frameworks run code in environments closer to production. It is experimental and opt-in. <a class="cite" href="#L7" data-cite="7" data-sev="note" data-origin="n1" data-origin-label="note[1]">release-notes:7</a></span></li>
+      <li id="n2" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[2]:</span><span>Supported Node.js versions are 18, 20 and 22 or later; Node 21 is no longer supported. <a class="cite" href="#L10" data-cite="10" data-sev="note" data-origin="n2" data-origin-label="note[2]">release-notes:10</a></span></li>
+      <li id="n3" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[3]:</span><span>Asset references are now processed in more HTML elements, such as <code>&lt;video poster&gt;</code> and <code>&lt;meta content&gt;</code>. <a class="cite" href="#L28" data-cite="28" data-sev="note" data-origin="n3" data-origin-label="note[3]">release-notes:28</a></span></li>
+      <li id="n4" tabindex="-1"><span class="label label-note"><svg class="glyph" aria-hidden="true"><use href="#g-note"/></svg>note[4]:</span><span>TypeScript PostCSS configs now load through <code>tsx</code> or <code>jiti</code> via postcss-load-config v6. <a class="cite" href="#L31" data-cite="31" data-sev="note" data-origin="n4" data-origin-label="note[4]">release-notes:31</a></span></li>
+    </ul>
   </section>
 
   <section class="state state-pending status-block">

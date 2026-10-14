@@ -18,6 +18,23 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-14 (notte, il mock A di Release scritto e misurato): il bordo destro unico a 880 e il verde interattivo
+  - ⚠️ 880 è misurato e non scelto: una citazione da 88 caratteri vuole 871,5px di colonna
+  - ⚠️ Le misure di quel mock sono il "prima" dell'allargamento a 1240 deciso subito dopo
+- Il verde interattivo, com'è finito (2026-10-14): lo stesso verde per l'anello di focus e per i link nel testo
+  - ⚠️ Il verde del tema scuro misura 1.24:1 nel chiaro: due colori, non lo stesso a due luminosità
+  - ⚠️ Il `-->` diceva due cose in un colore solo: destinazione verde, citazione ciano
+  - ⚠️ Il verde vuol dire due cose, e la Severity-Only Colour Rule ora dichiara l'eccezione
+- Stato al 2026-10-14 (sera, il mock di Technology chiuso): Release misurata e il piano dei due mock
+  - ⚠️ Due righe di conteggio visibili insieme, e la regola di base che viene scavalcata
+- Il mock di Technology, com'è finito (2026-10-14): il nome dentro la colonna sticky, la lista che è il cammino, la barra misurata su quello che la lista contiene
+  - ⚠️ Un grid item sticky non si ferma in fondo alla propria riga: 24px stampati sopra il footer
+  - ⚠️ `newPage({ viewportSize })` non esiste e viene ignorato: si misura a 1280 credendo di essere a 390
+- Stato al 2026-10-14 (il mock di Technology, da approvare): l'audit misurato sulle pagine vive, e lo spacco scelto per Technology
+  - ⚠️ In locale non c'è nessun Summary `ready`: gli stati pieni si seminano con `seedTechnology`
+- Stato al 2026-10-14 (il codice di `/technologies`, nella PR #149): lo spacco in codice, misurato, e le tre cose decise mentre si scriveva
+  - ⚠️ Il bottone che si accavallava in `grid` era un layer: le utility di Tailwind vincono su `globals.css` qualunque sia la specificità
+  - ⚠️ A 320px una prova in iframe dava 11px di overflow: era la scrollbar dell'iframe, non la pagina
 - Stato al 2026-10-13 (notte, il mock di `/technologies`): lo spacco scelto fra due proposte, e l'audit che lo ha prodotto
   - ⚠️ Il quota stampato tre volte nei primi 60px, e ~270px di vuoto in ogni riga: misurato sulla pagina viva
   - ⚠️ `/technologies` ha risposto una volta sola con la pagina di errore in dev, al primo colpo dopo l'avvio
