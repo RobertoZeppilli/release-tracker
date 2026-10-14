@@ -1,4 +1,4 @@
-# Il peso delle pagine, misura "prima" della #142
+# Il peso delle pagine, il "prima" e il "dopo" della #142
 
 Criterio della #142 ("il peso delle pagine misurato prima e dopo, perché un'app più moderna non deve
 diventare più lenta") e misura di partenza che mancava anche alla **#130**. Preso il **2026-10-14**,
@@ -124,3 +124,67 @@ where release_id = (
 Si esegue con
 `docker exec -i supabase_db_release-tracker psql -U postgres -v ON_ERROR_STOP=1 < file.sql`
 (`docker` non è nel PATH della shell di Claude: vedi `AMBIENTE.md`).
+
+## Il "dopo", preso il 2026-10-14 su `a8b9a52`
+
+Stessa procedura e stessa macchina, build di produzione, 1440x900, contesto nuovo per pagina.
+⚠️ **Il "prima" è stato ripreso ricostruendo `28bc49e`** invece di fidarsi delle tabelle qui sopra:
+le Script KB sono tornate identiche a quelle registrate (322.4, 323.5, 368.6, 366.0, 366.0, 323.5),
+quindi la procedura è ripetibile e le differenze che seguono sono il codice, non il rumore.
+
+Catalogo così com'è, **nessuna Sintesi `ready`**:
+
+| Route | Req | Totale KB | Script KB | Document KB | Nodi DOM | Body px |
+| --- | --: | --: | --: | --: | --: | --: |
+| `/` | 22 | 409.8 | 323.7 | 15.6 | 272 | 3169 |
+| `/login` | 21 | 399.6 | 324.8 | 5.5 | 78 | 493 |
+| `/dashboard` | 25 | 459.9 | 369.7 | 15.5 | 338 | 937 |
+| `/technologies` | 24 | 468.1 | 367.2 | 27.3 | 598 | 3237 |
+| `/technologies/next` | 27 | 460.2 | 367.2 | 15.1 | 459 | 738 |
+| `/technologies/next/16.3.0` | 20 | 496.7 | 324.8 | 100.2 | 3303 | 533 |
+
+Settimo stato, la Sintesi finta sul Release vero `next 16.3.0` (poi **ritirata**, database rimesso
+come era):
+
+| Route | Req | Totale KB | Script KB | Document KB | Nodi DOM | Body px |
+| --- | --: | --: | --: | --: | --: | --: |
+| `/` | 22 | 409.8 | 323.7 | 15.6 | 272 | 3169 |
+| `/login` | 21 | 399.6 | 324.8 | 5.5 | 78 | 493 |
+| `/dashboard` | 25 | 459.6 | 369.7 | 15.6 | 338 | 937 |
+| `/technologies` | 24 | 468.1 | 367.2 | 27.3 | 598 | 3237 |
+| `/technologies/next` | 27 | 462.3 | 367.2 | 17.2 | 485 | 902 |
+| `/technologies/next/16.3.0` | 19 | 499.2 | 324.8 | 103.9 | 3416 | 1427 |
+
+Sul disco, dopo la build: `.next/static` **1607 KB** come prima, e i cinque chunk più grossi quasi
+identici (676, 224, 160, 112 KB uguali al byte o quasi). Il JavaScript dell'app non è cresciuto in
+blocco: è cresciuto in un punto solo, vedi sotto.
+
+### Le due pagine del redesign
+
+1. **La pagina Release non è peggiorata**, ed è la pagina da cui si temeva il peggio: nel settimo
+   stato il totale scende da 499.3 a **499.2 KB**, `Document` da 104.0 a **103.9**, i nodi salgono di
+   quattro, da 3412 a **3416**, e la pagina si accorcia da 1454 a **1427px**, che è esattamente il
+   numero che `DESIGN.md` dichiara per il mock a 1240. Il Counts Panel, l'ordine invertito e il
+   bordo unico sono passati **a costo zero**.
+2. **La pagina Technology si accorcia di 437px** nel settimo stato (1339 → 902) e di 409px nello
+   stato leggero (1147 → 738), con sei nodi in più e 0.3 KB di `Document`: è lo spacco, che mette il
+   cammino accanto al nome invece che sotto.
+
+### ⚠️ `Script KB` è salito di 1.2 KB su **ogni** rotta, e si sa esattamente perché
+
+La regola del "prima" era che `Script KB` non salisse. È salito di 1.1-1.3 KB su tutte e sei le
+rotte, `/login` compresa, che il redesign non ha toccato. Misurato richiesta per richiesta, il
+delta è **+1345 byte sul filo, identico su `/` e su `/login`**, e viene da **un chunk solo**:
+40.743 → 43.921 byte non compressi, +1403 compressi, meno 58 byte che altri due chunk restituiscono.
+
+Dentro quel chunk, il diff degli export dice cosa è entrato e cosa è uscito: **`BarLegend` e
+`ColumnTitle` dentro, `StatRows` fuori**. Sono la Stat Row diventata titolo di gruppo: il
+`MajorBar` con la sua legenda sta sotto `UpgradePathView`, che è `"use client"`, quindi finisce nel
+bundle del client.
+
+⚠️ **La scoperta vera non è l'1.2 KB, è dove sta quel chunk**: `/login` ne scarica **14 KB
+compressi**, e dentro ci sono `BreakingList`, `UpgradeForm`, `ReleaseVerdict`, `computeUpgradePath`
+e le icone. La UI delle Release viaggia su ogni pagina dell'app, anche su una che mostra un form di
+login. 1.2 KB su 324 è lo 0.4% e non è il problema; **i 14 KB che non servono a quella pagina lo
+sono**, e sono lì da prima di questo redesign. Separarli è un lavoro suo, di chunking e di import
+dai barrel, non una riga di questa misura.

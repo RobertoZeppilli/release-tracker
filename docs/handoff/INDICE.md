@@ -18,6 +18,13 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Gli E2E delle due pagine (2026-10-14), com'è andata: da quale fatto nel markup legge ogni asserzione
+  - ⚠️ axe bocciava il link della riga di verdetto, 2,1:1 contro il 3:1 di `link-in-text-block`
+  - ⚠️ `DESIGN.md` si contraddiceva: Help Pointer Link contro Neutral row verdicts, vince il secondo
+- Stato al 2026-10-14 (le due pagine in codice e misurate, prima degli E2E): il Counts Panel, l'ordine invertito, il budget delle caret row rifatto
+  - ⚠️ Il budget delle caret row era sbagliato in due modi: mancava il padding di 1.5ch e il cap era ancora 900
+  - ⚠️ Il codice commuta sui cinque passi, il mock sulla larghezza della singola citazione
+  - ⚠️ `DESIGN.md` indietro sul mock in tre punti, la seconda sessione di fila
 - Stato al 2026-10-14 (Technology in codice e misurata, prima del codice della Release): lo spacco, il contenitore unico a 1240, la Stat Row dentro il titolo
   - ⚠️ `max-[Npx]:` di Tailwind è esclusivo: a 1040px esatti il pannello correva 992px
   - ⚠️ Le misure di Technology su 18 larghezze: prima Release a 158px contro i 646 della pagina viva
