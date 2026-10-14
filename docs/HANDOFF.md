@@ -28,10 +28,10 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-14, sera): la #142 è chiusa, il lavoro è su `main`, i rami sono
-puliti.** La **PR #150** è stata unita in squash dall'utente e `main` è a **`840ef59`**, in
-produzione; **non resta niente del lavoro delle tre schermate**. ⚠️ **Sul `main` locale non si
-committa**, nemmeno un documento: questo handoff è su un ramo suo.
+**Da dove ripartire (2026-10-14, sera): la #142 è chiusa, tutto è su `main`, i rami sono puliti,
+non c'è niente in sospeso.** Le PR **#150** (le tre schermate) e **#151** (l'handoff) sono state
+unite in squash dall'utente, `main` è a **`15edc10`** ed è in produzione. ⚠️ **Sul `main` locale
+non si committa**, nemmeno un documento: ogni cosa passa da un ramo e da una PR.
 `pnpm lint`, `pnpm typecheck`, **620 unitari** e **195 E2E verdi in una corsa sola**, axe compreso,
 nei due temi. ⚠️ `release.spec.ts:100` è caduto una volta sola in una corsa piena e ripetuto due
 volte passa: è un click su un `summary` che arriva prima dell'idratazione, non una regressione.
@@ -58,8 +58,12 @@ indovinare.
 1. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: lavoro suo, di chunking e
    di import dai barrel, **non deciso**, e da pesare contro la regola delle Script KB.
 2. ⚠️ **`DESIGN.md` va riletto col sospetto, non citato**: quattro sessioni di fila l'hanno trovato
-   indietro. **La tabella dei colori è tenuta da un test**; la prosa e la tabella della tipografia
-   no, e quest'ultima diceva ancora `whiteSpace: nowrap` per un token che non lo porta più.
+   indietro. **Le due tabelle, i colori e la tipografia, sono ora tenute da un test**
+   (`src/app/design-tokens.test.ts`): il 2026-10-14 la seconda è stata legata al CSS e controllata,
+   e diceva ancora `whiteSpace: nowrap` per un token la cui riga unica è comprata dal tetto. Il test
+   guarda misura, interlinea e spaziatura, che è quello che i token portano; **peso e famiglia sono
+   classi, non token, e stanno nella prosa**. ⚠️ **La prosa non è tenuta da niente**: lì il sospetto
+   serve ancora.
 3. ⚠️ **Le conversioni `max-[]` del resto dell'app non sono decise**: 43 `max-[640px]`, 19
    `max-[1040px]`, 7 `max-[880px]` tra Dashboard, `/technologies`, landing e barra. I file di
    Technology e di Release sono convertiti. ⚠️ **La barra usa ancora `sm:px-5`**, quindi a 640px
