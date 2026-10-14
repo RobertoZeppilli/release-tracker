@@ -28,50 +28,54 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-14, pomeriggio): le due pagine sono finite, con gli E2E verdi e il peso
-misurato prima e dopo; manca il tema chiaro, poi la PR.** Branch **`142-technology-release`**,
-albero pulito e **sei commit in coda** su `origin/main`: `28bc49e` (mock e DESIGN.md), `a954300` (Technology), `f6749b9`
-(Release), `9632c46` (handoff), `a4dfe9e` (il link del verdetto) e **`a8b9a52` (gli E2E)**.
-⚠️ **Il ramo non ha un upstream suo**: traccia `origin/main`, quindi il push è
+**Da dove ripartire (2026-10-14, sera): le due pagine sono finite e i verdetti stanno in un panel
+uguale sulle due pagine; manca la PR.** Branch **`142-technology-release`**, albero pulito e **otto
+commit in coda** su `origin/main`, gli ultimi due `900968a` (il peso misurato dopo) e **`95688ef`
+(i panel)**. ⚠️ **Il ramo non ha un upstream suo**: traccia `origin/main`, quindi il push è
 `git push -u origin 142-technology-release`, non un `git push` secco.
-`pnpm lint`, `pnpm typecheck` e `pnpm test` (612) passano, e **gli E2E hanno fatto il giro intero
-verde in una corsa sola: 195 su 195, axe compreso, nei due temi.**
+`pnpm lint`, `pnpm typecheck`, **620 unitari** e **195 E2E verdi in una corsa sola**, axe compreso,
+nei due temi.
 
-⚠️ **Il come e il perché dei diciassette test riallineati** (e il link del verdetto che axe
-bocciava) stanno in `docs/handoff/2026-10.md`, "Gli E2E delle due pagine (2026-10-14)", e nei
-commit `a4dfe9e` e `a8b9a52`.
+⚠️ **Il peso prima e dopo** (le due pagine non pesano, ma `/login` porta 14 KB di UI delle Release)
+sta in `docs/handoff/PESO.md` e, per come è stato trovato, in `docs/handoff/2026-10.md`.
 
-### Il peso, com'è andato (tabelle e dettaglio in `docs/handoff/PESO.md`)
+### I panel, e la regola che hanno piegato
 
-1. **La pagina Release non è peggiorata**, ed era quella da cui si temeva il peggio: nel settimo
-   stato il totale scende da 499.3 a **499.2 KB**, `Document` da 104.0 a 103.9, i nodi salgono di
-   quattro (3412 → 3416) e la pagina si accorcia da 1454 a **1427px**, il numero che `DESIGN.md`
-   dichiara per il mock a 1240. **La pagina Technology si accorcia di 437px** (1339 → 902).
-2. ⚠️ **`Script KB` è salito di 1.2 KB su ogni rotta**, `/login` compresa, quindi la regola del
-   "prima" è formalmente rotta. Causa trovata al byte: **un chunk solo**, 40.743 → 43.921 non
-   compressi, +1345 sul filo identico su `/` e su `/login`. Dentro: **`BarLegend` e `ColumnTitle`
-   entrati, `StatRows` uscito**, cioè la Stat Row diventata titolo di gruppo, che sta sotto
-   `UpgradePathView` ed è `"use client"`.
-3. ⚠️ **La scoperta vera**: `/login` scarica **14 KB compressi** di UI delle Release
-   (`BreakingList`, `UpgradeForm`, `computeUpgradePath`, le icone). La UI delle Release viaggia su
-   ogni pagina dell'app, **da prima di questo redesign**. L'1.2 KB è lo 0.4% e non è il problema; i
-   14 KB sì. Separarli è un lavoro suo, di chunking e di import dai barrel: **non deciso**.
-4. **Il "prima" è stato ripreso ricostruendo `28bc49e`**, non letto dalle tabelle: le Script KB sono
-   tornate identiche, quindi la procedura è ripetibile. ⚠️ A `28bc49e` **`pnpm page:weight` non
-   esiste ancora** (arriva con `a954300`): si esegue lo script del ramo sulla build vecchia.
-   ⚠️ Il database locale è **rimesso come era** (`pending`, `content` nullo, zero Sintesi `ready`),
-   e il dev server è di nuovo `pnpm dev` sulla 3000.
+1. **I verdetti sono il titolo di un panel**, sulla Technology e sulla Dashboard, e i conteggi dietro
+   di loro sono righe della stessa forma: **nome a sinistra, numero a destra incolonnato**, che è la
+   disposizione con cui lo Standing Panel contava già i suoi totali. Decisione dell'utente: le due
+   pagine devono essere la stessa scatola. Niente `·` nelle righe.
+2. Sulla Dashboard sono spariti **la didascalia `where your stack stands · by distance`**, la
+   funzione che la scriveva e **lo slot vuoto riservato** sopra il panel. L'`aside` prende ora il
+   nome dal verdetto (`aria-labelledby="page-verdict"`).
+3. **`read the release notes` prende una riga sua** e il `·` se n'è andato con lui: sulla riga
+   condivisa le sue quattro parole si rompevano in un punto diverso a ogni larghezza. Vale anche per
+   la riga del flusso in Dashboard, stesso componente.
+4. ⚠️ **La regola della riga unica del verdetto è stata piegata, non ignorata**: nel panel
+   `ok: nothing needs action` ha **328px e ne misura 365**, e per stare su una riga le tre frasi
+   dovrebbero scendere a **21 caratteri**. Cede la riga, non la scala, e `DESIGN.md` ora dice che la
+   riga unica è una regola del contenitore della pagina, non di un panel. Il test E2E è passato da
+   1,5 a 2,5 righe tenendo le altre tre misure. **Se l'utente la rivuole, il prezzo è la copy.**
+5. ⚠️ Il `whitespace-nowrap` dei verdetti è andato via con la cornice: fuori da una scatola una
+   frase lunga sconfinava nel margine senza che nessuno se ne accorgesse, dentro stampava 16px oltre
+   il bordo.
+
+⚠️ **Il tema chiaro è stato guardato e misurato** sulle due pagine, e le misure di quello che axe
+non guarda stanno in `docs/handoff/2026-10.md`, "Il tema chiaro delle due pagine (2026-10-14)".
 
 ### Cosa resta
 
-1. **Tema chiaro** non ancora guardato né su Technology né su Release. È l'ultima cosa prima della
-   PR, che chiude la **#142** (`Closes #142` in inglese).
-2. ⚠️ **I 14 KB di UI delle Release su ogni pagina** (vedi sopra): lavoro suo, **non deciso**, e
-   da pesare contro la regola delle Script KB prima di dire che la #142 è chiusa bene.
-3. ⚠️ **`DESIGN.md` va riletto col sospetto, non citato**: due sessioni di fila l'hanno trovato
-   indietro sul mock (il budget diceva 58 e 72 dove sono 57 e 71, il Counts Panel 24px dove il mock
-   ne mette 16, Section Title mostrava ancora `breaking changes (4)`, e Help Pointer Link si
-   contraddiceva con Neutral row verdicts).
+1. **La PR che chiude la #142** (`Closes #142` in inglese): è la prossima cosa, non resta altro
+   lavoro di codice sulle due pagine. ⚠️ In `docs/` ci sono **due immagini dell'utente**,
+   `INFO IN LINEA.JPG` e `INFO IN BASSO A SINISTRA.JPG`, mai committate: sono le due schermate da cui
+   sono nati i panel, da cancellare o da spostare, **lo decide l'utente**.
+2. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: lavoro suo, di chunking e
+   di import dai barrel, **non deciso**, e da pesare contro la regola delle Script KB prima di dire
+   che la #142 è chiusa bene.
+3. ⚠️ **`DESIGN.md` va riletto col sospetto, non citato**: tre sessioni di fila l'hanno trovato
+   indietro. **La tabella dei token ora è tenuta da un test**; la prosa no, e l'ultima volta diceva
+   58 e 72 dove sono 57 e 71, il Counts Panel 24px dove il mock ne mette 16, e Help Pointer Link si
+   contraddiceva con Neutral row verdicts.
 4. ⚠️ **Le conversioni `max-[]` del resto dell'app non sono decise**: 43 `max-[640px]`, 19
    `max-[1040px]`, 7 `max-[880px]` tra Dashboard, `/technologies`, landing e barra. I file di
    Technology e di Release sono convertiti. ⚠️ **La barra usa ancora `sm:px-5`**, quindi a 640px
@@ -82,10 +86,11 @@ commit `a4dfe9e` e `a8b9a52`.
    nuovo, da fissare prima in `CONTEXT.md`.
 6. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa e la pagina
    Technology chiama entrambe. Si uniscono quando conviene, non subito.
-7. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo lavoro
-   tocca Anthropic. **Le cose dell'utente** stanno in `APERTE.md`; **come si misura una pagina** in
-   `AMBIENTE.md` e in `PESO.md`. ⚠️ Uno script fuori dal progetto non risolve i pacchetti: Playwright
-   si importa col `file:///` dentro `node_modules/.pnpm/playwright@1.63.0/`. **Docker e il dev server
-   sulla 3000 erano attivi** a fine sessione.
+7. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
+   lavoro tocca Anthropic. **Le cose dell'utente** stanno in `APERTE.md`, **l'ambiente** in
+   `AMBIENTE.md` e **come si misura una pagina** in `PESO.md`. ⚠️ Per guardare la pagina Release
+   serve una Sintesi `ready`: l'`update` e il `restore` sono in `PESO.md`, in `pnpm dev` basta
+   l'`update`, e **il database locale è stato rimesso come era** (zero Sintesi `ready`). Docker e il
+   dev server sulla 3000 erano attivi a fine sessione.
 
-Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e guardiamo le due pagine in tema chiaro`.
+Il primo comando della sessione nuova: `leggi docs/HANDOFF.md e apriamo la PR della #142`.

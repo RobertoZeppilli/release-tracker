@@ -18,6 +18,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Il tema chiaro delle due pagine (2026-10-14), guardato e misurato: le misure di quello che axe non guarda
+  - ⚠️ `DESIGN.md` indietro per la terza sessione di fila, la tabella dei token ora è tenuta da un test
+- Stato al 2026-10-14 (il peso misurato prima e dopo, prima dei panel): le due pagine non pesano, ma `/login` porta 14 KB di Release
+  - ⚠️ `Script KB` +1.2 KB su ogni rotta, da un chunk solo, trovato al byte
+  - ⚠️ Il "prima" ripreso ricostruendo `28bc49e`: a quel commit `pnpm page:weight` non esiste ancora
 - Gli E2E delle due pagine (2026-10-14), com'è andata: da quale fatto nel markup legge ogni asserzione
   - ⚠️ axe bocciava il link della riga di verdetto, 2,1:1 contro il 3:1 di `link-in-text-block`
   - ⚠️ `DESIGN.md` si contraddiceva: Help Pointer Link contro Neutral row verdicts, vince il secondo
