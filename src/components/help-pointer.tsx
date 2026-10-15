@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import type { ReactNode } from "react";
 
 // DESIGN.md, Help Pointer Link: a faint `-->`, then the lowercase label in the interactive green

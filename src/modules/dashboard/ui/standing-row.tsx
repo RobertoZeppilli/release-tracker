@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { TechnologyMark } from "@/modules/catalog/ui";
 import type { StandingRow as Row } from "../domain/standing";
 import { barShare, standingWords } from "./dashboard-copy";

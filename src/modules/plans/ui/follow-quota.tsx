@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { useFollows } from "./follows-provider";
 

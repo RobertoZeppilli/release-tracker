@@ -1,7 +1,7 @@
 "use client";
 
 import { Info } from "lucide-react";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 import { useFollows } from "@/modules/plans/ui";
 

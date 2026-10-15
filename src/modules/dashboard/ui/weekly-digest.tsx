@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { releasePath } from "@/modules/releases";
 import { isoDate, plural, SignificanceLabel } from "@/modules/releases/ui";
 import type { DashboardRow } from "../domain/followed";

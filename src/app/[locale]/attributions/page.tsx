@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { DocumentPage, DocumentSection } from "@/components/document-page";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Attributions",
-  description:
-    "Where the technology marks, the release notes, the typefaces and the icons in Verdict come from, and under which licence.",
-  path: "/attributions",
-  type: "website",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: "Attributions",
+    description:
+      "Where the technology marks, the release notes, the typefaces and the icons in Verdict come from, and under which licence.",
+    path: "/attributions",
+    type: "website",
+    locale: await currentLocale(),
+  });
+}
 
 export default function AttributionsPage() {
   return (

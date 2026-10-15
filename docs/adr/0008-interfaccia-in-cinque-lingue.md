@@ -44,3 +44,19 @@ generate a runtime: niente chiamate AI, nessuna spesa. ⚠️ Italiano e inglese
 **francese, spagnolo e tedesco entrano non rivisti da madrelingua e vanno rivisti prima del
 lancio**, e questa riga sta qui perché lo dica l'ADR invece di farli passare per verificati. Il
 tedesco è il caso peggiore per la lunghezza delle parole: il limite tenuto è nessun overflow a 320px.
+
+**Un albero solo, e il proxy che riscrive.** Ogni rotta sta sotto `src/app/[locale]`, e il proxy
+riscrive `/technologies/vite` in `/en/technologies/vite` senza che l'indirizzo visto cambi. Così la
+lingua è un **root param** e qualunque componente server la legge con `next/root-params` invece di
+riceverla di mano in mano, e non esistono due file di rotta per pagina da tenere in sincrono. Il
+prezzo, scelto dall'utente il 2026-10-15: il proxy gira su **ogni** richiesta di pagina, mentre
+prima ne vedeva tre. ⚠️ Quello che le pagine pubbliche continuano a non pagare è il **giro di auth
+a Supabase**, che era il costo vero: resta sulle tre rotte protette.
+⚠️ **La riscrittura si costruisce clonando l'URL in arrivo**, non dal percorso: un URL costruito dal
+solo percorso butta la query, cioè `?next=` del login, `?week=` del Digest e i filtri del Catalogo.
+Lo hanno misurato sei E2E caduti.
+⚠️ **Un indirizzo sconosciuto resta dentro la lingua** grazie a un catch-all `[...rest]` che chiama
+`notFound()`: senza, un percorso che non combacia cadrebbe fuori da `app/[locale]` e Next
+risponderebbe con la sua 404 nuda, senza guscio, senza tema e senza piede. `global-not-found.tsx`
+era l'altra strada ed è stata rifiutata: è un secondo guscio con i suoi font, il suo script del tema
+e il suo piede, e un piede incollato due volte è un piede che divergerà.

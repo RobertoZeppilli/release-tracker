@@ -6,6 +6,7 @@ import { PageBreadcrumb, TECHNOLOGIES_CRUMB } from "@/components/breadcrumb";
 import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 import { createPublicClient } from "@/lib/supabase";
 import { githubRepo, type StoredTechnology } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
@@ -42,6 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return pageMetadata({
     ...releaseMeta(page.technology.name, page.release),
     path: releasePath(page.technology.slug, page.release.version),
+    locale: await currentLocale(),
   });
 }
 

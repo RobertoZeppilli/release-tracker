@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { releasePath, rowVerdict, type Significance } from "@/modules/releases";
 import { BreakingList, RowVerdictLine, SignificanceGlyph } from "@/modules/releases/ui";
 import { HelpPointer } from "@/components/help-pointer";
