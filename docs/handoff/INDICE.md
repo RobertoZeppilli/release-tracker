@@ -18,6 +18,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-15 (la #126 chiusa e su `main`, prima della #132)
+  - Le tre decisioni della #126 prese dall'utente, e le due trappole che ha pagato
+  - ⚠️ `sticky top-0` non si incolla in questo progetto: `--spacing: initial` non genera `top-0`
+  - L'insert multiriga è atomico: `none followed`, mai "alcune"
+
 - Stato al 2026-10-15 (la #133 e le attese chiuse, prima della #126)
   - ⚠️ Le forme di attesa già rifiutate, da non riproporre, e il divieto su `animation: none`
   - ⚠️ Lo skeleton dura decine di millisecondi: per vederlo serve fermare la risposta

@@ -238,11 +238,16 @@ function AccountPanel({
           ))}
         </ul>
       </nav>
-      <form
-        action="/auth/sign-out"
-        method="post"
-        className="mt-auto border-t border-rule sm:mt-1 sm:border-t sm:border-rule sm:pt-1"
-      >
+      {/* The account's own page, the one destination that is not a section of the app: it says what
+          this account holds and is the only way to delete it (issue #132). It sits with the way out
+          rather than with the sections, because both are about the account and not about the
+          product, and above `sign out` because signing out is still the last line of the panel. */}
+      <div className="mt-auto border-t border-rule sm:mt-1 sm:border-t sm:border-rule sm:pt-1">
+        <Link href="/account" onClick={onFollow} className={ITEM}>
+          account
+        </Link>
+      </div>
+      <form action="/auth/sign-out" method="post">
         <button type="submit" className={`${ITEM} w-full`}>
           sign out
         </button>

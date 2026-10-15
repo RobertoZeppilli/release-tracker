@@ -117,6 +117,19 @@ for (const theme of THEMES) {
       await scan(page, theme);
     });
 
+    // The two states of the account page. Neither deletes anything: the Developer of this file is
+    // shared, and the refusal is exactly what a wrong word leaves on the screen.
+    test("the account page, and the error a wrong word leaves on it", async ({ page }) => {
+      await signIn(page);
+      await page.goto("/account");
+      await scan(page, theme);
+
+      await page.getByLabel(/type delete to confirm/).fill("nope");
+      await page.getByRole("button", { name: "Delete account" }).click();
+      await expect(page).toHaveURL("/account?error=confirm");
+      await scan(page, theme);
+    });
+
     // Both shells below are served without the layout and rendered on the client, so the theme
     // reaches them by a different road than everywhere else: it is asserted, not assumed.
     test("the 404", async ({ page }) => {

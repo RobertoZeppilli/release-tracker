@@ -192,6 +192,17 @@
     text-decoration-color: currentColor;
   }
 
+  /* DESIGN.md, Interactive Green: a link that is a word inside a sentence is **always underlined**,
+     and the ink alone is never what says it is a link (WCAG 1.4.1). Tailwind's preflight makes `a`
+     inherit `text-decoration`, so the browser's own underline is gone and the rule above only ever
+     coloured an underline nothing was drawing. Found by axe on `/account`, where the green sat
+     inside a paragraph: `link-in-text-block`, serious, in both themes. The underline takes the
+     link's own ink and not `rule-strong`, because it belongs to the word and not to the page. */
+  a.text-link {
+    text-decoration-line: underline;
+    text-decoration-color: currentColor;
+  }
+
   /* No offset of its own: the user's choice of 2026-10-14. Measured, the computed offset is the
      browser's own 1px and not 0, so the ring sits on the element's edge rather than inside it. */
   :focus-visible {

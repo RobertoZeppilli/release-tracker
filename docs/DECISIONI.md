@@ -140,6 +140,8 @@ interferisce, perché qui non si pubblica un pacchetto e il repository sta sotto
 | Pro (post-MVP) | Tecnologie illimitate, Notifiche email/Slack, scanner dei repository, Richieste di tecnologia con priorità. | 0004 |
 | Team (futuro) | Piano legato a un gruppo; non implementato. | 0004 |
 | Pagamenti | Lemon Squeezy come Merchant of Record, integrato insieme alle Notifiche. | 0004 |
+| Cancellazione dell'account | Esiste dalla #132, su `/account`, e cancella la riga di `auth.users`: `follows` e `plans` la seguono per `on delete cascade`, quindi non c'è niente da ripulire a mano. La conferma è **una parola scritta** (`delete`), non un dialog (in quest'app non se ne apre nessuno) e non un bottone spento: la parola è controllata **sul server**, perché un form si può inviare senza la pagina. La chiave di servizio non lascia mai il server, quindi la cancellazione è una route handler e non una scrittura dal browser come il Follow. | — |
+| Revoca su GitHub | L'autorizzazione OAuth la tiene GitHub e **solo GitHub la può revocare**: la pagina lo dice e linka il posto. Con `NEXT_PUBLIC_GITHUB_CLIENT_ID` (il client ID dell'OAuth App, che sta nelle impostazioni del provider su Supabase e **non è un segreto**: viaggia in chiaro nell'URL del consenso) il link va dritto alla pagina dell'app, dove c'è `Revoke access`; senza, va all'elenco delle applicazioni autorizzate. Nessun servizio nuovo e nessuna chiamata a GitHub dal client. | — |
 
 ## Architettura del codice
 

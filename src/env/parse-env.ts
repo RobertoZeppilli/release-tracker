@@ -4,6 +4,15 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().startsWith("sb_publishable_"),
+  // The client ID of the GitHub OAuth App behind the sign-in, which lives in the Supabase provider
+  // settings. It is not a secret: it travels in the open in the consent URL every sign-in builds.
+  // With it the account page can point at GitHub's page for this app, the one that carries `Revoke
+  // access`; without it the same link goes to the list of authorised apps, which is a click further
+  // and still true. Empty counts as unset.
+  NEXT_PUBLIC_GITHUB_CLIENT_ID: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
 });
 
 // Server-only: never read these from a module that can reach the client bundle.
