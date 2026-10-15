@@ -1,6 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Fragment_Mono, Hanken_Grotesk } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
 import { themeInitScript } from "@/components/theme";
 import { env } from "@/env";
 import "./globals.css";
@@ -35,6 +36,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body>
         {children}
+        {/* The foot belongs to the layout and not to the pages: issue #132 asks the five pages that
+            say what the product is to be reachable from every page at every width, and a footer each
+            page pasted in is a footer the next page forgets. It carries its own container, the same
+            one the pages use. */}
+        <SiteFooter />
         <Analytics />
       </body>
     </html>

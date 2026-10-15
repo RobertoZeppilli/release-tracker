@@ -117,6 +117,15 @@ for (const theme of THEMES) {
       await scan(page, theme);
     });
 
+    // The five pages of issue #132, in one test: they are prose and they share one component, so
+    // what axe has to see on each of them is the same thing seen five times.
+    for (const path of ["/terms", "/privacy", "/attributions", "/faq", "/contact"]) {
+      test(path, async ({ page }) => {
+        await page.goto(path);
+        await scan(page, theme);
+      });
+    }
+
     // The two states of the account page. Neither deletes anything: the Developer of this file is
     // shared, and the refusal is exactly what a wrong word leaves on the screen.
     test("the account page, and the error a wrong word leaves on it", async ({ page }) => {

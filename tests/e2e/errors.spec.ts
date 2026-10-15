@@ -52,7 +52,9 @@ test("the 404 is no dead end, at 390px either", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto("/technologies/not-a-technology");
 
-  await expect(page.getByRole("link", { name: "verdict:" })).toBeVisible();
+  // In the bar: the mark is in the foot as well since issue #132, and the way out of a 404 that
+  // this test is about is the one at the top of the page.
+  await expect(page.getByRole("banner").getByRole("link", { name: "verdict:" })).toBeVisible();
   await expect(page.getByRole("link", { name: "browse the catalog" })).toBeVisible();
 
   await page.getByRole("link", { name: "browse the catalog" }).click();

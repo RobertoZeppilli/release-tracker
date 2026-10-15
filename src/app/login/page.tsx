@@ -1,7 +1,7 @@
 import { LogIn, TerminalSquare } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageBreadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { serverEnv } from "@/env/server";
 import { safeRedirectPath } from "@/modules/auth";
@@ -41,7 +41,6 @@ export default async function LoginPage({ searchParams }: Props) {
     <>
       <SiteHeader />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
-        <PageBreadcrumb path={["sign in"]} />
         <h1 className="font-sans text-headline font-semibold">Sign in</h1>
         <p className="mt-3 max-w-prose font-sans text-body text-text-muted">
           Following technologies and the dashboard are yours alone, so they need an account. Release
@@ -64,7 +63,21 @@ export default async function LoginPage({ searchParams }: Props) {
             <SeverityLabel tone="breaking" label="error:" /> <span className="inline-block">{message}</span>
           </p>
         ) : null}
-        <form action="/auth/sign-in" method="post" className="mt-6">
+        {/* Before the button and not under it (issue #132): the sentence a sign-in commits to has
+            to be readable before the click that commits to it, which is the same rule the note
+            about what GitHub is asked for already follows. */}
+        <p className="mt-6 max-w-measure font-mono text-meta text-text-faint">
+          Signing in accepts the{" "}
+          <Link href="/terms" className="text-link">
+            terms
+          </Link>
+          . The{" "}
+          <Link href="/privacy" className="text-link">
+            privacy notice
+          </Link>{" "}
+          says what is kept, and the account page deletes all of it.
+        </p>
+        <form action="/auth/sign-in" method="post" className="mt-4">
           <input type="hidden" name="next" value={target} />
           <button type="submit" className={`${BUTTON} border-rule-strong text-text hover:border-text-faint`}>
             <LogIn className="size-4" strokeWidth={2} aria-hidden />

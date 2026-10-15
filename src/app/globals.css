@@ -169,6 +169,26 @@
     color: var(--text);
     font: 400 16px/1.6 var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    /* The foot is the last child of the body and takes `mt-auto`, so on a page too short to fill
+       the window (the 404, the error page, a sign-in) it rests on the bottom of the screen instead
+       of hanging under the last line of text with the ground empty below it. `dvh` and not `vh`:
+       on a phone `vh` is the window with the browser's own bars pretended away, which is exactly
+       the amount a footer would then be pushed off the screen by. */
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  /* ⚠️ The price of that flex column, and it is not obvious: a flex item with `margin-inline: auto`
+     is **not** stretched to the cross size, it is shrunk to its content, and every `main` in this
+     app centres itself with `mx-auto`. Without this the Dashboard's content column measured 1055px
+     inside a 1280px window and the account panel, which aligns to the page's own gutter, hung 181px
+     past it (caught by `navigation.spec.ts`, "the account panel is right-aligned to the page's own
+     gutter"). The two direct children that centre themselves are named here rather than `body > *`,
+     which would also catch the Back to Top button and the skip link, both taken out of the flow. */
+  body > main,
+  body > footer {
+    width: 100%;
   }
 
   /* The top bar is sticky on every page (DESIGN.md, Layout), so what a link scrolls to clears it:

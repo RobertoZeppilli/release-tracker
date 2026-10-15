@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { PageBreadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { env } from "@/env";
 import { createRequestClient } from "@/lib/supabase-request";
@@ -41,7 +40,6 @@ export default async function AccountPage({ searchParams }: Props) {
     <>
       <SiteHeader />
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
-        <PageBreadcrumb path={["account"]} />
         <h1 className="font-sans text-headline font-semibold">Account</h1>
         <p className="mt-3 max-w-prose font-sans text-body text-text-muted">
           Everything this account is made of, and the way out of it. Nothing here is shared with
