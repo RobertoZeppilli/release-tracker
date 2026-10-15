@@ -18,6 +18,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-15 (la PR 1 della #132 su `main`, prima della PR 2)
+  - Le quattro decisioni della #132 prese dall'utente, e l'ordine delle due PR invertito
+  - ⚠️ Playwright lancia `pnpm dev` in locale e `pnpm start` in CI: i difetti si vedono solo nel secondo
+  - ⚠️ `NEXT_PUBLIC_GITHUB_CLIENT_ID` ancora da mettere su Vercel
+
 - La PR 1 della #132, com'è fatta dentro (2026-10-15)
   - L'ordine dei tre passi della cancellazione, e perché la sessione si legge prima del form
   - ⚠️ Niente dialog e niente bottone spento: la parola scritta è la guardia, già deciso

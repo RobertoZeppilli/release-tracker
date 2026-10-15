@@ -28,52 +28,53 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-15, terzo giro): la #132 è spezzata in due PR e la prima è chiusa e
-su `main` (`b4d4acd`, PR #156), niente in sospeso.** La #132 resta **aperta** per la PR 2 ed è
-`ready-for-human`: le quattro decisioni qui sotto sono dell'utente, prese in apertura di sessione.
-⚠️ **L'ordine delle due PR è invertito rispetto a quello scelto**, e il motivo va tenuto: il piede
-punta a `terms`, `privacy`, `attributions`, `faq`, `contact`, e un piede con cinque link che danno
-404 è la stessa promessa falsa dell'informativa senza il bottone. Quindi la cancellazione prima, e
-**la PR 2 porta le cinque pagine e il piede insieme**.
+**Da dove ripartire (2026-10-15, quarto giro): la #132 è chiusa, tutte e due le PR sono su `main`
+(`b4d4acd` e `1f4155e`, PR #156 e #158), niente in sospeso.** Con la PR 2 l'app ha le cinque pagine
+pubbliche (`terms`, `privacy`, `attributions`, `faq`, `contact`), statiche e nella sitemap, e un
+piede su ogni pagina. ⚠️ **Le issue restano sospese per scelta dell'utente**: non proporne una come
+lavoro seguente finché non lo rilancia lui.
 
 **Verde**: prima del merge `lint`, `typecheck`, `build`, **640 su 640** unitari, **70 su 70** di
-integrazione e **215 passati** in E2E con `CI=1 pnpm exec playwright test` (il build di produzione);
-dopo, su `main`, **`CI` e `Deploy database` sono finiti verdi**.
-⚠️ **Un flaky estraneo**: `select-many.spec.ts:163`, rientrato al ritentativo (il giro prima era
-toccato a `upgrade-path.spec.ts:64`: due flaky diversi, non uno che si sposta).
-⚠️ **Il dev server sulla 3000 è spento.** ⚠️ **Quattro rami da cancellare** e lo stash `residuo del
-checkout interrotto`, che sono dell'utente: ai tre di prima si aggiunge `132-account-deletion`, già
-mergiato. `git push origin --delete <rami>`, `git branch -d <rami>`, `git stash drop`.
+integrazione e **239 passati** in E2E con `CI=1 pnpm exec playwright test`, nessun flaky stavolta.
+⚠️ **Il dev server sulla 3000 è acceso** (riavviato dopo gli E2E, che vogliono la porta).
+⚠️ **Sei rami da cancellare** e lo stash `residuo del checkout interrotto`, che sono dell'utente:
+ai cinque di prima si aggiunge `132-legal-pages`. `git push origin --delete <rami>`,
+`git branch -d <rami>`, `git stash drop`.
 
-⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE** resta quella di prima, e la #132 l'ha
-pagata: `playwright.config.ts` lancia `pnpm dev` in locale e `pnpm start` in CI. In dev la PR 1 era
-verde; contro il build di produzione sono caduti **quattro** test, e nessuno dei tre difetti sotto
-si vedeva in dev. Il resto in `docs/handoff/2026-10.md`, "Perché un confine di loading fa cadere i
-test che misurano".
+### Quello che la PR 2 ha deciso, e non è derivabile dal codice
 
-### Le quattro decisioni della #132, prese dall'utente e non derivabili dal codice
+1. **Il contatto è `robertozeppilli@proton.me`**, in `src/lib/contact.ts`, scelto dall'utente il
+   2026-10-15 con la ragione: il dominio proprio si compra **al lancio**, e fino ad allora cambia
+   **quella riga sola**. ⚠️ La variabile sta **solo su Vercel**, non in `.env.local`: in locale si
+   entra col dev login e l'unico effetto sarebbe il link `Revoke access` su `/account`.
+2. ⚠️ **`body` è una colonna flex alta `100dvh`** perché il piede stia in fondo alla finestra sulle
+   pagine corte, e il prezzo è in `globals.css`: **un elemento flex con `margin-inline: auto` non
+   viene steso ma stretto al contenuto**, e ogni `main` si centra con `mx-auto`. Senza
+   `body > main, body > footer { width: 100% }` la colonna della Dashboard misura 1055px dentro
+   1280 e il pannello dell'account sporge di 181px (lo prende `navigation.spec.ts`, il test del
+   gutter). I due figli sono nominati e non `body > *`, che prenderebbe anche il bottone "torna in
+   cima" e lo skip link, fuori dal flusso.
+3. **Niente breadcrumb dove il percorso è un passo solo** (sign in, account, le cinque pagine):
+   ripeteva la parola dell'`h1` sotto. Resta su Technology e Release, dove il percorso esiste.
+4. **Il wordmark sta anche nel piede**, in Meta, come `DESIGN.md` già prescriveva. ⚠️ Un test che
+   cerca `verdict:` ora va legato alla barra (`getByRole("banner")`): i link sono due.
+5. **Il contenuto delle pagine è accertato nel codice**, e i numeri sono importati
+   (`FREE_FOLLOW_LIMIT`, `CONTACT_EMAIL`): una pagina non può promettere quello che il codice non
+   applica. Tutto registrato in `DESIGN.md` (Footer, Document Pages, la regola del breadcrumb) e in
+   tre righe di `docs/DECISIONI.md`.
 
-1. **Due PR**: prima il codice, poi le pagine (poi invertite, vedi sopra).
-2. **Il piede è a due colonne con titoli** (`product`: faq, contact · `legal`: terms, privacy,
-   attributions), non la riga sola etichettata: Mono 12px `text-faint` su una riga `rule`, nessuna
-   superficie, nel container della pagina. ⚠️ **Da costruire nella PR 2, non è ancora scritto.**
-3. **Nei termini sta solo il nome del prodotto e l'email**, senza nome della persona né paese.
-4. **La cancellazione è `/account` con conferma scritta** (fatta). ⚠️ Il **contatto è un
-   placeholder** finché l'utente non decide l'indirizzo: prerequisito della PR 2.
-
-### Quello che la PR 1 ha lasciato in piedi
-
-Com'è fatta dentro (l'ordine dei tre passi della route, le tre cose dette dal solo build di
-produzione) sta in `docs/handoff/2026-10.md`, "La PR 1 della #132, com'è fatta dentro". Due cose
-non vanno perse qui: ⚠️ **niente dialog e niente bottone spento** nella cancellazione, la parola
-scritta è la guardia e sono scelte già pagate; e ⚠️ **`NEXT_PUBLIC_GITHUB_CLIENT_ID` è ancora da
-mettere su Vercel**, preso dal provider GitHub su Supabase, o il link di revoca resta quello
-all'elenco delle applicazioni invece che alla pagina di Verdict.
+⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE**: `playwright.config.ts` lancia
+`pnpm dev` in locale e `pnpm start` in CI, e i difetti che contano si sono visti solo contro il
+build di produzione. Il resto in `docs/handoff/2026-10.md`, "Perché un confine di loading fa cadere
+i test che misurano".
 
 ### Cosa resta
 
-1. **La PR 2 della #132**: terms, privacy, attributions, faq, contact e il piede a due colonne. Il
-   contenuto accertato nel codice sta nel corpo della issue.
+1. ⚠️ **`NEXT_PUBLIC_GITHUB_CLIENT_ID` è ancora da mettere su Vercel**, preso da Supabase →
+   Authentication → Providers → GitHub (campo *Client ID*), su tutti gli ambienti, **e poi
+   rideploy**: le `NEXT_PUBLIC_` sono murate nel bundle al build. Senza, il link di revoca su
+   `/account` porta all'elenco delle applicazioni invece che alla pagina di Verdict. Non va marcata
+   Sensitive: viaggia già in chiaro nel bundle e nell'URL di consenso.
 2. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: non deciso.
 3. ⚠️ **Le `max-[]` non sono decise**: 43 `max-[640px]`, 19 `max-[1040px]`, 7 `max-[880px]`.
 4. **Il mock disegna due righe che il modello non produce**: dominio nuovo, da fissare in
