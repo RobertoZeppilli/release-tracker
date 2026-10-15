@@ -31,4 +31,4 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 // Exact paths: `/technologies/vite` is public and must never reach the login.
-export const config = { matcher: ["/dashboard", "/technologies"] };
+export const config = { matcher: ["/account", "/dashboard", "/technologies"] };

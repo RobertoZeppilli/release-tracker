@@ -146,7 +146,7 @@ for (const width of WIDTHS) {
 
     test("the signed-in pages stay inside the window", async ({ page }) => {
       await signIn(page);
-      for (const path of ["/dashboard", "/technologies"]) {
+      for (const path of ["/dashboard", "/technologies", "/account"]) {
         await page.goto(path);
         await expectNoOverflow(page, path);
       }

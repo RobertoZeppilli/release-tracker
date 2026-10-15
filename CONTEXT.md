@@ -351,6 +351,15 @@ gruppo e non alla singola persona). Il _Free_ permette di **Seguire** al massimo
 le **Sintesi** e le pagine pubbliche non dipendono mai dal **Piano**.
 _Evitare_: abbonamento (è il rapporto col provider di pagamento), tier, licenza.
 
+**Cancellazione dell'account**:
+La fine del rapporto, decisa dallo **Sviluppatore** e immediata: spariscono l'account, i **Follow**
+con le **Versioni in uso** dichiarate sopra, la riga del **Piano** e la sessione nel browser. Non
+c'è copia da cui tornare indietro e non c'è finestra per ripensarci. Due cose non spariscono, e
+vanno dette invece che nascoste: le pagine pubbliche di **Release** e **Tecnologie**, che non
+contengono niente di una persona, e l'autorizzazione che GitHub tiene da parte sua, che solo GitHub
+può revocare. Firmare di nuovo fa un account nuovo e vuoto, non quello di prima.
+_Evitare_: disattivazione, sospensione, chiusura (promettono un ritorno che non c'è).
+
 ## Nomi in codice e interfaccia
 
 Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome inglese.
@@ -390,6 +399,7 @@ Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome ing
 | Sviluppatore | `Developer` | |
 | Visitatore | `Visitor` | |
 | Piano | `Plan` | `free` · `pro` · `team` |
+| Cancellazione dell'account | `delete account` | la pagina `/account` |
 | Prodotto | `Verdict` | mai tradotto, mai con l'articolo |
 
 ## Ambiguità risolte

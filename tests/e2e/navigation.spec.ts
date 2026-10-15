@@ -209,8 +209,8 @@ test("the home page leads into the app at 390px, through its own action", async 
 // keyboard what it opened. It used to focus its first `a, button`, which is the sheet's
 // `Close account`: at this width that row is `display: none`, `.focus()` on it does nothing, and the
 // focus stayed on the trigger with the next Tab landing on the theme toggle, which sits in the bar
-// and is not part of the panel. Since issue #119 the first visible line is `sign out`, the only one
-// the panel still has.
+// and is not part of the panel. Since issue #132 the first visible line is `account`, with
+// `sign out` under it (before that it was `sign out`, the only line the panel had).
 test("the account panel hands the keyboard its first visible line, above 640px", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await signIn(page);
@@ -224,7 +224,7 @@ test("the account panel hands the keyboard its first visible line, above 640px",
   await expect(panel).toBeVisible();
   // The close button of the phone sheet is in the DOM and must not be what the focus goes to.
   await expect(page.getByRole("button", { name: "Close account" })).toBeHidden();
-  await expect(panel.getByRole("button", { name: "sign out" })).toBeFocused();
+  await expect(panel.getByRole("link", { name: "account" })).toBeFocused();
 
   await page.keyboard.press("Escape");
   await expect(panel).toBeHidden();

@@ -28,72 +28,79 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-15, secondo giro): la #126 è scritta e provata sul ramo
-`126-follow-many`, non ancora in PR al momento in cui questa riga è scritta.** Seguire più
-Tecnologie insieme da `/technologies`: un toggle `select many` nei controlli del Catalogo, i segni
-`[ ]` / `[x]` sulle righe, una barra appiccicata con `Follow n`, una sola scrittura verso il
-database.
-⚠️ **Il dev server sulla 3000 è spento**, chiuso per far girare la suite contro `pnpm start`.
-⚠️ **Restano tre rami da cancellare** dopo il merge, in locale e su `origin`: la cancellazione è
-dell'utente. `git push origin --delete 133-back-to-top-and-waits attese-e-handoff 126-follow-many`
-e `git branch -d 133-back-to-top-and-waits attese-e-handoff 126-follow-many`.
+**Da dove ripartire (2026-10-15, terzo giro): la #132 è spezzata in due PR e la prima è in
+`PR #156`, ramo `132-account-deletion`, commit `2fcf167`.** ⚠️ **La CI era ancora in corso alla
+chiusura della sessione**: controllala (`gh run list --branch 132-account-deletion`) prima di
+qualunque altra cosa. La #132 (pagine legali e trasparenza) è `ready-for-human`: le quattro
+decisioni sono state prese dall'utente in apertura di sessione.
+⚠️ **L'ordine delle due PR è invertito rispetto a quello scelto**, e il motivo va tenuto: il piede
+punta a `terms`, `privacy`, `attributions`, `faq`, `contact`, e un piede con cinque link che danno
+404 è la stessa promessa falsa dell'informativa senza il bottone. Quindi **PR 1 la cancellazione
+dell'account**, **PR 2 le cinque pagine più il piede che le raggiunge**, insieme.
 
-**Verde**: `lint`, `typecheck`, `build`, **631 su 631** unitari (`boundaries` compreso, che stavolta
-passa), **70 su 70** di integrazione e **208 passati** in E2E con `CI=1 pnpm exec playwright test`,
-cioè contro il build di produzione. ⚠️ **Un flaky, e non è di questo lavoro**:
-`upgrade-path.spec.ts:64` legge `?from=1.1.1` dove aspetta `1.0.0` e rientra al ritentativo.
+**Verde**: `lint`, `typecheck`, `build`, **640 su 640** unitari, **70 su 70** di integrazione e
+**215 passati** in E2E con `CI=1 pnpm exec playwright test` (il build di produzione).
+⚠️ **Un flaky estraneo**: `select-many.spec.ts:163`, rientrato al ritentativo (il giro prima era
+toccato a `upgrade-path.spec.ts:64`: sono due flaky diversi, non uno che si sposta).
+⚠️ **Il dev server sulla 3000 è spento.**
+⚠️ **Restano tre rami da cancellare**, in locale e su `origin`, più lo stash `residuo del checkout
+interrotto`: sono dell'utente. `git push origin --delete 133-back-to-top-and-waits attese-e-handoff
+126-follow-many`, `git branch -d 133-back-to-top-and-waits attese-e-handoff 126-follow-many`,
+`git stash drop`.
 
-⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE** resta quella di prima, e la #126 l'ha
-usata: `playwright.config.ts` lancia `pnpm dev` in locale e `pnpm start` in CI, quindi prima di
-dichiarare verde qualunque cosa tocchi attese o geometria si lancia **`CI=1 pnpm exec playwright
-test`**. Il perché sta in `docs/handoff/2026-10.md`, sotto "Perché un confine di loading fa cadere
-i test che misurano", e la chiave è `arrived(page)` fra la navigazione e la prima misura.
+⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE** resta quella di prima, e la #132 l'ha
+pagata tre volte: `playwright.config.ts` lancia `pnpm dev` in locale e `pnpm start` in CI. In dev la
+PR 1 era verde; contro il build di produzione sono caduti **quattro** test, e nessuno dei tre
+difetti si vedeva in dev. Il perché del quarto sta in `docs/handoff/2026-10.md`, sotto "Perché un
+confine di loading fa cadere i test che misurano".
 
-### Le tre decisioni della #126, prese dall'utente e non derivabili dal codice
+### Le quattro decisioni della #132, prese dall'utente e non derivabili dal codice
 
-1. **La selezione è una modalità, non una colonna fissa.** La prima risposta era la casella sempre
-   visibile; l'utente l'ha cambiata a metà lavoro: niente caselle in mezzo finché non si chiedono.
-   Spento il toggle, la pagina è esattamente quella di prima.
-2. **Niente checkbox nativa**, per decisione esplicita: il segno è tipografico, `[ ]` e `[x]` in
-   Fragment Mono, stessa larghezza nei due stati. ⚠️ **Non riproporre la casella del browser né una
-   casella disegnata**: entrambe sono già state scartate, la seconda in favore della tipografica.
-3. **La selezione è effimera e muore al ricaricamento**, non va nell'URL: un'intenzione non ancora
-   eseguita non è un indirizzo da mandare a qualcuno.
+1. **Due PR**: prima il codice, poi le pagine (poi invertite, vedi sopra).
+2. **Il piede è a due colonne con titoli** (`product`: faq, contact · `legal`: terms, privacy,
+   attributions), non la riga sola etichettata: Mono 12px `text-faint` su una riga `rule`, nessuna
+   superficie, nel container della pagina. ⚠️ **Da costruire nella PR 2, non è ancora scritto.**
+3. **Nei termini sta solo il nome del prodotto e l'email**, senza nome della persona né paese.
+4. **La cancellazione è `/account` con conferma scritta**, non un bottone nel menu. ⚠️ Il
+   **contatto è un placeholder** finché l'utente non decide l'indirizzo: prerequisito della PR 2.
 
-Deciso dall'agente e dichiarato: **dentro la modalità il Follow di riga resta**, perché toglierlo
-cambierebbe la larghezza di ogni riga e leverebbe la via per seguirne una sola.
+### Quello che la PR 1 ha costruito
 
-### Le due trappole pagate dalla #126, da non ripagare
+`/account` dietro il login (proxy, `requireAccount`, `robots`), che **legge** quello che l'account
+tiene invece di descriverlo, e `POST /auth/delete-account`. L'ordine dei tre passi della route è la
+sostanza: la sessione dai cookie **prima** (l'id cancellato è quello di chi è firmato, mai uno
+nominato dal form), poi la parola `delete` controllata **sul server** (un form si può inviare senza
+la pagina), poi `auth.admin.deleteUser` con la service role, l'unica scrittura di quest'app che il
+browser non può fare; `follows` e `plans` cadono da soli per `on delete cascade`. Infine `signOut`,
+o resterebbe un token di un utente che non esiste, che si legge come sessione rotta. Si atterra su
+`/login?deleted=1` e **non sulla landing**, che è prerenderizzata e non legge search param.
+⚠️ **Niente dialog e niente bottone spento**: la parola scritta è la guardia, e un bottone morto
+finché il campo non è giusto si spiega due volte. Non riproporli.
+**Revoca su GitHub**: con `NEXT_PUBLIC_GITHUB_CLIENT_ID` (opzionale, non è un segreto) il link va
+dritto alla pagina dell'app col bottone `Revoke access`, senza all'elenco delle applicazioni.
+⚠️ **L'utente deve ancora prenderlo** dal provider GitHub su Supabase e metterlo su Vercel.
 
-1. ⚠️ **`sticky top-0` non si incolla in questo progetto.** `--spacing: initial` non genera `top-0`,
-   quindi `top` resta `auto`. È la stessa trappola che aveva tenuto la top bar non fixed il
-   2026-10-15. La barra usa `top-[56px]`, l'altezza della top bar, e **c'è un E2E che misura la
-   geometria** invece di guardare la classe.
-2. ⚠️ **Dopo un rifiuto del database non si cita la cifra che la pagina credeva.** Un gruppo è
-   rifiutato esattamente quando pagina e database non sono d'accordo su quanto è pieno il Piano:
-   `onError` rilegge i follow (`invalidateQueries`) e solo dopo la barra stampa il numero.
+### Le tre cose che solo il build di produzione ha detto
 
-### Quello che il database ha detto, provato e non assunto
+1. ⚠️ **`a.text-link` non era sottolineato, in tutta l'app.** Il preflight di Tailwind fa ereditare
+   `text-decoration` agli `a`, quindi `globals.css` colorava una sottolineatura che nessuno
+   disegnava e il verde restava solo (WCAG 1.4.1, axe `link-in-text-block`, grave, in tutti e due i
+   temi). `DESIGN.md` dichiarava il contrario da sempre: **la prosa non è tenuta da niente**, quarta
+   conferma. Corretto; ora sono sottolineati anche il link in fondo alla landing e la nota di quota.
+2. **Il build di produzione porta il route announcer di Next**, che è un secondo `role="alert"`
+   sulla pagina: un'asserzione su `getByRole("alert")` viola la strict mode. Si punta all'id.
+3. **La prima riga visibile del pannello account non è più `sign out`**, è `account`: lo diceva
+   `navigation.spec.ts`, che ora aspetta il fuoco lì.
 
-L'insert multiriga **è atomico**: il trigger `enforce_follow_rules` è `for each row`, ma una riga
-che sfonda il limite annulla l'intera istruzione. Tre test in `tests/integration/follows.test.ts`
-lo provano, per il limite e per una Tecnologia ritirata dentro il gruppo. Da qui la frase della
-pagina: **`none followed`**, mai "alcune". ⚠️ Il criterio dell'issue chiedeva un ritorno indietro
-**parziale**: non esiste, e non è un taglio, è che con una sola istruzione non c'è un parziale.
+### Cosa resta
 
-### Cosa resta (dalla lista di prima, non toccata)
-
-1. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: non deciso.
-2. ⚠️ **`DESIGN.md` va riletto col sospetto**: la prosa non è tenuta da niente, e la #126 lo conferma
-   una terza volta (la Selection Bar è stata scritta "senza bordo" e poi corretta a schermo).
+1. **La PR 2 della #132**: terms, privacy, attributions, faq, contact, più il piede a due colonne.
+   Il contenuto accertato nel codice sta nel corpo della issue e nel primo messaggio della sessione.
+2. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: non deciso.
 3. ⚠️ **Le conversioni `max-[]` non sono decise**: 43 `max-[640px]`, 19 `max-[1040px]`, 7 `max-[880px]`.
 4. **Il mock disegna due righe che il modello non produce**: dominio nuovo, da fissare in
    `CONTEXT.md`. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa.
-5. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente della #126 tocca
+5. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente della #132 tocca
    Anthropic. Le cose dell'utente in `APERTE.md`, l'ambiente in `AMBIENTE.md`, il peso in `PESO.md`.
-
-⚠️ **Fuori dalla #126, non approvate**: il follow multiplo dalla Dashboard vuota e dalla pagina
-Technology (poche righe, niente da accelerare), e le comodità della #133 già in lista (il `-->`
-dalla cima delle Note al Verdetto, il link alla fonte, il salto da tastiera).
 
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

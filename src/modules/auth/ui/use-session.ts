@@ -1,33 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import { createSessionClient } from "@/lib/supabase-browser";
-
-// What GitHub hands Supabase about the person signing in. Everything in it is optional: the account
-// may have no picture, and a Developer seeded by a test has no GitHub behind it at all, so the menu
-// is written to stand without either.
-const IdentitySchema = z
-  .object({
-    avatar_url: z.string().url(),
-    user_name: z.string().min(1),
-    preferred_username: z.string().min(1),
-  })
-  .partial();
+import { identityFrom } from "../domain/identity";
 
 export type Developer = { state: "developer"; developerId: string; handle: string | null; avatarUrl: string | null };
 
 export type Session = { state: "unknown" } | { state: "visitor" } | Developer;
 
 function developer(user: { id: string; user_metadata: unknown }): Developer {
-  const identity = IdentitySchema.safeParse(user.user_metadata);
-  const metadata = identity.success ? identity.data : {};
-  return {
-    state: "developer",
-    developerId: user.id,
-    handle: metadata.user_name ?? metadata.preferred_username ?? null,
-    avatarUrl: metadata.avatar_url ?? null,
-  };
+  return { state: "developer", developerId: user.id, ...identityFrom(user.user_metadata) };
 }
 
 // Read in the browser on purpose: a server read would make every public page dynamic and undo the

@@ -1,3 +1,10 @@
 import "server-only";
 
-export { type Developer, getDeveloper, requireDeveloper } from "./session";
+export {
+  type Account,
+  type Developer,
+  getAccount,
+  getDeveloper,
+  requireAccount,
+  requireDeveloper,
+} from "./session";

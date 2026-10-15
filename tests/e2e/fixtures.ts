@@ -280,3 +280,21 @@ export function e2eAuthSecret(): string {
 export async function arrived(page: Page): Promise<void> {
   await expect(page.locator('[data-waiting="page"]')).toHaveCount(0);
 }
+
+// Whether the account is still there, asked of the auth schema itself: the only way to prove that a
+// deletion went through, since the app's own pages can only say that nobody is signed in.
+export async function developerExists(id: string): Promise<boolean> {
+  const { data, error } = await serviceClient().auth.admin.getUserById(id);
+  return !error && Boolean(data.user);
+}
+
+// Read with the service role, so it counts the rows that are there and not the rows RLS would show a
+// Developer who no longer exists.
+export async function countFollows(userId: string): Promise<number> {
+  const { count, error } = await serviceClient()
+    .from("follows")
+    .select("technology_id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  if (error) throw error;
+  return count ?? 0;
+}
