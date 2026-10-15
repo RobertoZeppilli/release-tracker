@@ -21,7 +21,16 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      # `typecheck` lancia `next typegen` prima di `tsc`, perche' da quando il layout sta sotto
+      # `app/[locale]` il codice usa `LayoutProps<"/[locale]">` e `next/root-params`, i cui tipi li
+      # genera Next in `.next/types` (ADR 0008). `next typegen` carica `next.config.ts`, che valida
+      # l'ambiente: questi tre valori non vengono letti da niente, servono solo a far passare lo
+      # schema Zod in un job che non ha un database ne' un sito.
       - run: pnpm typecheck
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_typecheck_only
       - run: pnpm test
 
   integration:
