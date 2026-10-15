@@ -24,13 +24,15 @@ jobs:
       # `typecheck` lancia `next typegen` prima di `tsc`, perche' da quando il layout sta sotto
       # `app/[locale]` il codice usa `LayoutProps<"/[locale]">` e `next/root-params`, i cui tipi li
       # genera Next in `.next/types` (ADR 0008). `next typegen` carica `next.config.ts`, che valida
-      # l'ambiente: questi tre valori non vengono letti da niente, servono solo a far passare lo
-      # schema Zod in un job che non ha un database ne' un sito.
+      # l'ambiente, quello pubblico e quello server. Questi quattro valori non vengono letti da
+      # niente: sono le sole obbligatorie dei due schemi, e servono a far passare Zod in un job che
+      # non ha ne' un database ne' un sito. Le due chiavi portano il prefisso che lo schema pretende.
       - run: pnpm typecheck
         env:
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_typecheck_only
+          SUPABASE_SECRET_KEY: sb_secret_typecheck_only
       - run: pnpm test
 
   integration:
