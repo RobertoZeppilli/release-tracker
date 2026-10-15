@@ -362,7 +362,13 @@ _Evitare_: disattivazione, sospensione, chiusura (promettono un ritorno che non 
 
 ## Nomi in codice e interfaccia
 
-Codice, database e interfaccia sono in inglese. Ogni termine ha un solo nome inglese.
+Codice e database sono in inglese, e ogni termine ha un solo nome inglese. L'**interfaccia è
+tradotta** in inglese, italiano, francese, spagnolo e tedesco (ADR
+[0008](./docs/adr/0008-interfaccia-in-cinque-lingue.md)), ma i **nomi di questa tabella non si
+traducono**: `featured`, `notable`, `digest`, `preview` e i prefissi `breaking[n]:`, `note:`,
+`help:`, `warning:`, `ok:` sono gli stessi segni in ogni lingua, perché sono quelli che compaiono
+nelle **Sintesi**, che restano in inglese. Le **Note di rilascio** restano nella lingua in cui sono
+state pubblicate; dove la Sintesi è in una lingua diversa dall'interfaccia, la pagina lo dice.
 
 | Dominio | Codice / UI | Valori |
 |---|---|---|

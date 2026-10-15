@@ -16,8 +16,10 @@ Parla con l'utente **in italiano**.
 
 ## Regole
 
-- **Lingua**: documenti e dominio in italiano; codice, database e UI in inglese, usando solo i nomi
-  della tabella in `CONTEXT.md` (es. Rilevanza = `Significance`, mai `priority`).
+- **Lingua**: documenti e dominio in italiano; codice e database in inglese, usando solo i nomi
+  della tabella in `CONTEXT.md` (es. Rilevanza = `Significance`, mai `priority`). L'**interfaccia è
+  tradotta in cinque lingue** (ADR 0008): le stringhe nascono in inglese in `src/modules/i18n`, il
+  vocabolario di dominio resta in inglese in ogni lingua, Note di rilascio e Sintesi non si traducono.
 - **Moduli** (ADR 0006): `src/modules/<modulo>/{domain,server,ui}`, import tra moduli solo dall'indice;
   `domain` è TypeScript puro e testato.
 - **Tipi** dagli schemi Zod; niente `any` né cast non validati; file sotto ~200 righe; commenti solo per
