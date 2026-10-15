@@ -28,9 +28,11 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-15, terzo giro): la #132 è spezzata in due PR e la prima è scritta e
-provata sul ramo `132-account-deletion`.** La #132 (pagine legali e trasparenza) è
-`ready-for-human`: le quattro decisioni sono state prese dall'utente in apertura di sessione.
+**Da dove ripartire (2026-10-15, terzo giro): la #132 è spezzata in due PR e la prima è in
+`PR #156`, ramo `132-account-deletion`, commit `2fcf167`.** ⚠️ **La CI era ancora in corso alla
+chiusura della sessione**: controllala (`gh run list --branch 132-account-deletion`) prima di
+qualunque altra cosa. La #132 (pagine legali e trasparenza) è `ready-for-human`: le quattro
+decisioni sono state prese dall'utente in apertura di sessione.
 ⚠️ **L'ordine delle due PR è invertito rispetto a quello scelto**, e il motivo va tenuto: il piede
 punta a `terms`, `privacy`, `attributions`, `faq`, `contact`, e un piede con cinque link che danno
 404 è la stessa promessa falsa dell'informativa senza il bottone. Quindi **PR 1 la cancellazione
