@@ -72,7 +72,7 @@ test("above 640px the slot stays inside the bar", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`/technologies/${technology.slug}/2.0.0`);
 
-  const mark = await page.getByRole("link", { name: "verdict:" }).boundingBox();
+  const mark = await page.getByRole("banner").getByRole("link", { name: "verdict:" }).boundingBox();
   const strip = await page.getByRole("navigation", { name: "Sections" }).boundingBox();
   expect(mark).not.toBeNull();
   expect(strip).not.toBeNull();
