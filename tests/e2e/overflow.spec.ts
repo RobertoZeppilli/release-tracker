@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { CARET_WIDTHS, fits } from "@/modules/summaries";
-import { addFollows, e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDeveloper, seedTechnology } from "./fixtures";
+import { addFollows, arrived, e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDeveloper, seedTechnology } from "./fixtures";
 
 // The guard of issue #62: no page may be wider than the window. The overflow there came from the
 // release notes themselves, so it never showed up on hand-written fixtures and will come back on its
@@ -198,6 +198,9 @@ test.describe("the top bar is one row on a phone", () => {
     await addFollows(developer.id, [technology.id]);
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/dashboard");
+    // Every assertion below measures a box, and a box is the one thing that is wrong while the wait
+    // is still on the screen (see `arrived`).
+    await arrived(page);
   }
 
   for (const width of [320, 375, 390, 414, 429, 430, 639]) {

@@ -28,66 +28,73 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-15): la #133 e' scritta tutta sul ramo `133-back-to-top-and-waits`,
-verde, e **non e' committata**. Nessun file e' stato aggiunto all'indice: `git status` mostra tutto il
-lavoro come modifiche in corso. La sessione si e' fermata al 35% di contesto, per scelta dell'utente.
-Il primo passo della sessione nuova e' **decidere se committare e aprire la PR** (`Closes #133`).
+**Da dove ripartire (2026-10-15): la #133 è chiusa e tutto è su `main` (`d584d47`, PR #153).**
+Non c'è niente in sospeso. ⚠️ **Il ramo `133-back-to-top-and-waits` è ancora lì**, in locale e su
+`origin`: la cancellazione è dell'utente (`git push origin --delete 133-back-to-top-and-waits` e
+`git branch -d 133-back-to-top-and-waits`).
 
-**Verde al momento dello stop**: `pnpm lint`, `pnpm typecheck`, **622 unitari**, `pnpm build`, e la
-suite E2E a **200 su 203**. ⚠️ **I tre caduti erano ambientali, non del codice**: giravano spec di
-prova contro lo stesso dev server (uno e' un `page.goto` abortito), e **rilanciati da soli sono
-verdi** (`errors`, `overflow`, `release.spec`, 38 passati).
+**Verde**: `pnpm lint`, `pnpm typecheck`, `pnpm build`, **621 su 622** unitari e **203 su 203** E2E
+contro il build di produzione, con `--retries=0`. ⚠️ L'unico unitario caduto è
+`eslint/boundaries.test.ts`, che fa girare ESLint e cade per tempo sotto carico parallelo (da solo,
+10 su 10): **non è una regressione, non rincorrerlo.**
 
-### Cosa c'e' dentro, e le decisioni che l'utente ha preso per arrivarci
+⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE.** `playwright.config.ts` lancia
+`pnpm dev` in locale e `pnpm start` in CI: **la suite in locale gira sul dev server, CI sul build di
+produzione**, e con un confine di loading i due si comportano **diversamente**. Il 2026-10-15 la
+#153 è passata sul ramo e ha fatto **rossa `main`**: 7 E2E caduti in produzione, deterministici,
+tre tentativi a testa, mentre in locale erano verdi. Prima di dichiarare verde qualunque cosa tocchi
+le attese, lanciare **`CI=1 pnpm exec playwright test`**.
 
-1. **Il ritorno in cima** (`src/components/back-to-top.tsx`), su landing, `/technologies` e pagina
-   Release: compare sotto la seconda schermata, 44px, `ground`, in basso a sinistra sotto i 640px e
-   a destra sopra; e' un `<a href="#content">` e porta **scroll e fuoco insieme**. ⚠️ **Scelto
-   dall'utente il bottone ancorato** e non il ritorno tipografico col `BackPointer`: costa una
-   **deroga a The One Raised Plane Rule**, argomentata dentro la regola in `DESIGN.md`.
-2. **Le attese, in due forme, dopo tre giri di proposte rifiutate**: skeleton della forma del
-   controllo (misura, raggio, bordo 1px, `raised`) nelle scatole riservate; fra una pagina e l'altra
-   la **barra Zig-Zag**, il **#12 di `css-loaders.com/progress`** scelto dall'utente, **al centro**
-   dello schermo sotto la barra. ⚠️ Le forme che aveva gia' rifiutato: la riga verde da 1px sotto la
-   barra, la caret row tipografica, e l'attesa silenziosa della #114. **Non riproporle.**
-   `The Reserved Space Rule` e' stata **riaperta** e riscritta (seconda versione), con il limite:
-   skeleton **solo a misura di controllo**, mai di una riga o di un paragrafo.
-3. ⚠️ **La barra in alto non era mai stata fixed, in produzione nemmeno.** `globals.css` spegne la
-   scala di default (`--spacing: initial`), Tailwind 4 costruisce le utility di inset da quella
-   scala, e **`top-0` non viene generata**: `position: sticky` con `top: auto` non si attacca a
-   niente. Misurato anche sul sito in produzione. Ora e' `top-[0px]`, e
-   `tests/e2e/top-bar.spec.ts` lo tiene. Lo stesso buco uccide `right-0`, `left-0`, `bottom-0`,
-   `inset-0` e `gap-0` (l'altro uso vivo era `phone:gap-0` in `summary-view.tsx`, corretto);
-   `m-0`, `p-0`, `min-w-0` e `min-h-0` sono vive, misurate una per una.
-4. ⚠️ **Un `loading.tsx` vale anche per tutte le rotte sotto la sua cartella**, e con un confine di
-   loading **una pagina pubblica che rispondeva 404 passa a 200**: 15 E2E caduti (i 404 e le
-   descrizioni SEO). Per questo l'attesa sta **solo** sulle due pagine con login, e `/technologies`
-   tiene il suo dentro il gruppo di rotte `(catalog)`, dove e' stata spostata `page.tsx`.
+**Perché accade, quali 7 erano e com'è stata corretta**: in `docs/handoff/2026-10.md`, sotto
+"Perché un confine di loading fa cadere i test che misurano". In breve: la correzione è
+`data-waiting="page"` su `PageSkeleton` e `arrived(page)` in `tests/e2e/fixtures.ts`, da chiamare
+fra la navigazione e la prima misura. **La copia doppia è nascosta**: non è una seconda barra a
+schermo né un secondo landmark, quindi non è un difetto che vede l'utente.
+
+### Le attese sono state rifatte il giorno stesso, e la ragione va letta prima di ritoccarle
+
+L'utente non vedeva né lo skeleton né la barra fra le pagine. Due errori misurati, non di gusto:
+
+1. ⚠️ **Il riempimento era invisibile**: `raised` (#161a20) dentro un bordo `rule`, su una pagina
+   `ground` (#0f1115). Tre punti di differenza dalla pagina dietro, quindi arrivava il solo bordo,
+   che si legge come un controllo rotto. Ora il blocco è **pieno** di `rule` e **senza bordo**.
+2. ⚠️ **Il Chrome dell'utente chiede `prefers-reduced-motion: reduce`** (misurato), e il CSS
+   spegneva l'animazione. **Un loader non è decorazione**: fermo è indistinguibile da un prodotto
+   piantato. Sotto `reduce` il riflesso diventa una dissolvenza fra 0.6 e 1 opacità (WCAG 2.2
+   2.3.3). **Non rimettere `animation: none` su `.skeleton-box`**: c'è un E2E che lo impedisce.
+3. **La barra Zig-Zag non c'è più**, per scelta dell'utente: una forma sola, lo skeleton, dentro i
+   controlli e su una pagina che non è arrivata (`PageSkeleton`). ⚠️ Le forme già rifiutate prima:
+   la riga verde da 1px sotto la barra, la caret row tipografica, l'attesa silenziosa della #114, e
+   ora anche la barra Zig-Zag e il loader verde. **Non riproporle.** Lo skeleton resta senza hue:
+   `--focus` è l'interattivo e `--ok` è il verdetto, e un'attesa colorata direbbe altro.
+4. `DESIGN.md`: The Waiting Rule è alla **terza versione** e il limite di The Reserved Space Rule è
+   stato spostato (lo skeleton può avere la misura del telaio di una pagina, non solo di un
+   controllo). Resta vietato lo skeleton di una riga, di una frase o di un numero.
 
 ### Da sapere prima di guardare qualunque cosa a schermo
 
-⚠️ **Il Chrome dell'utente chiede moto ridotto** (`prefers-reduced-motion: reduce`, misurato): per la
-regola, da lui **non si muove niente**, skeleton e barra compresi. E lo **skeleton dura quanto
-l'attesa**, cioe' decine di millisecondi in locale: c'e' nell'HTML del server (tre occorrenze su
-`/technologies/react`), e per vederlo bisogna fermare la risposta della sessione
-(`page.route("**/auth/v1/user**")`). La pagina di prova fuori dal progetto, con le due forme ferme e
-in movimento, sta in `%TMP%\prova-loader.html`; gli screenshot dell'app vera in `test-results/`.
+⚠️ Lo **skeleton dura quanto l'attesa**, cioè decine di millisecondi in locale, e la sessione nel
+browser impiega un paio di secondi (quella sì si vede, nel pulsante Account). Per vedere
+`PageSkeleton` bisogna fermare la risposta (`page.route`) o iniettarne il markup nella pagina viva.
+⚠️ **L'account Supabase locale non ha né foto né handle GitHub**, quindi il pulsante Account mostra
+la sagoma neutra: è corretto, non è un bug dello skeleton.
 
 ### Cosa resta (dalla lista di prima, non toccata)
 
 1. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: non deciso.
-2. ⚠️ **`DESIGN.md` va riletto col sospetto**: la prosa non e' tenuta da niente, e questa sessione ne
-   e' la prova (diceva che la barra era fixed, e non lo era).
+2. ⚠️ **`DESIGN.md` va riletto col sospetto**: la prosa non è tenuta da niente, e la #133 ne è la
+   prova due volte (diceva che la barra era fixed e non lo era, e descriveva attese che non si
+   vedevano).
 3. ⚠️ **Le conversioni `max-[]` del resto dell'app non sono decise**: 43 `max-[640px]`, 19
    `max-[1040px]`, 7 `max-[880px]`. La barra usa ancora `sm:px-5`.
 4. **Il mock disegna due righe che il modello non produce**: sarebbe dominio nuovo, da fissare prima
    in `CONTEXT.md`.
 5. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa.
-6. ⚠️ **Il credito dell'utente e' basso: non spendere niente senza chiedere.** Niente di questo
+6. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
    lavoro tocca Anthropic. Le cose dell'utente stanno in `APERTE.md`, l'ambiente in `AMBIENTE.md`,
    il peso delle pagine in `PESO.md`. Docker e il dev server sulla 3000 erano attivi allo stop.
 
-⚠️ **Le altre comodita' della #133 restano candidate non approvate**: il `-->` dalla cima delle Note
+⚠️ **Le altre comodità della #133 restano candidate non approvate**: il `-->` dalla cima delle Note
 al Verdetto, il link alla fonte in fondo alle note, il salto da tastiera alle sezioni.
 
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

@@ -30,7 +30,11 @@ const SPLIT =
 // and no furniture.
 export function PageSkeleton({ opening }: { opening: string }) {
   return (
-    <main id="content" className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${SPLIT}`}>
+    // `data-waiting="page"` is for the tests and is worth the attribute: with a loading boundary the
+    // document holds the wait and the page that is still streaming at the same time, so a test that
+    // measures geometry right after `goto` can measure the wait by mistake. `arrived()` in
+    // `tests/e2e/fixtures.ts` waits for this to be gone, and the name says what it is waiting for.
+    <main id="content" data-waiting="page" className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${SPLIT}`}>
       <p role="status" className="sr-only">
         opening {opening}
       </p>

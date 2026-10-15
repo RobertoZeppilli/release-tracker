@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { expect, type Locator } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Category } from "@/modules/catalog";
@@ -267,4 +267,16 @@ export function e2eAuthSecret(): string {
     if (name === "E2E_AUTH_SECRET" && rest.length > 0) return rest.join("=");
   }
   throw new Error("E2E_AUTH_SECRET is not set: add it to .env.local (see .env.example).");
+}
+
+// ⚠️ **The page has arrived, as opposed to the wait for it.** `/dashboard` and `/technologies` sit
+// behind a loading boundary, so the framework streams the wait first and the page after it, and for
+// a moment the document holds **both**: the skeleton, visible, and the real page, hidden, waiting to
+// be swapped in. `page.goto` resolves on `load`, which is inside that moment, so a test that asserts
+// on content is safe (the locator waits) while a test that **measures geometry** right after `goto`
+// can measure the wait instead. That is what it did: against the production build, seven E2E read
+// `locator("header")` as two elements and failed on `main` on 2026-10-15, deterministically, three
+// attempts each. Call this between the navigation and the first measurement.
+export async function arrived(page: Page): Promise<void> {
+  await expect(page.locator('[data-waiting="page"]')).toHaveCount(0);
 }
