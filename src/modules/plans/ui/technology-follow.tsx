@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { loginPath } from "@/modules/auth";
 import { useSession } from "@/modules/auth/ui";
+import { SkeletonBox } from "@/components/waiting";
 import { FollowRejectionNote } from "./follow-rejection-note";
 import { FOLLOW_LINK_CLASS, FollowToggle } from "./follow-toggle";
 import { useFollows } from "./follows-provider";
@@ -16,9 +17,11 @@ const ERROR_ID = "follow-error";
 // sorted by Tailwind, not by the order they are written in, and `ml-auto` wins wherever it appears.
 const PLACE = "sm:ml-auto";
 const NOTE = "mt-2 basis-full";
-// The box the control will fill, carrying nothing: the space is reserved so what arrives lands where
-// it was always going to (DESIGN.md, The Reserved Space Rule).
-const RESERVED = `${PLACE} block h-[34px]`;
+// The box the control will fill, wearing its shape while it is on its way: the skeleton is the size
+// and the radius of the Follow, so what arrives lands on the shape that was already there (DESIGN.md,
+// The Reserved Space Rule, and The Waiting Rule). The width is the `Follow` button's own, **measured
+// at 95px** and not guessed, because a box with no content would be 0 wide and reserve nothing.
+const RESERVED = `${PLACE} h-[34px] w-[95px] rounded-md`;
 
 // A Visitor is offered the login with this page as the way back; a Developer gets the picker's own
 // Toggle, limit and refusal included, because both come from the same provider, which the page's
@@ -28,7 +31,7 @@ export function TechnologyFollow({ technologyId, name, retired }: { technologyId
   const session = useSession();
   const pathname = usePathname();
 
-  if (session.state === "unknown") return <span aria-hidden className={RESERVED} />;
+  if (session.state === "unknown") return <ReservedBox />;
 
   if (session.state === "visitor") {
     // Nobody can follow a retired Technology, so the login would lead to a button that is not there.
@@ -61,7 +64,7 @@ function FollowControl({ technologyId, name, retired }: { technologyId: string; 
   const [wasFollowed, setWasFollowed] = useState(false);
   if (retired && following && !wasFollowed) setWasFollowed(true);
 
-  if (!follows.known) return <span aria-hidden className={RESERVED} />;
+  if (!follows.known) return <ReservedBox />;
 
   if (retired && !following) {
     if (!wasFollowed) return null;
@@ -81,4 +84,9 @@ function FollowControl({ technologyId, name, retired }: { technologyId: string; 
       {rejection && <FollowRejectionNote id={ERROR_ID} rejection={rejection} className={NOTE} />}
     </>
   );
+}
+
+// The wait, in the shape and the place of the control that is coming.
+function ReservedBox() {
+  return <SkeletonBox className={RESERVED} />;
 }

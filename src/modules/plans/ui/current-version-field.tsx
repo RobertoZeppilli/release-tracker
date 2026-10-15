@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SkeletonBox } from "@/components/waiting";
 import { useSession } from "@/modules/auth/ui";
 import { compareVersions, parseVersion } from "@/modules/releases";
 import {
@@ -36,13 +37,25 @@ function message(decline: Decline, version: string, latest: string | null): stri
 
 // The row is there only for a Developer who follows this Technology, a retired one included, and
 // only once the follows have answered: until then `isFollowing` is false for every Technology, which
-// is not a first state but no state at all (see `TechnologyFollow`). Nothing is reserved for it,
-// unlike the Follow: for a Visitor it never arrives, and a hole kept open for the commonest reader
-// of the page is worse than the row landing when it is known (DESIGN.md, The Reserved Space Rule).
+// is not a first state but no state at all (see `TechnologyFollow`). **A Visitor still gets nothing
+// reserved**, and that half of the old decision stands: for them the row never arrives, and a hole
+// kept open for the commonest reader of the page is worse than the row landing when it is known.
+// What changed on 2026-10-14 is the other half: a Developer whose follows have not answered now sees
+// the wait rather than nothing, because for them the row is coming (DESIGN.md, The Reserved Space
+// Rule, and The Waiting Rule).
 export function CurrentVersionField({ technologyId, name, latest }: { technologyId: string; name: string; latest: string | null }) {
   const session = useSession();
   const follows = useFollows();
-  if (session.state !== "developer" || !follows.known || !follows.isFollowing(technologyId)) return null;
+  if (session.state !== "developer") return null;
+  if (!follows.known) {
+    return (
+      // The row is a grid the width of the panel, so the skeleton takes the width too and the
+      // height of the field inside it. The day of a declaration is not reserved: it only exists once
+      // there is a declaration to date.
+      <SkeletonBox className="h-[34px] w-full rounded-md" />
+    );
+  }
+  if (!follows.isFollowing(technologyId)) return null;
   return <DeclarationRow technologyId={technologyId} name={name} latest={latest} />;
 }
 

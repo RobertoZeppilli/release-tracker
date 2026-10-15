@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { createRequestClient } from "@/lib/supabase-request";
 import { requireDeveloper } from "@/modules/auth/server";
@@ -35,6 +36,7 @@ export default async function TechnologiesRoute() {
         <h1 className="sr-only">Technologies</h1>
         <TechnologiesPage sections={sections} />
       </main>
+      <BackToTop />
     </FollowsProvider>
   );
 }

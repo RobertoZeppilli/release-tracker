@@ -41,7 +41,14 @@ export function SiteHeader({
           long lists of Releases should not ask a reader at the bottom of one to scroll back up to
           reach the other destination. It keeps its height and its shape while the page moves under
           it: no shadow, no hiding on scroll, nothing that grows. */}
-      <header className="sticky top-0 z-20 border-b border-rule bg-ground">
+      {/* ⚠️ `top-[0px]` and not `top-0`: this project turns the default spacing scale off
+          (`--spacing: initial` in `globals.css`, so the 8 steps of DESIGN.md are the only ones), and
+          in Tailwind 4 the inset utilities are built from that scale. With no `--spacing-0` the class
+          `top-0` is never generated, so the bar had `position: sticky` with `top: auto` and **did not
+          stick on any page**, in production either. Measured on 2026-10-15 (the user noticed it):
+          `top` computed `auto`, and the header's box was at -1200 after a 1200px scroll. `[0px]` is
+          the idiom the code already used for this in `site-header-bar.tsx`. */}
+      <header className="sticky top-[0px] z-20 border-b border-rule bg-ground">
         <SiteHeaderBar quota={quota} section={section}>
           <nav aria-label="Sections" className={SLOT}>
             <ul className="flex gap-4 font-mono text-label text-text-muted">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
 import { readCatalogDirectory } from "@/modules/catalog/server";
@@ -52,6 +53,7 @@ export default async function LandingPage() {
           </a>
         </p>
       </main>
+      <BackToTop />
     </>
   );
 }

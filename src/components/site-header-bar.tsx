@@ -8,6 +8,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { loginPath } from "@/modules/auth";
 import { type Developer, useSession } from "@/modules/auth/ui";
 import { NAV, type NavItem } from "./site-nav";
+import { SkeletonBox } from "./waiting";
 import { ThemeToggle } from "./theme-toggle";
 
 const PANEL_ID = "account-panel";
@@ -123,8 +124,15 @@ export function SiteHeaderBar({
       {children}
       {quota && <span className={QUOTA}>{quota}</span>}
       <div className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "" : "ml-auto"}`}>
-        {/* Nothing renders until the session is known: a wrong state for an instant would offer the
-            login to someone already signed in. */}
+        {/* No answer is offered until the session is known: a wrong state for an instant would put
+            the login in front of someone already signed in. What the box does instead of waiting
+            empty is wear the shape of what is coming (DESIGN.md, The Waiting Rule, the skeleton). The box is the
+            34px of the Account button and its 6px corners, so what arrives lands on the shape that
+            was already there.
+            ⚠️ The bar does not jump either way: measured in #114 at 1280 and 390, the wordmark, the
+            slot and the toggle sit at the same pixels before and after, because this group is
+            `ml-auto` and the Account arrives into space that was already empty. */}
+        {session.state === "unknown" && <SkeletonBox className="size-[34px] shrink-0 rounded-md" />}
         {session.state === "visitor" && (
           <a
             href={loginPath(pathname)}
