@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { HelpPointer } from "@/components/help-pointer";
 import { PageBreadcrumb, TECHNOLOGIES_CRUMB } from "@/components/breadcrumb";
+import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
 import { createPublicClient } from "@/lib/supabase";
@@ -96,6 +97,7 @@ export default async function ReleasePage({ params }: Props) {
           </span>
         </p>
       </main>
+      <BackToTop />
     </>
   );
 }

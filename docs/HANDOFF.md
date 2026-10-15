@@ -28,58 +28,66 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-14, sera): la #142 è chiusa, tutto è su `main`, i rami sono puliti,
-non c'è niente in sospeso.** Le PR **#150** (le tre schermate) e **#151** (l'handoff) sono state
-unite in squash dall'utente, `main` è a **`15edc10`** ed è in produzione. ⚠️ **Sul `main` locale
-non si committa**, nemmeno un documento: ogni cosa passa da un ramo e da una PR.
-`pnpm lint`, `pnpm typecheck`, **620 unitari** e **195 E2E verdi in una corsa sola**, axe compreso,
-nei due temi. ⚠️ `release.spec.ts:100` è caduto una volta sola in una corsa piena e ripetuto due
-volte passa: è un click su un `summary` che arriva prima dell'idratazione, non una regressione.
-⚠️ **Le due immagini dell'utente in `docs/` sono state cancellate** su sua richiesta, mai committate.
+**Da dove ripartire (2026-10-15): la #133 e' scritta tutta sul ramo `133-back-to-top-and-waits`,
+verde, e **non e' committata**. Nessun file e' stato aggiunto all'indice: `git status` mostra tutto il
+lavoro come modifiche in corso. La sessione si e' fermata al 35% di contesto, per scelta dell'utente.
+Il primo passo della sessione nuova e' **decidere se committare e aprire la PR** (`Closes #133`).
 
-### I rami morti, e come si è controllato che fossero morti
+**Verde al momento dello stop**: `pnpm lint`, `pnpm typecheck`, **622 unitari**, `pnpm build`, e la
+suite E2E a **200 su 203**. ⚠️ **I tre caduti erano ambientali, non del codice**: giravano spec di
+prova contro lo stesso dev server (uno e' un `page.goto` abortito), e **rilanciati da soli sono
+verdi** (`errors`, `overflow`, `release.spec`, 38 passati).
 
-**Resta solo `main`**, in locale e su `origin`: dodici rami locali e dieci remoti cancellati
-(2026-10-14, su richiesta dell'utente). ⚠️ **`git branch --merged` qui mente**: questo repository
-unisce **in squash**, quindi git non vede come unito nemmeno un ramo che lo è, e `git branch -d` lo
-rifiuta. Il controllo che vale è un altro: `gh pr list --state all --json headRefName,headRefOid`
-e il **tip di ogni ramo confrontato col commit di testa della sua PR unita**. Coincidevano tutti,
-quindi nessun ramo portava un commit arrivato dopo il merge. ⚠️ **Il merge non cancella il ramo
-remoto** se non glielo si chiede (`--delete-branch`): `origin/142-technology-release` è
-sopravvissuto al merge e anche a un `fetch --prune`, perché era ancora vivo su GitHub.
+### Cosa c'e' dentro, e le decisioni che l'utente ha preso per arrivarci
 
-⚠️ **La riga unica del verdetto, il tetto del token che l'ha comprata e il resto di questo
-giro** stanno in `docs/handoff/2026-10.md`, "I panel con un titolo solo (2026-10-14)": lì c'è
-**perché non è la scala che cede alla copia**, le misure, e **come si misura una frase** senza
-indovinare.
+1. **Il ritorno in cima** (`src/components/back-to-top.tsx`), su landing, `/technologies` e pagina
+   Release: compare sotto la seconda schermata, 44px, `ground`, in basso a sinistra sotto i 640px e
+   a destra sopra; e' un `<a href="#content">` e porta **scroll e fuoco insieme**. ⚠️ **Scelto
+   dall'utente il bottone ancorato** e non il ritorno tipografico col `BackPointer`: costa una
+   **deroga a The One Raised Plane Rule**, argomentata dentro la regola in `DESIGN.md`.
+2. **Le attese, in due forme, dopo tre giri di proposte rifiutate**: skeleton della forma del
+   controllo (misura, raggio, bordo 1px, `raised`) nelle scatole riservate; fra una pagina e l'altra
+   la **barra Zig-Zag**, il **#12 di `css-loaders.com/progress`** scelto dall'utente, **al centro**
+   dello schermo sotto la barra. ⚠️ Le forme che aveva gia' rifiutato: la riga verde da 1px sotto la
+   barra, la caret row tipografica, e l'attesa silenziosa della #114. **Non riproporle.**
+   `The Reserved Space Rule` e' stata **riaperta** e riscritta (seconda versione), con il limite:
+   skeleton **solo a misura di controllo**, mai di una riga o di un paragrafo.
+3. ⚠️ **La barra in alto non era mai stata fixed, in produzione nemmeno.** `globals.css` spegne la
+   scala di default (`--spacing: initial`), Tailwind 4 costruisce le utility di inset da quella
+   scala, e **`top-0` non viene generata**: `position: sticky` con `top: auto` non si attacca a
+   niente. Misurato anche sul sito in produzione. Ora e' `top-[0px]`, e
+   `tests/e2e/top-bar.spec.ts` lo tiene. Lo stesso buco uccide `right-0`, `left-0`, `bottom-0`,
+   `inset-0` e `gap-0` (l'altro uso vivo era `phone:gap-0` in `summary-view.tsx`, corretto);
+   `m-0`, `p-0`, `min-w-0` e `min-h-0` sono vive, misurate una per una.
+4. ⚠️ **Un `loading.tsx` vale anche per tutte le rotte sotto la sua cartella**, e con un confine di
+   loading **una pagina pubblica che rispondeva 404 passa a 200**: 15 E2E caduti (i 404 e le
+   descrizioni SEO). Per questo l'attesa sta **solo** sulle due pagine con login, e `/technologies`
+   tiene il suo dentro il gruppo di rotte `(catalog)`, dove e' stata spostata `page.tsx`.
 
-### Cosa resta
+### Da sapere prima di guardare qualunque cosa a schermo
 
-1. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: lavoro suo, di chunking e
-   di import dai barrel, **non deciso**, e da pesare contro la regola delle Script KB.
-2. ⚠️ **`DESIGN.md` va riletto col sospetto, non citato**: quattro sessioni di fila l'hanno trovato
-   indietro. **Le due tabelle, i colori e la tipografia, sono ora tenute da un test**
-   (`src/app/design-tokens.test.ts`): il 2026-10-14 la seconda è stata legata al CSS e controllata,
-   e diceva ancora `whiteSpace: nowrap` per un token la cui riga unica è comprata dal tetto. Il test
-   guarda misura, interlinea e spaziatura, che è quello che i token portano; **peso e famiglia sono
-   classi, non token, e stanno nella prosa**. ⚠️ **La prosa non è tenuta da niente**: lì il sospetto
-   serve ancora.
+⚠️ **Il Chrome dell'utente chiede moto ridotto** (`prefers-reduced-motion: reduce`, misurato): per la
+regola, da lui **non si muove niente**, skeleton e barra compresi. E lo **skeleton dura quanto
+l'attesa**, cioe' decine di millisecondi in locale: c'e' nell'HTML del server (tre occorrenze su
+`/technologies/react`), e per vederlo bisogna fermare la risposta della sessione
+(`page.route("**/auth/v1/user**")`). La pagina di prova fuori dal progetto, con le due forme ferme e
+in movimento, sta in `%TMP%\prova-loader.html`; gli screenshot dell'app vera in `test-results/`.
+
+### Cosa resta (dalla lista di prima, non toccata)
+
+1. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: non deciso.
+2. ⚠️ **`DESIGN.md` va riletto col sospetto**: la prosa non e' tenuta da niente, e questa sessione ne
+   e' la prova (diceva che la barra era fixed, e non lo era).
 3. ⚠️ **Le conversioni `max-[]` del resto dell'app non sono decise**: 43 `max-[640px]`, 19
-   `max-[1040px]`, 7 `max-[880px]` tra Dashboard, `/technologies`, landing e barra. I file di
-   Technology e di Release sono convertiti. ⚠️ **La barra usa ancora `sm:px-5`**, quindi a 640px
-   esatti ha 24px di padding dove la pagina Release ne ha 16.
-4. **Il mock disegna due righe che il modello non produce**, la spiegazione di cosa cambia e il fix
-   diff: lo schema dà solo `change` e `migration`. Sarebbero dominio nuovo, da fissare prima in
-   `CONTEXT.md`.
-5. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa e la pagina
-   Technology chiama entrambe. Si uniscono quando conviene, non subito.
-6. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
-   lavoro tocca Anthropic. **Le cose dell'utente** stanno in `APERTE.md`, **l'ambiente** in
-   `AMBIENTE.md`, **come si misura una pagina** in `PESO.md` e il resto di questa sessione in
-   `docs/handoff/2026-10.md`. ⚠️ Per guardare la pagina Release serve una Sintesi `ready`: l'`update`
-   e il `restore` sono in `PESO.md`, e **il database locale è come era** (zero Sintesi `ready`).
-   Docker e il dev server sulla 3000 erano attivi a fine sessione.
+   `max-[1040px]`, 7 `max-[880px]`. La barra usa ancora `sm:px-5`.
+4. **Il mock disegna due righe che il modello non produce**: sarebbe dominio nuovo, da fissare prima
+   in `CONTEXT.md`.
+5. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa.
+6. ⚠️ **Il credito dell'utente e' basso: non spendere niente senza chiedere.** Niente di questo
+   lavoro tocca Anthropic. Le cose dell'utente stanno in `APERTE.md`, l'ambiente in `AMBIENTE.md`,
+   il peso delle pagine in `PESO.md`. Docker e il dev server sulla 3000 erano attivi allo stop.
 
-⚠️ **Le issue restano sospese per scelta dell'utente**: il lavoro seguente lo rilancia lui.
+⚠️ **Le altre comodita' della #133 restano candidate non approvate**: il `-->` dalla cima delle Note
+al Verdetto, il link alla fonte in fondo alle note, il salto da tastiera alle sezioni.
 
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

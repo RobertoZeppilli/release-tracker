@@ -348,3 +348,68 @@
     }
   }
 }
+
+/* DESIGN.md, The Waiting Rule. **One form, chosen by the user on 2026-10-15**: everything that is
+   on its way is drawn as a skeleton of the shape it will have, and the bar that used to run between
+   one page and the next is gone. Two vocabularies for "working on it" meant a reader had to learn
+   both; one means the answer to "is this coming?" looks the same in a 34px button and on a whole
+   page that has not arrived.
+
+   ⚠️ **What it is made of is the point, and the old one failed on exactly this.** A skeleton is read
+   as a placeholder because it is a *filled* block with a highlight moving across it. The first
+   version was a `raised` fill (#161a20) inside a 1px `rule` on a `ground` page (#0f1115), breathing
+   in opacity: measured, the fill was within three points of the page it sat on, so what reached the
+   reader was an empty border and nothing else. The fill is now `rule`, which is the lightest thing
+   the system draws on `ground`, and the border is gone: a border is what identifies a control, and
+   this is not a control yet.
+
+   ⚠️ **It keeps moving under `prefers-reduced-motion: reduce`, and that is deliberate.** The earlier
+   version froze both forms, on the reading that motion is decoration. A loader is not decoration: it
+   is the only thing on the screen saying the product is still working, and frozen it is
+   indistinguishable from a product that has stopped. What the setting is owed is the *kind* of
+   motion, not its absence: under `reduce` the sweep (a highlight travelling across the block) is
+   replaced by a slow cross-fade in opacity, which carries no direction, no translation and no
+   parallax, and is the substitution WCAG 2.2 2.3.3 asks for. */
+@keyframes skeleton-sweep {
+  from {
+    background-position: 160% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
+}
+
+/* The reduced-motion form: the same block, told apart from a dead one by brightness alone. */
+@keyframes skeleton-fade {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  .skeleton-box {
+    background-color: var(--rule);
+    /* The highlight is `rule-strong` let down to 45%: at full strength it reads as a second element
+       sliding over the block rather than as light crossing it. `color-mix` keeps it one token. */
+    background-image: linear-gradient(
+      90deg,
+      transparent 20%,
+      color-mix(in oklab, var(--rule-strong) 45%, transparent) 50%,
+      transparent 80%
+    );
+    background-size: 220% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-sweep 1400ms linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-box {
+      background-image: none;
+      animation: skeleton-fade 2s ease-in-out infinite;
+    }
+  }
+}

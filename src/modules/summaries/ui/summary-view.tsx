@@ -110,7 +110,7 @@ export function SummaryView({
               key={index}
               id={id}
               tabIndex={-1}
-              className="grid scroll-mt-6 grid-cols-[11.5ch_1fr] gap-3 border-b border-rule py-2 phone:grid-cols-1 phone:gap-0"
+              className="grid scroll-mt-6 grid-cols-[11.5ch_1fr] gap-3 border-b border-rule py-2 phone:grid-cols-1 phone:gap-[0px]"
             >
               <span className="whitespace-nowrap font-mono text-[14px] leading-[1.6] text-text-muted">
                 <Glyph Icon={Info} />

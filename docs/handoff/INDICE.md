@@ -18,6 +18,8 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-14 (la #142 chiusa, i rami puliti, niente in sospeso): 620 unitari e 195 E2E verdi, solo `main`
+  - ⚠️ `git branch --merged` mente in un repository che unisce in squash: si controlla il tip contro la PR
 - I panel con un titolo solo (2026-10-14), e la regola rimessa in piedi: il tetto di `column-verdict` da 1.45rem a 1.2rem
   - ⚠️ Non è la scala che cede alla copia: era un clamp in `vw` dentro una colonna fissa a 360px
   - ⚠️ Il test misurava a 1280px, dove il clamp non arriva al tetto: non aveva mai visto l'andata a capo
