@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import type { ReactNode } from "react";
 import type { ListedRelease, MajorRow } from "../domain/group-by-major";
 import { releasePath } from "../domain/release-page";

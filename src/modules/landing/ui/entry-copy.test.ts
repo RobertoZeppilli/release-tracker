@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { audienceFor, ENTRY_FACES } from "./entry-copy";
+import { audienceFor, entryFaces } from "./entry-copy";
 
 describe("audienceFor", () => {
   it("names the Dashboard's face only once the session is known to be a Developer's", () => {
@@ -14,12 +14,21 @@ describe("audienceFor", () => {
   });
 });
 
-describe("ENTRY_FACES", () => {
+describe("entryFaces", () => {
   it("sends a Visitor to the login and back to the Dashboard afterwards", () => {
-    expect(ENTRY_FACES.visitor).toEqual({ href: "/login?next=%2Fdashboard", label: "Sign in with GitHub" });
+    expect(entryFaces("en").visitor).toEqual({ href: "/login?next=%2Fdashboard", label: "Sign in with GitHub" });
   });
 
   it("sends a Developer straight to the Dashboard, and says so", () => {
-    expect(ENTRY_FACES.developer).toEqual({ href: "/dashboard", label: "Go to your dashboard" });
+    expect(entryFaces("en").developer).toEqual({ href: "/dashboard", label: "Go to your dashboard" });
+  });
+
+  // ADR 0008: the landing exists in five languages, and signing in from the Italian one has to come
+  // back to the Italian Dashboard, not to the English one.
+  it("keeps the language on both faces, `next` included", () => {
+    expect(entryFaces("it")).toEqual({
+      visitor: { href: "/it/login?next=%2Fit%2Fdashboard", label: "Sign in with GitHub" },
+      developer: { href: "/it/dashboard", label: "Go to your dashboard" },
+    });
   });
 });

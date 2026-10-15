@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { SiteHeaderBar } from "./site-header-bar";
 import { NAV, type NavItem } from "./site-nav";
 

@@ -1,5 +1,6 @@
 import type { Session } from "@/modules/auth/ui";
 import { DEFAULT_REDIRECT, loginPath } from "@/modules/auth";
+import { type Locale, localePath } from "@/modules/i18n";
 
 export type Audience = "visitor" | "developer";
 
@@ -7,10 +8,15 @@ export type Audience = "visitor" | "developer";
 // already done: with a session open it names the Dashboard, which is where that reader's work is
 // (DESIGN.md, The No Dead End Rule). `next` is the Dashboard on the visitor's face too, because
 // someone signing in from here is asking for the thing sign-in gets them.
-export const ENTRY_FACES = {
-  visitor: { href: loginPath(null), label: "Sign in with GitHub" },
-  developer: { href: DEFAULT_REDIRECT, label: "Go to your dashboard" },
-} as const satisfies Record<Audience, { href: string; label: string }>;
+// A function and not a constant since ADR 0008: the two addresses carry the language of the page
+// they are read on, and `next` has to be the Dashboard **in that language**, or signing in from the
+// Italian landing would land on the English Dashboard.
+export function entryFaces(locale: Locale): Record<Audience, { href: string; label: string }> {
+  return {
+    visitor: { href: loginPath(localePath(locale, DEFAULT_REDIRECT), locale), label: "Sign in with GitHub" },
+    developer: { href: localePath(locale, DEFAULT_REDIRECT), label: "Go to your dashboard" },
+  };
+}
 
 export const AUDIENCES = ["visitor", "developer"] as const satisfies readonly Audience[];
 

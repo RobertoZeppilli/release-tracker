@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { releasePath } from "../domain/release-page";
 import { rowVerdict, type RowVerdict } from "../domain/row-verdict";
 import type { SummarizedRelease } from "../domain/upgrade-path";

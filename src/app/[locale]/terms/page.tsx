@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { DocumentPage, DocumentSection } from "@/components/document-page";
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Terms of service",
-  description:
-    "What Verdict is, what the free plan holds, and why a generated summary always shows the line it was read from.",
-  path: "/terms",
-  type: "website",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: "Terms of service",
+    description:
+      "What Verdict is, what the free plan holds, and why a generated summary always shows the line it was read from.",
+    path: "/terms",
+    type: "website",
+    locale: await currentLocale(),
+  });
+}
 
 // Issue #132: every claim on this page is one the code makes true, and the page says nothing the
 // app does not do. The follow limit is imported rather than typed, so the terms cannot promise a

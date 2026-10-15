@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { DocumentPage, DocumentSection } from "@/components/document-page";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
-export const metadata: Metadata = pageMetadata({
-  title: "FAQ",
-  description:
-    "What Verdict follows, what an account is for, and how far a generated summary can be trusted.",
-  path: "/faq",
-  type: "website",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: "FAQ",
+    description:
+      "What Verdict follows, what an account is for, and how far a generated summary can be trusted.",
+    path: "/faq",
+    type: "website",
+    locale: await currentLocale(),
+  });
+}
 
 // A question is a heading and not a row of a list: a reader scanning this page is looking for their
 // own question, and the answer under it is prose. The register is the app's own, so the question

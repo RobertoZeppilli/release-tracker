@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 
 export type PathItem = string | { label: string; href: string };
 

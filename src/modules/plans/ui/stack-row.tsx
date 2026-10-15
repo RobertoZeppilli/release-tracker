@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { useRef } from "react";
 import { TechnologyMark } from "@/modules/catalog/ui";
 import type { PickerTechnology } from "../domain/picker";

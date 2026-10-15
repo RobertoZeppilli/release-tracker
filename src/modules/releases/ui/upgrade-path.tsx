@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { Fragment, type ReactNode } from "react";
 import { ColumnTitle } from "@/components/column-title";
 import type { DefaultStartReason } from "../domain/default-upgrade-start";

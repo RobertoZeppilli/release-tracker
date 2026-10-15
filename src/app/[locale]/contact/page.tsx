@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { DocumentPage, DocumentSection } from "@/components/document-page";
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Contact",
-  description: "One address, answered by the person who runs Verdict.",
-  path: "/contact",
-  type: "website",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: "Contact",
+    description: "One address, answered by the person who runs Verdict.",
+    path: "/contact",
+    type: "website",
+    locale: await currentLocale(),
+  });
+}
 
 // One address and no form: a form would need a service to deliver it and a place to keep what it
 // collects, and this page would then have to explain both. An address explains itself.

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { TechnologyMark } from "@/modules/catalog/ui";
 import { Band } from "./band";
 import { LandingNote } from "./landing-note";

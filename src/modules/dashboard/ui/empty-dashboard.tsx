@@ -2,7 +2,7 @@
 
 import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { FREE_FOLLOW_LIMIT, type PickerTechnology } from "@/modules/plans";
 import { CatalogRow, FollowToggleLimitNote, useFollows } from "@/modules/plans/ui";
 import { SectionTitle } from "./section-title";

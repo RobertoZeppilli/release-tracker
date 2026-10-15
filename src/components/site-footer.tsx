@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { FOOT } from "./site-foot";
 
 // The foot of every page of the app, rendered once by the root layout. It is the wordmark and two

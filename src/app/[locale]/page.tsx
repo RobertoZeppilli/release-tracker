@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 import { readCatalogDirectory } from "@/modules/catalog/server";
 import { SPECIMEN } from "@/modules/landing";
 import { Arrivals, Bench, ClosingBlock, HeadingBlock, ProofPanel, ShortSpecimens, VocabularyLegend } from "@/modules/landing/ui";
@@ -9,18 +10,21 @@ import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
 const TITLE = "Verdict, understand before you upgrade";
 
-export const metadata: Metadata = {
-  ...pageMetadata({
-    title: TITLE,
-    description:
-      "Verdict follows the releases of the technologies in your stack and gives each one a single verdict: whether it asks something of you, what breaks, and how to migrate, with every claim pointing at the line of the release notes it was read from.",
-    path: "/",
-    type: "website",
-  }),
-  // The one page whose title already carries the product name: the layout's `%s · Verdict` would
-  // say it twice.
-  title: { absolute: TITLE },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    ...pageMetadata({
+      title: TITLE,
+      description:
+        "Verdict follows the releases of the technologies in your stack and gives each one a single verdict: whether it asks something of you, what breaks, and how to migrate, with every claim pointing at the line of the release notes it was read from.",
+      path: "/",
+      type: "website",
+      locale: await currentLocale(),
+    }),
+    // The one page whose title already carries the product name: the layout's `%s · Verdict` would
+    // say it twice.
+    title: { absolute: TITLE },
+  };
+}
 
 // No `revalidate` and no dynamic API: the landing is prerendered once per deploy and served as a
 // static document, which is the cheapest way to keep its Core Web Vitals in the good band. The one

@@ -5,6 +5,7 @@ import { PageBreadcrumb, TECHNOLOGIES_CRUMB } from "@/components/breadcrumb";
 import { ColumnTitle } from "@/components/column-title";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 import { createPublicClient } from "@/lib/supabase";
 import { technologyMeta } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
@@ -43,6 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // The canonical address carries no `?from=`: an Upgrade Path is one reading of this one page.
     path: `/technologies/${technology.slug}`,
     type: "website",
+    locale: await currentLocale(),
   });
 }
 

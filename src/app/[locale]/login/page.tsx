@@ -1,6 +1,6 @@
 import { LogIn, TerminalSquare } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { serverEnv } from "@/env/server";

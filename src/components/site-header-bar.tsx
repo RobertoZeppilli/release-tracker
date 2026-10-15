@@ -2,7 +2,7 @@
 
 import { User, X } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { loginPath } from "@/modules/auth";

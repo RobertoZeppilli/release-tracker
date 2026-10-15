@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { DocumentPage, DocumentSection } from "@/components/document-page";
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/metadata";
+import { currentLocale } from "@/modules/i18n/server";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Privacy",
-  description:
-    "Everything Verdict holds about a developer, who touches it, and why no personal data ever enters a prompt.",
-  path: "/privacy",
-  type: "website",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: "Privacy",
+    description:
+      "Everything Verdict holds about a developer, who touches it, and why no personal data ever enters a prompt.",
+    path: "/privacy",
+    type: "website",
+    locale: await currentLocale(),
+  });
+}
 
 // The list below is the database, read row by row (issue #132): `auth.users` for the identity,
 // `follows` for the technologies and the declared version, `plans` for the plan. Nothing is
