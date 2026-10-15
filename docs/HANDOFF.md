@@ -28,73 +28,72 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-15): la #133 è chiusa e tutto è su `main` (`d584d47`, PR #153).**
-Non c'è niente in sospeso. ⚠️ **Il ramo `133-back-to-top-and-waits` è ancora lì**, in locale e su
-`origin`: la cancellazione è dell'utente (`git push origin --delete 133-back-to-top-and-waits` e
-`git branch -d 133-back-to-top-and-waits`).
+**Da dove ripartire (2026-10-15, secondo giro): la #126 è scritta e provata sul ramo
+`126-follow-many`, non ancora in PR al momento in cui questa riga è scritta.** Seguire più
+Tecnologie insieme da `/technologies`: un toggle `select many` nei controlli del Catalogo, i segni
+`[ ]` / `[x]` sulle righe, una barra appiccicata con `Follow n`, una sola scrittura verso il
+database.
+⚠️ **Il dev server sulla 3000 è spento**, chiuso per far girare la suite contro `pnpm start`.
+⚠️ **Restano tre rami da cancellare** dopo il merge, in locale e su `origin`: la cancellazione è
+dell'utente. `git push origin --delete 133-back-to-top-and-waits attese-e-handoff 126-follow-many`
+e `git branch -d 133-back-to-top-and-waits attese-e-handoff 126-follow-many`.
 
-**Verde**: `pnpm lint`, `pnpm typecheck`, `pnpm build`, **621 su 622** unitari e **203 su 203** E2E
-contro il build di produzione, con `--retries=0`. ⚠️ L'unico unitario caduto è
-`eslint/boundaries.test.ts`, che fa girare ESLint e cade per tempo sotto carico parallelo (da solo,
-10 su 10): **non è una regressione, non rincorrerlo.**
+**Verde**: `lint`, `typecheck`, `build`, **631 su 631** unitari (`boundaries` compreso, che stavolta
+passa), **70 su 70** di integrazione e **208 passati** in E2E con `CI=1 pnpm exec playwright test`,
+cioè contro il build di produzione. ⚠️ **Un flaky, e non è di questo lavoro**:
+`upgrade-path.spec.ts:64` legge `?from=1.1.1` dove aspetta `1.0.0` e rientra al ritentativo.
 
-⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE.** `playwright.config.ts` lancia
-`pnpm dev` in locale e `pnpm start` in CI: **la suite in locale gira sul dev server, CI sul build di
-produzione**, e con un confine di loading i due si comportano **diversamente**. Il 2026-10-15 la
-#153 è passata sul ramo e ha fatto **rossa `main`**: 7 E2E caduti in produzione, deterministici,
-tre tentativi a testa, mentre in locale erano verdi. Prima di dichiarare verde qualunque cosa tocchi
-le attese, lanciare **`CI=1 pnpm exec playwright test`**.
+⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE** resta quella di prima, e la #126 l'ha
+usata: `playwright.config.ts` lancia `pnpm dev` in locale e `pnpm start` in CI, quindi prima di
+dichiarare verde qualunque cosa tocchi attese o geometria si lancia **`CI=1 pnpm exec playwright
+test`**. Il perché sta in `docs/handoff/2026-10.md`, sotto "Perché un confine di loading fa cadere
+i test che misurano", e la chiave è `arrived(page)` fra la navigazione e la prima misura.
 
-**Perché accade, quali 7 erano e com'è stata corretta**: in `docs/handoff/2026-10.md`, sotto
-"Perché un confine di loading fa cadere i test che misurano". In breve: la correzione è
-`data-waiting="page"` su `PageSkeleton` e `arrived(page)` in `tests/e2e/fixtures.ts`, da chiamare
-fra la navigazione e la prima misura. **La copia doppia è nascosta**: non è una seconda barra a
-schermo né un secondo landmark, quindi non è un difetto che vede l'utente.
+### Le tre decisioni della #126, prese dall'utente e non derivabili dal codice
 
-### Le attese sono state rifatte il giorno stesso, e la ragione va letta prima di ritoccarle
+1. **La selezione è una modalità, non una colonna fissa.** La prima risposta era la casella sempre
+   visibile; l'utente l'ha cambiata a metà lavoro: niente caselle in mezzo finché non si chiedono.
+   Spento il toggle, la pagina è esattamente quella di prima.
+2. **Niente checkbox nativa**, per decisione esplicita: il segno è tipografico, `[ ]` e `[x]` in
+   Fragment Mono, stessa larghezza nei due stati. ⚠️ **Non riproporre la casella del browser né una
+   casella disegnata**: entrambe sono già state scartate, la seconda in favore della tipografica.
+3. **La selezione è effimera e muore al ricaricamento**, non va nell'URL: un'intenzione non ancora
+   eseguita non è un indirizzo da mandare a qualcuno.
 
-L'utente non vedeva né lo skeleton né la barra fra le pagine. Due errori misurati, non di gusto:
+Deciso dall'agente e dichiarato: **dentro la modalità il Follow di riga resta**, perché toglierlo
+cambierebbe la larghezza di ogni riga e leverebbe la via per seguirne una sola.
 
-1. ⚠️ **Il riempimento era invisibile**: `raised` (#161a20) dentro un bordo `rule`, su una pagina
-   `ground` (#0f1115). Tre punti di differenza dalla pagina dietro, quindi arrivava il solo bordo,
-   che si legge come un controllo rotto. Ora il blocco è **pieno** di `rule` e **senza bordo**.
-2. ⚠️ **Il Chrome dell'utente chiede `prefers-reduced-motion: reduce`** (misurato), e il CSS
-   spegneva l'animazione. **Un loader non è decorazione**: fermo è indistinguibile da un prodotto
-   piantato. Sotto `reduce` il riflesso diventa una dissolvenza fra 0.6 e 1 opacità (WCAG 2.2
-   2.3.3). **Non rimettere `animation: none` su `.skeleton-box`**: c'è un E2E che lo impedisce.
-3. **La barra Zig-Zag non c'è più**, per scelta dell'utente: una forma sola, lo skeleton, dentro i
-   controlli e su una pagina che non è arrivata (`PageSkeleton`). ⚠️ Le forme già rifiutate prima:
-   la riga verde da 1px sotto la barra, la caret row tipografica, l'attesa silenziosa della #114, e
-   ora anche la barra Zig-Zag e il loader verde. **Non riproporle.** Lo skeleton resta senza hue:
-   `--focus` è l'interattivo e `--ok` è il verdetto, e un'attesa colorata direbbe altro.
-4. `DESIGN.md`: The Waiting Rule è alla **terza versione** e il limite di The Reserved Space Rule è
-   stato spostato (lo skeleton può avere la misura del telaio di una pagina, non solo di un
-   controllo). Resta vietato lo skeleton di una riga, di una frase o di un numero.
+### Le due trappole pagate dalla #126, da non ripagare
 
-### Da sapere prima di guardare qualunque cosa a schermo
+1. ⚠️ **`sticky top-0` non si incolla in questo progetto.** `--spacing: initial` non genera `top-0`,
+   quindi `top` resta `auto`. È la stessa trappola che aveva tenuto la top bar non fixed il
+   2026-10-15. La barra usa `top-[56px]`, l'altezza della top bar, e **c'è un E2E che misura la
+   geometria** invece di guardare la classe.
+2. ⚠️ **Dopo un rifiuto del database non si cita la cifra che la pagina credeva.** Un gruppo è
+   rifiutato esattamente quando pagina e database non sono d'accordo su quanto è pieno il Piano:
+   `onError` rilegge i follow (`invalidateQueries`) e solo dopo la barra stampa il numero.
 
-⚠️ Lo **skeleton dura quanto l'attesa**, cioè decine di millisecondi in locale, e la sessione nel
-browser impiega un paio di secondi (quella sì si vede, nel pulsante Account). Per vedere
-`PageSkeleton` bisogna fermare la risposta (`page.route`) o iniettarne il markup nella pagina viva.
-⚠️ **L'account Supabase locale non ha né foto né handle GitHub**, quindi il pulsante Account mostra
-la sagoma neutra: è corretto, non è un bug dello skeleton.
+### Quello che il database ha detto, provato e non assunto
+
+L'insert multiriga **è atomico**: il trigger `enforce_follow_rules` è `for each row`, ma una riga
+che sfonda il limite annulla l'intera istruzione. Tre test in `tests/integration/follows.test.ts`
+lo provano, per il limite e per una Tecnologia ritirata dentro il gruppo. Da qui la frase della
+pagina: **`none followed`**, mai "alcune". ⚠️ Il criterio dell'issue chiedeva un ritorno indietro
+**parziale**: non esiste, e non è un taglio, è che con una sola istruzione non c'è un parziale.
 
 ### Cosa resta (dalla lista di prima, non toccata)
 
 1. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: non deciso.
-2. ⚠️ **`DESIGN.md` va riletto col sospetto**: la prosa non è tenuta da niente, e la #133 ne è la
-   prova due volte (diceva che la barra era fixed e non lo era, e descriveva attese che non si
-   vedevano).
-3. ⚠️ **Le conversioni `max-[]` del resto dell'app non sono decise**: 43 `max-[640px]`, 19
-   `max-[1040px]`, 7 `max-[880px]`. La barra usa ancora `sm:px-5`.
-4. **Il mock disegna due righe che il modello non produce**: sarebbe dominio nuovo, da fissare prima
-   in `CONTEXT.md`.
-5. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa.
-6. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente di questo
-   lavoro tocca Anthropic. Le cose dell'utente stanno in `APERTE.md`, l'ambiente in `AMBIENTE.md`,
-   il peso delle pagine in `PESO.md`. Docker e il dev server sulla 3000 erano attivi allo stop.
+2. ⚠️ **`DESIGN.md` va riletto col sospetto**: la prosa non è tenuta da niente, e la #126 lo conferma
+   una terza volta (la Selection Bar è stata scritta "senza bordo" e poi corretta a schermo).
+3. ⚠️ **Le conversioni `max-[]` non sono decise**: 43 `max-[640px]`, 19 `max-[1040px]`, 7 `max-[880px]`.
+4. **Il mock disegna due righe che il modello non produce**: dominio nuovo, da fissare in
+   `CONTEXT.md`. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa.
+5. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente della #126 tocca
+   Anthropic. Le cose dell'utente in `APERTE.md`, l'ambiente in `AMBIENTE.md`, il peso in `PESO.md`.
 
-⚠️ **Le altre comodità della #133 restano candidate non approvate**: il `-->` dalla cima delle Note
-al Verdetto, il link alla fonte in fondo alle note, il salto da tastiera alle sezioni.
+⚠️ **Fuori dalla #126, non approvate**: il follow multiplo dalla Dashboard vuota e dalla pagina
+Technology (poche righe, niente da accelerare), e le comodità della #133 già in lista (il `-->`
+dalla cima delle Note al Verdetto, il link alla fonte, il salto da tastiera).
 
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

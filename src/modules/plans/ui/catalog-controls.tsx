@@ -35,6 +35,23 @@ export function LayoutChoice({
   );
 }
 
+// DESIGN.md, Select Many: the mode is off until it is asked for, so nobody reads past a mark on
+// 31 rows for an action they are not taking. It sits beside the layout choice, in the same shape.
+export function SelectManyChoice({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onToggle}
+      className={`min-h-[26px] rounded-md border border-rule px-3 font-mono text-label hover:text-text ${
+        on ? "bg-raised text-text" : "text-text-faint"
+      }`}
+    >
+      select many
+    </button>
+  );
+}
+
 // DESIGN.md, Catalog Ordering: the ordering is written where it is chosen and named again in the
 // column title, because the ordering is the information.
 export function SortChoice({

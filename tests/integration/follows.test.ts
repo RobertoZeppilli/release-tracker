@@ -102,6 +102,60 @@ describe("plans", () => {
   });
 });
 
+// Following several Technologies at once is one statement, not N (issue #126): what the page can
+// promise about the group is whatever Postgres does with a trigger that raises halfway through it.
+describe("a group of follows in one statement", () => {
+  let catalog: Catalog;
+  let erin: Developer;
+
+  beforeAll(async () => {
+    [catalog, erin] = await Promise.all([seedCatalog(FREE_LIMIT + 2), createDeveloper()]);
+  });
+
+  afterAll(async () => {
+    await deleteDeveloper(erin);
+    await catalog.remove();
+  });
+
+  async function followAll(technologyIds: string[]) {
+    return erin.client
+      .from("follows")
+      .insert(technologyIds.map((technology_id) => ({ user_id: erin.id, technology_id })));
+  }
+
+  async function followedByErin() {
+    const { data, error } = await serviceClient()
+      .from("follows")
+      .select("user_id")
+      .eq("user_id", erin.id);
+    if (error) throw error;
+    return FollowRowsSchema.parse(data).length;
+  }
+
+  it("writes the whole group in one insert", async () => {
+    const { error } = await followAll(catalog.technologyIds.slice(0, 3));
+    expect(error).toBeNull();
+    expect(await followedByErin()).toBe(3);
+  });
+
+  it("refuses the group that breaks the limit, and follows none of it", async () => {
+    // Three are followed, so ten more is seven over the wall. The trigger raises on the eighth row
+    // of the statement, and the statement is what Postgres takes back: this is the whole reason the
+    // page can say `none followed` instead of counting which ones made it (DESIGN.md, Selection Bar).
+    const { error } = await followAll(catalog.technologyIds.slice(3, 13));
+    expect(error?.code).toBe(LIMIT_REACHED);
+    expect(await followedByErin()).toBe(3);
+  });
+
+  it("refuses a group holding a retired Technology, and follows none of it", async () => {
+    const [, , , fourth, fifth] = catalog.technologyIds;
+    await retire(fifth);
+    const { error } = await followAll([fourth, fifth]);
+    expect(error?.code).toBe(RETIRED);
+    expect(await followedByErin()).toBe(3);
+  });
+});
+
 describe("the follow rules the database imposes", () => {
   let catalog: Catalog;
   let carol: Developer;
