@@ -1,19 +1,21 @@
 import { expect, type Page, test } from "@playwright/test";
 
-// DESIGN.md, The Waiting Rule. What is worth a test here is the half that is easy to lose: a wait
-// moves, and under `prefers-reduced-motion: reduce` it **stops moving without disappearing**. A
-// reader who asked for no motion is still owed the answer that something is on its way.
+// DESIGN.md, The Waiting Rule. One form now, the skeleton, and what is worth a test is the half that
+// is easy to lose again: a skeleton has to be **seen**, and it has to **keep moving** under
+// `prefers-reduced-motion: reduce`. The first version failed both, and failed them silently: the
+// fill was within three points of the page it sat on, and `reduce` froze it, so the whole of a wait
+// reached the user as an empty outline.
 //
-// Both forms are read from the stylesheet the app ships, by putting the class on an element of the
-// page: a wait against a local server is over in the time the server takes to answer, and a test
-// that tried to catch it in flight would be a test that flakes.
+// It is read from the stylesheet the app ships, by putting the class on an element of the page: a
+// wait against a local server is over in the time the server takes to answer, and a test that tried
+// to catch it in flight would be a test that flakes.
 
-type Read = { animation: string; duration: string; opacity: string; height: number };
+type Read = { animation: string; duration: string; background: string; height: number };
 
-async function form(page: Page, className: string): Promise<Read> {
-  return page.evaluate((cls) => {
+async function skeleton(page: Page): Promise<Read> {
+  return page.evaluate(() => {
     const probe = document.createElement("div");
-    probe.className = cls;
+    probe.className = "skeleton-box";
     probe.style.width = "34px";
     probe.style.height = "34px";
     document.body.append(probe);
@@ -21,15 +23,19 @@ async function form(page: Page, className: string): Promise<Read> {
     const read = {
       animation: style.animationName,
       duration: style.animationDuration,
-      opacity: style.opacity,
+      background: style.backgroundColor,
       height: probe.getBoundingClientRect().height,
     };
     probe.remove();
     return read;
-  }, className);
+  });
 }
 
-test.describe("the two forms of a wait", () => {
+// `rule` in the dark theme, which is the token the fill is set from. Read as rgb, because that is
+// what `getComputedStyle` returns whatever the stylesheet wrote.
+const RULE = "rgb(38, 43, 51)";
+
+test.describe("the skeleton", () => {
   // Said out loud, because the machine the suite runs on may ask for reduced motion itself, and the
   // two halves of this rule are told apart by exactly that setting.
   test.use({ reducedMotion: "no-preference" });
@@ -38,31 +44,32 @@ test.describe("the two forms of a wait", () => {
     await page.goto("/");
   });
 
-  test("the bar runs between one page and the next", async ({ page }) => {
-    const read = await form(page, "progress-zigzag");
-    expect(read.animation).toBe("progress-zigzag");
-    expect(read.duration).toBe("2s");
-  });
-
-  test("the skeleton breathes inside a control", async ({ page }) => {
-    const read = await form(page, "skeleton-box");
-    expect(read.animation).toBe("skeleton-breath");
-    expect(read.duration).toBe("1.6s");
+  test("is a filled block with a highlight sweeping across it", async ({ page }) => {
+    const read = await skeleton(page);
+    expect(read.animation).toBe("skeleton-sweep");
+    expect(read.duration).toBe("1.4s");
+    // The fill is the whole reason it is visible: an empty box is what the first version shipped.
+    expect(read.background).toBe(RULE);
+    expect(read.height).toBe(34);
   });
 
   test.describe("with reduced motion asked for", () => {
     test.use({ reducedMotion: "reduce" });
 
-    test("both stop moving, and both stay there", async ({ page }) => {
-      for (const cls of ["progress-zigzag", "skeleton-box"]) {
-        const read = await form(page, cls);
-        expect(read.animation).toBe("none");
-        // Visible, not hidden: the animation is what made it breathe, and with the animation gone it
-        // is simply drawn.
-        expect(Number(read.opacity)).toBeGreaterThan(0.3);
-        // Drawn at the size it was given, which is what "stays there" means.
-        expect(read.height).toBeGreaterThan(0);
-      }
+    test("keeps moving, by cross-fade instead of by sweep", async ({ page }) => {
+      const read = await skeleton(page);
+      // Not `none`: a loader that stops is indistinguishable from a product that has stopped. What
+      // the setting is owed is the kind of motion, and a cross-fade has no direction to it.
+      expect(read.animation).toBe("skeleton-fade");
+      expect(read.background).toBe(RULE);
+      expect(read.height).toBe(34);
     });
   });
+});
+
+test("the two pages behind the login have a wait, and the public ones do not", async ({ page }) => {
+  // The loading boundary belongs to the segment and to everything under it: this is what keeps the
+  // public Technology and Release pages out of it, and their 404s answering 404.
+  const response = await page.goto("/technologies/not-a-technology");
+  expect(response?.status()).toBe(404);
 });

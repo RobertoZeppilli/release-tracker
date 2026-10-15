@@ -1,5 +1,5 @@
 import { SiteHeader } from "@/components/site-header";
-import { WaitingBar } from "@/components/waiting";
+import { PageSkeleton } from "@/components/waiting";
 
 // The Catalogue is behind the login and reads the follows of this Developer, so it is dynamic and
 // the wait is real (DESIGN.md, The Waiting Rule).
@@ -13,7 +13,7 @@ export default function Loading() {
   return (
     <>
       <SiteHeader section="technologies" />
-      <WaitingBar opening="technologies" />
+      <PageSkeleton opening="technologies" />
     </>
   );
 }

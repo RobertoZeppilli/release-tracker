@@ -349,77 +349,67 @@
   }
 }
 
-/* DESIGN.md, The Waiting Rule. Two forms, and they are two because a wait between pages and a wait
-   inside a control are not the same thing. Between pages it is the progress bar the user chose, the
-   Zig-Zag from css-loaders.com/progress (the twelfth there, by Temani Afif, free to copy): six
-   blocks on a track, each flipping from the bottom half to the top half one after the other over 2s.
-   It is kept to the system's own ink: the blocks are `text-faint` and the track is `rule`, because
-   hue means severity here and a wait has none. Inside a control the box is filled by a skeleton of
-   the control's own shape, in the tone a button takes under the pointer. Under
-   `prefers-reduced-motion: reduce` neither moves and both stay visible: the bar freezes on its first
-   frame, which is the zig-zag itself, and the box is simply drawn. A reader who asked for no motion
-   is still owed the answer that something is on its way. */
-@keyframes progress-zigzag {
-  0% {
-    background-position: calc(0 * 100% / 5) 100%, calc(1 * 100% / 5) 0%, calc(2 * 100% / 5) 100%, calc(3 * 100% / 5) 0%, calc(4 * 100% / 5) 100%, calc(5 * 100% / 5) 0%;
+/* DESIGN.md, The Waiting Rule. **One form, chosen by the user on 2026-10-15**: everything that is
+   on its way is drawn as a skeleton of the shape it will have, and the bar that used to run between
+   one page and the next is gone. Two vocabularies for "working on it" meant a reader had to learn
+   both; one means the answer to "is this coming?" looks the same in a 34px button and on a whole
+   page that has not arrived.
+
+   ⚠️ **What it is made of is the point, and the old one failed on exactly this.** A skeleton is read
+   as a placeholder because it is a *filled* block with a highlight moving across it. The first
+   version was a `raised` fill (#161a20) inside a 1px `rule` on a `ground` page (#0f1115), breathing
+   in opacity: measured, the fill was within three points of the page it sat on, so what reached the
+   reader was an empty border and nothing else. The fill is now `rule`, which is the lightest thing
+   the system draws on `ground`, and the border is gone: a border is what identifies a control, and
+   this is not a control yet.
+
+   ⚠️ **It keeps moving under `prefers-reduced-motion: reduce`, and that is deliberate.** The earlier
+   version froze both forms, on the reading that motion is decoration. A loader is not decoration: it
+   is the only thing on the screen saying the product is still working, and frozen it is
+   indistinguishable from a product that has stopped. What the setting is owed is the *kind* of
+   motion, not its absence: under `reduce` the sweep (a highlight travelling across the block) is
+   replaced by a slow cross-fade in opacity, which carries no direction, no translation and no
+   parallax, and is the substitution WCAG 2.2 2.3.3 asks for. */
+@keyframes skeleton-sweep {
+  from {
+    background-position: 160% 0;
   }
-  16.67% {
-    background-position: calc(0 * 100% / 5) 0%, calc(1 * 100% / 5) 0%, calc(2 * 100% / 5) 100%, calc(3 * 100% / 5) 0%, calc(4 * 100% / 5) 100%, calc(5 * 100% / 5) 0%;
-  }
-  33.33% {
-    background-position: calc(0 * 100% / 5) 0%, calc(1 * 100% / 5) 100%, calc(2 * 100% / 5) 100%, calc(3 * 100% / 5) 0%, calc(4 * 100% / 5) 100%, calc(5 * 100% / 5) 0%;
-  }
-  50% {
-    background-position: calc(0 * 100% / 5) 0%, calc(1 * 100% / 5) 100%, calc(2 * 100% / 5) 0%, calc(3 * 100% / 5) 0%, calc(4 * 100% / 5) 100%, calc(5 * 100% / 5) 0%;
-  }
-  66.67% {
-    background-position: calc(0 * 100% / 5) 0%, calc(1 * 100% / 5) 100%, calc(2 * 100% / 5) 0%, calc(3 * 100% / 5) 100%, calc(4 * 100% / 5) 100%, calc(5 * 100% / 5) 0%;
-  }
-  83.33% {
-    background-position: calc(0 * 100% / 5) 0%, calc(1 * 100% / 5) 100%, calc(2 * 100% / 5) 0%, calc(3 * 100% / 5) 100%, calc(4 * 100% / 5) 0%, calc(5 * 100% / 5) 0%;
-  }
-  100% {
-    background-position: calc(0 * 100% / 5) 0%, calc(1 * 100% / 5) 100%, calc(2 * 100% / 5) 0%, calc(3 * 100% / 5) 100%, calc(4 * 100% / 5) 0%, calc(5 * 100% / 5) 100%;
+  to {
+    background-position: -60% 0;
   }
 }
 
-@keyframes skeleton-breath {
+/* The reduced-motion form: the same block, told apart from a dead one by brightness alone. */
+@keyframes skeleton-fade {
   0%,
   100% {
-    opacity: 0.45;
+    opacity: 0.6;
   }
   50% {
-    opacity: 0.9;
+    opacity: 1;
   }
 }
 
 @layer components {
-  .progress-zigzag {
-    width: 120px;
-    height: 20px;
-    background:
-      linear-gradient(var(--text-faint) 50%, #0000 0), linear-gradient(#0000 50%, var(--text-faint) 0),
-      linear-gradient(var(--text-faint) 50%, #0000 0), linear-gradient(#0000 50%, var(--text-faint) 0),
-      linear-gradient(var(--text-faint) 50%, #0000 0), linear-gradient(#0000 50%, var(--text-faint) 0) var(--rule);
-    background-size: calc(100% / 6 + 1px) 200%;
-    background-repeat: no-repeat;
-    animation: progress-zigzag 2s infinite;
-  }
-
   .skeleton-box {
-    animation: skeleton-breath 1600ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    background-color: var(--rule);
+    /* The highlight is `rule-strong` let down to 45%: at full strength it reads as a second element
+       sliding over the block rather than as light crossing it. `color-mix` keeps it one token. */
+    background-image: linear-gradient(
+      90deg,
+      transparent 20%,
+      color-mix(in oklab, var(--rule-strong) 45%, transparent) 50%,
+      transparent 80%
+    );
+    background-size: 220% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-sweep 1400ms linear infinite;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .progress-zigzag {
-      animation: none;
-      /* The first frame, drawn and left alone: six blocks in the zig-zag the bar is named for. */
-      background-position: calc(0 * 100% / 5) 100%, calc(1 * 100% / 5) 0%, calc(2 * 100% / 5) 100%, calc(3 * 100% / 5) 0%, calc(4 * 100% / 5) 100%, calc(5 * 100% / 5) 0%;
-    }
-
     .skeleton-box {
-      animation: none;
-      opacity: 0.6;
+      background-image: none;
+      animation: skeleton-fade 2s ease-in-out infinite;
     }
   }
 }

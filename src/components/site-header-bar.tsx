@@ -126,9 +126,12 @@ export function SiteHeaderBar({
       <div className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "" : "ml-auto"}`}>
         {/* No answer is offered until the session is known: a wrong state for an instant would put
             the login in front of someone already signed in. What the box does instead of waiting
-            empty is wear the shape of what is coming (DESIGN.md, The Waiting Rule, the skeleton). The box is the
-            34px of the Account button and its 6px corners, so what arrives lands on the shape that
-            was already there.
+            empty is wear the shape of what is coming (DESIGN.md, The Waiting Rule, the skeleton).
+            The box is the 34px of the Account button and its 6px corners, so what arrives lands on
+            the shape that was already there. ⚠️ It is a **filled** block and carries no border of
+            its own: the first version drew a `rule` border around a `raised` fill, and on `ground`
+            that fill was invisible, so what the user saw for the whole of the wait was an empty
+            outline (measured on 2026-10-15, with the fix in `globals.css`).
             ⚠️ The bar does not jump either way: measured in #114 at 1280 and 390, the wordmark, the
             slot and the toggle sit at the same pixels before and after, because this group is
             `ml-auto` and the Account arrives into space that was already empty. */}
