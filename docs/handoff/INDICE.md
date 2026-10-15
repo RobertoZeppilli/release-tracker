@@ -18,6 +18,15 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Perché un confine di loading fa cadere i test che misurano (2026-10-15)
+  - ⚠️ In locale la suite gira sul dev server, in CI sul build di produzione: `CI=1 pnpm exec playwright test`
+  - ⚠️ Per un istante il documento ha lo skeleton visibile e la pagina vera nascosta: `arrived(page)` aspetta
+
+- Stato al 2026-10-15 (la #133 scritta e non committata, prima che le attese fossero rifatte)
+  - ⚠️ La barra in alto non era mai stata fixed, in produzione nemmeno: `--spacing: initial` non genera `top-0`
+  - ⚠️ Un `loading.tsx` vale per tutte le rotte sotto la sua cartella, e una pagina 404 pubblica passa a 200
+  - La barra Zig-Zag fra le pagine, scelta e poi tolta il giorno dopo: la voce dice perché era stata scelta
+
 - Stato al 2026-10-14 (la #142 chiusa, i rami puliti, niente in sospeso): 620 unitari e 195 E2E verdi, solo `main`
   - ⚠️ `git branch --merged` mente in un repository che unisce in squash: si controlla il tip contro la PR
 - I panel con un titolo solo (2026-10-14), e la regola rimessa in piedi: il tetto di `column-verdict` da 1.45rem a 1.2rem

@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import {
   addFollows,
+  arrived,
   declareCurrentVersion,
   e2eAuthSecret,
   type FixtureDeveloper,
@@ -312,6 +313,7 @@ test.describe("target spacing in the lists", () => {
     await developer.clearFollows();
     await addFollows(developer.id, [technology.id]);
     await page.goto("/dashboard");
+    await arrived(page);
     await expectSpaced(page, 2);
   });
 
