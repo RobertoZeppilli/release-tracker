@@ -28,31 +28,28 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-15, terzo giro): la #132 è spezzata in due PR e la prima è in
-`PR #156`, ramo `132-account-deletion`, commit `2fcf167`.** ⚠️ **La CI era ancora in corso alla
-chiusura della sessione**: controllala (`gh run list --branch 132-account-deletion`) prima di
-qualunque altra cosa. La #132 (pagine legali e trasparenza) è `ready-for-human`: le quattro
-decisioni sono state prese dall'utente in apertura di sessione.
+**Da dove ripartire (2026-10-15, terzo giro): la #132 è spezzata in due PR e la prima è chiusa e
+su `main` (`b4d4acd`, PR #156), niente in sospeso.** La #132 resta **aperta** per la PR 2 ed è
+`ready-for-human`: le quattro decisioni qui sotto sono dell'utente, prese in apertura di sessione.
 ⚠️ **L'ordine delle due PR è invertito rispetto a quello scelto**, e il motivo va tenuto: il piede
 punta a `terms`, `privacy`, `attributions`, `faq`, `contact`, e un piede con cinque link che danno
-404 è la stessa promessa falsa dell'informativa senza il bottone. Quindi **PR 1 la cancellazione
-dell'account**, **PR 2 le cinque pagine più il piede che le raggiunge**, insieme.
+404 è la stessa promessa falsa dell'informativa senza il bottone. Quindi la cancellazione prima, e
+**la PR 2 porta le cinque pagine e il piede insieme**.
 
-**Verde**: `lint`, `typecheck`, `build`, **640 su 640** unitari, **70 su 70** di integrazione e
-**215 passati** in E2E con `CI=1 pnpm exec playwright test` (il build di produzione).
+**Verde**: prima del merge `lint`, `typecheck`, `build`, **640 su 640** unitari, **70 su 70** di
+integrazione e **215 passati** in E2E con `CI=1 pnpm exec playwright test` (il build di produzione);
+dopo, su `main`, **`CI` e `Deploy database` sono finiti verdi**.
 ⚠️ **Un flaky estraneo**: `select-many.spec.ts:163`, rientrato al ritentativo (il giro prima era
-toccato a `upgrade-path.spec.ts:64`: sono due flaky diversi, non uno che si sposta).
-⚠️ **Il dev server sulla 3000 è spento.**
-⚠️ **Restano tre rami da cancellare**, in locale e su `origin`, più lo stash `residuo del checkout
-interrotto`: sono dell'utente. `git push origin --delete 133-back-to-top-and-waits attese-e-handoff
-126-follow-many`, `git branch -d 133-back-to-top-and-waits attese-e-handoff 126-follow-many`,
-`git stash drop`.
+toccato a `upgrade-path.spec.ts:64`: due flaky diversi, non uno che si sposta).
+⚠️ **Il dev server sulla 3000 è spento.** ⚠️ **Quattro rami da cancellare** e lo stash `residuo del
+checkout interrotto`, che sono dell'utente: ai tre di prima si aggiunge `132-account-deletion`, già
+mergiato. `git push origin --delete <rami>`, `git branch -d <rami>`, `git stash drop`.
 
 ⚠️ **LA COSA DA SAPERE PRIMA DI DIRE CHE LA SUITE È VERDE** resta quella di prima, e la #132 l'ha
-pagata tre volte: `playwright.config.ts` lancia `pnpm dev` in locale e `pnpm start` in CI. In dev la
-PR 1 era verde; contro il build di produzione sono caduti **quattro** test, e nessuno dei tre
-difetti si vedeva in dev. Il perché del quarto sta in `docs/handoff/2026-10.md`, sotto "Perché un
-confine di loading fa cadere i test che misurano".
+pagata: `playwright.config.ts` lancia `pnpm dev` in locale e `pnpm start` in CI. In dev la PR 1 era
+verde; contro il build di produzione sono caduti **quattro** test, e nessuno dei tre difetti sotto
+si vedeva in dev. Il resto in `docs/handoff/2026-10.md`, "Perché un confine di loading fa cadere i
+test che misurano".
 
 ### Le quattro decisioni della #132, prese dall'utente e non derivabili dal codice
 
@@ -61,46 +58,27 @@ confine di loading fa cadere i test che misurano".
    attributions), non la riga sola etichettata: Mono 12px `text-faint` su una riga `rule`, nessuna
    superficie, nel container della pagina. ⚠️ **Da costruire nella PR 2, non è ancora scritto.**
 3. **Nei termini sta solo il nome del prodotto e l'email**, senza nome della persona né paese.
-4. **La cancellazione è `/account` con conferma scritta**, non un bottone nel menu. ⚠️ Il
-   **contatto è un placeholder** finché l'utente non decide l'indirizzo: prerequisito della PR 2.
+4. **La cancellazione è `/account` con conferma scritta** (fatta). ⚠️ Il **contatto è un
+   placeholder** finché l'utente non decide l'indirizzo: prerequisito della PR 2.
 
-### Quello che la PR 1 ha costruito
+### Quello che la PR 1 ha lasciato in piedi
 
-`/account` dietro il login (proxy, `requireAccount`, `robots`), che **legge** quello che l'account
-tiene invece di descriverlo, e `POST /auth/delete-account`. L'ordine dei tre passi della route è la
-sostanza: la sessione dai cookie **prima** (l'id cancellato è quello di chi è firmato, mai uno
-nominato dal form), poi la parola `delete` controllata **sul server** (un form si può inviare senza
-la pagina), poi `auth.admin.deleteUser` con la service role, l'unica scrittura di quest'app che il
-browser non può fare; `follows` e `plans` cadono da soli per `on delete cascade`. Infine `signOut`,
-o resterebbe un token di un utente che non esiste, che si legge come sessione rotta. Si atterra su
-`/login?deleted=1` e **non sulla landing**, che è prerenderizzata e non legge search param.
-⚠️ **Niente dialog e niente bottone spento**: la parola scritta è la guardia, e un bottone morto
-finché il campo non è giusto si spiega due volte. Non riproporli.
-**Revoca su GitHub**: con `NEXT_PUBLIC_GITHUB_CLIENT_ID` (opzionale, non è un segreto) il link va
-dritto alla pagina dell'app col bottone `Revoke access`, senza all'elenco delle applicazioni.
-⚠️ **L'utente deve ancora prenderlo** dal provider GitHub su Supabase e metterlo su Vercel.
-
-### Le tre cose che solo il build di produzione ha detto
-
-1. ⚠️ **`a.text-link` non era sottolineato, in tutta l'app.** Il preflight di Tailwind fa ereditare
-   `text-decoration` agli `a`, quindi `globals.css` colorava una sottolineatura che nessuno
-   disegnava e il verde restava solo (WCAG 1.4.1, axe `link-in-text-block`, grave, in tutti e due i
-   temi). `DESIGN.md` dichiarava il contrario da sempre: **la prosa non è tenuta da niente**, quarta
-   conferma. Corretto; ora sono sottolineati anche il link in fondo alla landing e la nota di quota.
-2. **Il build di produzione porta il route announcer di Next**, che è un secondo `role="alert"`
-   sulla pagina: un'asserzione su `getByRole("alert")` viola la strict mode. Si punta all'id.
-3. **La prima riga visibile del pannello account non è più `sign out`**, è `account`: lo diceva
-   `navigation.spec.ts`, che ora aspetta il fuoco lì.
+Com'è fatta dentro (l'ordine dei tre passi della route, le tre cose dette dal solo build di
+produzione) sta in `docs/handoff/2026-10.md`, "La PR 1 della #132, com'è fatta dentro". Due cose
+non vanno perse qui: ⚠️ **niente dialog e niente bottone spento** nella cancellazione, la parola
+scritta è la guardia e sono scelte già pagate; e ⚠️ **`NEXT_PUBLIC_GITHUB_CLIENT_ID` è ancora da
+mettere su Vercel**, preso dal provider GitHub su Supabase, o il link di revoca resta quello
+all'elenco delle applicazioni invece che alla pagina di Verdict.
 
 ### Cosa resta
 
-1. **La PR 2 della #132**: terms, privacy, attributions, faq, contact, più il piede a due colonne.
-   Il contenuto accertato nel codice sta nel corpo della issue e nel primo messaggio della sessione.
+1. **La PR 2 della #132**: terms, privacy, attributions, faq, contact e il piede a due colonne. Il
+   contenuto accertato nel codice sta nel corpo della issue.
 2. ⚠️ **I 14 KB di UI delle Release su ogni pagina**, `/login` compresa: non deciso.
-3. ⚠️ **Le conversioni `max-[]` non sono decise**: 43 `max-[640px]`, 19 `max-[1040px]`, 7 `max-[880px]`.
+3. ⚠️ **Le `max-[]` non sono decise**: 43 `max-[640px]`, 19 `max-[1040px]`, 7 `max-[880px]`.
 4. **Il mock disegna due righe che il modello non produce**: dominio nuovo, da fissare in
    `CONTEXT.md`. Debito piccolo: `groupByMajor` e `recordedHistory` calcolano quasi la stessa cosa.
-5. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Niente della #132 tocca
-   Anthropic. Le cose dell'utente in `APERTE.md`, l'ambiente in `AMBIENTE.md`, il peso in `PESO.md`.
+5. ⚠️ **Il credito dell'utente è basso: non spendere niente senza chiedere.** Le cose dell'utente in
+   `APERTE.md`, l'ambiente in `AMBIENTE.md`, il peso in `PESO.md`.
 
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

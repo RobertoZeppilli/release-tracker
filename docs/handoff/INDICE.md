@@ -18,6 +18,12 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- La PR 1 della #132, com'è fatta dentro (2026-10-15)
+  - L'ordine dei tre passi della cancellazione, e perché la sessione si legge prima del form
+  - ⚠️ Niente dialog e niente bottone spento: la parola scritta è la guardia, già deciso
+  - ⚠️ `a.text-link` non era sottolineato in tutta l'app: il preflight di Tailwind
+  - ⚠️ Il build di produzione porta un secondo `role="alert"`, il route announcer di Next
+
 - Stato al 2026-10-15 (la #126 chiusa e su `main`, prima della #132)
   - Le tre decisioni della #126 prese dall'utente, e le due trappole che ha pagato
   - ⚠️ `sticky top-0` non si incolla in questo progetto: `--spacing: initial` non genera `top-0`
