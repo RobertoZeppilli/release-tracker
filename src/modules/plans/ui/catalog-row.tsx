@@ -7,6 +7,7 @@ import type { PickerTechnology } from "../domain/picker";
 import { FollowRejectionNote } from "./follow-rejection-note";
 import { FollowToggle } from "./follow-toggle";
 import { useFollows } from "./follows-provider";
+import { SelectionMark } from "./selection-mark";
 
 // DESIGN.md, Catalog Row: two lines, so the facts sit under the name instead of across a run of
 // empty width. The one-line row this replaces put the facts in a 674px cell holding about 400px of
@@ -42,6 +43,10 @@ export function CatalogRow({
   return (
     <li className={grid ? PANEL : ROW} hidden={hidden}>
       <span className="flex min-w-0 items-center gap-2">
+        {/* Only while the mode is on, and in the first cell rather than in a column of its own: a
+            column added to the grid would change the width of every row the moment the mode is
+            switched on (DESIGN.md, Select Many). */}
+        <SelectionMark technologyId={technology.id} name={technology.name} />
         <TechnologyMark slug={technology.slug} />
         <Link
           href={`/technologies/${technology.slug}`}

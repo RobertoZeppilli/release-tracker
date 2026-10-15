@@ -10,7 +10,7 @@ import {
 } from "../domain/current-version";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { type FollowRejection, rejectionOf } from "../domain/follow-rejection";
-import { FOLLOWS_KEY, fetchFollows, writeCurrentVersion, writeFollow } from "./follows-store";
+import { FOLLOWS_KEY, fetchFollows, writeCurrentVersion, writeFollow, writeFollows } from "./follows-store";
 
 export type Follows = {
   // Whether the follows are in hand. A page that lets the query fetch them has none for a moment,
@@ -27,6 +27,11 @@ export type Follows = {
   // Toggle that moved a row needs to know the press was its own to take the focus back (issue #64).
   pressedAt: (technologyId: string) => number | null;
   rejectionOn: (technologyId: string) => FollowRejection | null;
+  // Following a group is one write, so it answers as one: a refusal belongs to the group and not
+  // to any row in it (issue #126, DESIGN.md, Selection Bar).
+  followMany: (technologyIds: string[]) => void;
+  followingMany: boolean;
+  groupRejection: FollowRejection | null;
   // The Version in use, declared on the follow: absent until the Developer declares one.
   currentVersionOf: (technologyId: string) => CurrentVersion | null;
   declare: (technologyId: string, version: string | null) => void;
@@ -99,6 +104,30 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
     },
   });
 
+  // The group goes in one statement, so the optimistic answer is one too: every selected row is
+  // added at once and a refusal puts all of them back. Nothing is followed halfway on either side
+  // of the wire, which is what the database already guarantees (see `writeFollows`).
+  const group = useMutation({
+    mutationFn: (technologyIds: string[]) => writeFollows(developerId ?? "", technologyIds),
+    onMutate: async (technologyIds) => {
+      await client.cancelQueries({ queryKey: FOLLOWS_KEY });
+      const previous = client.getQueryData<Follow[]>(FOLLOWS_KEY) ?? [];
+      const held = new Set(previous.map((row) => row.technologyId));
+      const added = technologyIds
+        .filter((technologyId) => !held.has(technologyId))
+        .map((technologyId) => ({ technologyId, currentVersion: null }));
+      client.setQueryData(FOLLOWS_KEY, [...previous, ...added]);
+      return { previous };
+    },
+    // The group is put back, and then the follows are read again: a group is refused exactly when
+    // the page and the database disagree about how full the Plan is, so what the page believed is
+    // the one figure it must not go on to quote (DESIGN.md, Selection Bar).
+    onError: (_error, _variables, context) => {
+      if (context) client.setQueryData(FOLLOWS_KEY, context.previous);
+      void client.invalidateQueries({ queryKey: FOLLOWS_KEY });
+    },
+  });
+
   // The declaration is written on its own, without an optimistic answer: the day it stands from is
   // the database's to write (see `writeCurrentVersion`), so the row is worth waiting for.
   const declaration = useMutation({
@@ -133,6 +162,11 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
     isPending: (technologyId) => mutation.isPending && mutation.variables?.technologyId === technologyId,
     pressedAt: (technologyId) => (press?.technologyId === technologyId ? press.tick : null),
     rejectionOn: (technologyId) => (technologyId === rejected ? rejection : null),
+    followMany: (technologyIds) => {
+      if (developerId && technologyIds.length > 0) group.mutate(technologyIds);
+    },
+    followingMany: group.isPending,
+    groupRejection: rejectionOf(group.error),
     currentVersionOf: (technologyId) => following.get(technologyId)?.currentVersion ?? null,
     declare: (technologyId, version) => {
       if (developerId) declaration.mutate({ technologyId, version });

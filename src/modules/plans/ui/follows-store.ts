@@ -53,6 +53,16 @@ export async function writeFollow(
   if (error) throw new FollowRejectedError(followRejectionFor(error.code), error.message);
 }
 
+// Several follows in one statement, which is what makes the Plan's limit a rule about the group:
+// the trigger runs for each row, so a row over the limit raises inside the statement and Postgres
+// takes the whole insert back. Nothing is followed halfway, and the browser gets the one SQLSTATE.
+export async function writeFollows(developerId: string, technologyIds: string[]): Promise<void> {
+  const { error } = await createSessionClient()
+    .from("follows")
+    .insert(technologyIds.map((technologyId) => ({ user_id: developerId, technology_id: technologyId })));
+  if (error) throw new FollowRejectedError(followRejectionFor(error.code), error.message);
+}
+
 // `null` takes the declaration away. The row comes back because the day it was declared is written
 // by the database, not by the browser: only an answer can say when the declaration now stands from.
 export async function writeCurrentVersion(

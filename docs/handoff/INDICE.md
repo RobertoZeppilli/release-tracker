@@ -18,6 +18,11 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato al 2026-10-15 (la #133 e le attese chiuse, prima della #126)
+  - ⚠️ Le forme di attesa già rifiutate, da non riproporre, e il divieto su `animation: none`
+  - ⚠️ Lo skeleton dura decine di millisecondi: per vederlo serve fermare la risposta
+  - La lista di quel che restava aperto, da cui la #126 ha preso il suo pezzo
+
 - Perché un confine di loading fa cadere i test che misurano (2026-10-15)
   - ⚠️ In locale la suite gira sul dev server, in CI sul build di produzione: `CI=1 pnpm exec playwright test`
   - ⚠️ Per un istante il documento ha lo skeleton visibile e la pagina vera nascosta: `arrived(page)` aspetta
