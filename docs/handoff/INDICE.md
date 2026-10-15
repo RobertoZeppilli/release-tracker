@@ -18,6 +18,17 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Le cinque decisioni della #131, prese dall'utente il 2026-10-15
+  - Cinque lingue, Note di rilascio e Sintesi non tradotte, pagina Release dichiarata mista
+  - Vocabolario di dominio in inglese in ogni lingua, legenda della landing tradotta
+  - Lingua nell'URL e non in un cookie, selettore nel piede e nel menu profilo, modulo nostro
+  - ⚠️ Francese, spagnolo e tedesco non rivisti da madrelingua: da rivedere prima del lancio
+
+- Stato al 2026-10-15 (la #132 chiusa, le cinque pagine pubbliche su `main`)
+  - Le cinque decisioni della PR 2 della #132: contatto, `body` flex, breadcrumb, wordmark nel piede
+  - ⚠️ `body` è una colonna flex alta `100dvh`, e serve `body > main, body > footer { width: 100% }`
+  - ⚠️ Playwright lancia `pnpm dev` in locale e `pnpm start` in CI: i difetti si vedono solo nel secondo
+
 - Stato al 2026-10-15 (la PR 1 della #132 su `main`, prima della PR 2)
   - Le quattro decisioni della #132 prese dall'utente, e l'ordine delle due PR invertito
   - ⚠️ Playwright lancia `pnpm dev` in locale e `pnpm start` in CI: i difetti si vedono solo nel secondo
