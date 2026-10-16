@@ -139,6 +139,16 @@ for (const theme of THEMES) {
       await scan(page, theme);
     });
 
+    // The Settings page, which is one choice and the frame around it: the language picker is five
+    // links that each lead to this page in another language, so what axe has to find here is a
+    // current one that says so (`aria-current`) and a heading over the set.
+    test("the settings page", async ({ page }) => {
+      await signIn(page);
+      await page.goto("/settings");
+      await expect(page.getByRole("heading", { level: 1 })).toContainText("Settings");
+      await scan(page, theme);
+    });
+
     // Both shells below are served without the layout and rendered on the client, so the theme
     // reaches them by a different road than everywhere else: it is asserted, not assumed.
     test("the 404", async ({ page }) => {

@@ -2,7 +2,7 @@
 
 import { User, X } from "lucide-react";
 import Image from "next/image";
-import { LocaleLink as Link, LocalePicker, useTranslator } from "@/modules/i18n/ui";
+import { LocaleLink as Link, useTranslator } from "@/modules/i18n/ui";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { loginPath } from "@/modules/auth";
@@ -247,15 +247,22 @@ function AccountPanel({
           this account holds and is the only way to delete it (issue #132). It sits with the way out
           rather than with the sections, because both are about the account and not about the
           product, and above `sign out` because signing out is still the last line of the panel. */}
-      <div className="mt-auto border-t border-rule sm:mt-1 sm:border-t sm:border-rule sm:pt-1">
+      {/* The two pages that belong to the viewer and not to the product: what the account is, and
+          what the reader has chosen about the app, the language among it (ADR 0008). The picker used
+          to stand here with its five names; it is a line now, because the panel cannot grow a row
+          per preference and `/settings` is where the next one goes. */}
+      {/* ⚠️ `sm:border-t-0`: on a phone this rule separates the two pages from the sections above
+          them, and above 640px the sections are `display: none`, so the same rule was drawing a
+          line with nothing over it at the top of the panel. What separates them there is the
+          handle's own `border-b`, when there is a handle. */}
+      <div className="mt-auto border-t border-rule sm:mt-1 sm:border-t-0 sm:pt-0">
         <Link href="/account" onClick={onFollow} className={ITEM}>
           {t("shell.account")}
         </Link>
+        <Link href="/settings" onClick={onFollow} className={ITEM}>
+          {t("shell.settings")}
+        </Link>
       </div>
-      {/* The language, repeated here because from a signed-in page it is looked for with the other
-          settings (ADR 0008). It sits under the account and over the way out, for the reason the
-          account link does: signing out stays the last line of the panel. */}
-      <LocalePicker variant="panel" />
       <form action="/auth/sign-out" method="post">
         <button type="submit" className={`${ITEM} w-full`}>
           {t("shell.signOut")}

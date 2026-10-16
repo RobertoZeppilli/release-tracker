@@ -46,13 +46,20 @@ che cercano stringhe inglesi. Il `lang` sull'`html`, oggi fisso a `en`, lo dice 
 Si traduce con un **modulo di dominio nostro**, `src/modules/i18n`, non con una libreria: dizionari
 per lingua validati con Zod e tipi derivati, `Intl.PluralRules` per i plurali, e nessun proxy sulle
 rotte pubbliche, che oggi non pagano un giro di rete per scelta (`src/proxy.ts` gira solo su
-`/account`, `/dashboard`, `/technologies`). Il prezzo accettato è scrivere noi interpolazione e
-plurali.
+`/account`, `/settings`, `/dashboard`, `/technologies`). Il prezzo accettato è scrivere noi
+l'interpolazione e i plurali.
 
-Il **selettore sta nel piede e nel menu profilo**. Il piede c'è su ogni pagina (#132), quindi la
-scelta è raggiungibile **da un visitatore** su una pagina pubblica a 390px, che è la No Dead End
-Rule: una scelta che un visitatore non può raggiungere è una scelta che non ha. Nel menu profilo è
-ripetuta perché da firmati la lingua si cerca con le altre impostazioni.
+Il **selettore sta nel piede e nella pagina Settings**. Il piede c'è su ogni pagina (#132), quindi
+la scelta è raggiungibile **da un visitatore** su una pagina pubblica a 390px, che è la No Dead End
+Rule: una scelta che un visitatore non può raggiungere è una scelta che non ha. Da firmati la lingua
+si cerca con le altre impostazioni, e quel posto è `/settings`.
+
+⚠️ **Correzione del 2026-10-16, decisa dall'utente.** Prima qui c'era scritto "nel menu profilo", e
+i cinque nomi stavano davvero dentro il pannello. Ora il pannello porta una **voce `settings`**
+accanto a `account` e `sign out`, e la scelta della lingua sta nella **pagina `/settings`**, che
+nasce con una sola impostazione perché le prossime si aggiungono lì invece di allungare un pannello
+che non può crescere di una riga per preferenza. `/settings` è protetta come `/account`: un
+visitatore non ci ha niente da tenere, e la lingua gliela dà il piede.
 
 Le traduzioni sono **stringhe di prodotto scritte una volta e versionate nel repository**, mai
 generate a runtime: niente chiamate AI, nessuna spesa. ⚠️ Italiano e inglese li rivede l'utente;
@@ -66,7 +73,7 @@ lingua è un **root param** e qualunque componente server la legge con `next/roo
 riceverla di mano in mano, e non esistono due file di rotta per pagina da tenere in sincrono. Il
 prezzo, scelto dall'utente il 2026-10-15: il proxy gira su **ogni** richiesta di pagina, mentre
 prima ne vedeva tre. ⚠️ Quello che le pagine pubbliche continuano a non pagare è il **giro di auth
-a Supabase**, che era il costo vero: resta sulle tre rotte protette.
+a Supabase**, che era il costo vero: resta sulle rotte protette.
 ⚠️ **La riscrittura si costruisce clonando l'URL in arrivo**, non dal percorso: un URL costruito dal
 solo percorso butta la query, cioè `?next=` del login, `?week=` del Digest e i filtri del Catalogo.
 Lo hanno misurato sei E2E caduti.

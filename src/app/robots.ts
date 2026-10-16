@@ -8,7 +8,7 @@ import { LOCALES, localePath } from "@/modules/i18n";
 // Every one of these exists in five languages since ADR 0008, and a rule written for the English
 // address alone would leave `/it/dashboard` open to crawling. `/auth/`, `/api/` and `/test/` are
 // outside the languages and are listed as they are.
-const PRIVATE = ["/technologies$", "/dashboard", "/account", "/login"] as const;
+const PRIVATE = ["/technologies$", "/dashboard", "/account", "/settings", "/login"] as const;
 
 export default function robots(): MetadataRoute.Robots {
   return {

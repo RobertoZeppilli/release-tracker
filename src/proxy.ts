@@ -12,8 +12,8 @@ import { DEFAULT_LOCALE, isLocale, stripLocale } from "@/modules/i18n";
 // ⚠️ Since ADR 0008 it runs on **every** page request, because every route lives under
 // `app/[locale]` and English carries no prefix: `/technologies/vite` has to be rewritten to
 // `/en/technologies/vite` for the router to find it. What the public pages still never pay is the
-// **auth round trip to Supabase**, which is what the cost was: that stays on the three paths below.
-const PROTECTED = ["/account", "/dashboard", "/technologies"];
+// **auth round trip to Supabase**, which is what the cost was: that stays on the paths below.
+const PROTECTED = ["/account", "/settings", "/dashboard", "/technologies"];
 
 function isProtected(path: string): boolean {
   return PROTECTED.includes(path);
