@@ -61,7 +61,18 @@ export function LocalePicker({ variant }: { variant: "foot" | "panel" }) {
   return (
     <nav aria-label={title}>
       <h2 className="text-text-muted">{title}</h2>
-      <ul className="mt-2 flex flex-col gap-2">
+      {/* ⚠️ Two sub-columns, and not the one column the other cells of the foot are: five names in a
+          column made the foot **46px taller than its tallest cell**, and the foot's height is read
+          by the Dashboard. Its left column is `position: sticky`, and at the bottom of the document
+          it sits a fixed distance under the top of the window, so every pixel the foot grows is a
+          pixel further the column travels over the line under it. The E2E that measures that
+          overlap (`dashboard.spec.ts`, "the columns apart") had **49px** of it in CI and 0 before,
+          while in locale the same page is tall enough that nothing showed. Three rows plus the
+          title is exactly the height of the `legal` cell, so the foot is the height it already was.
+          ⚠️ The coupling is real and is written here because it is invisible from either side: a
+          taller foot is a Dashboard regression until that sticky column is clamped by its own grid
+          area instead of by the end of the page. */}
+      <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
         {LOCALES.map((locale) => (
           <li key={locale}>
             <a
