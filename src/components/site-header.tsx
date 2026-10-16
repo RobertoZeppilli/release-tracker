@@ -1,4 +1,6 @@
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+"use client";
+
+import { LocaleLink as Link, useTranslator } from "@/modules/i18n/ui";
 import { SiteHeaderBar } from "./site-header-bar";
 import { NAV, type NavItem } from "./site-nav";
 
@@ -22,6 +24,13 @@ const SLOT = "max-sm:hidden";
 // The bar takes no width of its own any more: every page of the app shares the one container, so
 // the wordmark sits over the first letter of what it opens without being told where that is
 // (DESIGN.md, Layout, "The bar's container is the page's container").
+// ⚠️ A Client Component, and it has to be one: `error.tsx` is a client boundary and it renders this
+// header through `DiagnosticPage`, so a header that read the language from `i18n/server` broke the
+// build on the error page (`next/root-params` has no export in a client module). It reads the
+// language from the context the root layout writes instead, which is the half of the module that
+// exists for exactly this (`LocaleProvider`). Nothing is lost: the bar, every link in it and the
+// theme toggle were already client components, and what was rendered on the server here was the
+// skip link and one `ul`.
 export function SiteHeader({
   section,
   quota,
@@ -29,13 +38,15 @@ export function SiteHeader({
   section?: NavItem;
   quota?: React.ReactNode;
 }) {
+  const t = useTranslator();
+
   return (
     <>
       <a
         href="#content"
         className="absolute -left-[9999px] z-10 bg-raised px-3 py-2 focus:top-4 focus:left-4"
       >
-        Skip to content
+        {t("shell.skipToContent")}
       </a>
       {/* DESIGN.md, Layout: the bar stays on the screen, on every page. A product whose pages are
           long lists of Releases should not ask a reader at the bottom of one to scroll back up to
@@ -50,16 +61,16 @@ export function SiteHeader({
           the idiom the code already used for this in `site-header-bar.tsx`. */}
       <header className="sticky top-[0px] z-20 border-b border-rule bg-ground">
         <SiteHeaderBar quota={quota} section={section}>
-          <nav aria-label="Sections" className={SLOT}>
+          <nav aria-label={t("shell.sections")} className={SLOT}>
             <ul className="flex gap-4 font-mono text-label text-text-muted">
               {NAV.map((item) => (
-                <li key={item.label}>
+                <li key={item.key}>
                   <Link
                     href={item.href}
-                    aria-current={item.label === section ? "page" : undefined}
-                    className={`no-underline hover:text-text ${item.label === section ? "text-text" : ""}`}
+                    aria-current={item.key === section ? "page" : undefined}
+                    className={`no-underline hover:text-text ${item.key === section ? "text-text" : ""}`}
                   >
-                    {item.label}
+                    {t(item.message)}
                   </Link>
                 </li>
               ))}

@@ -2,6 +2,7 @@
 
 import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslator } from "@/modules/i18n/ui";
 
 // Two screens, measured from the top: below that a reader is far enough from the start that getting
 // back by dragging is the problem this control exists for, and above it the bar is still in reach of
@@ -16,6 +17,7 @@ const FAR = 2;
 // screen. It is not in the DOM before that, so there is nothing to tab into and nothing for a screen
 // reader to find; with JavaScript off it never appears, and the page keeps the bar it always had.
 export function BackToTop() {
+  const t = useTranslator();
   const [far, setFar] = useState(false);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function BackToTop() {
       className="fixed bottom-4 left-4 z-20 inline-flex size-[44px] items-center justify-center rounded-md border border-rule-strong bg-ground text-text no-underline hover:border-text-faint hover:bg-raised sm:left-auto sm:right-4"
     >
       <ArrowUp aria-hidden strokeWidth={1.75} className="size-4" />
-      <span className="sr-only">Back to top</span>
+      <span className="sr-only">{t("shell.backToTop")}</span>
     </a>
   );
 }

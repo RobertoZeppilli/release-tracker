@@ -2,7 +2,7 @@
 
 import { User, X } from "lucide-react";
 import Image from "next/image";
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { LocaleLink as Link, LocalePicker, useTranslator } from "@/modules/i18n/ui";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { loginPath } from "@/modules/auth";
@@ -52,6 +52,7 @@ export function SiteHeaderBar({
   section?: NavItem;
 }) {
   const session = useSession();
+  const t = useTranslator();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const account = useRef<HTMLDivElement>(null);
@@ -141,7 +142,7 @@ export function SiteHeaderBar({
             href={loginPath(pathname)}
             className="inline-flex min-h-5 items-center font-mono text-label text-text-muted no-underline hover:text-text"
           >
-            sign in
+            {t("shell.signIn")}
           </a>
         )}
         {session.state === "developer" && (
@@ -154,7 +155,9 @@ export function SiteHeaderBar({
             className="inline-flex size-[34px] items-center justify-center overflow-hidden rounded-md border border-rule-strong text-text hover:border-text-faint hover:bg-raised"
           >
             <Portrait developer={session} />
-            <span className="sr-only">Account{session.handle ? `, signed in as ${session.handle}` : ""}</span>
+            <span className="sr-only">
+              {session.handle ? t("shell.account.openAs", { handle: session.handle }) : t("shell.account.open")}
+            </span>
           </button>
         )}
         <ThemeToggle />
@@ -192,6 +195,8 @@ function AccountPanel({
   onFollow: () => void;
   onTab: (event: React.KeyboardEvent) => void;
 }) {
+  const t = useTranslator();
+
   return (
     // `sm:right-5` and not `right-0`: the bar is the positioning box and carries `sm:px-5`, so a zero
     // right would align the panel to the box edge and hang 24px past the gutter every other element
@@ -203,14 +208,14 @@ function AccountPanel({
       className="fixed inset-[0px] z-30 flex flex-col bg-ground sm:absolute sm:inset-auto sm:top-[calc(100%+8px)] sm:right-5 sm:z-20 sm:block sm:min-w-[180px] sm:rounded-md sm:border sm:border-rule sm:bg-raised sm:py-2"
     >
       <div className="flex h-[56px] shrink-0 items-center justify-between border-b border-rule px-4 sm:hidden">
-        <span className="font-mono text-label text-text-faint">{developer.handle ?? "account"}</span>
+        <span className="font-mono text-label text-text-faint">{developer.handle ?? t("shell.account")}</span>
         <button
           type="button"
           onClick={onClose}
           className="inline-flex size-[34px] items-center justify-center rounded-md border border-rule-strong text-text hover:border-text-faint hover:bg-raised"
         >
           <X aria-hidden strokeWidth={1.75} className="size-4" />
-          <span className="sr-only">Close account</span>
+          <span className="sr-only">{t("shell.account.close")}</span>
         </button>
       </div>
       {developer.handle && (
@@ -222,17 +227,17 @@ function AccountPanel({
           this list is `display: none`, so there is one copy of each link on the page at any width.
           They come first, before the way out, because reaching the other section is what a reader
           opens this for and signing out is what they do once. */}
-      <nav aria-label="Sections" className="sm:hidden">
+      <nav aria-label={t("shell.sections")} className="sm:hidden">
         <ul>
           {NAV.map((item) => (
-            <li key={item.label}>
+            <li key={item.key}>
               <Link
                 href={item.href}
                 onClick={onFollow}
-                aria-current={item.label === section ? "page" : undefined}
-                className={`${ITEM} ${item.label === section ? "text-text" : ""}`}
+                aria-current={item.key === section ? "page" : undefined}
+                className={`${ITEM} ${item.key === section ? "text-text" : ""}`}
               >
-                {item.label}
+                {t(item.message)}
               </Link>
             </li>
           ))}
@@ -244,12 +249,16 @@ function AccountPanel({
           product, and above `sign out` because signing out is still the last line of the panel. */}
       <div className="mt-auto border-t border-rule sm:mt-1 sm:border-t sm:border-rule sm:pt-1">
         <Link href="/account" onClick={onFollow} className={ITEM}>
-          account
+          {t("shell.account")}
         </Link>
       </div>
+      {/* The language, repeated here because from a signed-in page it is looked for with the other
+          settings (ADR 0008). It sits under the account and over the way out, for the reason the
+          account link does: signing out stays the last line of the panel. */}
+      <LocalePicker variant="panel" />
       <form action="/auth/sign-out" method="post">
         <button type="submit" className={`${ITEM} w-full`}>
-          sign out
+          {t("shell.signOut")}
         </button>
       </form>
     </div>

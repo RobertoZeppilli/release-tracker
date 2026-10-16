@@ -1,4 +1,5 @@
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { getTranslator } from "@/modules/i18n/server";
+import { LocaleLink as Link, LocalePicker } from "@/modules/i18n/ui";
 import { FOOT } from "./site-foot";
 
 // The foot of every page of the app, rendered once by the root layout. It is the wordmark and two
@@ -9,13 +10,19 @@ import { FOOT } from "./site-foot";
 // opens under the same letter the mark in the bar opens under.
 // The three columns stand side by side at every width, 390px included: the labels are one short
 // word each, so nothing here has to stack or fold away behind anything to be reachable.
+// The language is the fourth column above 640px and a row of its own below it: five language names
+// are longer than `faq` and `terms`, and `Français` beside two 160px columns at 320px is the one
+// thing here that would have had to fold (ADR 0008). On its own row it is still side by side with
+// nothing, reachable by a visitor at every width, which is what the picker is in the foot for.
 // ⚠️ `mt-auto`, with the flex column on `body` in `globals.css`: on a short page (the 404, an error,
 // a signed-out account) the content does not reach the bottom of the window, and a foot that
 // followed it sat halfway up the screen with nothing under it.
-export function SiteFooter() {
+export async function SiteFooter() {
+  const t = await getTranslator();
+
   return (
     <footer className="mx-auto mt-auto max-w-content px-4 pb-7 sm:px-5">
-      <div className="grid grid-cols-[auto_minmax(0,160px)_minmax(0,160px)] justify-start items-start gap-x-4 gap-y-5 border-t border-rule pt-5 font-mono text-meta sm:gap-x-6">
+      <div className="grid grid-cols-[auto_minmax(0,160px)_minmax(0,160px)] justify-start items-start gap-x-4 gap-y-5 border-t border-rule pt-5 font-mono text-meta sm:grid-cols-[auto_repeat(3,minmax(0,160px))] sm:gap-x-6">
         {/* DESIGN.md, Brand Mark: the mark appears once more in the page foot, at Meta size. Same
             ink and same colon as in the bar, one step smaller, and the home link it already is. */}
         <Link
@@ -25,19 +32,22 @@ export function SiteFooter() {
           verdict:
         </Link>
         {FOOT.map((group) => (
-          <nav key={group.title} aria-label={group.title}>
-            <h2 className="text-text-muted">{group.title}</h2>
+          <nav key={group.title} aria-label={t(group.title)}>
+            <h2 className="text-text-muted">{t(group.title)}</h2>
             <ul className="mt-2 flex flex-col gap-2">
               {group.links.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-text-faint no-underline hover:text-text">
-                    {link.label}
+                    {t(link.message)}
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
         ))}
+        <div className="col-span-3 col-start-1 sm:col-span-1 sm:col-start-auto">
+          <LocalePicker variant="foot" />
+        </div>
       </div>
     </footer>
   );

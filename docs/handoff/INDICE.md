@@ -18,6 +18,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del quinto giro: la #131 in quattro PR, le prime due su `main` (2026-10-15)
+  - Le sei cose che la PR 2 ha insegnato: query nella riscrittura, matcher senza punto,
+    catch-all dentro la lingua, `next typegen` in CI, `next/link` in un posto solo
+  - ⚠️ `NEXT_PUBLIC_GITHUB_CLIENT_ID` ancora da mettere su Vercel, i 14 KB e le `max-[]`
 - Le cinque decisioni della #131, prese dall'utente il 2026-10-15
   - Cinque lingue, Note di rilascio e Sintesi non tradotte, pagina Release dichiarata mista
   - Vocabolario di dominio in inglese in ogni lingua, legenda della landing tradotta

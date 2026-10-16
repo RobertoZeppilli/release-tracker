@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_LOCALE, isLocale, localeAlternates, localePath, LOCALES, stripLocale } from "./locales";
+import { barePath, DEFAULT_LOCALE, isLocale, localeAlternates, localePath, LOCALES, stripLocale } from "./locales";
 
 describe("isLocale", () => {
   it("accepts the five published languages", () => {
@@ -42,6 +42,22 @@ describe("stripLocale", () => {
 
   it("leaves an explicit /en where it is instead of inventing a redirect", () => {
     expect(stripLocale("/en/faq")).toEqual({ locale: "en", path: "/en/faq" });
+  });
+});
+
+describe("barePath", () => {
+  it("takes any language prefix off, English included", () => {
+    // The English one is the whole reason it exists: `usePathname` returns the path the proxy
+    // rewrote to, so an English page reads `/en/faq` in the browser.
+    expect(barePath("/en/faq")).toBe("/faq");
+    expect(barePath("/it/technologies/vite")).toBe("/technologies/vite");
+    expect(barePath("/de")).toBe("/");
+  });
+
+  it("leaves a path that carries no language where it is", () => {
+    expect(barePath("/technologies/vite")).toBe("/technologies/vite");
+    expect(barePath("/dashboard")).toBe("/dashboard");
+    expect(barePath("/")).toBe("/");
   });
 });
 

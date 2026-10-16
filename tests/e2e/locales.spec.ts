@@ -80,3 +80,53 @@ test("the sitemap lists every page in all five languages, each naming the others
   }
   expect(xml).toContain('hreflang="x-default"');
 });
+
+// The picker, which is what makes the five languages a choice instead of five addresses. ADR 0008
+// puts it in the foot for the reason the No Dead End Rule gives: a visitor, on a public page, at
+// phone width, with no account to find it in.
+test("a visitor reaches the picker in the foot at 390px and changes language with it", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/faq");
+  const picker = page.locator("footer").getByRole("navigation", { name: "language" });
+  await expect(picker).toBeVisible();
+  // English is where the reader is, and the picker says so rather than offering it as a way out.
+  await expect(picker.getByRole("link", { name: "English" })).toHaveAttribute("aria-current", "true");
+
+  await picker.getByRole("link", { name: "Italiano" }).click();
+  await expect(page).toHaveURL("/it/faq");
+  await expect(page.locator("html")).toHaveAttribute("lang", "it");
+  // And from inside Italian it offers the way back, with the English address carrying no prefix.
+  const italian = page.locator("footer").getByRole("navigation", { name: "language" });
+  await expect(italian.getByRole("link", { name: "English" })).toHaveAttribute("href", "/faq");
+});
+
+// The picker writes the query onto the anchor as it is clicked, because `usePathname` has not got it
+// and `useSearchParams` in the foot of the root layout would cost the ISR of all 70 pages.
+test("changing language keeps the query the reader was looking at", async ({ page }) => {
+  await page.goto("/login?next=%2Fdashboard");
+  await page.locator("footer").getByRole("navigation", { name: "language" }).getByRole("link", { name: "Deutsch" }).click();
+  await expect(page).toHaveURL("/de/login?next=%2Fdashboard");
+});
+
+// Nothing in the interface says what language it is in; a Release page in another language says that
+// the Summary and the notes are not in it (ADR 0008). It is the one place the product admits the
+// page is mixed, and it admits it before the Summary is read.
+test("a Release page outside English says the summary and the notes are in English", async ({ page }) => {
+  // Its own fixture, with a Summary and notes on it: the shared one carries neither, and a page
+  // with nothing in the other language has nothing to declare, which the last assertion here is.
+  const summarized = await seedTechnology([
+    { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false },
+  ]);
+
+  await page.goto(`/it/technologies/${summarized.slug}/1.0.0`);
+  await expect(page.getByRole("note")).toContainText("the summary and the release notes are in English");
+
+  // On the English page there are not two languages to tell apart, so nothing is said.
+  await page.goto(`/technologies/${summarized.slug}/1.0.0`);
+  await expect(page.getByText("the summary and the release notes are in English")).toHaveCount(0);
+
+  // And nothing is said in Italian either on a Release with no notes and no Summary: there is no
+  // other language on the screen to declare.
+  await page.goto(`/it/technologies/${technology.slug}/1.0.0`);
+  await expect(page.getByText("the summary and the release notes are in English")).toHaveCount(0);
+});

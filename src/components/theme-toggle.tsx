@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
+import { useTranslator } from "@/modules/i18n/ui";
 import { THEME_STORAGE_KEY, ThemeSchema, type Theme } from "./theme";
 
 function subscribe(onChange: () => void) {
@@ -26,6 +27,7 @@ function getTheme(): Theme {
 }
 
 export function ThemeToggle() {
+  const t = useTranslator();
   const theme = useSyncExternalStore(subscribe, getTheme, () => "dark" as const);
   const next: Theme = theme === "dark" ? "light" : "dark";
 
@@ -51,7 +53,11 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={`Switch to ${next} theme`}
+      // One key per direction and not a name interpolated into a sentence: `Switch to {theme}
+      // theme` reads in English only because `dark` and `light` happen to be adjectives there, and
+      // a language that inflects them would have had to translate a word this sentence never
+      // carried as a word.
+      aria-label={next === "dark" ? t("shell.theme.toDark") : t("shell.theme.toLight")}
       className="inline-flex size-[34px] items-center justify-center rounded-md border border-rule-strong text-text hover:border-text-faint hover:bg-raised"
     >
       {theme === "dark" ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
