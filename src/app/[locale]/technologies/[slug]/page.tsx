@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
-import { PageBreadcrumb, TECHNOLOGIES_CRUMB } from "@/components/breadcrumb";
+import { PageBreadcrumb, technologiesCrumb } from "@/components/breadcrumb";
 import { ColumnTitle } from "@/components/column-title";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
-import { currentLocale } from "@/modules/i18n/server";
+import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { createPublicClient } from "@/lib/supabase";
 import { technologyMeta } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
@@ -50,6 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TechnologyPage({ params }: Props) {
   const { slug } = await params;
+  const t = await getTranslator();
   const technology = await loadTechnology(slug);
   if (!technology) notFound();
   const releases = await listReleases(createPublicClient(), technology.id);
@@ -79,7 +80,7 @@ export default async function TechnologyPage({ params }: Props) {
   // names its own ordering and so nothing up here was ever shared between the two.
   const head = (
     <div>
-      <PageBreadcrumb path={[TECHNOLOGIES_CRUMB, technology.slug]} />
+      <PageBreadcrumb path={[technologiesCrumb(t), technology.slug]} />
       <TechnologyHeader
         technology={technology}
         latest={grouped.latest}

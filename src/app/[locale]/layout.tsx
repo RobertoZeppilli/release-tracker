@@ -5,7 +5,7 @@ import { Fragment_Mono, Hanken_Grotesk } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { themeInitScript } from "@/components/theme";
 import { env } from "@/env";
-import { isLocale, LOCALES } from "@/modules/i18n";
+import { dictionaryFor, isLocale, LOCALES } from "@/modules/i18n";
 import { LocaleProvider } from "@/modules/i18n/ui";
 import "../globals.css";
 
@@ -50,11 +50,13 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        {/* The language, for the half of the tree that cannot read it from the server: a Client
-            Component cannot call `next/root-params`, and every internal link is a client one. */}
+        {/* The language and its dictionary, for the half of the tree that cannot read them from
+            the server: a Client Component cannot call `next/root-params`, and every internal link is
+            a client one. The dictionary is resolved here, once per page, so the browser is handed
+            the one language it is reading and not all five. */}
         {/* A provider renders no element of its own, so `main` and `footer` stay direct children
             of `body`, which `globals.css` needs them to be. */}
-        <LocaleProvider locale={locale}>
+        <LocaleProvider locale={locale} dictionary={dictionaryFor(locale)}>
           {children}
           {/* The foot belongs to the layout and not to the pages: issue #132 asks the five pages
               that say what the product is to be reachable from every page at every width, and a
