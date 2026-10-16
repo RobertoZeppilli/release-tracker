@@ -18,6 +18,13 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del sesto giro: la PR 3a aperta, e il piede che la Dashboard misura (2026-10-16)
+  - Com'è fatto il dizionario: `message.ts`, `translate.ts`, il registro che fonde sopra l'inglese,
+    il test di parità che tiene il fallback fuori dalla produzione
+  - ⚠️ `usePathname()` dà il percorso riscritto dal proxy, `SiteHeader` deve essere client,
+    la query si scrive sull'ancora al click
+  - ⚠️ Il piede non poteva crescere: la colonna sticky della Dashboard misurata in CI
+  - ⚠️ Niente prettier nel repository, e il glossario deciso il 2026-10-16
 - Stato del quinto giro: la #131 in quattro PR, le prime due su `main` (2026-10-15)
   - Le sei cose che la PR 2 ha insegnato: query nella riscrittura, matcher senza punto,
     catch-all dentro la lingua, `next typegen` in CI, `next/link` in un posto solo

@@ -13,6 +13,7 @@ export const shell = {
   "shell.signIn": "sign in",
   "shell.signOut": "sign out",
   "shell.account": "account",
+  "shell.settings": "settings",
   // The accessible name of the button that opens the panel, in its two cases: a handle is who the
   // reader is signed in as, and without one the button is still the account.
   "shell.account.open": "Account",

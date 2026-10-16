@@ -8,12 +8,19 @@ import { FOOT } from "./site-foot";
 // over a 1px `rule`, no surface, no shadow and no second container: it sits in the page's own
 // container (DESIGN.md, Layout, "The bar's container is the page's container"), so the mark below
 // opens under the same letter the mark in the bar opens under.
-// The three columns stand side by side at every width, 390px included: the labels are one short
-// word each, so nothing here has to stack or fold away behind anything to be reachable.
-// The language is the fourth column above 640px and a row of its own below it: five language names
-// are longer than `faq` and `terms`, and `Français` beside two 160px columns at 320px is the one
-// thing here that would have had to fold (ADR 0008). On its own row it is still side by side with
-// nothing, reachable by a visitor at every width, which is what the picker is in the foot for.
+//
+// ⚠️ **One grid of four columns**, and both halves of that are a fix (2026-10-16):
+// 1. The tracks were a fixed 160px each, starting at the left, so above 1000px the foot huddled in
+//    the first third of the page with half of it empty beside it. They are fractions now, so the
+//    columns stand at the quarters of the page at every width.
+// 2. The **language** is the fourth column again, a column like the other two: it had been folded
+//    into two sub-columns to keep the foot short, and two columns that mean nothing read as a table
+//    of nothing. Five names in a column make the foot **11px taller**, which was a Dashboard
+//    regression until its standing column was clamped by its own grid area (`standing-column.tsx`);
+//    `dashboard.spec.ts`, "the columns apart", holds that end of it.
+// On a phone the mark takes a row of its own and the three groups sit under it, two side by side
+// and the language across the width as a wrapping row (`LocalePicker`, the foot variant): the mark
+// used to be a column of the grid, and `product` and `legal` were living on what was left of 390px.
 // ⚠️ `mt-auto`, with the flex column on `body` in `globals.css`: on a short page (the 404, an error,
 // a signed-out account) the content does not reach the bottom of the window, and a foot that
 // followed it sat halfway up the screen with nothing under it.
@@ -22,12 +29,12 @@ export async function SiteFooter() {
 
   return (
     <footer className="mx-auto mt-auto max-w-content px-4 pb-7 sm:px-5">
-      <div className="grid grid-cols-[auto_minmax(0,160px)_minmax(0,160px)] justify-start items-start gap-x-4 gap-y-5 border-t border-rule pt-5 font-mono text-meta sm:grid-cols-[auto_repeat(3,minmax(0,160px))] sm:gap-x-6">
+      <div className="grid grid-cols-2 items-start gap-x-6 gap-y-6 border-t border-rule pt-5 font-mono text-meta sm:grid-cols-[auto_repeat(3,minmax(0,1fr))] sm:gap-x-8">
         {/* DESIGN.md, Brand Mark: the mark appears once more in the page foot, at Meta size. Same
             ink and same colon as in the bar, one step smaller, and the home link it already is. */}
         <Link
           href="/"
-          className="mr-2 tracking-[-0.02em] whitespace-nowrap text-text no-underline [font-variant-ligatures:none] sm:mr-5"
+          className="col-span-2 tracking-[-0.02em] whitespace-nowrap text-text no-underline sm:col-span-1 sm:mr-6 [font-variant-ligatures:none]"
         >
           verdict:
         </Link>
@@ -45,7 +52,7 @@ export async function SiteFooter() {
             </ul>
           </nav>
         ))}
-        <div className="col-span-3 col-start-1 sm:col-span-1 sm:col-start-auto">
+        <div className="col-span-2 sm:col-span-1">
           <LocalePicker variant="foot" />
         </div>
       </div>

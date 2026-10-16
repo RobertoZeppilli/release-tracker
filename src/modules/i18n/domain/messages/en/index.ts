@@ -1,4 +1,5 @@
 import { release } from "./release";
+import { settings } from "./settings";
 import { shell } from "./shell";
 
 // The English dictionary, one namespace per file so no file here grows past reading length and the
@@ -6,6 +7,7 @@ import { shell } from "./shell";
 export const EN = {
   ...shell,
   ...release,
+  ...settings,
 } as const;
 
 // The shape every other language has to fill. It is derived from the English dictionary rather than

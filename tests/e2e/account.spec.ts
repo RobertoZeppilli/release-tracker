@@ -38,6 +38,31 @@ test.afterAll(async () => {
   await technology.remove();
 });
 
+// The Settings page, the other half of what the account menu offers: what the reader has chosen
+// about the app, as opposed to what the account is. Today that is the language and nothing else, and
+// the test is about the road to it and the choice working, not about the five names, which
+// `locales.spec.ts` already reads in the foot.
+test.describe("the settings page", () => {
+  test("is behind the login, like the other signed-in pages", async ({ page }) => {
+    await page.goto("/settings");
+    await expect(page).toHaveURL("/login?next=%2Fsettings");
+  });
+
+  test("is reached from the account menu, and changes the language from there", async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/dashboard");
+    await page.getByRole("button", { name: /^Account/ }).click();
+    await page.getByRole("link", { name: "settings", exact: true }).click();
+    await expect(page).toHaveURL("/settings");
+    await expect(page.getByRole("heading", { name: "Settings", level: 1 })).toBeVisible();
+
+    // The choice leads to this same page in the other language, which is what the picker is for.
+    await page.getByRole("main").getByRole("link", { name: "Italiano" }).click();
+    await expect(page).toHaveURL("/it/settings");
+    await expect(page.locator("html")).toHaveAttribute("lang", "it");
+  });
+});
+
 test.describe("the account page", () => {
   test("is behind the login, like the other signed-in pages", async ({ page }) => {
     await page.goto("/account");

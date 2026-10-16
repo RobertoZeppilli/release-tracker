@@ -17,11 +17,16 @@ export function StandingColumn({
   // The sticky column lives inside a plain grid item stretched to the row's height: a sticky grid
   // item is not clamped by its own grid area, so the column used to slide past the end of the split
   // and paint over the line under it.
+  // ⚠️ The window height alone was not enough to hold it: at the bottom of a short document the
+  // column is a window tall while the split under it is not, and the extra hung over the line below
+  // (`dashboard.spec.ts`, "the columns apart"). `100%` of the stretched item is the split's own
+  // height, so the smaller of the two is what the column takes, and the foot can be as tall as it
+  // needs to be without the Dashboard paying for it (`site-footer.tsx`).
   return (
     <div className="self-stretch">
       <aside
         aria-labelledby="page-verdict"
-        className="flex flex-col min-[1041px]:sticky min-[1041px]:top-[72px] min-[1041px]:max-h-[calc(100vh-72px-var(--spacing-6))]"
+        className="flex flex-col min-[1041px]:sticky min-[1041px]:top-[72px] min-[1041px]:max-h-[min(100%,calc(100vh-72px-var(--spacing-6)))]"
       >
         {/* The verdict is the title of the panel now, not a line above it: two boxes of the app
           hold a verdict and its counts, and they are the same box (DESIGN.md, Standing Panel). */}
