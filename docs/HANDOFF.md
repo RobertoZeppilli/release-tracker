@@ -28,15 +28,16 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-15, quinto giro): la #131 è aperta e la sta facendo in quattro PR.**
-La **PR 1 è su `main`** (`6cb9494`, PR #159): l'**ADR 0008** fissa le cinque lingue, e `CLAUDE.md`,
-`CONTEXT.md` e `docs/DECISIONI.md` (quattro righe in "Esperienza utente") concordano con lui. La
-**PR 2 è aperta, la #160**, verde in locale, con la base riportata su `main` (la #159 è entrata in
-squash, quindi il merge di `main` nel ramo ha chiesto di risolvere un conflitto add/add sull'ADR:
-vince la versione del ramo, che è la stessa più tre capoversi) e con tre commit di riparazione
-della CI, che ora passa il `check`. Restano la **PR 3**
-(estrazione delle stringhe, inglese e italiano, selettore, avviso di lingua mista) e la **PR 4**
-(francese, spagnolo, tedesco più l'overflow a 320px in tedesco, che è il caso peggiore).
+**Da dove ripartire (2026-10-15, quinto giro): la #131 è aperta e la sta facendo in quattro PR, e le
+prime due sono su `main`.** La **PR 1** (`6cb9494`, PR #159) porta l'**ADR 0008**, che fissa le
+cinque lingue, con `CLAUDE.md`, `CONTEXT.md` e `docs/DECISIONI.md` (quattro righe in "Esperienza
+utente") che concordano con lui. La **PR 2** (`f403267`, PR #160) porta l'impianto: `app/[locale]`,
+il proxy che riscrive, `src/modules/i18n`, i canonici e gli `hreflang` per lingua, e **nessuna
+stringa tradotta**. ⚠️ La #159 era entrata in squash, quindi portare `main` nel ramo della #160 ha
+chiesto di risolvere un conflitto **add/add** sull'ADR: vinceva la versione del ramo, la stessa più
+tre capoversi. Restano la **PR 3** (estrazione delle stringhe, inglese e italiano, selettore, avviso
+di lingua mista) e la **PR 4** (francese, spagnolo, tedesco più l'overflow a 320px in tedesco, che è
+il caso peggiore).
 
 ⚠️ **Le cinque decisioni della #131, prese dall'utente il 2026-10-15, stanno per esteso in
 `docs/adr/0008-interfaccia-in-cinque-lingue.md`** e in quattro righe di `docs/DECISIONI.md`, e sono
@@ -71,10 +72,11 @@ sono rivisti da madrelingua**: va fatto prima del lancio.
 6. Il **`LocaleProvider` non disegna nessun elemento**, quindi `main` e `footer` restano figli
    diretti di `body`, come `globals.css` ha bisogno che siano.
 
-**Verde** prima di aprire la #160: `lint`, `typecheck`, `build` (**70 pagine statiche**, cioè quelle
-di prima per cinque: l'ISR non è stato buttato), **651 su 651** unitari, **70 su 70** di integrazione
-e **245 E2E** contro `pnpm start` (`CI=1`), di cui **7 nuovi** in `tests/e2e/locales.spec.ts`. Un
-flaky noto (`technology-follow:170`), passato 3 volte su 3 da solo.
+**Verde** prima del merge della #160, e la CI passa: `lint`, `typecheck`, `build` (**70 pagine
+statiche**, cioè quelle di prima per cinque: l'ISR non è stato buttato), **651 su 651** unitari,
+**70 su 70** di integrazione e **245 E2E** contro `pnpm start` (`CI=1`), di cui **7 nuovi** in
+`tests/e2e/locales.spec.ts`. Un flaky noto (`technology-follow:170`), passato 3 volte su 3 da
+solo.
 ⚠️ **Il dev server sulla 3000 è acceso.** ⚠️ **Sette rami da cancellare** e lo stash
 `residuo del checkout interrotto`, che sono dell'utente: ai sei di prima si aggiunge
 `131-ui-five-languages`, mergiato. `git push origin --delete <rami>`, `git branch -d <rami>`,
