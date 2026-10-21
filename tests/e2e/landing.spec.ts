@@ -76,6 +76,29 @@ test("the Italian landing is read in Italian, and the notes inside it are not", 
   );
 });
 
+// The other three, checked the way the Italian one is: the title and the claim together, because
+// the claim alone is a `h1` any language fills and the title is what a parity test cannot see.
+// The display claim carries its full stop and the band titles under it do not, so the assertion is
+// on the whole text and not on a substring of it.
+test("the landing is read in French, Spanish and German", async ({ page }) => {
+  const landings = [
+    { locale: "fr", title: "Verdict, comprendre avant de mettre à jour", claim: "Comprendre avant de mettre à jour." },
+    { locale: "es", title: "Verdict, entender antes de actualizar", claim: "Entender antes de actualizar." },
+    { locale: "de", title: "Verdict, verstehen vor dem Upgrade", claim: "Verstehen vor dem Upgrade." },
+  ] as const;
+
+  for (const { locale, title, claim } of landings) {
+    await page.goto(`/${locale}`);
+    await expect(page).toHaveTitle(title);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(claim);
+    // The release notes inside the page stay the text the project published, in every language:
+    // that is the product's argument and not a property of Italian (ADR 0008).
+    await expect(page.getByRole("main").locator("ol").first()).toContainText(
+      "Using `propTypes` will now be silently ignored",
+    );
+  }
+});
+
 test("the proof stands beside the claim, with the real line and the verdict it produced", async ({ page }) => {
   await page.goto("/");
   const panel = page.getByRole("main").locator("ol").first();

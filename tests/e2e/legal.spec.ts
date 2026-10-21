@@ -72,6 +72,30 @@ for (const { path, italian } of PAGES) {
   });
 }
 
+// The other three languages, checked by the one line every one of the five pages carries: the date
+// line is `doc.updated`, so a page served with the English dictionary says `last updated` and is
+// caught here. The heading is not what is read for them, the way it is for Italian: `FAQ` and
+// `Privacy` are the same word in all five languages, and the words these three pages do not share
+// with English are exactly the ones a parity test already proved are present.
+// ⚠️ Unreviewed by native speakers (ADR 0008), so what is asserted is that the page is in the
+// language, never that the sentence is the right one to be in it.
+const DATED = [
+  { locale: "fr", updated: /dernière mise à jour : \d{4}-\d{2}-\d{2}/ },
+  { locale: "es", updated: /última actualización: \d{4}-\d{2}-\d{2}/ },
+  { locale: "de", updated: /zuletzt aktualisiert: \d{4}-\d{2}-\d{2}/ },
+] as const;
+
+for (const { locale, updated } of DATED) {
+  test(`the five pages are read in ${locale}, with no English line left in them`, async ({ page }) => {
+    for (const { path } of PAGES) {
+      await page.goto(`/${locale}${path}`);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByText(updated)).toBeVisible();
+      await expect(page.getByText(/last updated:/)).toHaveCount(0);
+    }
+  });
+}
+
 // Five translations are not five contracts: the English text holds, and the two pages that bind say
 // so themselves rather than leaving a reader to wonder which one they agreed to. The three that
 // describe do not say it, because a mistranslation there is a bug to fix and not a conflict.
@@ -89,6 +113,26 @@ test("the two binding pages say which language holds, and the other three do not
   for (const { path } of PAGES.filter(({ path }) => !BINDING.some((bound) => bound === path))) {
     await page.goto(`/it${path}`);
     await expect(page.getByText(sentence)).toHaveCount(0);
+  }
+});
+
+// And the same clause in the three languages that arrived last: a page that binds has to say which
+// language holds in the language of the reader who is being bound, or the sentence is doing nothing
+// for the only person it is written for.
+test("the two binding pages say which language holds in the other three languages too", async ({ page }) => {
+  const clauses = [
+    { locale: "fr", clause: /c’est le texte anglais qui fait foi/ },
+    { locale: "es", clause: /es el texto en inglés el que vale/ },
+    { locale: "de", clause: /gilt der englische Text/ },
+  ] as const;
+
+  for (const { locale, clause } of clauses) {
+    for (const path of BINDING) {
+      await page.goto(`/${locale}${path}`);
+      await expect(page.getByText(clause)).toBeVisible();
+    }
+    await page.goto(`/${locale}/faq`);
+    await expect(page.getByText(clause)).toHaveCount(0);
   }
 });
 

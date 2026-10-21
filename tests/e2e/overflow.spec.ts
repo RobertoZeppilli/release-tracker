@@ -7,7 +7,9 @@ import { addFollows, arrived, e2eAuthSecret, type FixtureDeveloper, type Fixture
 // own as new notes arrive. The fixture below is deliberately hostile: a cited line too long for any
 // caret row, an identifier wider than a phone, and a bare URL with nowhere to break.
 
-const WIDTHS = [1440, 1280, 768, 390];
+// 320px is the narrowest width this product holds, and it arrives with the three languages: German
+// is the worst case for word length and the limit ADR 0008 commits to is no overflow at 320px.
+const WIDTHS = [1440, 1280, 768, 390, 320];
 
 const LONG_QUOTE =
   "The legacy `unstable_renderSubtreeIntoContainer` entry point is gone, and every call to it has to move to createRoot before the upgrade.";
@@ -125,10 +127,12 @@ for (const width of WIDTHS) {
     });
 
     test("the public pages stay inside the window", async ({ page }) => {
-      // `/it` is the landing again in the longer language: Italian prose runs past English almost
-      // everywhere, so the page that is all prose is the one that would break a measure first
-      // (ADR 0008). German is longer still and arrives with PR 4, together with the 320px width.
-      for (const path of ["/", "/it", "/login", `/technologies/${technology.slug}`, `/technologies/${technology.slug}?from=2.0.0`]) {
+      // `/it` and `/de` are the landing again in the two longer languages: Italian prose runs past
+      // English almost everywhere and German runs past Italian, so the page that is all prose is
+      // the one that would break a measure first (ADR 0008). `/de/terms` is here as well because
+      // it is the page of German compounds: `Nutzungsbedingungen` and `Gewährleistung` are the
+      // longest unbreakable words the product prints, and a document page is where they sit.
+      for (const path of ["/", "/it", "/de", "/de/terms", "/login", `/technologies/${technology.slug}`, `/technologies/${technology.slug}?from=2.0.0`]) {
         await page.goto(path);
         await expectNoOverflow(page, path);
       }
@@ -149,7 +153,10 @@ for (const width of WIDTHS) {
 
     test("the signed-in pages stay inside the window", async ({ page }) => {
       await signIn(page);
-      for (const path of ["/dashboard", "/technologies", "/account"]) {
+      // The German ones are measured beside the English: the Standing panel is 326px wide and its
+      // verdict is one line by rule (DESIGN.md), so the language with the longest words is the one
+      // that would push it out. `/de/settings` is the page the language itself is chosen on.
+      for (const path of ["/dashboard", "/technologies", "/account", "/settings", "/de/dashboard", "/de/technologies", "/de/account", "/de/settings"]) {
         await page.goto(path);
         await expectNoOverflow(page, path);
       }
