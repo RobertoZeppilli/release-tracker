@@ -5,13 +5,20 @@ import { expect, test } from "@playwright/test";
 // the pages exist and are indexable, that every page of the app opens all five at every width, and
 // that the sign-in points at the terms before the button that signs.
 
+// The Italian heading is here beside the English one (#131) because the pair is the thing worth
+// checking: a page whose tab and heading drifted apart, or whose foot entry calls it by a word the
+// page does not answer to, is only visible when both are read at once.
 const PAGES = [
-  { path: "/terms", heading: "Terms of service" },
-  { path: "/privacy", heading: "Privacy" },
-  { path: "/attributions", heading: "Attributions" },
-  { path: "/faq", heading: "FAQ" },
-  { path: "/contact", heading: "Contact" },
+  { path: "/terms", heading: "Terms of service", italian: "Termini di servizio" },
+  { path: "/privacy", heading: "Privacy", italian: "Privacy" },
+  { path: "/attributions", heading: "Attributions", italian: "Attribuzioni" },
+  { path: "/faq", heading: "FAQ", italian: "FAQ" },
+  { path: "/contact", heading: "Contact", italian: "Contatti" },
 ] as const;
+
+// The two that bind, as opposed to the three that describe: they are the ones that say which
+// language holds (#131).
+const BINDING = ["/terms", "/privacy"] as const;
 
 const FOOT_LINKS = ["faq", "contact", "terms", "privacy", "attributions"] as const;
 
@@ -52,12 +59,48 @@ for (const width of [1280, 390]) {
   });
 }
 
+// The words, which `locales.spec` deliberately does not check: that file is about the plumbing.
+// What is checked here is that the page is in Italian from the tab down to the date, because the
+// heading alone would pass on `Privacy` and `FAQ`, which are the same word in both languages.
+for (const { path, italian } of PAGES) {
+  test(`/it${path} is read in Italian, heading and date together`, async ({ page }) => {
+    await page.goto(`/it${path}`);
+
+    await expect(page.getByRole("heading", { name: italian, level: 1 })).toBeVisible();
+    await expect(page.getByText(/ultimo aggiornamento: \d{4}-\d{2}-\d{2}/)).toBeVisible();
+    await expect(page.getByText(/last updated:/)).toHaveCount(0);
+  });
+}
+
+// Five translations are not five contracts: the English text holds, and the two pages that bind say
+// so themselves rather than leaving a reader to wonder which one they agreed to. The three that
+// describe do not say it, because a mistranslation there is a bug to fix and not a conflict.
+test("the two binding pages say which language holds, and the other three do not", async ({ page }) => {
+  const sentence = /Dove non coincidono, è il testo inglese quello che vale/;
+
+  for (const path of BINDING) {
+    await page.goto(`/it${path}`);
+    await expect(page.getByText(sentence)).toBeVisible();
+    // In English too: there it tells the reader theirs is the text that holds.
+    await page.goto(path);
+    await expect(page.getByText(/the English text is the one that holds/)).toBeVisible();
+  }
+
+  for (const { path } of PAGES.filter(({ path }) => !BINDING.some((bound) => bound === path))) {
+    await page.goto(`/it${path}`);
+    await expect(page.getByText(sentence)).toHaveCount(0);
+  }
+});
+
 // The guard of issue #62, on the five pages it has not seen: prose at 390px is the width where a
 // long address or an unbreakable word pushes the document sideways.
-test("none of the five is wider than a phone", async ({ page }) => {
+// ⚠️ Italian is in the loop and not only English: its prose is the longer of the two, and a word
+// like `identificatore` in the 22ch column of the privacy table is exactly what pushes a document
+// sideways at this width.
+test("none of the five is wider than a phone, in either language", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
 
-  for (const { path } of PAGES) {
+  for (const path of PAGES.flatMap(({ path }) => [path, `/it${path}`])) {
     await page.goto(path);
     const widths = await page.evaluate(() => ({
       document: document.documentElement.scrollWidth,

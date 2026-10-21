@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { Filled, LocaleLink as Link } from "@/modules/i18n/ui";
 import { DocumentPage, DocumentSection } from "@/components/document-page";
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/metadata";
-import { currentLocale } from "@/modules/i18n/server";
+import { currentLocale, getTranslator } from "@/modules/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslator();
+
   return pageMetadata({
-    title: "Contact",
-    description: "One address, answered by the person who runs Verdict.",
+    title: t("page.contact.title"),
+    description: t("page.contact.description"),
     path: "/contact",
     type: "website",
     locale: await currentLocale(),
@@ -17,57 +19,53 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // One address and no form: a form would need a service to deliver it and a place to keep what it
 // collects, and this page would then have to explain both. An address explains itself.
-export default function ContactPage() {
+export default async function ContactPage() {
+  const t = await getTranslator();
+
   return (
-    <DocumentPage
-      title="Contact"
-      updated="2026-10-15"
-      lede={
-        <>
-          One address, read by the person who runs this. There is no form, no ticket and no bot in
-          between, and no promise about how fast an answer comes.
-        </>
-      }
-    >
-      <DocumentSection title="write here">
+    <DocumentPage title={t("page.contact.title")} updated="2026-10-15" lede={t("contact.lede")}>
+      <DocumentSection title={t("contact.write.title")}>
         <p className="font-mono text-diagnostic">
           <a href={`mailto:${CONTACT_EMAIL}`} className="text-link">
             {CONTACT_EMAIL}
           </a>
         </p>
         <p>
-          A summary that misreads its release notes, a release that never appeared, a page that
-          breaks at your width, a question the{" "}
-          <Link href="/faq" className="text-link">
-            FAQ
-          </Link>{" "}
-          does not answer: all of it is worth writing about. If something is wrong on a page, the
-          address of that page is the most useful line of the message.
+          <Filled
+            text={t("contact.write.body")}
+            nodes={{
+              faq: (
+                <Link href="/faq" className="text-link">
+                  {t("doc.link.faq")}
+                </Link>
+              ),
+            }}
+          />
         </p>
       </DocumentSection>
 
-      <DocumentSection title="two things you do not have to write for">
+      <DocumentSection title={t("contact.noNeed.title")}>
         <p>
-          <strong className="font-semibold text-text">Deleting your account.</strong> It is a button
-          on the{" "}
-          <Link href="/account" className="text-link">
-            account page
-          </Link>{" "}
-          and it works at once. Nobody has to approve it.
+          <strong className="font-semibold text-text">{t("contact.noNeed.delete.lead")}</strong>{" "}
+          <Filled
+            text={t("contact.noNeed.delete.body")}
+            nodes={{
+              account: (
+                <Link href="/account" className="text-link">
+                  {t("doc.link.account")}
+                </Link>
+              ),
+            }}
+          />
         </p>
         <p>
-          <strong className="font-semibold text-text">Adding a technology.</strong> The catalog is
-          curated and there is no request queue, so a mail about it is a thing to know and not a
-          thing to track. Say it anyway if it matters to you.
+          <strong className="font-semibold text-text">{t("contact.noNeed.add.lead")}</strong>{" "}
+          {t("contact.noNeed.add.body")}
         </p>
       </DocumentSection>
 
-      <DocumentSection title="something that should not be public">
-        <p>
-          A security problem, or anything about another person&rsquo;s data, goes to the same
-          address and nowhere public. Say what you found and how to see it happen, and give it time
-          to be fixed before telling anyone else.
-        </p>
+      <DocumentSection title={t("contact.security.title")}>
+        <p>{t("contact.security.body")}</p>
       </DocumentSection>
     </DocumentPage>
   );
