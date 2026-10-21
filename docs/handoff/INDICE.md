@@ -18,6 +18,19 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del dodicesimo giro: la PR 4 mergiata, e la #131 chiusa dal corpo della sua PR (2026-10-21)
+  - Francese, spagnolo e tedesco: 51 file, le parole del glossario decise lingua per lingua
+  - ⚠️ Due verbi in tedesco per `follow`: `folgen` regge il dativo ma non forma participio
+    attributivo né passivo, e quelle posizioni leggono `verfolgt`
+  - ⚠️ axe non usciva dall'inglese, nemmeno per l'italiano: dodici scansioni nuove
+- Stato dell'undicesimo giro: la 3b-3 mergiata, e della #131 resta solo la PR 4 (2026-10-21)
+  - Le cinque pagine documento in italiano: i sei namespace nuovi, la clausola di prevalenza
+    che si stampa anche in inglese, le righe di `cosa viene tenuto` diventate chiavi
+  - ⚠️ Il link cercato `privacy` esatto in `/it/faq` prendeva quello del piede e passava
+    senza provare niente
+- Stato del decimo giro: la 3b-2 mergiata, e la issue chiusa da una parola citata (2026-10-21)
+  - ⚠️ Perché la #131 si è chiusa da sola: `Closes #131` citato dentro un messaggio di commit,
+    backtick compresi, conta come la parola chiave
 - Stato del nono giro: la 3b-1 chiusa e committata, la PR non ancora aperta (2026-10-21)
   - ⚠️ I quattro verdetti accorciati perché l'italiano non stava nei 326px del pannello, con
     la misura: 26 caratteri, etichetta compresa
