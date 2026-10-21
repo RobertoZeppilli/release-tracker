@@ -28,71 +28,72 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (nono giro, lavorato il 2026-10-16 e chiuso il 2026-10-21): la 3b-1 è finita
-e committata in `8796e6f`, non pushata, PR non aperta.** Il ramo
-`131-ui-strings-app-it` ha l'estrazione delle stringhe dell'app (sessione di prima) **e il dizionario
-italiano**, scritto in questa sessione. Su `main` (squash `da0a6d1`) ci sono la PR 1 (ADR 0008), la
-PR 2 (`app/[locale]`, il proxy, i canonici), la PR 3a (il motore del dizionario e il guscio) e la
-pagina `/settings` col piede rifatto.
+**Da dove ripartire (decimo giro, 2026-10-21): la #164 è mergiata in `main` (squash `6ba18ee`), e la
+3b-2 è finita e committata in `49bcf13` sul ramo `131-ui-strings-landing`, non pushata, PR non
+aperta.** Su `main` ci sono ora la PR 1 (ADR 0008), la PR 2 (`app/[locale]`, il proxy, i canonici),
+la PR 3a (il motore del dizionario e il guscio), la pagina `/settings` col piede rifatto e la 3b-1
+(le stringhe dell'app in italiano).
 
-⚠️ **Il primo passo della sessione nuova è il push e la PR della 3b-1** (`Closes #131` in inglese
-nel corpo, il resto in italiano), che l'utente non ha ancora confermato. Poi restano la **3b-2**
-(la landing, dove la prosa italiana va letta con calma e le frasi con markup dentro vanno
-ricomposte), la **3b-3** (le pagine documento: `faq`, `terms`,
-`privacy`, `attributions`, `contact`, 557 righe di prosa, e per terms e privacy resta da decidere se
-l'inglese fa fede) e la **PR 4** (francese, spagnolo, tedesco, e l'overflow a 320px in tedesco).
+⚠️ **Il primo passo della sessione nuova è il push e la PR della 3b-2**, che l'utente non ha ancora
+confermato. ⚠️ **Nel corpo va `Rif. #131`, non `Closes #131`**: l'handoff del nono giro diceva
+`Closes` ed era sbagliato, perché la issue ha ancora due PR davanti. Le PR 162 e 163 scrivono a mano
+che la issue resta aperta, ed è la riga da copiare.
 
-### Cos'è entrato nella 3b-1 in questa sessione
+Poi restano la **3b-3** (le pagine documento: `faq`, `terms`, `privacy`, `attributions`, `contact`,
+557 righe di prosa, e per `terms` e `privacy` resta da decidere se l'inglese fa fede, perché se fa
+fede quelle due pagine diventano una riga che lo dichiara invece di 264 righe di prosa legale) e la
+**PR 4** (francese, spagnolo, tedesco, e l'overflow a 320px in tedesco).
 
-1. **Dieci file `messages/it/*.ts`**, uno per spazio di nomi come l'inglese, e `TRANSLATIONS` in
-   `messages/index.ts` che ora è `{ it: IT }`. Da qui il test di parità **controlla davvero**
-   qualcosa: 680 unitari contro i 675 di prima, e i cinque nuovi sono le asserzioni su `it`.
-2. **Ogni messaggio contato ha anche la forma `many`**, che `Intl.PluralRules` dà all'italiano (e
-   al francese e allo spagnolo, mai al tedesco) per le cifre tipo 1000000: il testo è lo stesso di
-   `other`, ma il test lo pretende scritto, perché un `many` mancante sarebbe la mezza traduzione
-   silenziosa.
-3. **Tre parole decise con l'utente**, e scritte in `CONTEXT.md` invece che solo nel dizionario:
-   `breaking changes` **resta inglese**, `safe to upgrade` è **"aggiornamento sicuro"**, `key
-   points` è **"punti chiave"**. In tabella sono finite anche le righe `UI` per lingua di
-   `actionRequired` e `notesJudgeable`.
-4. ⚠️ **Quattro verdetti sono stati accorciati perché l'italiano non ci stava**, ed è la regola
-   che lo impone (DESIGN.md, The One-Line Verdict Rule: la copia cede, la scala no). Misurato nel
-   browser: a 1.2rem dentro i 326px del pannello la riga tiene **26 caratteri, etichetta compresa**
-   (`note: 3 senza un verdetto` misura 309px). Perciò `richiedono un intervento` è diventato
-   **`interventi`** (`warning: 2 interventi`), `niente richiede un intervento` è **`nessun
-   intervento`**, e `not enough notes to judge` è **`note non giudicabili`**, che per di più è il
-   nome che il glossario già dà a quelle note. ⚠️ **Da far vedere all'utente**: è il punto dove
-   l'italiano dice meno dell'inglese.
-5. **Tre E2E aggiornati**, e due di loro sono la metà che il test di parità non può vedere: il
-   selettore nel piede si cerca per **`lingua`** dentro una pagina italiana, e la riga che dice che
-   la pagina è mista si legge **in italiano**. Il terzo è un debito della sessione di prima:
-   `expect(html).not.toContain("Unfollow")` falliva perché **la pagina ora si porta dietro il
-   proprio dizionario**, dove `Unfollow {name}` è una voce; ora guarda lo stato reso
-   (`aria-pressed="true"` e l'etichetta col nome dentro), che è quello che il test voleva dire.
+### Cos'è entrato nella 3b-2 in questa sessione
+
+1. **Due file `landing.ts`**, inglese e italiano, quaranta messaggi: la landing era l'unica pagina
+   con le stringhe ancora dentro il codice. Più `page.landing.title` e `page.landing.description`
+   nel namespace `page`, che è dove stanno i titoli di tutte le altre pagine.
+2. ⚠️ **Le quattro definizioni della Rilevanza sono uscite da `domain/vocabulary.ts`**. Erano prosa
+   inglese dentro TypeScript puro, cioè copia di interfaccia dove ADR 0006 vuole dominio. Il dominio
+   tiene adesso l'accoppiata livello/chiave, che è la metà che il compilatore controlla: un livello
+   nuovo nello schema arriva lì senza chiave e il build si ferma. Il test legge la definizione dal
+   dizionario, quindi prende anche la chiave che nessuno ha scritto.
+3. **Il verdetto del Proof Panel legge `release.verdict.action`** invece di una stringa propria, e la
+   nota delle note non giudicabili fa lo stesso con `release.verdict.unjudged`: prima la landing e
+   l'app potevano divergere sulla stessa parola.
+4. ⚠️ **I quattro nomi degli stadi restano inglesi in ogni lingua** (`source`, `cite`, `verdict`,
+   `help`), perché ognuno è anche l'`id` con cui la pagina è ancorata: tradurli sposterebbe l'ancora
+   con la lingua e romperebbe ogni link dentro la pagina.
+5. **Tre scelte di lingua**, scritte nei commenti dei due file: `Capire prima di aggiornare.`
+   all'infinito e non all'imperativo (un ordine al lettore suona come una pubblicità, e l'inglese è
+   una promessa); `breaking changes` inglese col plurale inglese, come fa già
+   `release.verdict.actionCount`; le due affermazioni della nota prese da `CONTEXT.md` parola per
+   parola, con le virgolette caporali al posto delle inglesi.
+6. **Tre E2E**: la landing italiana si legge in italiano mentre le note dentro il pannello restano
+   inglesi (è l'argomento del prodotto, e il test di parità non può vederlo); `/it` entra in
+   `overflow.spec` a tutte le larghezze già coperte; e il commento in testa a `locales.spec` non
+   dice più che le stringhe sono inglesi dappertutto, perché non è più vero da due PR.
 
 ### Dove sta il giro
 
-`lint`, `typecheck`, `build` (ISR intatto), **680 su 680** unitari, **70 su 70** di integrazione.
-L'E2E **contro il dev server** fa 250 su 253, e i tre che cadono **non sono dell'italiano**: due
-sono `a11y:169` "technologies, with a follow the database refused", il flaky che l'handoff del
-settimo giro già elencava (`target-size` su un Follow della pagina inglese, e un timeout sull'altro
-tema); il terzo è `locales:35`, che è **l'artefatto del dev server** già scritto lì: l'overlay di
-Next aggiunge un secondo `<footer>` e la strict mode cade. ⚠️ **Resta da fare il giro buono**,
-`CI=1 pnpm test:e2e` col dev server spento, che non ho lanciato perché il server sulla 3000 è
-dell'utente. Nei giri parziali anche `account.spec:51` e `legal.spec:72` sono caduti una volta e
-poi passati da soli: flaky, non regressioni.
+`lint`, `typecheck`, `build` (`/it` resta ● SSG, ISR intatto), **680 su 680** unitari, **70 su 70**
+di integrazione, **253** E2E passati con `CI=1` e il build di produzione, zero falliti. L'unico
+flaky è `technology.spec:126`, il `boundingBox` del marchio che torna `undefined` quando l'elemento
+non è ancora disegnato, e passa al secondo giro. ⚠️ I tre che cadevano **contro il dev server**
+(`a11y:169` e `locales:35`) **passano col build di produzione**: erano l'artefatto del dev server,
+come l'handoff del nono giro sospettava. Misurato nel browser: in italiano il titolo sta in **due**
+righe dove l'inglese ne prende tre, quindi la landing non ha perso niente in altezza.
 
 ### Cosa resta
 
-1. ⚠️ **I 14 KB di UI delle Release su ogni pagina** e le **`max-[]`** non sono decise.
-2. **Il mock disegna due righe che il modello non produce**; `groupByMajor` e `recordedHistory`
+1. ⚠️ **Da far decidere all'utente**: sulla landing la nota dice **`note non giudicabili`**, cioè la
+   forma accorciata che nella 3b-1 era imposta dai 326px del pannello. Qui lo spazio basterebbe per
+   la frase piena. Ho tenuto la parola dell'app perché la landing è la pagina che **spiega** il
+   vocabolario, e insegnerebbe male una parola che l'app non stampa. È una riga da cambiare.
+2. ⚠️ **I 14 KB di UI delle Release su ogni pagina** e le **`max-[]`** non sono decise.
+3. **Il mock disegna due righe che il modello non produce**; `groupByMajor` e `recordedHistory`
    calcolano quasi la stessa cosa.
-3. ⚠️ **Credito basso: non spendere niente senza chiedere.** Le cose dell'utente in `APERTE.md`,
+4. ⚠️ **Credito basso: non spendere niente senza chiedere.** Le cose dell'utente in `APERTE.md`,
    l'ambiente in `AMBIENTE.md`, il peso in `PESO.md`.
-4. **Committato su richiesta dell'utente**, in un commit solo (`8796e6f`, 97 file): l'estrazione
-   della sessione precedente e il dizionario insieme, perché separandoli il primo dei due sarebbe
-   uno stato mai girato da solo, e nella PR finiscono squashati comunque. L'handoff è nel commit
-   dopo. ⚠️ **Niente è pushato.** ⚠️ **Otto rami da cancellare** e lo stash
-   `residuo del checkout interrotto`, che sono dell'utente.
-
+5. **Cose dell'utente, verificate in questa sessione e sicure**: **dodici rami locali** da
+   cancellare con `-D` (lo squash fa sì che git non li veda fusi, ma ognuno ha la sua PR mergiata),
+   il ramo remoto `131-ui-strings-app-it`, e lo stash `residuo del checkout interrotto`, che non
+   contiene niente di unico: `writeFollows` è a `follows-store.ts:59`, il test di integrazione
+   esiste, e le due sezioni di `DESIGN.md` sono alle righe 806 e 813.
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

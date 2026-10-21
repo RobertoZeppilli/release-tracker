@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del nono giro: la 3b-1 chiusa e committata, la PR non ancora aperta (2026-10-21)
+  - ⚠️ I quattro verdetti accorciati perché l'italiano non stava nei 326px del pannello, con
+    la misura: 26 caratteri, etichetta compresa
 - Stato dell'ottavo giro: la #163 mergiata, e la 3b-1 ferma a metà strada (2026-10-16)
   - Le sei cose che la 3b-1 ha imparato: `i18n/server` dietro un indice `ui`, `UpgradePathBlock`
     reso da due lati, `messageParts` e `Filled`, i tre punti dove la cifra ha perso l'inchiostro

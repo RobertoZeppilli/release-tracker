@@ -9,6 +9,12 @@ non stato: si aprono quando servono.
   limitata a 6 GB in `~/.wslconfig`. **`docker` non è nel PATH della shell di Claude**: prima di E2E, integrazione
   o `supabase status` eseguire `export PATH="$PATH:$LOCALAPPDATA/Programs/DockerDesktop/resources/bin"`
   (senza, le fixture E2E falliscono con "docker: command not found").
+- ⚠️ **Docker Desktop può morire lasciando le porte di Supabase occupate da un proxy zombie**
+  (visto il 2026-10-21): la 54321 e la 54322 rispondono, i container non ci sono, e l'E2E va in
+  crollo con `page.goto: net::ERR_ABORTED` sul primo test di ognuno dei 28 file. Si riconosce da
+  `docker ps` che risponde "Docker Desktop is unable to start" e dalla distribuzione WSL
+  `docker-desktop` in `Stopped`, mentre restano tre `Docker Desktop.exe` da pochi MB. Un `taskkill`
+  a metà non basta: serve **Quit Docker Desktop** dal tray, e poi riaprirlo.
 - **Dev server: uno solo, sulla 3000.** L'utente tiene aperto `pnpm dev` lì; usarlo per i check in Chrome e
   per gli E2E (Playwright lo riusa) e non avviarne un altro, fallirebbe ("Another next dev server is already
   running"). **Prima di cominciare, due controlli da un secondo**: `curl -s localhost:3000 | head` dice se
