@@ -18,6 +18,10 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato dell'ottavo giro: la #163 mergiata, e la 3b-1 ferma a metà strada (2026-10-16)
+  - Le sei cose che la 3b-1 ha imparato: `i18n/server` dietro un indice `ui`, `UpgradePathBlock`
+    reso da due lati, `messageParts` e `Filled`, i tre punti dove la cifra ha perso l'inchiostro
+- Stato del settimo giro: la 3a su main, e la lingua in una pagina sua (2026-10-16)
 - Stato del sesto giro: la PR 3a aperta, e il piede che la Dashboard misura (2026-10-16)
   - Com'è fatto il dizionario: `message.ts`, `translate.ts`, il registro che fonde sopra l'inglese,
     il test di parità che tiene il fallback fuori dalla produzione
