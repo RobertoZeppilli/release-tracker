@@ -6,6 +6,11 @@
 // ⚠️ `Dashboard` stays `Dashboard` in Italian: the glossary's own column says so (CONTEXT.md, and
 // ADR 0008's correction), and a name a language already uses is not translated for the sake of it.
 export const page = {
+  // The landing carries the product name inside its own title, which is why the layout's `%s · Verdict`
+  // is turned off for this one page: it would say the name twice.
+  "page.landing.title": "Verdict, understand before you upgrade",
+  "page.landing.description":
+    "Verdict follows the releases of the technologies in your stack and gives each one a single verdict: whether it asks something of you, what breaks, and how to migrate, with every claim pointing at the line of the release notes it was read from.",
   "page.dashboard.title": "Dashboard",
   "page.technologies.title": "Technologies",
   "page.account.title": "Account",

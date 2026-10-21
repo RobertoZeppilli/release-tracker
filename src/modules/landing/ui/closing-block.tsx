@@ -1,4 +1,5 @@
 import { HelpPointer } from "@/components/help-pointer";
+import { type Translator } from "@/modules/i18n";
 import { EntryAction } from "./entry-action";
 import { LandingNote } from "./landing-note";
 
@@ -9,30 +10,32 @@ import { LandingNote } from "./landing-note";
 //
 // The two actions appear here for the second and last time: the first screen has them and the page
 // ends with them, and nowhere in between.
-export function ClosingBlock({ catalogSize, followLimit }: { catalogSize: number; followLimit: number }) {
+export function ClosingBlock({
+  catalogSize,
+  followLimit,
+  t,
+}: {
+  catalogSize: number;
+  followLimit: number;
+  t: Translator;
+}) {
   return (
     <div
       data-arrival=""
       className="grid grid-cols-2 items-start gap-8 border-t border-rule pt-8 max-[1040px]:grid-cols-1 max-[1040px]:gap-7"
     >
       <div>
-        <p className="max-w-[22ch] font-mono text-status">
-          Follow the {followLimit} technologies that decide your week.
-        </p>
+        <p className="max-w-[22ch] font-mono text-status">{t("landing.close.claim", { count: followLimit })}</p>
         <p className="mt-4 font-sans text-body text-text-muted">
-          The free plan follows up to {followLimit} technologies from a curated catalog of{" "}
-          {catalogSize}. Sign-in is GitHub, and the release pages stay readable without it.
+          {t("landing.close.plan", { limit: followLimit, size: catalogSize })}
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-4">
           <EntryAction />
-          <HelpPointer href="/technologies">browse all {catalogSize} technologies</HelpPointer>
+          <HelpPointer href="/technologies">{t("landing.close.browse", { count: catalogSize })}</HelpPointer>
         </div>
       </div>
-      <LandingNote claim="it does not open pull requests" flush>
-        Dependabot and Renovate do that well, and they tell you a version moved. A newsletter tells
-        you a release was interesting. Verdict answers the question those leave open: does this
-        release ask something of me, and where does it say so. It reads only the release notes, it
-        never guesses, and when the notes say nothing it says nothing.
+      <LandingNote claim={t("landing.close.note.claim")} flush>
+        {t("landing.close.note.body")}
       </LandingNote>
     </div>
   );

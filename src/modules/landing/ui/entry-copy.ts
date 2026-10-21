@@ -1,6 +1,6 @@
 import type { Session } from "@/modules/auth/ui";
 import { DEFAULT_REDIRECT, loginPath } from "@/modules/auth";
-import { type Locale, localePath } from "@/modules/i18n";
+import { type Locale, localePath, type Translator } from "@/modules/i18n";
 
 export type Audience = "visitor" | "developer";
 
@@ -11,10 +11,13 @@ export type Audience = "visitor" | "developer";
 // A function and not a constant since ADR 0008: the two addresses carry the language of the page
 // they are read on, and `next` has to be the Dashboard **in that language**, or signing in from the
 // Italian landing would land on the English Dashboard.
-export function entryFaces(locale: Locale): Record<Audience, { href: string; label: string }> {
+export function entryFaces(locale: Locale, t: Translator): Record<Audience, { href: string; label: string }> {
   return {
-    visitor: { href: loginPath(localePath(locale, DEFAULT_REDIRECT), locale), label: "Sign in with GitHub" },
-    developer: { href: localePath(locale, DEFAULT_REDIRECT), label: "Go to your dashboard" },
+    visitor: {
+      href: loginPath(localePath(locale, DEFAULT_REDIRECT), locale),
+      label: t("landing.entry.visitor"),
+    },
+    developer: { href: localePath(locale, DEFAULT_REDIRECT), label: t("landing.entry.developer") },
   };
 }
 

@@ -125,7 +125,10 @@ for (const width of WIDTHS) {
     });
 
     test("the public pages stay inside the window", async ({ page }) => {
-      for (const path of ["/", "/login", `/technologies/${technology.slug}`, `/technologies/${technology.slug}?from=2.0.0`]) {
+      // `/it` is the landing again in the longer language: Italian prose runs past English almost
+      // everywhere, so the page that is all prose is the one that would break a measure first
+      // (ADR 0008). German is longer still and arrives with PR 4, together with the 320px width.
+      for (const path of ["/", "/it", "/login", `/technologies/${technology.slug}`, `/technologies/${technology.slug}?from=2.0.0`]) {
         await page.goto(path);
         await expectNoOverflow(page, path);
       }

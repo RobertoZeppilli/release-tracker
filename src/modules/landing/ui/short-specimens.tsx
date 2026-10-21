@@ -1,5 +1,7 @@
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { type Translator } from "@/modules/i18n";
+import { Filled, LocaleLink as Link } from "@/modules/i18n/ui";
 import { TechnologyMark } from "@/modules/catalog/ui";
+import { SPECIMEN } from "../domain/specimen";
 import { Band } from "./band";
 import { LandingNote } from "./landing-note";
 
@@ -16,18 +18,18 @@ const LINK = "border-b border-dashed border-current whitespace-nowrap text-link 
 // TypeScript 5.7.2 release is a link to a blog post, which is the `unavailable` state of a Summary.
 // Each row points at the Technology page and not at that one Release: what it shows is how a
 // Technology reads when its notes are badly shaped, and that is the list rather than one row of it.
-export function ShortSpecimens() {
+// The two names and the two versions are data and stay as they are published; the claim under them
+// is the app's own `not enough notes to judge`, read from `release.verdict.unjudged` so the page
+// that explains the word and the page that prints it cannot say it differently.
+const VITE_LINES = 28;
+
+export function ShortSpecimens({ t }: { t: Translator }) {
   return (
     <Band
       id="thin-title"
       number="02"
-      title="And when the notes are not that kind"
-      sub={
-        <>
-          Most releases do not publish 271 lines. What Verdict does with the thin ones is the same
-          discipline, which is why it is on this page and not in a FAQ.
-        </>
-      }
+      title={t("landing.thin.title")}
+      sub={t("landing.thin.sub", { lines: SPECIMEN.totalLines })}
     >
       <ul className="border-t border-rule">
         <li className={ROW}>
@@ -36,12 +38,20 @@ export function ShortSpecimens() {
             Vite <span className={VERSION}>6.0.0</span>
           </span>
           <span className={WHAT}>
-            a changelog of <span className="text-text">28</span> lines, where the two breaking ones
-            are marked by a single <code>!</code> and sit between a <code>chore</code> and a{" "}
-            <code>perf</code>.{" "}
-            <Link href="/technologies/vite" className={LINK}>
-              read them apart
-            </Link>
+            <Filled
+              text={t("landing.thin.vite")}
+              nodes={{
+                lines: <span className="text-text">{VITE_LINES}</span>,
+                bang: <code>!</code>,
+                chore: <code>chore</code>,
+                perf: <code>perf</code>,
+                link: (
+                  <Link href="/technologies/vite" className={LINK}>
+                    {t("landing.thin.viteLink")}
+                  </Link>
+                ),
+              }}
+            />
           </span>
         </li>
         <li className={ROW}>
@@ -50,20 +60,21 @@ export function ShortSpecimens() {
             TypeScript <span className={VERSION}>5.7.2</span>
           </span>
           <span className={WHAT}>
-            a release whose body is <span className="text-text">a link to a blog post</span>. There is
-            nothing here to judge, so Verdict says exactly that and points at where the real notes
-            live.{" "}
-            <Link href="/technologies/typescript" className={LINK}>
-              see that state
-            </Link>
+            <Filled
+              text={t("landing.thin.typescript")}
+              nodes={{
+                blog: <span className="text-text">{t("landing.thin.typescriptBlog")}</span>,
+                link: (
+                  <Link href="/technologies/typescript" className={LINK}>
+                    {t("landing.thin.typescriptLink")}
+                  </Link>
+                ),
+              }}
+            />
           </span>
         </li>
       </ul>
-      <LandingNote claim="not enough notes to judge">
-        This is the sentence Verdict prints instead of a verdict when the notes only point elsewhere.
-        &ldquo;I found no breaking changes&rdquo; and &ldquo;there are no breaking changes&rdquo; are
-        different claims, and the second one is never printed in place of the first.
-      </LandingNote>
+      <LandingNote claim={t("release.verdict.unjudged")}>{t("landing.thin.note")}</LandingNote>
     </Band>
   );
 }

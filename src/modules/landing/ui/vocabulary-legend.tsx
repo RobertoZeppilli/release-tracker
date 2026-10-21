@@ -1,3 +1,4 @@
+import { type Translator } from "@/modules/i18n";
 import { SignificanceGlyph } from "@/modules/releases/ui";
 import { VOCABULARY } from "../domain/vocabulary";
 import { Band } from "./band";
@@ -7,20 +8,11 @@ import { Band } from "./band";
 // flattest stretch of the page, and side by side they say by their shape that the four words are
 // siblings. No boxes and no colour: Significance is a shape (The Neutral Significance Rule), and a
 // word that took a hue here would teach the opposite of what the release pages do.
-export function VocabularyLegend() {
+// ⚠️ The four words themselves are never translated: they are the names the app prints on every
+// Release, so what the legend translates is the sentence under each one, not the term it defines.
+export function VocabularyLegend({ t }: { t: Translator }) {
   return (
-    <Band
-      id="words-title"
-      number="03"
-      title="Four words on every release"
-      sub={
-        <>
-          Significance is a shape beside the version, never a hue: colour on this product means
-          severity and nothing else. A release is not urgent because it is red, it is urgent because
-          its notes say so, on a line you can read.
-        </>
-      }
-    >
+    <Band id="words-title" number="03" title={t("landing.words.title")} sub={t("landing.words.sub")}>
       <dl id="significance" className="grid grid-cols-4 gap-5 max-[1040px]:grid-cols-2 max-sm:grid-cols-1">
         {VOCABULARY.map(({ significance, definition }) => (
           <div key={significance} className="border-t border-rule-strong pt-3">
@@ -28,7 +20,7 @@ export function VocabularyLegend() {
               <SignificanceGlyph significance={significance} />
               {significance}
             </dt>
-            <dd className="font-sans text-body text-text-muted">{definition}</dd>
+            <dd className="font-sans text-body text-text-muted">{t(definition)}</dd>
           </div>
         ))}
       </dl>
