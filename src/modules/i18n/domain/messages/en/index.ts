@@ -1,6 +1,7 @@
 import { account } from "./account";
 import { catalog } from "./catalog";
 import { dashboard } from "./dashboard";
+import { landing } from "./landing";
 import { page } from "./page";
 import { path } from "./path";
 import { release } from "./release";
@@ -16,6 +17,7 @@ export const EN = {
   ...account,
   ...catalog,
   ...dashboard,
+  ...landing,
   ...page,
   ...path,
   ...release,

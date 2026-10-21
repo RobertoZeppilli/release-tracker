@@ -58,6 +58,24 @@ test("the claim and the specimen open the page", async ({ page }) => {
   await expect(page.getByText("React 19.0.0", { exact: false }).first()).toBeVisible();
 });
 
+// The half a parity test cannot see: the landing is prose, so a key present in Italian and a page
+// rendered in Italian are two different claims. The notes inside the panel are checked to be still
+// English on the same page, because that is the product's whole argument (ADR 0008): the interface
+// is translated and the release notes are not.
+test("the Italian landing is read in Italian, and the notes inside it are not", async ({ page }) => {
+  await page.goto("/it");
+
+  await expect(page).toHaveTitle("Verdict, capire prima di aggiornare");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Capire prima di aggiornare.");
+  await expect(page.getByText("righe lette")).toBeVisible();
+  // The four stage names stay English in every language: each one is also the anchor of its stage.
+  for (const stage of STAGES) await expect(page.locator(`#stage-${stage}`)).toBeVisible();
+  // The cited line is the text the project published, kept word for word.
+  await expect(page.getByRole("main").locator("ol").first()).toContainText(
+    "Using `propTypes` will now be silently ignored",
+  );
+});
+
 test("the proof stands beside the claim, with the real line and the verdict it produced", async ({ page }) => {
   await page.goto("/");
   const panel = page.getByRole("main").locator("ol").first();

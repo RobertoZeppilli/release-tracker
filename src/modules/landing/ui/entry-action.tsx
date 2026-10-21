@@ -1,7 +1,7 @@
 "use client";
 
 import { LayoutDashboard, LogIn } from "lucide-react";
-import { LocaleLink as Link, useLocale } from "@/modules/i18n/ui";
+import { LocaleLink as Link, useLocale, useTranslator } from "@/modules/i18n/ui";
 import { useSession } from "@/modules/auth/ui";
 import { AUDIENCES, type Audience, audienceFor, entryFaces } from "./entry-copy";
 
@@ -14,7 +14,7 @@ const ICONS = { visitor: LogIn, developer: LayoutDashboard } as const satisfies 
 // `visibility: hidden`, so it holds the width without being read aloud or reached by the keyboard.
 export function EntryAction() {
   const audience = audienceFor(useSession().state);
-  const faces = entryFaces(useLocale());
+  const faces = entryFaces(useLocale(), useTranslator());
 
   return (
     <Link

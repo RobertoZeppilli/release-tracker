@@ -2,8 +2,11 @@ import { expect, test } from "@playwright/test";
 import { type FixtureTechnology, seedTechnology } from "./fixtures";
 
 // ADR 0008: five languages, English without a prefix. This file is about the plumbing and not about
-// the words: the strings are still English everywhere, and what is checked here is that the right
-// page is served at the right address, says which language it is in, and names its siblings.
+// the words, which is why it reads `/faq`: the document pages are the stretch still waiting for its
+// dictionary, so a heading there is English in every language and this file cannot be fooled by one.
+// What is checked here is that the right page is served at the right address, says which language it
+// is in, and names its siblings. The words themselves are checked where they are written: the app in
+// its own specs, the landing in `landing.spec`.
 
 let technology: FixtureTechnology;
 

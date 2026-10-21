@@ -1,5 +1,7 @@
 import { Wrench } from "lucide-react";
 import { TechnologyMark } from "@/modules/catalog/ui";
+import { type Translator } from "@/modules/i18n";
+import { Filled } from "@/modules/i18n/ui";
 import { releasePath } from "@/modules/releases";
 import { SignificanceLabel } from "@/modules/releases/ui";
 import { Glyph } from "@/modules/summaries/ui";
@@ -17,6 +19,9 @@ const LABEL = "pr-[1.5ch] text-right text-text-faint [font-variant-ligatures:non
 // argument, and in muted 13px they read as captions to the prose instead of as its joints. The
 // highlighter is the reader's own gesture on paper, and it is neutral by construction (DESIGN.md,
 // Stage Title): a hue there would be a verdict on a word that judges nothing.
+// ⚠️ The four names stay English in every language, and not out of laziness: each one is also the
+// `id` this stage is anchored by, so a translated name would move the anchor with the language and
+// break every link into the page. `help` is the product's grammar besides (ADR 0008).
 function Stage({ name, children }: { name: string; children: React.ReactNode }) {
   return (
     <div id={`stage-${name}`} className="scroll-mt-8">
@@ -28,24 +33,18 @@ function Stage({ name, children }: { name: string; children: React.ReactNode }) 
   );
 }
 
-export function Bench() {
+export function Bench({ t }: { t: Translator }) {
   const release = releasePath(SPECIMEN.technology.slug, SPECIMEN.version);
   // The window the first screen shows, named from the panel's own lines rather than retyped.
   const shown = panelWindow();
-  const notes = `lines ${shown[0]?.number} to ${shown[shown.length - 1]?.number}`;
+  const window = t("landing.bench.window", {
+    first: shown[0]?.number ?? "",
+    last: shown[shown.length - 1]?.number ?? "",
+  });
+  const breaking = t("landing.breakingChanges", { count: SPECIMEN.breakingChanges });
 
   return (
-    <Band
-      id="bench-title"
-      number="01"
-      title="One release, four stages"
-      sub={
-        <>
-          The same release the first screen quotes, read the way the app reads it: what the project
-          published, the line the verdict rests on, the verdict itself, and where it goes next.
-        </>
-      }
-    >
+    <Band id="bench-title" number="01" title={t("landing.bench.title")} sub={t("landing.bench.sub")}>
       <p className="mb-6 flex flex-wrap items-center gap-4 font-mono text-label text-text-muted">
         <span className="inline-flex items-center gap-2 text-text">
           <TechnologyMark slug={SPECIMEN.technology.slug} />
@@ -53,37 +52,29 @@ export function Bench() {
         </span>
         <time dateTime={SPECIMEN.publishedAt}>{SPECIMEN.publishedAt}</time>
         <SignificanceLabel significance={SPECIMEN.significance} />
-        <span>
-          notes from {SPECIMEN.source}, {SPECIMEN.totalLines} lines
-        </span>
+        <span>{t("landing.bench.notesFrom", { source: SPECIMEN.source, lines: SPECIMEN.totalLines })}</span>
       </p>
 
       <div className="grid grid-cols-2 gap-7 max-[1040px]:grid-cols-1">
         <Stage name="source">
           <p className="max-w-measure font-sans text-body text-text-muted">
-            {SPECIMEN.totalLines} lines, kept exactly as published and numbered so a claim can name
-            one of them. The {SPECIMEN.breakingChanges} breaking changes are listed in a single
-            section, and the first screen shows {notes}.
+            {t("landing.bench.source", { lines: SPECIMEN.totalLines, breaking, window })}
           </p>
         </Stage>
 
         <Stage name="cite">
           <CiteWell />
-          <p className="mt-4 max-w-measure font-sans text-body text-text-muted">
-            Nothing is paraphrased. The verdict quotes this line, points back at it, and would be
-            wrong in a way you could see if the line said something else.
-          </p>
+          <p className="mt-4 max-w-measure font-sans text-body text-text-muted">{t("landing.bench.cite")}</p>
         </Stage>
 
         <Stage name="verdict">
           <article aria-labelledby="b1" className="max-w-[900px]">
             <h4 id="b1" className="grid grid-cols-[auto_1fr] gap-x-3 font-sans text-title font-medium max-[640px]:grid-cols-1">
               <span className="font-mono text-[16px] leading-[1.7] whitespace-nowrap text-breaking">breaking[1]:</span>{" "}
-              <span>propTypes stop being checked</span>
+              <span>{t("landing.bench.verdictTitle")}</span>
             </h4>
             <p className="mt-2 max-w-[68ch] font-sans text-body text-text-muted">
-              A component that declares <code>propTypes</code> keeps compiling and keeps running.
-              Nothing warns, and nothing is checked any more.
+              <Filled text={t("landing.bench.verdictBody")} nodes={{ propTypes: <code>propTypes</code> }} />
             </p>
           </article>
         </Stage>
@@ -98,7 +89,7 @@ export function Bench() {
                 <Glyph Icon={Wrench} />
                 help:
               </span>{" "}
-              migrate to TypeScript props, or to another type-checking solution.{" "}
+              {t("landing.bench.help")}{" "}
               <a
                 href={release}
                 className="border-b border-dashed border-current font-mono text-label whitespace-nowrap text-help no-underline hover:border-solid"
@@ -108,8 +99,7 @@ export function Bench() {
             </span>
           </p>
           <p className="mt-3 max-w-measure font-sans text-body text-text-muted">
-            All {SPECIMEN.breakingChanges} breaking changes are listed the same way on the release
-            page, each with its own cited line and its own help line.
+            {t("landing.bench.helpAll", { breaking })}
           </p>
         </Stage>
       </div>
