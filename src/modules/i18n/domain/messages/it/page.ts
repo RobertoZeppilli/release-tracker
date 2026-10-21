@@ -14,6 +14,24 @@ export const page = {
   "page.login.title": "Accedi",
   "page.login.description":
     "Accedi con GitHub per seguire le tecnologie e vedere la tua Dashboard.",
+  // Le cinque pagine documento. Il titolo dice la parola con cui il piede chiama la pagina, non un
+  // sinonimo: `attribuzioni` e non `riconoscimenti`, perché chi clicca `attribuzioni` deve arrivare
+  // su una pagina che si chiama così. `Termini di servizio` è la forma lunga di `termini`, che nel
+  // piede è corto per stare in colonna.
+  "page.faq.title": "FAQ",
+  "page.faq.description":
+    "Cosa segue Verdict, a cosa serve un account, e fino a che punto ci si può fidare di una sintesi generata.",
+  "page.terms.title": "Termini di servizio",
+  "page.terms.description":
+    "Cos'è Verdict, cosa tiene il piano gratuito, e perché una sintesi generata mostra sempre la riga da cui è stata letta.",
+  "page.privacy.title": "Privacy",
+  "page.privacy.description":
+    "Tutto quello che Verdict tiene di uno sviluppatore, chi ci mette le mani, e perché nessun dato personale entra mai in un prompt.",
+  "page.attributions.title": "Attribuzioni",
+  "page.attributions.description":
+    "Da dove vengono i marchi delle tecnologie, le note di rilascio, i caratteri e le icone di Verdict, e sotto quale licenza.",
+  "page.contact.title": "Contatti",
+  "page.contact.description": "Un indirizzo solo, a cui risponde la persona che manda avanti Verdict.",
   "page.technology.title": "Release di {name}",
   "page.technology.holds":
     "Ogni release di {name}, con una sintesi di cosa è cambiato quando c'è.",

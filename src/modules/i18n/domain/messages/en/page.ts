@@ -17,6 +17,23 @@ export const page = {
   "page.login.title": "Sign in",
   "page.login.description":
     "Sign in with GitHub to follow technologies and see your dashboard.",
+  // The five document pages. Their title is read twice, as the tab and as the heading of the page
+  // itself, so it is one key and not two: a heading that drifts from its tab is a page that answers
+  // to two names.
+  "page.faq.title": "FAQ",
+  "page.faq.description":
+    "What Verdict follows, what an account is for, and how far a generated summary can be trusted.",
+  "page.terms.title": "Terms of service",
+  "page.terms.description":
+    "What Verdict is, what the free plan holds, and why a generated summary always shows the line it was read from.",
+  "page.privacy.title": "Privacy",
+  "page.privacy.description":
+    "Everything Verdict holds about a developer, who touches it, and why no personal data ever enters a prompt.",
+  "page.attributions.title": "Attributions",
+  "page.attributions.description":
+    "Where the technology marks, the release notes, the typefaces and the icons in Verdict come from, and under which licence.",
+  "page.contact.title": "Contact",
+  "page.contact.description": "One address, answered by the person who runs Verdict.",
   // A Technology page and a Release page are public and indexed, so their description is read by
   // people who have not arrived yet. The Technology's own description comes from the Catalog, which
   // is data and stays as it was curated.

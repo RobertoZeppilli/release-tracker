@@ -1,12 +1,18 @@
 import { account } from "./account";
+import { attributions } from "./attributions";
 import { catalog } from "./catalog";
+import { contact } from "./contact";
 import { dashboard } from "./dashboard";
+import { doc } from "./doc";
+import { faq } from "./faq";
 import { landing } from "./landing";
 import { page } from "./page";
 import { path } from "./path";
+import { privacy } from "./privacy";
 import { release } from "./release";
 import { settings } from "./settings";
 import { stack } from "./stack";
+import { terms } from "./terms";
 import { shell } from "./shell";
 import { summary } from "./summary";
 
@@ -15,15 +21,21 @@ import { summary } from "./summary";
 export const EN = {
   ...shell,
   ...account,
+  ...attributions,
   ...catalog,
+  ...contact,
   ...dashboard,
+  ...doc,
+  ...faq,
   ...landing,
   ...page,
   ...path,
+  ...privacy,
   ...release,
   ...settings,
   ...stack,
   ...summary,
+  ...terms,
 } as const;
 
 // The shape every other language has to fill. It is derived from the English dictionary rather than

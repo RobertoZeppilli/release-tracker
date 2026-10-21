@@ -2,11 +2,10 @@ import { expect, test } from "@playwright/test";
 import { type FixtureTechnology, seedTechnology } from "./fixtures";
 
 // ADR 0008: five languages, English without a prefix. This file is about the plumbing and not about
-// the words, which is why it reads `/faq`: the document pages are the stretch still waiting for its
-// dictionary, so a heading there is English in every language and this file cannot be fooled by one.
-// What is checked here is that the right page is served at the right address, says which language it
-// is in, and names its siblings. The words themselves are checked where they are written: the app in
-// its own specs, the landing in `landing.spec`.
+// the words: what is checked here is that the right page is served at the right address, says which
+// language it is in, and names its siblings. The words themselves are checked where they are
+// written: the app in its own specs, the landing in `landing.spec`, the five document pages in
+// `legal.spec`.
 
 let technology: FixtureTechnology;
 
@@ -69,9 +68,12 @@ test("a page names its address in every language, and English as the default", a
   }
 });
 
+// ⚠️ The link is found by the Italian phrase and not by `privacy`: the one in the prose is named
+// from the dictionary now (#131), and `privacy` on its own would have matched the foot instead and
+// passed while testing nothing about the page.
 test("a link keeps the language it was clicked in", async ({ page }) => {
   await page.goto("/it/faq");
-  await page.getByRole("link", { name: "privacy", exact: true }).first().click();
+  await page.getByRole("link", { name: "informativa sulla privacy" }).first().click();
   await expect(page).toHaveURL("/it/privacy");
   await expect(page.locator("html")).toHaveAttribute("lang", "it");
 });

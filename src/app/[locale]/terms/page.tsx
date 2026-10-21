@@ -1,118 +1,95 @@
 import type { Metadata } from "next";
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { Filled, LocaleLink as Link } from "@/modules/i18n/ui";
 import { DocumentPage, DocumentSection } from "@/components/document-page";
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/metadata";
-import { currentLocale } from "@/modules/i18n/server";
+import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslator();
+
   return pageMetadata({
-    title: "Terms of service",
-    description:
-      "What Verdict is, what the free plan holds, and why a generated summary always shows the line it was read from.",
+    title: t("page.terms.title"),
+    description: t("page.terms.description"),
     path: "/terms",
     type: "website",
     locale: await currentLocale(),
   });
 }
 
-// Issue #132: every claim on this page is one the code makes true, and the page says nothing the
-// app does not do. The follow limit is imported rather than typed, so the terms cannot promise a
-// number the Plan stopped enforcing.
-export default function TermsPage() {
+// Issue #131: every claim on this page is one the code makes true, and the page says nothing the
+// app does not do. The follow limit is a gap filled from the Plan rather than a digit in the
+// dictionary, so the terms cannot promise a number the Plan stopped enforcing, in any language.
+// ⚠️ `governing`: the five translations are not five contracts. The English one holds, and the page
+// says so at the foot of itself rather than leaving a reader to wonder.
+export default async function TermsPage() {
+  const t = await getTranslator();
+
   return (
     <DocumentPage
-      title="Terms of service"
+      title={t("page.terms.title")}
       updated="2026-10-15"
-      lede={
-        <>
-          What the service is, what it holds you to, and what it does not promise. It is short
-          because the product is small, and nothing below describes something the app does not do.
-        </>
-      }
+      lede={t("terms.lede")}
+      governing
     >
-      <DocumentSection title="the service">
+      <DocumentSection title={t("terms.service.title")}>
+        <p>{t("terms.service.body")}</p>
+      </DocumentSection>
+
+      <DocumentSection title={t("terms.catalog.title")}>
+        <p>{t("terms.catalog.body")}</p>
+      </DocumentSection>
+
+      <DocumentSection title={t("terms.plan.title")}>
+        <p>{t("terms.plan.body", { limit: FREE_FOLLOW_LIMIT })}</p>
+      </DocumentSection>
+
+      <DocumentSection title={t("terms.summaries.title")}>
+        <p>{t("terms.summaries.body")}</p>
+        <p>{t("terms.summaries.check")}</p>
+      </DocumentSection>
+
+      <DocumentSection title={t("terms.account.title")}>
         <p>
-          Verdict follows the releases of the technologies in its catalog and gives each one a
-          verdict: whether it asks something of you, what breaks, and how to migrate. Release and
-          technology pages are public and need no account. Following a technology, declaring the
-          version you are on and the dashboard are yours alone, and those need one.
+          <Filled
+            text={t("terms.account.body")}
+            nodes={{
+              account: (
+                <Link href="/account" className="text-link">
+                  {t("doc.link.account")}
+                </Link>
+              ),
+              privacy: (
+                <Link href="/privacy" className="text-link">
+                  {t("doc.link.privacy")}
+                </Link>
+              ),
+            }}
+          />
         </p>
       </DocumentSection>
 
-      <DocumentSection title="the catalog is curated">
-        <p>
-          The catalog is chosen and maintained by us. There is no form to add a technology to it and
-          no queue behind one: a technology enters when we can follow its releases properly, and it
-          can be retired when we no longer can. A retired technology stays readable, and it stays
-          yours if you were following it.
-        </p>
+      <DocumentSection title={t("terms.conduct.title")}>
+        <p>{t("terms.conduct.body")}</p>
       </DocumentSection>
 
-      <DocumentSection title="the plan">
-        <p>
-          There is one plan, Free. It follows up to {FREE_FOLLOW_LIMIT} technologies and costs
-          nothing. The app never asks for payment details, and there is nothing to cancel.
-        </p>
+      <DocumentSection title={t("terms.warranty.title")}>
+        <p>{t("terms.warranty.body")}</p>
       </DocumentSection>
 
-      <DocumentSection title="the summaries are generated, and can be wrong">
+      <DocumentSection title={t("terms.changes.title")}>
         <p>
-          Every summary is written by a language model that reads one thing: the release notes the
-          project itself published for that release. It is given no other source, and no data about
-          you.
-        </p>
-        <p>
-          A model can misread. That is why a summary is not the last word on the page: its claims
-          carry the line of the release notes they were read from, and the page links the notes at
-          their source. The quote is there so you can check instead of trust. When a change is
-          expensive to get wrong, read the cited line before you act on the verdict.
-        </p>
-      </DocumentSection>
-
-      <DocumentSection title="your account">
-        <p>
-          You sign in with GitHub, which is asked for your public profile and your email address and
-          nothing else: no access to any repository. You can delete the account at any time from the{" "}
-          <Link href="/account" className="text-link">
-            account page
-          </Link>
-          , and deleting it takes the technologies you follow and the versions you declared with it.
-          What is held, and by whom, is in the{" "}
-          <Link href="/privacy" className="text-link">
-            privacy notice
-          </Link>
-          .
-        </p>
-      </DocumentSection>
-
-      <DocumentSection title="what we ask of you">
-        <p>
-          Read it, follow what you use, and leave the rest alone: no automated traffic beyond what a
-          reader generates, no attempt to reach another account&rsquo;s data, no attempt to break
-          the app or the services behind it. An account doing any of those can be ended without
-          notice.
-        </p>
-      </DocumentSection>
-
-      <DocumentSection title="no warranty">
-        <p>
-          The service is provided as it is. It can change, it can be unavailable, and it can stop.
-          The summaries can be wrong, the release notes they read can themselves be wrong or
-          incomplete, and an upgrade is still your decision and your responsibility. Nothing here is
-          advice, and no liability is accepted for what follows from an upgrade.
-        </p>
-      </DocumentSection>
-
-      <DocumentSection title="changes, and how to reach us">
-        <p>
-          These terms can change. The date at the top of this page is the day its text last changed,
-          and it is the only record of that there is. Questions, mistakes you spot, anything else:{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-link">
-            {CONTACT_EMAIL}
-          </a>
-          .
+          <Filled
+            text={t("terms.changes.body")}
+            nodes={{
+              mail: (
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-link">
+                  {CONTACT_EMAIL}
+                </a>
+              ),
+            }}
+          />
         </p>
       </DocumentSection>
     </DocumentPage>
