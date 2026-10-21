@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslator } from "@/modules/i18n/ui";
 import { type Category, CATEGORIES } from "@/modules/catalog";
 import type { CatalogLayout, CatalogSort } from "../domain/catalog-view";
 
@@ -12,10 +13,12 @@ export function LayoutChoice({
   layout: CatalogLayout;
   onLayout: (layout: CatalogLayout) => void;
 }) {
+  const t = useTranslator();
+
   return (
     <div
       role="group"
-      aria-label="Catalog layout"
+      aria-label={t("stack.catalog.layout")}
       className="flex overflow-hidden rounded-md border border-rule"
     >
       {(["rows", "grid"] as const).map((option) => (
@@ -38,6 +41,8 @@ export function LayoutChoice({
 // DESIGN.md, Select Many: the mode is off until it is asked for, so nobody reads past a mark on
 // 31 rows for an action they are not taking. It sits beside the layout choice, in the same shape.
 export function SelectManyChoice({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  const t = useTranslator();
+
   return (
     <button
       type="button"
@@ -47,7 +52,7 @@ export function SelectManyChoice({ on, onToggle }: { on: boolean; onToggle: () =
         on ? "bg-raised text-text" : "text-text-faint"
       }`}
     >
-      select many
+      {t("stack.catalog.selectMany")}
     </button>
   );
 }
@@ -61,17 +66,18 @@ export function SortChoice({
   sort: CatalogSort;
   onSort: (sort: CatalogSort) => void;
 }) {
+  const t = useTranslator();
+  // the word is `category`, which is what this ordering shows: the groups are the Categories and
+  // the column title says `by category`. The value stays `name`, which is how the rows are ordered
+  // inside each group and what is written in the address and in the stored preference.
   const options: { value: CatalogSort; label: string }[] = [
-    // ⚠️ The word is `category`, which is what this ordering shows: the groups are the Categories
-    // and the column title says `by category`. The value stays `name`, which is how the rows are
-    // ordered inside each group and what is written in the address and in the stored preference.
-    { value: "name", label: "category" },
-    { value: "release", label: "latest release" },
+    { value: "name", label: t("stack.catalog.sort.category") },
+    { value: "release", label: t("stack.catalog.sort.release") },
   ];
 
   return (
     <p className="mb-5 flex flex-wrap items-center gap-2 font-mono text-label text-text-faint">
-      sorted by
+      {t("stack.catalog.sortedBy")}
       {options.map(({ value, label }) => (
         <button
           key={value}
@@ -101,11 +107,12 @@ export function CategoryChips({
   category: Category | null;
   onCategory: (category: Category | null) => void;
 }) {
+  const t = useTranslator();
   // Each chip is keyed by its Category, so a choice changes `aria-pressed` on nodes that stay: the
   // chip that was pressed is still the chip under the focus, with nothing to take back.
   return (
-    <div role="group" aria-label="Category" className="mb-3 flex flex-wrap gap-2">
-      <Chip label="all" pressed={category === null} onPress={() => onCategory(null)} />
+    <div role="group" aria-label={t("stack.catalog.category")} className="mb-3 flex flex-wrap gap-2">
+      <Chip label={t("stack.catalog.all")} pressed={category === null} onPress={() => onCategory(null)} />
       {CATEGORIES.map((option) => (
         <Chip
           key={option}

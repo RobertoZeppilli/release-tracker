@@ -56,3 +56,23 @@ export function interpolate(text: string, params: MessageParams = {}): string {
     return value === undefined ? whole : String(value);
   });
 }
+
+// A message cut at its placeholders, which is how a sentence gets an element inside it without the
+// dictionary holding one: the component fills the named gaps with nodes and the sentence stays whole
+// for whoever translates it. `interpolate` leaves a placeholder it has no value for exactly as it
+// was written, which is what lets the same message carry both kinds of gap.
+export type MessagePiece = string | { placeholder: string };
+
+export function messageParts(text: string): readonly MessagePiece[] {
+  const pieces: MessagePiece[] = [];
+  let at = 0;
+  for (const match of text.matchAll(PLACEHOLDER)) {
+    const name = match[1];
+    if (name === undefined || match.index === undefined) continue;
+    if (match.index > at) pieces.push(text.slice(at, match.index));
+    pieces.push({ placeholder: name });
+    at = match.index + match[0].length;
+  }
+  if (at < text.length) pieces.push(text.slice(at));
+  return pieces;
+}

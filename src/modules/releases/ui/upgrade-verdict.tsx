@@ -1,6 +1,6 @@
 import { HelpPointer } from "@/components/help-pointer";
+import type { Translator } from "@/modules/i18n";
 import type { PathCounts } from "../domain/upgrade-path";
-import { plural } from "./release-rows";
 import { SeverityLabel } from "./severity-label";
 import { PANEL } from "./upgrade-panel";
 import { pathRows, pathSentence, pathVerdict } from "./upgrade-path-copy";
@@ -26,16 +26,18 @@ export function UpgradeVerdict({
   to,
   counts,
   showAll,
+  t,
 }: {
   from: string;
   to: string;
   counts: PathCounts;
+  t: Translator;
   // The way back to the whole recorded history, when the path hides some of it. It sits with the
   // path and not under the list, because it is the control that empties the `from` field.
   showAll: { href: string; total: number } | null;
 }) {
-  const verdict = pathVerdict(counts);
-  const rows = pathRows(from, to, counts);
+  const verdict = pathVerdict(counts, t);
+  const rows = pathRows(from, to, counts, t);
 
   return (
     <section aria-labelledby="path-verdict" className={`mt-5 ${PANEL}`}>
@@ -48,7 +50,7 @@ export function UpgradeVerdict({
       {/* A path with nothing in it has no counts to lay out, and the one thing worth saying there is
           a sentence (DESIGN.md, Path Panel). */}
       {rows.length === 0 ? (
-        <p className="mt-3 font-mono text-label text-text-faint">{pathSentence(from, to, counts)}</p>
+        <p className="mt-3 font-mono text-label text-text-faint">{pathSentence(from, to, counts, t)}</p>
       ) : (
         <dl className={`mt-3 ${ROWS}`}>
           {rows.map((row) => (
@@ -61,7 +63,7 @@ export function UpgradeVerdict({
       )}
       {showAll && (
         <p className="mt-3 font-mono text-label">
-          <HelpPointer href={showAll.href}>show all {plural(showAll.total, "release")}</HelpPointer>
+          <HelpPointer href={showAll.href}>{t("path.showAll", { count: showAll.total })}</HelpPointer>
         </p>
       )}
     </section>

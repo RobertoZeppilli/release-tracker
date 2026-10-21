@@ -1,6 +1,8 @@
 "use client";
 
 import { CircleX } from "lucide-react";
+import type { Translator } from "@/modules/i18n";
+import { useTranslator } from "@/modules/i18n/ui";
 import type { FollowRejection } from "../domain/follow-rejection";
 
 // What the database refused, said once for every page that can be refused: what did not happen, why,
@@ -20,23 +22,23 @@ export function FollowRejectionNote({
   rejection: FollowRejection;
   className: string;
 }) {
+  const t = useTranslator();
+
   return (
     <p id={id} className={`font-mono text-diagnostic text-breaking ${className}`}>
       <CircleX aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-      error: {message(rejection)}
+      error: {message(rejection, t)}
     </p>
   );
 }
 
-function message(rejection: FollowRejection): string {
+function message(rejection: FollowRejection, t: Translator): string {
   if (rejection === "limit") {
     // It says what happened and the way out, and it does not recount the quota: the figure is in
     // the Stack Panel on `/technologies` and in the Limit Note everywhere else (DESIGN.md, Row
     // Error Line).
-    return "not followed. your free plan filled up in another session, so let one go to follow another.";
+    return t("stack.rejected.limit");
   }
-  if (rejection === "retired") {
-    return "not followed · it has left the catalog · a retired technology can't be followed again";
-  }
-  return "not saved · the change didn't reach the database · try again";
+  if (rejection === "retired") return t("stack.rejected.retired");
+  return t("stack.rejected.failed");
 }

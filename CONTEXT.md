@@ -370,6 +370,13 @@ traducono**: `featured`, `notable`, `digest`, `preview` e i prefissi `breaking[n
 nelle **Sintesi**, che restano in inglese. Le **Note di rilascio** restano nella lingua in cui sono
 state pubblicate; dove la Sintesi è in una lingua diversa dall'interfaccia, la pagina lo dice.
 
+Dove una riga porta una colonna `UI`, quelle sono le parole con cui il prodotto dice quel nome al
+lettore, per lingua: la colonna `Codice / UI` resta il nome in codice, e le frasi intere stanno nel
+dizionario (`src/modules/i18n/domain/messages`). Tre parole decise con l'utente il 2026-10-16 per
+l'italiano: **`breaking changes` resta in inglese**, perché è quello che il lettore rilegge dentro la
+**Sintesi** due righe sotto e perché è quello che questo documento scrive già nella sua prosa;
+`safe to upgrade` è **"aggiornamento sicuro"**; `key points` è **"punti chiave"**.
+
 | Dominio | Codice / UI | Valori |
 |---|---|---|
 | Tecnologia | `Technology` | |
@@ -387,8 +394,8 @@ state pubblicate; dove la Sintesi è in una lingua diversa dall'interfaccia, la 
 | Anteprima | `Preview` | |
 | Note di rilascio | `ReleaseNotes` | |
 | Sintesi | `Summary` | |
-| Intervento richiesto | `actionRequired` | UI: "Action required" · "Safe to upgrade" |
-| Note giudicabili | `notesJudgeable` | UI: "not enough notes to judge" |
+| Intervento richiesto | `actionRequired` | UI en: "action required" · "safe to upgrade"; it: "intervento richiesto" · "aggiornamento sicuro" |
+| Note giudicabili | `notesJudgeable` | UI en: "not enough notes to judge"; it: "note non giudicabili" |
 | Stato della sintesi | `SummaryStatus` | `pending` · `processing` · `ready` · `unavailable` · `skipped` · `failed` |
 | Strategia di classificazione | `ClassificationStrategy` | `semver` · `node` · `typescript` · `zerover` · `minor-major` |
 | Correzione di rilevanza | `significanceOverride` | |

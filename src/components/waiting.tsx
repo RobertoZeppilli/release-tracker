@@ -28,6 +28,8 @@ const SPLIT =
 // The words are for a reader who is not watching the screen, and they are the whole of what names
 // the destination: the blocks themselves are `aria-hidden`, so a screen reader meets one sentence
 // and no furniture.
+// `opening` is the name of the destination, already translated by the page that waits: this file
+// draws shapes and holds no sentence of its own.
 export function PageSkeleton({ opening }: { opening: string }) {
   return (
     // `data-waiting="page"` is for the tests and is worth the attribute: with a loading boundary the

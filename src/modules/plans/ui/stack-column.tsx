@@ -1,6 +1,7 @@
 "use client";
 
 import { ColumnTitle } from "@/components/column-title";
+import { useTranslator } from "@/modules/i18n/ui";
 import { HelpPointer } from "@/components/help-pointer";
 import { FREE_FOLLOW_LIMIT, freeFollowsLeft } from "../domain/follow-limit";
 import type { PickerTechnology } from "../domain/picker";
@@ -18,6 +19,8 @@ export function StackColumn({
   rows: PickerTechnology[];
   retired: PickerTechnology[];
 }) {
+  const t = useTranslator();
+
   return (
     <div className="self-stretch">
       <section
@@ -36,7 +39,7 @@ export function StackColumn({
             </ul>
           ) : (
             <p className="pt-3 font-mono text-label leading-[1.6] text-text-faint">
-              nothing yet. follow something from the catalog and it lands here.
+              {t("stack.empty")}
             </p>
           )}
           {retired.length > 0 && <RetiredGroup rows={retired} />}
@@ -51,6 +54,7 @@ export function StackColumn({
 // the wall without a number, because this one figure used to be printed three times inside the first
 // 60px of the page.
 function StackPanel() {
+  const t = useTranslator();
   const { count } = useFollows();
 
   return (
@@ -60,7 +64,7 @@ function StackPanel() {
           so it is the question the column answers plus the ordering in force. Same box, same first
           line, one page to the next (DESIGN.md, Stack Panel). */}
       <h2 id="stack-title" className="mb-3 font-mono text-column-verdict text-text">
-        what you follow, by name
+        {t("stack.title")}
       </h2>
       {/* The figures are the announcement: a press moves a row and the focus follows it, which tells
           the eye, and this tells the ear. The Status-scale line that used to carry it is gone, and
@@ -69,14 +73,14 @@ function StackPanel() {
         aria-live="polite"
         className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 font-mono text-label leading-[1.6] text-text-faint"
       >
-        <Figure label="followed" value={count} testId="follow-status" />
-        <Figure label="left on your free plan" value={freeFollowsLeft(count)} />
+        <Figure label={t("stack.figure.followed")} value={count} testId="follow-status" />
+        <Figure label={t("stack.figure.left")} value={freeFollowsLeft(count)} />
       </dl>
       {/* The one hue this page may carry, and it is the system's own: the navigational `-->` and
           its `help` label, not an accent (DESIGN.md, The Severity-Only Colour Rule). The sentence
           that said the same thing had a destination in it and no way to go there. */}
       <p className="mt-3 border-t border-rule pt-3">
-        <HelpPointer href="/dashboard">see them on your dashboard</HelpPointer>
+        <HelpPointer href="/dashboard">{t("stack.seeDashboard")}</HelpPointer>
       </p>
     </div>
   );
@@ -99,14 +103,15 @@ function Figure({ label, value, testId }: { label: string; value: number; testId
 // reason they are shown at all. A retired Technology nobody follows is not in the Catalog, and it is
 // in no sense something that could be added to a stack.
 function RetiredGroup({ rows }: { rows: PickerTechnology[] }) {
+  const t = useTranslator();
+
   return (
     <section className="mt-5" aria-labelledby="retired-title">
       <ColumnTitle id="retired-title" className="mb-2">
-        retired, still yours
+        {t("stack.retired.title")}
       </ColumnTitle>
       <p className="mb-3 font-mono text-label leading-[1.6] text-text-faint">
-        no longer in the catalog and getting no new releases. Past releases stay readable, they still
-        count toward your {FREE_FOLLOW_LIMIT}, and once let go they can&apos;t be followed again.
+        {t("stack.retired.note", { limit: FREE_FOLLOW_LIMIT })}
       </p>
       <ul className="border-t border-rule">
         {rows.map((technology) => (

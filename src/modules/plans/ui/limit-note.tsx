@@ -1,6 +1,7 @@
 "use client";
 
 import { Info } from "lucide-react";
+import { useTranslator } from "@/modules/i18n/ui";
 import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { LIMIT_NOTE_ID } from "./follow-toggle";
 import { useFollows } from "./follows-provider";
@@ -21,6 +22,7 @@ export function FollowToggleLimitNote({
   counted?: boolean;
   className?: string;
 }) {
+  const t = useTranslator();
   const { atLimit, isFollowing } = useFollows();
   if (!atLimit) return null;
   if (technologyId !== undefined && isFollowing(technologyId)) return null;
@@ -28,14 +30,10 @@ export function FollowToggleLimitNote({
   return (
     <p id={LIMIT_NOTE_ID} className={`font-mono text-diagnostic text-text-muted ${className}`} role="status">
       <Info aria-hidden className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-      {counted ? (
-        <>
-          note: <span className="text-text">{FREE_FOLLOW_LIMIT}</span> of {FREE_FOLLOW_LIMIT}{" "}
-          followed · unfollow one to follow another
-        </>
-      ) : (
-        "note: your free plan is full. let one go in what you follow to follow another."
-      )}
+      note:{" "}
+      {counted
+        ? `${t("stack.quota.followed", { count: FREE_FOLLOW_LIMIT, limit: FREE_FOLLOW_LIMIT })} · ${t("stack.quota.swap")}`
+        : t("stack.limit.full")}
     </p>
   );
 }

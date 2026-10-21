@@ -1,4 +1,5 @@
 import { BackPointer } from "@/components/help-pointer";
+import type { Translator } from "@/modules/i18n";
 import type { RecordedHistory } from "../domain/upgrade-path";
 import { SeverityLabel } from "./severity-label";
 import { historySentence } from "./upgrade-path-copy";
@@ -11,14 +12,22 @@ import { historySentence } from "./upgrade-path-copy";
 // The bars that used to sit here are the group titles of the list now (DESIGN.md, Stat Row): they
 // compare the majors against each other, which is a thing to say beside the groups and not about
 // them from the other column.
-export function HistoryOverview<T>({ history, base }: { history: RecordedHistory<T>; base: string }) {
+export function HistoryOverview<T>({
+  history,
+  base,
+  t,
+}: {
+  history: RecordedHistory<T>;
+  base: string;
+  t: Translator;
+}) {
   return (
-    <section aria-label="Recorded history" className="mt-5">
+    <section aria-label={t("path.history.label")} className="mt-5">
       <p className="font-mono text-diagnostic text-text-muted stacked:max-w-measure">
-        <SeverityLabel tone="muted" label="note:" /> {historySentence(history)}
+        <SeverityLabel tone="muted" label="note:" /> {historySentence(history, t)}
       </p>
       <p className="mt-5">
-        <BackPointer href={base}>back to the upgrade path</BackPointer>
+        <BackPointer href={base}>{t("path.history.back")}</BackPointer>
       </p>
     </section>
   );

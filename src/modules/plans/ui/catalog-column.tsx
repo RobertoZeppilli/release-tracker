@@ -1,6 +1,7 @@
 "use client";
 
 import { ColumnTitle } from "@/components/column-title";
+import { useTranslator } from "@/modules/i18n/ui";
 import type { Category } from "@/modules/catalog";
 import {
   catalogCount,
@@ -64,6 +65,7 @@ function CatalogBody({
   category: Category | null;
   onCategory: (category: Category | null) => void;
 }) {
+  const t = useTranslator();
   const selection = useCatalogSelection();
   const [layout, setLayout] = useViewPref<CatalogLayout>("catalog-layout", readLayout, "rows");
   const [sort, setSort] = useViewPref<CatalogSort>("catalog-sort", readSort, "name");
@@ -74,7 +76,7 @@ function CatalogBody({
     <section aria-labelledby="catalog-title">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
         <ColumnTitle id="catalog-title">
-          what you could add, by {sort === "release" ? "latest release" : "category"}
+          {t(sort === "release" ? "stack.catalog.byRelease" : "stack.catalog.byCategory")}
         </ColumnTitle>
         <span className="flex items-center gap-2">
           <SelectManyChoice on={selection.on} onToggle={selection.toggleMode} />
@@ -84,7 +86,7 @@ function CatalogBody({
       {/* One line, and short enough to end well before the choice above it: a sentence that runs
           the width of the column passes under the control and reads as its caption. */}
       <p className="mb-5 max-w-[52ch] font-mono text-label leading-[1.6] text-text-faint">
-        each release here is summarized once, for everyone
+        {t("stack.catalog.intro")}
       </p>
 
       <CatalogFilter
@@ -105,12 +107,10 @@ function CatalogBody({
 
       {query.trim() !== "" && shown === 0 && (
         <section id="no-match" className="mt-7" aria-live="polite">
-          <Note>
-            no technology matches &ldquo;<span className="text-text">{query.trim()}</span>&rdquo;
-          </Note>
-          <p className="mt-3 max-w-measure text-text-muted">
-            The catalog is curated, and requests for new technologies aren&apos;t open yet.
-          </p>
+          {/* The query used to be a span of its own in `text-text` inside the sentence, which a
+              message cannot carry: the quotes are the message's now (ADR 0008). */}
+          <Note>{t("stack.catalog.noMatch", { query: query.trim() })}</Note>
+          <p className="mt-3 max-w-measure text-text-muted">{t("stack.catalog.curated")}</p>
         </section>
       )}
     </section>

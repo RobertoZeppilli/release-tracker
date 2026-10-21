@@ -10,5 +10,5 @@ export {
   type Locale,
 } from "./domain/locales";
 export { dictionaryFor, type MessageKey } from "./domain/messages";
-export { type Dictionary, type MessageParams } from "./domain/message";
+export { type Dictionary, messageParts, type MessageParams } from "./domain/message";
 export { createTranslator, type Translator } from "./domain/translate";

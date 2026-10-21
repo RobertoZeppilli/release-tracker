@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslator } from "@/modules/i18n/ui";
 import type { CatalogLayout, CatalogSort } from "../domain/catalog-view";
 import { sortByLatestRelease } from "../domain/catalog-view";
 import { groupByCategory, matchesQuery, type PickerTechnology } from "../domain/picker";
@@ -25,11 +26,12 @@ export function CatalogGroups({
   sort: CatalogSort;
   layout: CatalogLayout;
 }) {
+  const t = useTranslator();
   if (sort === "release") {
     return (
       <Group
         id="catalog-latest"
-        title="latest release first"
+        title={t("stack.catalog.latestFirst")}
         rows={sortByLatestRelease(rows)}
         query={query}
         layout={layout}
@@ -72,9 +74,13 @@ function Group({
   layout: CatalogLayout;
   date?: boolean;
 }) {
+  const t = useTranslator();
   const shown = rows.filter((row) => matchesQuery(row, query));
   if (shown.length === 0) return null;
-  const count = query.trim() === "" ? `${rows.length}` : `${shown.length} of ${rows.length}`;
+  const count =
+    query.trim() === ""
+      ? `${rows.length}`
+      : t("stack.catalog.shownOf", { shown: shown.length, total: rows.length });
 
   return (
     <section className="mt-5 first:mt-0" aria-labelledby={`${id}-title`}>

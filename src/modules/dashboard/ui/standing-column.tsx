@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import type { DashboardVerdict } from "../domain/build-dashboard";
 import type { Standing } from "../domain/standing";
 import { pageVerdict } from "./dashboard-copy";
@@ -7,12 +8,16 @@ import { StandingRow } from "./standing-row";
 // The left half of the Dashboard, and the answer to *where does my stack stand* (DESIGN.md,
 // Standing Column). Two parts in fixed order: the panel, titled by the verdict and counting the
 // whole, then the list, which scrolls inside itself so the panel above it never leaves.
+// ⚠️ `t` arrives from the page and is not read from `i18n/server` here: this file is exported from
+// the module's `ui` index, which client components import too (`EmptyDashboard` is one).
 export function StandingColumn({
   verdict,
   standing,
+  t,
 }: {
   verdict: DashboardVerdict | null;
   standing: Standing;
+  t: Translator;
 }) {
   // The sticky column lives inside a plain grid item stretched to the row's height: a sticky grid
   // item is not clamped by its own grid area, so the column used to slide past the end of the split
@@ -30,13 +35,13 @@ export function StandingColumn({
       >
         {/* The verdict is the title of the panel now, not a line above it: two boxes of the app
           hold a verdict and its counts, and they are the same box (DESIGN.md, Standing Panel). */}
-        <StandingPanel standing={standing} verdict={pageVerdict(verdict)} />
+        <StandingPanel standing={standing} verdict={pageVerdict(verdict, t)} t={t} />
 
         {/* The list is a group with a name of its own: the quota in the top bar already answers to
           "Followed technologies", and two things on a page under one name is one name too many. */}
         <div
           role="group"
-          aria-label="Followed technologies, by distance"
+          aria-label={t("dashboard.standing.list")}
           className="stack-scroll min-h-0 border-t border-rule-strong max-[1040px]:stack-scroll-off"
         >
           {standing.rows.map((row) => (
@@ -44,6 +49,7 @@ export function StandingColumn({
               key={row.technology.slug}
               row={row}
               scale={standing.scale}
+              t={t}
             />
           ))}
         </div>

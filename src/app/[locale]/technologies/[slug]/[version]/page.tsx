@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { createPublicClient } from "@/lib/supabase";
+import type { Translator } from "@/modules/i18n";
 import { githubRepo, type StoredTechnology } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
 import { RetiredNote } from "@/modules/catalog/ui";
@@ -41,18 +42,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = await loadPage(slug, version);
   if (!page) return {};
   return pageMetadata({
-    ...releaseMeta(page.technology.name, page.release),
+    ...releaseMeta(page.technology.name, page.release, await getTranslator()),
     path: releasePath(page.technology.slug, page.release.version),
     locale: await currentLocale(),
   });
 }
 
 // Where to look when a Release has no notes: the commit history if the Technology is on GitHub.
-function externalSource(technology: StoredTechnology, version: string): ExternalSource | null {
+// `GitHub` and `npm` are the names of the places, not words: what is translated is `View on`.
+function externalSource(
+  technology: StoredTechnology,
+  version: string,
+  t: Translator,
+): ExternalSource | null {
   const repo = githubRepo(technology.sources);
-  if (repo) return { label: "View on GitHub", href: `https://github.com/${repo}/commits` };
+  if (repo)
+    return { label: t("release.viewOn", { where: "GitHub" }), href: `https://github.com/${repo}/commits` };
   for (const source of technology.sources) {
-    if (source.kind === "npm") return { label: "View on npm", href: `https://www.npmjs.com/package/${source.package}/v/${version}` };
+    if (source.kind === "npm")
+      return {
+        label: t("release.viewOn", { where: "npm" }),
+        href: `https://www.npmjs.com/package/${source.package}/v/${version}`,
+      };
   }
   return null;
 }
@@ -60,9 +71,9 @@ function externalSource(technology: StoredTechnology, version: string): External
 // Lower case, because it is a Help Pointer label and not a button: the provenance row is the one
 // place on the page where a link sits beside a static fact in the same faint Mono, so it has to
 // declare itself the way the system declares every other link (DESIGN.md, Help Pointer Link).
-function notesLinkLabel(url: string): string {
+function notesLinkLabel(url: string, t: Translator): string {
   const { hostname } = new URL(url);
-  return hostname === "github.com" ? "view on github" : `view on ${hostname}`;
+  return t("release.viewOnLower", { where: hostname === "github.com" ? "github" : hostname });
 }
 
 export default async function ReleasePage({ params }: Props) {
@@ -72,7 +83,7 @@ export default async function ReleasePage({ params }: Props) {
   const page = await loadPage(slug, version);
   if (!page) notFound();
   const { technology, release } = page;
-  const source = externalSource(technology, release.version);
+  const source = externalSource(technology, release.version, t);
   const detection = technology.sources.find((item) => item.role === "detection");
   // One reading of the notes for both halves: the citations are located in the text shown below.
   const lines = release.notes ? noteLines(release.notes.body) : null;
@@ -84,8 +95,8 @@ export default async function ReleasePage({ params }: Props) {
         <PageBreadcrumb
           path={[technologiesCrumb(t), { label: technology.slug, href: `/technologies/${technology.slug}` }, release.version]}
         />
-        <ReleaseHeader technologyName={technology.name} release={release} source={source} />
-        {technology.retired && <RetiredNote name={technology.name} latest={null} />}
+        <ReleaseHeader technologyName={technology.name} release={release} source={source} t={t} />
+        {technology.retired && <RetiredNote name={technology.name} latest={null} t={t} />}
         {/* The page says it is mixed before the Summary is read, not after (ADR 0008). */}
         <OriginalLanguageNote
           locale={locale}
@@ -93,17 +104,21 @@ export default async function ReleasePage({ params }: Props) {
           hasContent={release.summary !== null || release.notes !== null}
         />
         <CitationProvider>
-          {release.summary && <SummaryView summary={release.summary} notes={lines ?? []} unjudged={release.unjudged} />}
-          <SummaryStatusBlock release={release} hasGitHub={githubRepo(technology.sources) !== null} />
+          {release.summary && (
+            <SummaryView summary={release.summary} notes={lines ?? []} unjudged={release.unjudged} t={t} />
+          )}
+          <SummaryStatusBlock release={release} hasGitHub={githubRepo(technology.sources) !== null} t={t} />
           {lines && release.notes && <ReleaseNotesSource lines={lines} url={release.notes.url} />}
         </CitationProvider>
         <p className="mt-7 flex flex-wrap items-baseline gap-4 font-mono text-meta text-text-faint">
           {release.notes?.url && (
-            <HelpPointer href={release.notes.url}>{notesLinkLabel(release.notes.url)}</HelpPointer>
+            <HelpPointer href={release.notes.url}>{notesLinkLabel(release.notes.url, t)}</HelpPointer>
           )}
           <span>
+            {/* `imported` and `detected` are values of the Release record, and so is the kind of
+                the Source: identifiers, not words (CONTEXT.md, "Codice / UI"). */}
             {release.origin} {release.recordedAt.toISOString().slice(0, 10)}
-            {detection && ` via ${detection.kind}`}
+            {detection && ` ${t("release.via", { source: detection.kind })}`}
           </span>
         </p>
       </main>

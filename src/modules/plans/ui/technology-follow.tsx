@@ -3,6 +3,7 @@
 import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useTranslator } from "@/modules/i18n/ui";
 import { loginPath } from "@/modules/auth";
 import { useSession } from "@/modules/auth/ui";
 import { SkeletonBox } from "@/components/waiting";
@@ -28,6 +29,7 @@ const RESERVED = `${PLACE} h-[34px] w-[95px] rounded-md`;
 // `TechnologyScope` holds. Nothing shows until the session is known, rather than a Follow that might
 // be wrong.
 export function TechnologyFollow({ technologyId, name, retired }: { technologyId: string; name: string; retired: boolean }) {
+  const t = useTranslator();
   const session = useSession();
   const pathname = usePathname();
 
@@ -37,9 +39,13 @@ export function TechnologyFollow({ technologyId, name, retired }: { technologyId
     // Nobody can follow a retired Technology, so the login would lead to a button that is not there.
     if (retired) return null;
     return (
-      <a href={loginPath(pathname)} aria-label={`Follow ${name}`} className={`${FOLLOW_LINK_CLASS} ${PLACE}`}>
+      <a
+        href={loginPath(pathname)}
+        aria-label={t("stack.followName", { name })}
+        className={`${FOLLOW_LINK_CLASS} ${PLACE}`}
+      >
         <Plus aria-hidden className="size-4" />
-        Follow
+        {t("stack.follow")}
       </a>
     );
   }
@@ -54,6 +60,7 @@ export function TechnologyFollow({ technologyId, name, retired }: { technologyId
 // once it has something true to say. On `/technologies` the server hands the follows over, so the
 // provider starts knowing and no row there ever waits.
 function FollowControl({ technologyId, name, retired }: { technologyId: string; name: string; retired: boolean }) {
+  const t = useTranslator();
   const follows = useFollows();
   const following = follows.isFollowing(technologyId);
   const rejection = follows.rejectionOn(technologyId);
@@ -70,7 +77,7 @@ function FollowControl({ technologyId, name, retired }: { technologyId: string; 
     if (!wasFollowed) return null;
     return (
       <span role="status" className={`${PLACE} font-mono text-label leading-[1.6] text-text-muted`}>
-        unfollowed · can&apos;t be followed again
+        {t("stack.unfollowed")}
       </span>
     );
   }

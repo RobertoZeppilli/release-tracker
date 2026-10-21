@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { TechnologyMark } from "@/modules/catalog/ui";
 import type { StandingRow as Row } from "../domain/standing";
@@ -9,11 +10,13 @@ import { barShare, standingWords } from "./dashboard-copy";
 export function StandingRow({
   row,
   scale,
+  t,
 }: {
   row: Row;
   scale: number | null;
+  t: Translator;
 }) {
-  const { words, action } = standingWords(row);
+  const { words, action } = standingWords(row, t);
   const share = barShare(row, scale);
 
   return (

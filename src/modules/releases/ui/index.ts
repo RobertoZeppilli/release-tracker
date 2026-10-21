@@ -1,4 +1,4 @@
-export { isoDate, plural } from "./release-rows";
+export { isoDate } from "./release-rows";
 export { BreakingList } from "./breaking-list";
 export { ReleaseVerdict, RowVerdictLine } from "./release-verdict";
 export { SeverityLabel } from "./severity-label";

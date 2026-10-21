@@ -1,6 +1,6 @@
 "use client";
 
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { LocaleLink as Link, useTranslator } from "@/modules/i18n/ui";
 import { TechnologyMark } from "@/modules/catalog/ui";
 import type { CatalogLayout } from "../domain/catalog-view";
 import type { PickerTechnology } from "../domain/picker";
@@ -35,6 +35,7 @@ export function CatalogRow({
   // one more thing to read (DESIGN.md, Catalog Ordering).
   date?: boolean;
 }) {
+  const t = useTranslator();
   const follows = useFollows();
   const rejection = follows.rejectionOn(technology.id);
   const errorId = `err-${technology.slug}`;
@@ -79,8 +80,11 @@ export function CatalogRow({
       >
         {technology.latest && (
           <span className={grid ? "block" : undefined}>
-            latest <span className="text-text-muted">{technology.latest}</span>
-            {date && technology.latestAt && ` on ${technology.latestAt}`}
+            {/* The version kept its own ink by being an element inside the sentence, which a
+                message cannot be: the line is one sentence now (ADR 0008). */}
+            {date && technology.latestAt
+              ? t("stack.catalog.latestOn", { version: technology.latest, date: technology.latestAt })
+              : t("stack.catalog.latest", { version: technology.latest })}
             {!grid && " · "}
           </span>
         )}

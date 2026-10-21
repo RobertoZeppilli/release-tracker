@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createTranslator, dictionaryFor } from "@/modules/i18n";
 import { declared, release, technology } from "../domain/fixtures";
 import type { Standing, StandingRow } from "../domain/standing";
 import {
@@ -10,6 +11,11 @@ import {
   standingWords,
   totalsRows,
 } from "./dashboard-copy";
+
+// The English translator, because these are the English words the functions are read in. The
+// choice between the sentences is what this file tests; that the other four languages have all of
+// them is `messages/dictionaries.test.ts` (ADR 0008).
+const t = createTranslator("en", dictionaryFor("en"));
 
 function row(options: Partial<StandingRow> = {}): StandingRow {
   return {
@@ -30,32 +36,32 @@ function standing(options: Partial<Standing> = {}): Standing {
 
 describe("pageVerdict", () => {
   it("counts Releases and names the number", () => {
-    expect(pageVerdict({ needsAction: 2, safe: 4 })).toMatchObject({ tone: "action", claim: "2 need action" });
-    expect(pageVerdict({ needsAction: 1, safe: 0 })).toMatchObject({ claim: "1 needs action" });
+    expect(pageVerdict({ needsAction: 2, safe: 4 }, t)).toMatchObject({ tone: "action", claim: "2 need action" });
+    expect(pageVerdict({ needsAction: 1, safe: 0 }, t)).toMatchObject({ claim: "1 needs action" });
   });
 
   it("says nothing needs action only where something was judged", () => {
-    expect(pageVerdict({ needsAction: 0, safe: 3 })).toMatchObject({ tone: "ok", claim: "nothing needs action" });
-    expect(pageVerdict(null)).toMatchObject({ tone: "muted", claim: "nothing judged yet" });
+    expect(pageVerdict({ needsAction: 0, safe: 3 }, t)).toMatchObject({ tone: "ok", claim: "nothing needs action" });
+    expect(pageVerdict(null, t)).toMatchObject({ tone: "muted", claim: "nothing judged yet" });
   });
 });
 
 describe("standingWords", () => {
   it("takes the ink where the row needs action, whatever its Distance", () => {
-    expect(standingWords(row({ needsAction: 1, distance: 7 }))).toEqual({ words: "1 needs action", action: true });
-    expect(standingWords(row({ needsAction: 2 }))).toEqual({ words: "2 need action", action: true });
+    expect(standingWords(row({ needsAction: 1, distance: 7 }), t)).toEqual({ words: "1 needs action", action: true });
+    expect(standingWords(row({ needsAction: 2 }), t)).toEqual({ words: "2 need action", action: true });
   });
 
   it("names the declared Version in use it counts from", () => {
-    expect(standingWords(row()).words).toBe("4 behind 15.0.0");
+    expect(standingWords(row(), t).words).toBe("4 behind 15.0.0");
   });
 
   it("says a row with no declaration has no Distance, instead of inventing one", () => {
-    expect(standingWords(row({ distance: null, declared: null })).words).toBe("no version declared");
+    expect(standingWords(row({ distance: null, declared: null }), t).words).toBe("no version declared");
   });
 
   it("reads `up to date` at a Distance of zero", () => {
-    expect(standingWords(row({ distance: 0 })).words).toBe("up to date");
+    expect(standingWords(row({ distance: 0 }), t).words).toBe("up to date");
   });
 });
 
@@ -74,14 +80,14 @@ describe("barShare", () => {
 
 describe("totalsRows", () => {
   it("counts the whole and names the oldest declaration under it", () => {
-    expect(totalsRows(standing())).toEqual([
+    expect(totalsRows(standing(), t)).toEqual([
       { label: "releases behind in all", value: "22" },
       { label: "oldest version declared", value: "2026-09-12" },
     ]);
   });
 
   it("counts the Releases without a verdict apart", () => {
-    expect(totalsRows(standing({ behind: 1, missing: 3 }))).toEqual([
+    expect(totalsRows(standing({ behind: 1, missing: 3 }), t)).toEqual([
       { label: "releases behind in all", value: "1" },
       { label: "without a verdict", value: "3" },
       { label: "oldest version declared", value: "2026-09-12" },
@@ -89,7 +95,7 @@ describe("totalsRows", () => {
   });
 
   it("has no total to print where nobody declared a Version in use", () => {
-    expect(totalsRows(standing({ since: null, behind: 0 }))).toEqual([]);
+    expect(totalsRows(standing({ since: null, behind: 0 }), t)).toEqual([]);
   });
 });
 
@@ -103,14 +109,14 @@ describe("the quiet end of the Stream", () => {
       rows: [],
     });
 
-    expect(hushSpan([week(49, "2024-12-02"), week(46, "2024-11-11")])).toBe("weeks 46 to 49");
-    expect(hushSpan([week(49, "2024-12-02")])).toBe("week 49");
-    expect(hushSpan([])).toBe("");
+    expect(hushSpan([week(49, "2024-12-02"), week(46, "2024-11-11")], t)).toBe("weeks 46 to 49");
+    expect(hushSpan([week(49, "2024-12-02")], t)).toBe("week 49");
+    expect(hushSpan([], t)).toBe("");
   });
 
   it("says how much is folded in and that none of it asks anything", () => {
-    expect(hushClaim(23)).toBe("23 more releases, none asking anything");
-    expect(hushClaim(1)).toBe("1 more release, not asking anything");
+    expect(hushClaim(23, t)).toBe("23 more releases, none asking anything");
+    expect(hushClaim(1, t)).toBe("1 more release, not asking anything");
   });
 });
 
@@ -118,14 +124,14 @@ describe("declarationNote", () => {
   const next = technology("next", "Next.js", declared("15.0.0"));
 
   it("cites the declaration where the Release is newer than it", () => {
-    expect(declarationNote(next, release({ slug: "next", version: "15.1.0" }))).toBe("you are on 15.0.0");
+    expect(declarationNote(next, release({ slug: "next", version: "15.1.0" }), t)).toBe("you are on 15.0.0");
   });
 
   // The count is the Standing's: a Stream row that counted from the declaration would be the old
   // contradiction rebuilt one column to the right (DESIGN.md, Stream Row).
   it("says nothing where there is no declaration, or where the reader is already past the Release", () => {
-    expect(declarationNote(technology("node", "Node.js"), release({ slug: "node", version: "23.4.0" }))).toBeNull();
-    expect(declarationNote(next, release({ slug: "next", version: "15.0.0" }))).toBeNull();
-    expect(declarationNote(next, release({ slug: "next", version: "14.2.0" }))).toBeNull();
+    expect(declarationNote(technology("node", "Node.js"), release({ slug: "node", version: "23.4.0" }), t)).toBeNull();
+    expect(declarationNote(next, release({ slug: "next", version: "15.0.0" }), t)).toBeNull();
+    expect(declarationNote(next, release({ slug: "next", version: "14.2.0" }), t)).toBeNull();
   });
 });

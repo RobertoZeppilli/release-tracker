@@ -96,7 +96,9 @@ test("a visitor reaches the picker in the foot at 390px and changes language wit
   await expect(page).toHaveURL("/it/faq");
   await expect(page.locator("html")).toHaveAttribute("lang", "it");
   // And from inside Italian it offers the way back, with the English address carrying no prefix.
-  const italian = page.locator("footer").getByRole("navigation", { name: "language" });
+  // ⚠️ The picker is found by `lingua` and not by `language`: its accessible name is a string of the
+  // dictionary, so on an Italian page it is the Italian word (#131).
+  const italian = page.locator("footer").getByRole("navigation", { name: "lingua" });
   await expect(italian.getByRole("link", { name: "English" })).toHaveAttribute("href", "/faq");
 });
 
@@ -118,8 +120,10 @@ test("a Release page outside English says the summary and the notes are in Engli
     { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false },
   ]);
 
+  // The sentence is read in the language of the page, which is the point of it: an Italian reader
+  // is told `in inglese`, not `in English` (#131).
   await page.goto(`/it/technologies/${summarized.slug}/1.0.0`);
-  await expect(page.getByRole("note")).toContainText("the summary and the release notes are in English");
+  await expect(page.getByRole("note")).toContainText("la sintesi e le note di rilascio sono in inglese");
 
   // On the English page there are not two languages to tell apart, so nothing is said.
   await page.goto(`/technologies/${summarized.slug}/1.0.0`);
@@ -128,5 +132,5 @@ test("a Release page outside English says the summary and the notes are in Engli
   // And nothing is said in Italian either on a Release with no notes and no Summary: there is no
   // other language on the screen to declare.
   await page.goto(`/it/technologies/${technology.slug}/1.0.0`);
-  await expect(page.getByText("the summary and the release notes are in English")).toHaveCount(0);
+  await expect(page.getByText("la sintesi e le note di rilascio sono in inglese")).toHaveCount(0);
 });

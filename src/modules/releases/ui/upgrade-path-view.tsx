@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useTranslator } from "@/modules/i18n/ui";
 import type { ReactNode } from "react";
 import type { DefaultStart } from "../domain/default-upgrade-start";
 import type { SummarizedRelease } from "../domain/upgrade-path";
@@ -35,6 +36,9 @@ function chooseStart(typed: string | null, declared: { version: string; declared
 export function UpgradePathView({ slug, name, latest, retired, releases, fallback, head, declaration, children }: Props) {
   const typed = useSearchParams().get("from");
   const start = chooseStart(typed, useUpgradeStart(), fallback);
+  // The one place the path reads its own translator: this view is a client component, and the block
+  // under it is rendered by the server page too, so it takes `t` as a prop from both sides.
+  const t = useTranslator();
 
   return (
     <UpgradePathBlock
@@ -46,6 +50,7 @@ export function UpgradePathView({ slug, name, latest, retired, releases, fallbac
       start={start}
       head={head}
       declaration={declaration}
+      t={t}
     >
       {children}
     </UpgradePathBlock>

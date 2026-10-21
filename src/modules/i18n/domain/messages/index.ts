@@ -1,6 +1,7 @@
 import { DEFAULT_LOCALE, type Locale } from "../locales";
 import type { Dictionary, Message } from "../message";
 import { EN } from "./en";
+import { IT } from "./it";
 
 export { EN, type MessageKey } from "./en";
 
@@ -10,13 +11,13 @@ export type MessageDictionary = Readonly<Record<keyof typeof EN, Message>>;
 
 // The translations, by language. English is not here: it is the base every one of them is merged
 // over, so it cannot be one of them.
-// ⚠️ There are none yet: this PR takes the strings out of the components and puts the picker and the
-// plumbing in place, and the four translations are the next PR (#131). Until then every language
-// reads English, which is the honest state of it: the address, the `lang` and the `hreflang` change
-// and the words do not.
+// ⚠️ Italian is the first one written (#131). French, Spanish and German are the next PR, and until
+// they are here they read English: the address, the `lang` and the `hreflang` change and the words
+// do not. The parity test only checks the languages that have a dictionary, which is why a language
+// missing from here is honest and a key missing from a dictionary that is here is a failure.
 const TRANSLATIONS: Readonly<
   Partial<Record<Exclude<Locale, typeof DEFAULT_LOCALE>, Dictionary>>
-> = {};
+> = { it: IT };
 
 const merged = new Map<Locale, MessageDictionary>();
 

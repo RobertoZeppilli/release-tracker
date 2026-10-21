@@ -1,7 +1,8 @@
+import type { Translator } from "@/modules/i18n";
 import { SeverityLabel } from "@/modules/releases/ui";
 import type { Standing } from "../domain/standing";
 import type { Verdict } from "./dashboard-copy";
-import { BAR_NOTE, NO_TOTALS, totalsRows } from "./dashboard-copy";
+import { totalsRows } from "./dashboard-copy";
 import { StandingQuotaNote } from "./quota-note";
 
 // DESIGN.md, Standing Panel: the head of the Standing column, on the one raised surface the system
@@ -12,8 +13,16 @@ import { StandingQuotaNote } from "./quota-note";
 // The verdict is the panel's title, where a caption used to say `where your stack stands · by
 // distance`: the verdict already names what the column is about, and a caption over it named the
 // same thing a second time, in words a reader had to read before reaching the one that counted.
-export function StandingPanel({ standing, verdict }: { standing: Standing; verdict: Verdict }) {
-  const rows = totalsRows(standing);
+export function StandingPanel({
+  standing,
+  verdict,
+  t,
+}: {
+  standing: Standing;
+  verdict: Verdict;
+  t: Translator;
+}) {
+  const rows = totalsRows(standing, t);
 
   return (
     <div className="mb-5 rounded-md border border-rule bg-raised p-4">
@@ -24,7 +33,7 @@ export function StandingPanel({ standing, verdict }: { standing: Standing; verdi
       {/* A panel with nothing to count says so, as the Path Panel does with its sentence: a title
           alone over an empty box reads as a panel that failed to load (DESIGN.md, Standing Panel). */}
       {rows.length === 0 && (
-        <p className="font-mono text-label text-text-faint">{NO_TOTALS}</p>
+        <p className="font-mono text-label text-text-faint">{t("dashboard.totals.empty")}</p>
       )}
 
       {rows.length > 0 && (
@@ -43,7 +52,7 @@ export function StandingPanel({ standing, verdict }: { standing: Standing; verdi
       {/* Not a caption to drop when space is tight: the bar is the one thing here a reader could
           mistake for a score (DESIGN.md, The Standing Panel). It goes only where the bar goes. */}
       <div className="font-mono text-label text-text-faint">
-        {standing.scale !== null && <p className="mt-3">{BAR_NOTE}</p>}
+        {standing.scale !== null && <p className="mt-3">{t("dashboard.barNote")}</p>}
         <StandingQuotaNote />
       </div>
     </div>

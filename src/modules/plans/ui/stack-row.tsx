@@ -1,6 +1,6 @@
 "use client";
 
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { LocaleLink as Link, useTranslator } from "@/modules/i18n/ui";
 import { useRef } from "react";
 import { TechnologyMark } from "@/modules/catalog/ui";
 import type { PickerTechnology } from "../domain/picker";
@@ -18,6 +18,7 @@ export function StackRow({
   technology: PickerTechnology;
   retired?: boolean;
 }) {
+  const t = useTranslator();
   const follows = useFollows();
   // A retired Technology is only here because it is followed: once let go it belongs to no column at
   // all, so the row stays where it is and says that final thing where its control was.
@@ -37,8 +38,7 @@ export function StackRow({
         </Link>
         {technology.latest && (
           <span className="ml-auto font-mono text-diagnostic leading-[normal] text-text-muted tabular-nums">
-            {retired && "last "}
-            {technology.latest}
+            {retired ? t("stack.row.lastVersion", { version: technology.latest }) : technology.latest}
           </span>
         )}
       </span>
@@ -48,7 +48,7 @@ export function StackRow({
         <span className="min-w-0 truncate">{technology.category}</span>
         {gone ? (
           <span role="status" className="ml-auto text-right whitespace-nowrap text-text-muted">
-            let go, for good
+            {t("stack.row.gone")}
           </span>
         ) : (
           <LetGo technology={technology} />
@@ -63,6 +63,7 @@ export function StackRow({
 // the same, 24px high and reached by the keyboard in row order (WCAG 2.2 AA 2.5.8), and it keeps the
 // Toggle's own label, so `Unfollow <name>` names the same action wherever it is pressed.
 function LetGo({ technology }: { technology: PickerTechnology }) {
+  const t = useTranslator();
   const follows = useFollows();
   const button = useRef<HTMLButtonElement>(null);
   const pending = follows.isPending(technology.id);
@@ -73,14 +74,14 @@ function LetGo({ technology }: { technology: PickerTechnology }) {
       ref={button}
       type="button"
       aria-pressed
-      aria-label={`Unfollow ${technology.name}`}
+      aria-label={t("stack.unfollowName", { name: technology.name })}
       aria-busy={pending || undefined}
       onClick={() => {
         if (!pending) follows.toggle(technology.id);
       }}
       className="ml-auto inline-flex min-h-6 items-center rounded-[4px] px-2 font-mono text-label whitespace-nowrap text-text-faint group-hover:text-text-muted hover:bg-sunken hover:text-text"
     >
-      unfollow
+      {t("stack.row.unfollow")}
     </button>
   );
 }

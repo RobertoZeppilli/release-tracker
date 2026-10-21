@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import type { Translator } from "@/modules/i18n";
 import { LocaleLink as Link } from "@/modules/i18n/ui";
 import type { ReactNode } from "react";
 import type { ListedRelease, MajorRow } from "../domain/group-by-major";
@@ -9,10 +10,6 @@ const ROW = "grid grid-cols-[11ch_14ch_11ch_1fr] items-baseline gap-x-4 border-b
 
 export function isoDate(date: Date): string {
   return date.toISOString().slice(0, 10);
-}
-
-export function plural(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
 }
 
 const VERSION_LINK = "no-underline hover:underline";
@@ -32,7 +29,7 @@ export function ReleaseRow({ slug, release, children }: { slug: string; release:
   );
 }
 
-export function DigestRow({ slug, releases }: { slug: string; releases: ListedRelease[] }) {
+export function DigestRow({ slug, releases, t }: { slug: string; releases: ListedRelease[]; t: Translator }) {
   const first = releases[0].version;
   const last = releases[releases.length - 1].version;
   return (
@@ -41,7 +38,7 @@ export function DigestRow({ slug, releases }: { slug: string; releases: ListedRe
         <summary className="grid cursor-pointer list-none grid-cols-[11ch_1fr_auto] items-center gap-x-4 py-2 font-mono text-label text-text-muted hover:text-text phone:grid-cols-[auto_1fr_auto] [&::-webkit-details-marker]:hidden">
           <SignificanceLabel significance="digest" />
           <span className="min-w-0">
-            {plural(releases.length, "digest release")}
+            {t("release.digestCount", { count: releases.length })}
             {releases.length > 1 && <span className="phone:hidden"> · {first} to {last}</span>}
           </span>
           <ChevronRight
@@ -66,8 +63,18 @@ export function DigestRow({ slug, releases }: { slug: string; releases: ListedRe
   );
 }
 
-export function Row<T extends ListedRelease>({ slug, row, verdict }: { slug: string; row: MajorRow<T>; verdict?: (release: T) => ReactNode }) {
-  if (row.type === "digest") return <DigestRow slug={slug} releases={row.releases} />;
+export function Row<T extends ListedRelease>({
+  slug,
+  row,
+  verdict,
+  t,
+}: {
+  slug: string;
+  row: MajorRow<T>;
+  verdict?: (release: T) => ReactNode;
+  t: Translator;
+}) {
+  if (row.type === "digest") return <DigestRow slug={slug} releases={row.releases} t={t} />;
   return (
     <ReleaseRow slug={slug} release={row.release}>
       {verdict?.(row.release)}

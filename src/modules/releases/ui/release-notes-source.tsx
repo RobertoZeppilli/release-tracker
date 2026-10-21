@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import { Fragment, useEffect, useRef } from "react";
+import { useTranslator } from "@/modules/i18n/ui";
 import { citationSpans } from "@/modules/summaries";
 import { type CiteOrigin, useCitation } from "@/modules/summaries/ui";
 
@@ -30,6 +31,8 @@ const GUTTER = "grid grid-cols-[6ch_1fr] phone:grid-cols-[4.5ch_1fr]";
 // leaves Back pointing at the cited line. Deliberately not animated, so the underline on the way in
 // stays the system's only motion moment.
 function BackToDiagnostic({ to, wash }: { to: CiteOrigin; wash: string }) {
+  const t = useTranslator();
+
   return (
     <li className={`${GUTTER} ${wash}`}>
       <span
@@ -43,7 +46,7 @@ function BackToDiagnostic({ to, wash }: { to: CiteOrigin; wash: string }) {
           href={`#${to.id}`}
           className="border-b border-dashed border-current text-[color:var(--cite)] no-underline hover:border-solid"
         >
-          back to {to.label}
+          {t("release.source.back", { label: to.label })}
         </a>
       </span>
     </li>
@@ -52,6 +55,7 @@ function BackToDiagnostic({ to, wash }: { to: CiteOrigin; wash: string }) {
 
 // The notes as stored, folded and numbered like a source file: a different register from the Summary.
 export function ReleaseNotesSource({ lines, url }: { lines: string[]; url: string | null }) {
+  const t = useTranslator();
   const panel = useRef<HTMLDetailsElement>(null);
   const active = useCitation()?.active ?? null;
   const spans = active ? citationSpans(lines, active.citation) : [];
@@ -68,7 +72,7 @@ export function ReleaseNotesSource({ lines, url }: { lines: string[]; url: strin
     if (match) reveal(panel.current, Number(match[1]));
   }, []);
 
-  const meta = [origin(url), `${lines.length} line${lines.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
+  const meta = [origin(url), t("release.source.lines", { count: lines.length })].filter(Boolean).join(" · ");
   return (
     <details ref={panel} id="release-notes" className="group mt-7 rounded-md border border-rule bg-raised">
       <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 font-mono text-[14px] [&::-webkit-details-marker]:hidden">

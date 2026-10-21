@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const technology = await loadTechnology((await params).slug);
   if (!technology) return {};
   return pageMetadata({
-    ...technologyMeta(technology),
+    ...technologyMeta(technology, await getTranslator()),
     // The canonical address carries no `?from=`: an Upgrade Path is one reading of this one page.
     path: `/technologies/${technology.slug}`,
     type: "website",
@@ -65,6 +65,7 @@ export default async function TechnologyPage({ params }: Props) {
       previews={grouped.previews}
       latest={grouped.latest}
       retired={technology.retired}
+      t={t}
     />
   );
   // The start the page falls back to when nobody gave one, derived from the Releases alone, so it is
@@ -87,6 +88,7 @@ export default async function TechnologyPage({ params }: Props) {
         follow={
           <TechnologyFollow technologyId={technology.id} name={technology.name} retired={technology.retired} />
         }
+        t={t}
       />
     </div>
   );
@@ -112,6 +114,7 @@ export default async function TechnologyPage({ params }: Props) {
                   start={fallback ? { kind: "default", ...fallback } : { kind: "none" }}
                   head={head}
                   declaration={declaration}
+                  t={t}
                 >
                   {list}
                 </UpgradePathBlock>
@@ -138,7 +141,7 @@ export default async function TechnologyPage({ params }: Props) {
                 <div className="split:sticky split:top-[72px]">{head}</div>
               </div>
               <section aria-labelledby="stream-title">
-                <ColumnTitle id="stream-title">what has changed, newest major first</ColumnTitle>
+                <ColumnTitle id="stream-title">{t("path.changed.newest")}</ColumnTitle>
                 {list}
               </section>
             </>

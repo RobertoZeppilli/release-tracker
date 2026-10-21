@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { releasePath, rowVerdict, type Significance } from "@/modules/releases";
 import { BreakingList, RowVerdictLine, SignificanceGlyph } from "@/modules/releases/ui";
@@ -19,11 +20,11 @@ const SIGNIFICANCE_INK: Record<Significance, string> = {
 // One Release of the Stream: the Release Row's content with the Technology named, because the
 // stream mixes Technologies (DESIGN.md, Stream Row). It takes no hover: it is a block of text with
 // links inside it, and a surface under a paragraph says the paragraph can be clicked.
-export function StreamEvent({ technology, release }: DashboardRow) {
-  const verdict = rowVerdict(release);
+export function StreamEvent({ technology, release, t }: DashboardRow & { t: Translator }) {
+  const verdict = rowVerdict(release, t);
   const href = releasePath(release.slug, release.version);
   const breaking = release.summary?.breakingChanges ?? [];
-  const declaration = declarationNote(technology, release);
+  const declaration = declarationNote(technology, release, t);
 
   return (
     <article className="[&+&]:mt-5 [&+&]:border-t [&+&]:border-rule [&+&]:pt-5">
@@ -47,7 +48,7 @@ export function StreamEvent({ technology, release }: DashboardRow) {
       )}
 
       <p className="mt-2 font-mono text-label">
-        <RowVerdictLine verdict={verdict} href={href} />
+        <RowVerdictLine verdict={verdict} href={href} t={t} />
         {/* The one fact that is about this Release and not about a set: it cites the declaration
             instead of counting from it, because the count belongs to the Standing. */}
         {declaration && <span className="text-text-faint"> · {declaration}</span>}
@@ -55,10 +56,10 @@ export function StreamEvent({ technology, release }: DashboardRow) {
 
       {breaking.length > 0 && (
         <>
-          <BreakingList label={`${technology.name} ${release.version}`} changes={breaking} />
+          <BreakingList label={`${technology.name} ${release.version}`} changes={breaking} t={t} />
           <div className="mt-3">
             <HelpPointer href={href}>
-              migrate to {release.slug} {release.version}
+              {t("dashboard.stream.migrate", { name: release.slug, version: release.version })}
             </HelpPointer>
           </div>
         </>
