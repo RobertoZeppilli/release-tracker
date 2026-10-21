@@ -377,6 +377,30 @@ l'italiano: **`breaking changes` resta in inglese**, perché è quello che il le
 **Sintesi** due righe sotto e perché è quello che questo documento scrive già nella sua prosa;
 `safe to upgrade` è **"aggiornamento sicuro"**; `key points` è **"punti chiave"**.
 
+Le parole di **francese, spagnolo e tedesco** sono state scelte con l'utente il 2026-10-21, con il
+criterio dell'italiano applicato tre volte: ogni lingua tiene in inglese quello che i suoi
+sviluppatori dicono in inglese e traduce il resto, perché l'ADR 0008 lascia la scelta alla PR delle
+tre lingue e non a una colonna. ⚠️ **Non sono riviste da madrelingua** e vanno riviste prima del
+lancio; i dizionari in `src/modules/i18n/domain/messages/{fr,es,de}` restano la verità, e questa è
+la tabella per cercarle.
+
+| Dominio | fr | es | de |
+| --- | --- | --- | --- |
+| Tecnologia | Technologie | Tecnología | Technologie |
+| Catalogo | catalogue | catálogo | Katalog |
+| Release | release | release | Release |
+| Rilevanza | pertinence | relevancia | Relevanz |
+| Note di rilascio | notes de version | notas de la versión | Release Notes |
+| Sintesi | synthèse | síntesis | Zusammenfassung |
+| Dashboard | dashboard | dashboard | Dashboard |
+| Cammino di upgrade | chemin de mise à jour | ruta de actualización | Upgrade-Pfad |
+| Seguire | suivre | seguir | folgen · verfolgt |
+
+⚠️ Due verbi in tedesco per `follow`, e la grammatica è quello che li divide: `folgen` regge il
+dativo, quindi è il verbo di ogni frase e di ogni pulsante, ma non forma participio attributivo né
+passivo personale, e `gefolgte Technologien` non è tedesco. Quelle posizioni leggono `verfolgt`, che
+è il verbo che il prodotto usa già quando è lui a tracciare (`wird nicht mehr verfolgt`).
+
 | Dominio | Codice / UI | Valori |
 |---|---|---|
 | Tecnologia | `Technology` | |
@@ -394,8 +418,8 @@ l'italiano: **`breaking changes` resta in inglese**, perché è quello che il le
 | Anteprima | `Preview` | |
 | Note di rilascio | `ReleaseNotes` | |
 | Sintesi | `Summary` | |
-| Intervento richiesto | `actionRequired` | UI en: "action required" · "safe to upgrade"; it: "intervento richiesto" · "aggiornamento sicuro" |
-| Note giudicabili | `notesJudgeable` | UI en: "not enough notes to judge"; it: "note non giudicabili" |
+| Intervento richiesto | `actionRequired` | UI en: "action required" · "safe to upgrade"; it: "intervento richiesto" · "aggiornamento sicuro"; fr: "action requise" · "mise à jour sûre"; es: "requiere intervención" · "actualización segura"; de: "Eingriff nötig" · "Upgrade unbedenklich" |
+| Note giudicabili | `notesJudgeable` | UI en: "not enough notes to judge"; it: "note non giudicabili"; fr: "notes non jugeables"; es: "notas no juzgables"; de: "Notes nicht beurteilbar" |
 | Stato della sintesi | `SummaryStatus` | `pending` · `processing` · `ready` · `unavailable` · `skipped` · `failed` |
 | Strategia di classificazione | `ClassificationStrategy` | `semver` · `node` · `typescript` · `zerover` · `minor-major` |
 | Correzione di rilevanza | `significanceOverride` | |

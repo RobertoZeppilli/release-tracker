@@ -272,6 +272,51 @@ for (const theme of THEMES) {
   });
 }
 
+// The same audit outside English, which is the criterion the five languages carry: WCAG 2.2 AA is
+// held in all of them, not only in the one the strings were written in (ADR 0008). It is what the
+// 320px measurement in `overflow.spec` cannot see, because a translation breaks accessibility in
+// ways that are not width: an accessible name that lost the visible word inside it (2.5.3), two
+// controls that ended up with one name, a `lang` that does not match the prose.
+// ⚠️ The dark theme alone, and three pages per language: contrast is a property of the palette and
+// not of the words (`theme-contrast.test.ts` reads the palette itself), so a second theme here
+// would double twelve scans to find what the English pass already covers.
+for (const locale of ["it", "fr", "es", "de"] as const) {
+  test.describe(`${locale} holds the audit too`, () => {
+    test.beforeEach(async ({ page }) => {
+      await useTheme(page, "dark");
+    });
+
+    // The landing is the page that is all prose, so it is where a translation is longest and where
+    // the picker in the foot is read.
+    test("the landing", async ({ page }) => {
+      await page.goto(`/${locale}`);
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
+      await scan(page, "dark");
+    });
+
+    // A Technology page is the richest public one: the Upgrade Path with its form, whose field
+    // carries the visible word inside its accessible name in every language.
+    test("a technology page with its upgrade path", async ({ page }) => {
+      await page.goto(`/${locale}/technologies/${technology.slug}?from=1.8.9`);
+      // Waited for by its `id` and not by its words: the sentence is what changes per language,
+      // and the point of this scan is to see the page once it is whole.
+      await expect(page.locator("#path-verdict")).toBeVisible();
+      await scan(page, "dark");
+    });
+
+    // And the Dashboard, which is the one page behind the login whose verdict is a translated
+    // sentence inside a panel of a fixed width.
+    test("the dashboard with something that needs action", async ({ page }) => {
+      await signIn(page);
+      await developer.clearFollows();
+      await addFollows(developer.id, [technology.id]);
+      await page.goto(`/${locale}/dashboard`);
+      await expect(page.locator("#page-verdict")).toBeVisible();
+      await scan(page, "dark");
+    });
+  });
+}
+
 // WCAG 2.2 AA 2.5.8. axe lets both of these pass on the spacing exception, so the size is asserted
 // here: they sit in the top bar rather than inside a sentence, so neither has the inline exemption,
 // and at the Label line height they measured 20.8px before issue #47.

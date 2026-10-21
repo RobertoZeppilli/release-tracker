@@ -4,7 +4,14 @@ import { requireAccount } from "@/modules/auth/server";
 import { getTranslator } from "@/modules/i18n/server";
 import { LocalePicker } from "@/modules/i18n/ui";
 
-export const metadata: Metadata = { title: "Settings", robots: { index: false } };
+// Behind the login and never indexed, so the whole of its metadata is the title in the page's own
+// language (ADR 0008). It reads `settings.title`, the key the heading below reads, and not a key of
+// its own in `page`: the tab and the heading of this page are one word, and two keys holding it
+// would be two places to translate it.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslator();
+  return { title: t("settings.title"), robots: { index: false } };
+}
 
 // What the reader changes about the app, as opposed to what the account *is*, which is `/account`.
 // It is a page and not a row of the account panel because every preference after the language lands
