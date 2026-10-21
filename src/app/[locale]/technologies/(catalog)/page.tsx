@@ -3,11 +3,15 @@ import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { createRequestClient } from "@/lib/supabase-request";
 import { requireDeveloper } from "@/modules/auth/server";
+import { getTranslator } from "@/modules/i18n/server";
 import { splitPicker } from "@/modules/plans";
 import { listPickerTechnologies, readFollows } from "@/modules/plans/server";
 import { FollowsProvider, TechnologiesPage } from "@/modules/plans/ui";
 
-export const metadata: Metadata = { title: "Technologies", robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslator();
+  return { title: t("page.technologies.title"), robots: { index: false } };
+}
 
 // The split: two columns at 1240px, the Stack and the Catalog, and one question each (DESIGN.md,
 // Technologies, the split). The 1041px step and not 1240: DESIGN.md says "at 1040px and below" the
@@ -21,6 +25,7 @@ const SPLIT =
 // The top bar carries **no quota here**: its quota is a link to this page, and the panel at the head
 // of the left column prints the same number 60px below it (DESIGN.md, Navigation).
 export default async function TechnologiesRoute() {
+  const t = await getTranslator();
   const developer = await requireDeveloper("/technologies");
   const db = await createRequestClient();
   const [technologies, follows] = await Promise.all([listPickerTechnologies(db), readFollows(db)]);
@@ -33,7 +38,7 @@ export default async function TechnologiesRoute() {
     <FollowsProvider developerId={developer.id} follows={follows}>
       <SiteHeader section="technologies" />
       <main id="content" className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${SPLIT}`}>
-        <h1 className="sr-only">Technologies</h1>
+        <h1 className="sr-only">{t("page.technologies.title")}</h1>
         <TechnologiesPage sections={sections} />
       </main>
       <BackToTop />

@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import type { Source } from "../domain/catalog-entry";
 import type { StoredTechnology } from "../domain/plan-catalog-sync";
 import { TechnologyMark } from "./technology-mark";
@@ -19,10 +20,13 @@ export function TechnologyHeader({
   technology,
   latest,
   follow,
+  t,
 }: {
   technology: StoredTechnology;
   latest: string | null;
   follow?: React.ReactNode;
+  // A prop, for the reason `RetiredNote` gives.
+  t: Translator;
 }) {
   const labels = [...new Set(technology.sources.map(sourceLabel))];
   return (
@@ -43,10 +47,10 @@ export function TechnologyHeader({
         <div className="flex flex-wrap items-center gap-4 font-mono text-label text-text-muted split:col-span-2 split:row-start-2">
           {latest && (
             <p>
-              latest <strong className="font-normal text-text">{latest}</strong>
+              {t("catalog.latest")} <strong className="font-normal text-text">{latest}</strong>
             </p>
           )}
-          <ul className="flex flex-wrap gap-4" aria-label="Sources">
+          <ul className="flex flex-wrap gap-4" aria-label={t("catalog.sources")}>
             {labels.map((label) => (
               <li key={label}>{label}</li>
             ))}
@@ -54,7 +58,7 @@ export function TechnologyHeader({
         </div>
         {follow}
       </div>
-      {technology.retired && <RetiredNote name={technology.name} latest={latest} />}
+      {technology.retired && <RetiredNote name={technology.name} latest={latest} t={t} />}
     </>
   );
 }

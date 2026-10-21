@@ -1,12 +1,14 @@
+import type { Translator } from "@/modules/i18n";
+import { Filled } from "@/modules/i18n/ui";
 import { SeverityLabel, VERSION_BUTTON_CLASS, VERSION_INPUT_CLASS } from "@/modules/releases/ui";
 import { cn } from "@/lib/utils";
 import { DELETION_WORD } from "../domain/account-deletion";
 
 export type DeletionError = "confirm" | "failed";
 
-const MESSAGES: Record<DeletionError, string> = {
-  confirm: `that is not the word. Nothing was deleted: type ${DELETION_WORD} to confirm.`,
-  failed: "the deletion did not go through, and nothing was deleted. Try again in a moment.",
+const MESSAGES: Record<DeletionError, "account.delete.error.confirm" | "account.delete.error.failed"> = {
+  confirm: "account.delete.error.confirm",
+  failed: "account.delete.error.failed",
 };
 
 const FIELD_ID = "confirm";
@@ -29,6 +31,7 @@ export function DeleteAccountPanel({
   declared,
   error,
   revokeUrl,
+  t,
 }: {
   followed: number;
   declared: number;
@@ -36,23 +39,23 @@ export function DeleteAccountPanel({
   // Built by `githubRevokeUrl`, and passed in rather than read here: a component does not read the
   // environment.
   revokeUrl: string;
+  // A prop and not `getTranslator()`: this file is exported from the module's `ui` index, which
+  // client components import too.
+  t: Translator;
 }) {
   return (
     <section aria-labelledby="delete-account" className="mt-8 border-t border-rule pt-6">
       <h2 id="delete-account" className="font-mono text-section-title text-text">
-        delete this account
+        {t("account.delete.title")}
       </h2>
-      <p className="mt-3 max-w-prose font-sans text-body text-text-muted">
-        It goes at once and it cannot be undone. There is no copy to restore it from and no window to
-        change your mind in.
-      </p>
+      <p className="mt-3 max-w-prose font-sans text-body text-text-muted">{t("account.delete.intro")}</p>
       <ul className="mt-4 max-w-measure font-mono text-meta text-text-faint">
         {[
-          "the account itself, and the email address and GitHub name and picture that came with it",
-          followed === 1 ? "1 followed technology" : `${followed} followed technologies`,
-          declared === 1 ? "1 declared version in use" : `${declared} declared versions in use`,
-          "the plan the account is on",
-          "the session in this browser",
+          t("account.delete.item.account"),
+          t("account.delete.item.follows", { count: followed }),
+          t("account.delete.item.declared", { count: declared }),
+          t("account.delete.item.plan"),
+          t("account.delete.item.session"),
         ].map((line) => (
           <li key={line} className="flex gap-2 border-t border-rule py-2 first:border-t-0 first:pt-0">
             <span aria-hidden className="text-text-faint">
@@ -67,20 +70,26 @@ export function DeleteAccountPanel({
             message in one `inline-block`: those are one short claim that must not break away from
             the label, this is three lines, and holding them together only pushed the whole of it
             onto a line of its own. */}
-        <SeverityLabel tone="muted" label="note:" /> Signing in again afterwards makes a new account
-        with nothing in it, not the old one back. GitHub keeps its own record of the authorisation
-        you gave, and it is the one thing this button cannot reach:{" "}
+        <SeverityLabel tone="muted" label="note:" />{" "}
         {/* No `target="_blank"`: every external link in this app opens in the same tab (the
             release-notes links do), and a reader who has not typed the word yet loses nothing by
             coming back with the browser. */}
-        <a href={revokeUrl} className="text-link">
-          revoke it on GitHub
-        </a>
-        .
+        <Filled
+          text={t("account.delete.note")}
+          nodes={{
+            revoke: (
+              <a href={revokeUrl} className="text-link">
+                {t("account.delete.revoke")}
+              </a>
+            ),
+          }}
+        />
       </p>
       <form action="/auth/delete-account" method="post" className="mt-6 flex flex-wrap items-center gap-3">
         <label htmlFor={FIELD_ID} className="font-mono text-diagnostic text-text-muted">
-          type <span className="text-text">{DELETION_WORD}</span> to confirm
+          {/* The word kept its own ink by being an element inside the sentence, which a message
+              cannot be (ADR 0008): the label reads in one ink now. */}
+          {t("account.delete.confirm", { word: DELETION_WORD })}
         </label>
         <input
           id={FIELD_ID}
@@ -96,12 +105,12 @@ export function DeleteAccountPanel({
           className={FIELD_CLASS}
         />
         <button type="submit" className={VERSION_BUTTON_CLASS}>
-          Delete account
+          {t("account.delete.button")}
         </button>
       </form>
       {error && (
         <p id={NOTE_ID} role="alert" className="mt-3 max-w-measure font-mono text-diagnostic text-breaking">
-          <SeverityLabel tone="breaking" label="error:" /> <span className="inline-block">{MESSAGES[error]}</span>
+          <SeverityLabel tone="breaking" label="error:" /> <span className="inline-block">{t(MESSAGES[error], { word: DELETION_WORD })}</span>
         </p>
       )}
     </section>

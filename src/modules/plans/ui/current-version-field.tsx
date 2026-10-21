@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import type { Translator } from "@/modules/i18n";
+import { useTranslator } from "@/modules/i18n/ui";
 import { SkeletonBox } from "@/components/waiting";
 import { useSession } from "@/modules/auth/ui";
 import { compareVersions, parseVersion } from "@/modules/releases";
@@ -30,9 +32,9 @@ function problemWith(version: string, latest: string | null): Decline | null {
   return top && compareVersions(parsed, top) > 0 ? "notOlder" : null;
 }
 
-function message(decline: Decline, version: string, latest: string | null): string {
-  if (decline === "denied") return "The version in use was not saved. Try again.";
-  return invalidMessage(decline, version, latest);
+function message(decline: Decline, version: string, latest: string | null, t: Translator): string {
+  if (decline === "denied") return t("stack.version.denied");
+  return invalidMessage(decline, version, latest, t);
 }
 
 // The row is there only for a Developer who follows this Technology, a retired one included, and
@@ -64,6 +66,7 @@ export function CurrentVersionField({ technologyId, name, latest }: { technology
 // checks it, so a reader has to be able to see how old it is. Clearing it is one press, because a
 // declaration nobody keeps up is worse than none (CONTEXT.md, Versione in uso).
 function DeclarationRow({ technologyId, name, latest }: { technologyId: string; name: string; latest: string | null }) {
+  const t = useTranslator();
   const follows = useFollows();
   const declared = follows.currentVersionOf(technologyId);
   const busy = follows.isDeclaring(technologyId);
@@ -94,16 +97,16 @@ function DeclarationRow({ technologyId, name, latest }: { technologyId: string; 
         event.preventDefault();
         if (!busy) save();
       }}
-      aria-label={`Version of ${name} in use`}
+      aria-label={t("stack.version.form", { name })}
       className="flex flex-col gap-2"
     >
       <div className={PANEL_ROW_CLASS}>
-        <label htmlFor={FIELD_ID}>in use</label>
+        <label htmlFor={FIELD_ID}>{t("stack.version.label")}</label>
         <span className={PANEL_CELL_CLASS}>
           <input
             id={FIELD_ID}
             name="current-version"
-            aria-label="Version in use"
+            aria-label={t("stack.version.field")}
             value={value}
             onChange={(event) => {
               setTyped(event.target.value);
@@ -117,11 +120,11 @@ function DeclarationRow({ technologyId, name, latest }: { technologyId: string; 
             className={VERSION_INPUT_CLASS}
           />
           <button type="submit" disabled={busy} className={VERSION_BUTTON_CLASS}>
-            Save
+            {t("stack.version.save")}
           </button>
           {declared && (
             <button type="button" disabled={busy} onClick={clear} className={VERSION_BUTTON_CLASS}>
-              Clear
+              {t("stack.version.clear")}
             </button>
           )}
         </span>
@@ -132,15 +135,15 @@ function DeclarationRow({ technologyId, name, latest }: { technologyId: string; 
       <PanelNoteRow>
         {decline ? (
           <span id={NOTE_ID} className="text-breaking">
-            <SeverityLabel tone="breaking" label="error:" /> {message(decline, value.trim(), latest)}
+            <SeverityLabel tone="breaking" label="error:" /> {message(decline, value.trim(), latest, t)}
           </span>
         ) : declared ? (
           <span id={NOTE_ID} className="text-text-faint">
-            declared {isoDate(declared.declaredAt)}
+            {t("stack.version.declared", { date: isoDate(declared.declaredAt) })}
           </span>
         ) : (
           <span id={NOTE_ID} className="text-text-faint">
-            not declared
+            {t("stack.version.none")}
           </span>
         )}
       </PanelNoteRow>

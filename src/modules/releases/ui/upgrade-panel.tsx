@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Translator } from "@/modules/i18n";
 
 // One panel holds everything between the header and the first Release: the two controls and the
 // facts they work on, as rows of label and value (DESIGN.md, Upgrade Panel). The treatment is the
@@ -47,16 +48,24 @@ export function PanelNoteRow({ children }: { children: ReactNode }) {
 
 // `latest` is the destination of the path, so it is a row here instead of the `to 6.0.3` that used
 // to sit inside the control: a fact the reader can look up, not a word in a sentence.
-export function UpgradePanel({ latest, children }: { latest: string; children: ReactNode }) {
+export function UpgradePanel({
+  latest,
+  children,
+  t,
+}: {
+  latest: string;
+  children: ReactNode;
+  t: Translator;
+}) {
   return (
     <section aria-labelledby="upgrade-panel" className={PANEL}>
       <p id="upgrade-panel" className={CAPTION}>
-        upgrade path
+        {t("path.title")}
       </p>
       <div className="mt-2 flex flex-col gap-2">
         {children}
         <p className={PANEL_ROW_CLASS}>
-          <span>latest</span>
+          <span>{t("path.latest")}</span>
           <span className="text-text">{latest}</span>
         </p>
       </div>

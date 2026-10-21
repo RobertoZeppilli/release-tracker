@@ -1,6 +1,7 @@
 "use client";
 
 import { CircleX, Info } from "lucide-react";
+import { useTranslator } from "@/modules/i18n/ui";
 import { groupFollowError, groupWallFor, groupWallNote, wallNow } from "../domain/group-follow";
 import { useCatalogSelection } from "./catalog-selection";
 import { useFollows } from "./follows-provider";
@@ -11,6 +12,7 @@ const GROUP_WALL_ID = "group-wall";
 // fill and no border. It is the head staying put, not a surface arriving: a selection made at the
 // thirty-first row with the action at the first is an accelerator that asks for a scroll back.
 export function SelectionBar() {
+  const t = useTranslator();
   const selection = useCatalogSelection();
   const follows = useFollows();
   const chosen = selection.selected.length;
@@ -32,8 +34,8 @@ export function SelectionBar() {
       <p className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-label text-text-muted">
         {/* The count is read out as it changes: a mark that only appears beside a row is not news
             a screen reader gets on its own. */}
-        <span aria-live="polite">
-          <span className="text-text tabular-nums">{chosen}</span> selected
+        <span aria-live="polite" className="text-text tabular-nums">
+          {t("stack.selection.count", { count: chosen })}
         </span>
         <button
           type="button"
@@ -47,14 +49,14 @@ export function SelectionBar() {
             wall ? "cursor-not-allowed text-text-faint" : "text-text hover:bg-raised hover:border-text-faint"
           }`}
         >
-          Follow {chosen}
+          {t("stack.selection.follow", { count: chosen })}
         </button>
         <button
           type="button"
           onClick={selection.clear}
           className="min-h-6 rounded-[4px] px-2 font-mono text-label text-text-faint hover:bg-sunken hover:text-text"
         >
-          clear
+          {t("stack.selection.clear")}
         </button>
       </p>
       {/* The wall is named before it is hit and inked only when the database says so, which is the
@@ -62,13 +64,13 @@ export function SelectionBar() {
       {refusal ? (
         <p id={GROUP_WALL_ID} className="mt-2 font-mono text-diagnostic text-breaking">
           <CircleX aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-          error: {groupFollowError(refusal, wallNow(chosen, follows.count))}
+          error: {groupFollowError(refusal, wallNow(chosen, follows.count), t)}
         </p>
       ) : (
         wall && (
           <p id={GROUP_WALL_ID} className="mt-2 font-mono text-diagnostic text-text-muted" role="status">
             <Info aria-hidden className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-            note: {groupWallNote(wall)}
+            note: {groupWallNote(wall, t)}
           </p>
         )
       )}

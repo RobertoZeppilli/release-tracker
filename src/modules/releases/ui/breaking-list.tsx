@@ -1,4 +1,5 @@
 import { OctagonAlert } from "lucide-react";
+import type { Translator } from "@/modules/i18n";
 import { InlineCode } from "@/modules/summaries/ui";
 import type { BreakingChange } from "@/modules/summaries";
 
@@ -7,9 +8,17 @@ import type { BreakingChange } from "@/modules/summaries";
 // the same on the Technology page, on the Upgrade Path and in the Dashboard's Stream.
 // `label` names the Release in the list's accessible name: on a surface that mixes Technologies
 // the version alone does not say which Release the changes belong to.
-export function BreakingList({ label, changes }: { label: string; changes: readonly BreakingChange[] }) {
+export function BreakingList({
+  label,
+  changes,
+  t,
+}: {
+  label: string;
+  changes: readonly BreakingChange[];
+  t: Translator;
+}) {
   return (
-    <ul aria-label={`Breaking changes in ${label}`} className="mt-3 text-diagnostic leading-[1.6]">
+    <ul aria-label={t("release.breakingIn", { label })} className="mt-3 text-diagnostic leading-[1.6]">
       {changes.map((change, index) => (
         <li key={change.change} className="grid grid-cols-[auto_1fr] gap-x-3 py-[2px] phone:grid-cols-1">
           <span className="font-mono text-label leading-[1.75] whitespace-nowrap text-breaking">

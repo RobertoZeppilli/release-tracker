@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { releasePath } from "../domain/release-page";
 import { rowVerdict, type RowVerdict } from "../domain/row-verdict";
@@ -6,10 +7,18 @@ import { SeverityLabel } from "./severity-label";
 
 // One line per featured or notable Release row: its verdict, or why there is none yet. What it says
 // comes from `rowVerdict` in the domain, the one answer the Dashboard reads too.
-export function ReleaseVerdict({ slug, release }: { slug: string; release: SummarizedRelease }) {
+export function ReleaseVerdict({
+  slug,
+  release,
+  t,
+}: {
+  slug: string;
+  release: SummarizedRelease;
+  t: Translator;
+}) {
   return (
     <p className="mt-[2px] font-mono text-label">
-      <RowVerdictLine verdict={rowVerdict(release)} href={releasePath(slug, release.version)} />
+      <RowVerdictLine verdict={rowVerdict(release, t)} href={releasePath(slug, release.version)} t={t} />
     </p>
   );
 }
@@ -25,7 +34,7 @@ export function ReleaseVerdict({ slug, release }: { slug: string; release: Summa
 // release notes` on the next, a different place at every width -- so what the reader saw split was
 // the link itself. A `·` separates facts on one line and never two lines (DESIGN.md, Upgrade Panel),
 // so once the link is a line there is nothing for it to separate.
-export function RowVerdictLine({ verdict, href }: { verdict: RowVerdict; href: string }) {
+export function RowVerdictLine({ verdict, href, t }: { verdict: RowVerdict; href: string; t: Translator }) {
   return (
     <>
       <SeverityLabel tone={verdict.tone} label={verdict.label} pending={verdict.pending} />{" "}
@@ -35,7 +44,7 @@ export function RowVerdictLine({ verdict, href }: { verdict: RowVerdict; href: s
           href={href}
           className="mt-[2px] block w-fit border-b border-dashed border-current text-link no-underline hover:border-solid"
         >
-          read the release notes
+          {t("release.readNotes")}
         </Link>
       )}
     </>

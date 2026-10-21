@@ -1,5 +1,6 @@
 import Form from "next/form";
 import type { ReactNode } from "react";
+import type { Translator } from "@/modules/i18n";
 import { SeverityLabel } from "./severity-label";
 import { PANEL_CELL_CLASS, PANEL_ROW_CLASS, PanelNoteRow } from "./upgrade-panel";
 
@@ -26,23 +27,25 @@ export function UpgradeForm({
   versions,
   value,
   message,
+  t,
 }: {
   action: string;
   latest: string;
   versions: string[];
   value: string;
   message: FormMessage | null;
+  t: Translator;
 }) {
   return (
     <Form action={action} className="flex flex-col gap-2">
       <div className={PANEL_ROW_CLASS}>
-        <label htmlFor="from">from</label>
+        <label htmlFor="from">{t("path.from")}</label>
         <span className={PANEL_CELL_CLASS}>
           <input
             key={value}
             id="from"
             name="from"
-            aria-label="Upgrade from"
+            aria-label={t("path.from.name")}
             defaultValue={value}
             list="versions"
             autoComplete="off"
@@ -58,7 +61,7 @@ export function UpgradeForm({
             ))}
           </datalist>
           <button type="submit" className={VERSION_BUTTON_CLASS}>
-            Check
+            {t("path.check")}
           </button>
         </span>
       </div>

@@ -12,10 +12,16 @@ import {
   WEEK_PARAM,
   windowLine,
 } from "@/modules/dashboard/ui";
+import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { listPickerTechnologies, readFollows } from "@/modules/plans/server";
 import { FollowQuota, FollowsProvider } from "@/modules/plans/ui";
 
-export const metadata: Metadata = { title: "Dashboard", robots: { index: false } };
+// A title in the page's own language, which is why it is a function and no longer a constant: the
+// page is behind the login and carries no canonical, so the whole of its metadata is the title.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslator();
+  return { title: t("page.dashboard.title"), robots: { index: false } };
+}
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -35,6 +41,7 @@ const ONE_COLUMN = "max-w-content [&>*]:max-w-column";
 // page shows, and the two must never disagree.
 export default async function DashboardPage({ searchParams }: Props) {
   const developer = await requireDeveloper("/dashboard");
+  const t = await getTranslator();
   const openWeeks = readOpenWeeks((await searchParams)[WEEK_PARAM]);
   const db = await createRequestClient();
   const [{ followed, releases }, follows] = await Promise.all([readDashboard(db), readFollows(db)]);
@@ -48,7 +55,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         id="content"
         className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${empty ? ONE_COLUMN : SPLIT}`}
       >
-        <h1 className="sr-only">Dashboard</h1>
+        <h1 className="sr-only">{t("page.dashboard.title")}</h1>
         {empty ? (
           <EmptyState db={db} />
         ) : (
@@ -59,15 +66,20 @@ export default async function DashboardPage({ searchParams }: Props) {
   );
 }
 
-function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWeeks: string[] }) {
+// The translator is read here and handed down: the components live under `dashboard/ui`, whose index
+// client components import too, so none of them may import `i18n/server` itself.
+async function FollowedStack({ dashboard, openWeeks }: { dashboard: Dashboard; openWeeks: string[] }) {
+  const t = await getTranslator();
+  const locale = await currentLocale();
+
   return (
     <>
-      <StandingColumn verdict={dashboard.verdict} standing={dashboard.standing} />
-      <Stream stream={dashboard.stream} openWeeks={openWeeks} />
+      <StandingColumn verdict={dashboard.verdict} standing={dashboard.standing} t={t} />
+      <Stream stream={dashboard.stream} openWeeks={openWeeks} t={t} locale={locale} />
       {/* The window the page read, said once, at the end: the Stream's title names its size and
           this names its edges. */}
       <p className="col-span-full mt-7 font-mono text-meta leading-[normal] text-text-faint">
-        {windowLine(dashboard.window.start, dashboard.window.end)}
+        {windowLine(dashboard.window.start, dashboard.window.end, t)}
       </p>
     </>
   );

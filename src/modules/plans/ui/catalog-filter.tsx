@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslator } from "@/modules/i18n/ui";
 import type { Category } from "@/modules/catalog";
 
 // DESIGN.md, Catalog Filter: the field gets a line of its own, with the label above it and the count
@@ -19,10 +20,19 @@ export function CatalogFilter({
   total: number;
   category: Category | null;
 }) {
+  const t = useTranslator();
   const field = useRef<HTMLInputElement>(null);
   const filtering = query.trim() !== "";
-  // The count says where it is counting, so a small total never reads as a small Catalog.
-  const where = category === null ? "" : ` in ${category}`;
+  // The count says where it is counting, so a small total never reads as a small Catalog. Four
+  // whole sentences and not one with ` in {category}` glued on: a fragment is what a translation
+  // cannot move inside its own sentence.
+  const counted = filtering
+    ? category === null
+      ? t("stack.catalog.match", { shown, total })
+      : t("stack.catalog.matchIn", { shown, total, category })
+    : category === null
+      ? t("stack.catalog.total", { count: total })
+      : t("stack.catalog.totalIn", { count: total, category });
 
   // `/` is the filter's shortcut, the one this audience reaches for first. It is announced to
   // assistive technology by `aria-keyshortcuts` and to the eye by the hint beside the count, and it
@@ -54,7 +64,7 @@ export function CatalogFilter({
         htmlFor="filter"
         className="mb-2 block font-mono text-label leading-[normal] text-text-faint"
       >
-        find a technology
+        {t("stack.catalog.find")}
       </label>
       <input
         ref={field}
@@ -70,28 +80,20 @@ export function CatalogFilter({
           event.preventDefault();
           onQuery("");
         }}
-        placeholder="name or description"
+        placeholder={t("stack.catalog.placeholder")}
         autoComplete="off"
         spellCheck={false}
         aria-describedby="matches"
         className="block h-[42px] w-full max-w-[38ch] rounded-md border border-rule-strong bg-sunken px-3 font-mono text-body text-text caret-link hover:border-text-faint focus-visible:border-text-faint placeholder:text-text-faint max-sm:max-w-none"
       />
       <p className="mt-2 flex items-baseline gap-3 font-mono text-label leading-[normal] text-text-muted">
-        <span id="matches" aria-live="polite" className="tabular-nums">
-          {filtering ? (
-            <>
-              <span className="text-text">{shown}</span> of {total} match{where}
-            </>
-          ) : (
-            <>
-              <span className="text-text">{total}</span> technologies{where}
-            </>
-          )}
+        <span id="matches" aria-live="polite" className="text-text tabular-nums">
+          {counted}
         </span>
         {/* Facts and not controls: no border, nothing to press, and gone at 640px and below, where
             the keyboard they talk about usually is not. */}
         <span aria-hidden className="text-meta text-text-faint max-sm:hidden">
-          press / to find, esc to clear
+          {t("stack.catalog.keys")}
         </span>
       </p>
     </div>

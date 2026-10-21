@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createTranslator, dictionaryFor } from "@/modules/i18n";
 import type { SummaryStatus } from "./initial-summary-status";
 import { rowVerdict } from "./row-verdict";
 
@@ -16,11 +17,14 @@ function row(options: Partial<Row> = {}): Row {
   return { ...base, actionRequired: stated ? base.actionRequired : base.summary ? base.summary.actionRequired : null };
 }
 
+// The English words these verdicts are read in; the other four are held by the parity test.
+const t = createTranslator("en", dictionaryFor("en"));
+
 describe("rowVerdict", () => {
   it("names the breaking changes when the Summary asks for work", () => {
     const summary = { ...content, actionRequired: true, breakingChanges: [{ change: "a", migration: "b" }] };
 
-    expect(rowVerdict(row({ summary }))).toEqual({
+    expect(rowVerdict(row({ summary }), t)).toEqual({
       tone: "action",
       label: "warning:",
       claim: "action required · 1 breaking change",
@@ -31,13 +35,13 @@ describe("rowVerdict", () => {
   it("calls a Release safe only on a ready Summary that says so", () => {
     const summary = { ...content, actionRequired: false, breakingChanges: [] };
 
-    expect(rowVerdict(row({ summary }))).toEqual({ tone: "ok", label: "ok:", claim: "safe to upgrade", notes: false });
+    expect(rowVerdict(row({ summary }), t)).toEqual({ tone: "ok", label: "ok:", claim: "safe to upgrade", notes: false });
   });
 
   it("says a Summary is there but could not judge, which is not the same as no Summary", () => {
     const summary = { ...content, actionRequired: false, breakingChanges: [] };
 
-    expect(rowVerdict(row({ summary, actionRequired: null, unjudged: true }))).toEqual({
+    expect(rowVerdict(row({ summary, actionRequired: null, unjudged: true }), t)).toEqual({
       tone: "muted",
       label: "note:",
       claim: "not enough notes to judge",
@@ -47,7 +51,7 @@ describe("rowVerdict", () => {
 
   it("says the Summary is queued while it is still coming, and offers the notes meanwhile", () => {
     for (const summaryStatus of ["pending", "processing"] as const) {
-      expect(rowVerdict(row({ summaryStatus }))).toEqual({
+      expect(rowVerdict(row({ summaryStatus }), t)).toEqual({
         tone: "muted",
         label: "pending:",
         claim: "summary queued",
@@ -62,7 +66,7 @@ describe("rowVerdict", () => {
   // exist. `unavailable` is exactly "no notes" (`initialSummaryStatus`), so it is the one state that
   // must not name them.
   it("never offers the notes of a Release that has none", () => {
-    expect(rowVerdict(row({ summaryStatus: "unavailable" }))).toEqual({
+    expect(rowVerdict(row({ summaryStatus: "unavailable" }), t)).toEqual({
       tone: "muted",
       label: "note:",
       claim: "no release notes to summarize",
@@ -77,14 +81,14 @@ describe("rowVerdict", () => {
     ];
 
     for (const [summaryStatus, claim] of claims) {
-      expect(rowVerdict(row({ summaryStatus }))).toEqual({
+      expect(rowVerdict(row({ summaryStatus }), t)).toEqual({
         tone: "muted",
         label: "note:",
         claim,
         notes: true,
       });
     }
-    expect(rowVerdict(row({ summaryStatus: null }))).toEqual({
+    expect(rowVerdict(row({ summaryStatus: null }), t)).toEqual({
       tone: "muted",
       label: "note:",
       claim: "no summary",
@@ -98,7 +102,7 @@ describe("rowVerdict", () => {
     const states: (SummaryStatus | null)[] = [null, "pending", "processing", "ready", "unavailable", "skipped", "failed"];
 
     for (const summaryStatus of states) {
-      const verdict = rowVerdict(row({ summaryStatus }));
+      const verdict = rowVerdict(row({ summaryStatus }), t);
       expect(verdict.claim, `${summaryStatus} has a claim`).not.toBe("");
       expect(["action", "ok", "muted", "breaking"]).toContain(verdict.tone);
     }

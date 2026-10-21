@@ -2,6 +2,7 @@
 
 import { Check, Plus } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useTranslator } from "@/modules/i18n/ui";
 import { useFollows } from "./follows-provider";
 
 const BASE =
@@ -32,6 +33,7 @@ export function FollowToggle({
   name: string;
   errorId?: string;
 }) {
+  const t = useTranslator();
   const follows = useFollows();
   const button = useRef<HTMLButtonElement>(null);
   const following = follows.isFollowing(technologyId);
@@ -57,7 +59,7 @@ export function FollowToggle({
       ref={button}
       type="button"
       aria-pressed={following}
-      aria-label={`${following ? "Unfollow" : "Follow"} ${name}`}
+      aria-label={t(following ? "stack.unfollowName" : "stack.followName", { name })}
       aria-busy={pending || undefined}
       aria-disabled={blocked || undefined}
       aria-describedby={describedBy === "" ? undefined : describedBy}
@@ -67,7 +69,7 @@ export function FollowToggle({
       className={`${BASE} ${blocked ? BLOCKED : following ? ON : OFF}`}
     >
       {following ? <Check aria-hidden className="size-4" /> : <Plus aria-hidden className="size-4" />}
-      {following ? "Following" : "Follow"}
+      {t(following ? "stack.following" : "stack.follow")}
     </button>
   );
 }

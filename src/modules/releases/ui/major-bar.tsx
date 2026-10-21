@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import type { PathCounts } from "../domain/upgrade-path";
 import { SeverityLabel } from "./severity-label";
 import { SignificanceGlyph } from "./significance-glyph";
@@ -46,13 +47,13 @@ export function MajorBar({ counts, widest }: { counts: PathCounts; widest: numbe
 // DESIGN.md, Stat Row: the one place shape, fill and word are mapped to each other, so it is read
 // out as well as seen. It sits at the head of the column now, before the bars it explains, and it
 // lists only the levels the bars actually draw.
-export function BarLegend({ counts }: { counts: readonly PathCounts[] }) {
+export function BarLegend({ counts, t }: { counts: readonly PathCounts[]; t: Translator }) {
   const levels = legendLevels(counts);
   if (levels.length === 0) return null;
 
   return (
     <ul
-      aria-label="Bar fills"
+      aria-label={t("path.legend.label")}
       className="mb-5 flex list-none flex-wrap gap-4 font-mono text-meta leading-[normal] text-text-faint"
     >
       {levels.map((level) => (
@@ -65,7 +66,7 @@ export function BarLegend({ counts }: { counts: readonly PathCounts[] }) {
       {barHasAction(counts) && (
         <li className="inline-flex items-center gap-[6px]">
           <i aria-hidden className="inline-block h-[2px] w-[10px] bg-action" />
-          needs action
+          {t("path.legend.action")}
         </li>
       )}
     </ul>
@@ -76,12 +77,12 @@ export function BarLegend({ counts }: { counts: readonly PathCounts[] }) {
 // comma is what cuts across it, so a reader is never left adding five numbers into four (DESIGN.md,
 // Stat Row). `after` is the start of a path that falls inside this major: the group counts the
 // Releases after it, not all of them.
-export function MajorWords({ counts, after }: { counts: PathCounts; after?: string }) {
-  const words = majorWords(counts);
+export function MajorWords({ counts, after, t }: { counts: PathCounts; after?: string; t: Translator }) {
+  const words = majorWords(counts, t);
   return (
     <>
       {words.kinds}
-      {after && ` after ${after}`}
+      {after && ` ${t("path.after", { version: after })}`}
       {words.action && (
         <>
           {", "}

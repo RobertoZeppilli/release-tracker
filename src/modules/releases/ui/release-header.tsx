@@ -1,4 +1,5 @@
 import { ExternalLink, FileText } from "lucide-react";
+import type { Translator } from "@/modules/i18n";
 import type { ReleaseDetail } from "../domain/release-page";
 import { OpenNotesLink } from "./open-notes-link";
 import { SignificanceLabel } from "./significance-glyph";
@@ -13,10 +14,12 @@ export function ReleaseHeader({
   technologyName,
   release,
   source,
+  t,
 }: {
   technologyName: string;
   release: ReleaseDetail;
   source: ExternalSource | null;
+  t: Translator;
 }) {
   const date = release.publishedAt.toISOString().slice(0, 10);
   return (
@@ -32,7 +35,7 @@ export function ReleaseHeader({
         {release.notes ? (
           <OpenNotesLink className={BUTTON}>
             <FileText aria-hidden className="size-4" />
-            Release notes
+            {t("release.notes")}
           </OpenNotesLink>
         ) : (
           source && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { Info } from "lucide-react";
-import { LocaleLink as Link } from "@/modules/i18n/ui";
+import { LocaleLink as Link, useTranslator } from "@/modules/i18n/ui";
 import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 import { useFollows } from "@/modules/plans/ui";
 
@@ -10,15 +10,20 @@ import { useFollows } from "@/modules/plans/ui";
 // wall the totals take one more Meta line, in the Limit Note's own words because it is the same
 // fact, and it carries no ink: a Plan's limit is a boundary, not a failure.
 export function StandingQuotaNote() {
+  const t = useTranslator();
   const { atLimit } = useFollows();
   if (!atLimit) return null;
 
   return (
     <p className="mt-2" role="status">
       <Info aria-hidden className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-      note: <span className="text-text-muted">{FREE_FOLLOW_LIMIT}</span> of {FREE_FOLLOW_LIMIT} followed ·{" "}
+      note:{" "}
+      <span className="text-text-muted">
+        {t("dashboard.quota.followed", { count: FREE_FOLLOW_LIMIT, limit: FREE_FOLLOW_LIMIT })}
+      </span>{" "}
+      ·{" "}
       <Link href="/technologies" className="text-link decoration-current">
-        unfollow one to follow another
+        {t("dashboard.quota.swap")}
       </Link>
     </p>
   );

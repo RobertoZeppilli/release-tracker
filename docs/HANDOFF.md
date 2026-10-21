@@ -28,61 +28,71 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (2026-10-16, settimo giro): la PR 3a è su `main` e la PR #163 è aperta, in
-attesa della CI.** `main` ha la **PR 1** (ADR 0008), la **PR 2** (`app/[locale]`, il proxy, i
-canonici) e la **PR 3a** (il motore del dizionario e il guscio, senza i 92 file di UI, merge in
-`c297ccb`). La **PR #163** (ramo `131-settings-e-piede`) porta la pagina `/settings` e il piede
-rifatto, che non erano in programma: li ha chiesti l'utente in questa sessione.
+**Da dove ripartire (nono giro, lavorato il 2026-10-16 e chiuso il 2026-10-21): la 3b-1 è finita
+e committata in `8796e6f`, non pushata, PR non aperta.** Il ramo
+`131-ui-strings-app-it` ha l'estrazione delle stringhe dell'app (sessione di prima) **e il dizionario
+italiano**, scritto in questa sessione. Su `main` (squash `da0a6d1`) ci sono la PR 1 (ADR 0008), la
+PR 2 (`app/[locale]`, il proxy, i canonici), la PR 3a (il motore del dizionario e il guscio) e la
+pagina `/settings` col piede rifatto.
 
-⚠️ **Il primo controllo della sessione nuova è la CI della #163**: `gh pr checks 163`. In locale il
-giro completo è verde, compresa la suite E2E **contro il build**: 251 passati, coi due flaky noti
-(`a11y` technologies refused, `technology:126`) rientrati al retry.
+⚠️ **Il primo passo della sessione nuova è il push e la PR della 3b-1** (`Closes #131` in inglese
+nel corpo, il resto in italiano), che l'utente non ha ancora confermato. Poi restano la **3b-2**
+(la landing, dove la prosa italiana va letta con calma e le frasi con markup dentro vanno
+ricomposte), la **3b-3** (le pagine documento: `faq`, `terms`,
+`privacy`, `attributions`, `contact`, 557 righe di prosa, e per terms e privacy resta da decidere se
+l'inglese fa fede) e la **PR 4** (francese, spagnolo, tedesco, e l'overflow a 320px in tedesco).
 
-**Quello che resta della #131**: la **PR 3b** (dizionario italiano, ed estrazione modulo per modulo:
-landing, dashboard, catalogo, release) e la **PR 4** (francese, spagnolo, tedesco più l'overflow a
-320px in tedesco). ⚠️ L'utente ha detto di **aprire una sessione nuova per la 3b**.
+### Cos'è entrato nella 3b-1 in questa sessione
 
-### Quello che questa sessione ha deciso, e non è derivabile dal codice
+1. **Dieci file `messages/it/*.ts`**, uno per spazio di nomi come l'inglese, e `TRANSLATIONS` in
+   `messages/index.ts` che ora è `{ it: IT }`. Da qui il test di parità **controlla davvero**
+   qualcosa: 680 unitari contro i 675 di prima, e i cinque nuovi sono le asserzioni su `it`.
+2. **Ogni messaggio contato ha anche la forma `many`**, che `Intl.PluralRules` dà all'italiano (e
+   al francese e allo spagnolo, mai al tedesco) per le cifre tipo 1000000: il testo è lo stesso di
+   `other`, ma il test lo pretende scritto, perché un `many` mancante sarebbe la mezza traduzione
+   silenziosa.
+3. **Tre parole decise con l'utente**, e scritte in `CONTEXT.md` invece che solo nel dizionario:
+   `breaking changes` **resta inglese**, `safe to upgrade` è **"aggiornamento sicuro"**, `key
+   points` è **"punti chiave"**. In tabella sono finite anche le righe `UI` per lingua di
+   `actionRequired` e `notesJudgeable`.
+4. ⚠️ **Quattro verdetti sono stati accorciati perché l'italiano non ci stava**, ed è la regola
+   che lo impone (DESIGN.md, The One-Line Verdict Rule: la copia cede, la scala no). Misurato nel
+   browser: a 1.2rem dentro i 326px del pannello la riga tiene **26 caratteri, etichetta compresa**
+   (`note: 3 senza un verdetto` misura 309px). Perciò `richiedono un intervento` è diventato
+   **`interventi`** (`warning: 2 interventi`), `niente richiede un intervento` è **`nessun
+   intervento`**, e `not enough notes to judge` è **`note non giudicabili`**, che per di più è il
+   nome che il glossario già dà a quelle note. ⚠️ **Da far vedere all'utente**: è il punto dove
+   l'italiano dice meno dell'inglese.
+5. **Tre E2E aggiornati**, e due di loro sono la metà che il test di parità non può vedere: il
+   selettore nel piede si cerca per **`lingua`** dentro una pagina italiana, e la riga che dice che
+   la pagina è mista si legge **in italiano**. Il terzo è un debito della sessione di prima:
+   `expect(html).not.toContain("Unfollow")` falliva perché **la pagina ora si porta dietro il
+   proprio dizionario**, dove `Unfollow {name}` è una voce; ora guarda lo stato reso
+   (`aria-pressed="true"` e l'etichetta col nome dentro), che è quello che il test voleva dire.
 
-1. **La lingua esce dal pannello, e nasce `/settings`** (deciso dall'utente il 2026-10-16). Il menu
-   profilo porta `account`, `settings`, `sign out`; la scelta della lingua sta nella pagina. La
-   ragione è che **il pannello non può crescere di una riga per preferenza**, mentre una pagina sì:
-   la prossima impostazione si aggiunge lì. `/settings` è protetta come `/account` e un visitatore
-   non ci perde niente, perché il piede gli dà la lingua su ogni pagina pubblica. ADR 0008 ha il
-   capoverso di correzione datato; la riga vecchia diceva "nel menu profilo".
-2. ⚠️ **È caduto il debito della colonna sticky**, quello che l'handoff del sesto giro segnalava:
-   ora è limitata da `min(100%, …)`, cioè dalla sua area di griglia oltre che dalla finestra. In
-   fondo a un documento corto era alta una finestra mentre lo split sotto di lei non lo era.
-   **Da qui in poi il piede può crescere senza che la Dashboard paghi**, e il legame invisibile fra
-   i due non c'è più (resta misurato da `dashboard.spec.ts`, "the columns apart").
-3. **Il piede è il marchio più tre colonne in frazioni** (`product`, `legal`, `language`), larghe
-   quanto la pagina: le tracce fisse da 160px lo schiacciavano nel primo terzo a 1280. Sul telefono
-   il marchio prende una riga sua e la lingua si sdraia in una riga che va a capo. Le due
-   sotto-colonne della lingua non esistono più: erano il rimedio all'altezza, e l'altezza non è più
-   un vincolo.
-4. ⚠️ **In locale la suite E2E va fatta girare contro il build** (`CI=1 pnpm test:e2e`, col dev
-   server spento), non contro il dev server. In dev l'overlay di Next aggiunge un **secondo
-   `<footer>`** alla pagina e i due test del piede in `legal.spec.ts` cadono su strict mode, e una
-   modifica ai file **durante** il giro fa fallire una ventina di test per ricompilazione. Nessuno
-   dei due è una regressione.
-5. ⚠️ **Il test `eslint/boundaries.test.ts` va in timeout** (40s) se la macchina sta facendo girare
-   anche gli E2E: da solo passa, 10 su 10. Non è un fallimento vero.
+### Dove sta il giro
 
-**Verde in locale** al commit `8ee2333`: `lint`, `typecheck`, `build` (`/settings` è dinamica, ISR
-intatto), **673 su 673** unitari, **251 E2E** contro il build. ⚠️ Il **dev server è acceso** sulla
-3000 (riavviato alla fine della verifica). ⚠️ **Otto rami da cancellare** e lo stash `residuo del
-checkout interrotto`, che sono dell'utente; a questi si aggiunge `131-ui-strings-en`, ormai mergiato.
-⚠️ L'utente stava modificando `.github/workflows/ci.yml` da un'altra sessione: **non scartare quelle
-modifiche**.
+`lint`, `typecheck`, `build` (ISR intatto), **680 su 680** unitari, **70 su 70** di integrazione.
+L'E2E **contro il dev server** fa 250 su 253, e i tre che cadono **non sono dell'italiano**: due
+sono `a11y:169` "technologies, with a follow the database refused", il flaky che l'handoff del
+settimo giro già elencava (`target-size` su un Follow della pagina inglese, e un timeout sull'altro
+tema); il terzo è `locales:35`, che è **l'artefatto del dev server** già scritto lì: l'overlay di
+Next aggiunge un secondo `<footer>` e la strict mode cade. ⚠️ **Resta da fare il giro buono**,
+`CI=1 pnpm test:e2e` col dev server spento, che non ho lanciato perché il server sulla 3000 è
+dell'utente. Nei giri parziali anche `account.spec:51` e `legal.spec:72` sono caduti una volta e
+poi passati da soli: flaky, non regressioni.
 
 ### Cosa resta
 
-1. ⚠️ **`NEXT_PUBLIC_GITHUB_CLIENT_ID` è ancora da mettere su Vercel**, su tutti gli ambienti, **e
-   poi rideploy**: le `NEXT_PUBLIC_` sono murate nel bundle al build.
-2. ⚠️ **I 14 KB di UI delle Release su ogni pagina** e le **`max-[]`** non sono decise.
-3. **Il mock disegna due righe che il modello non produce**; `groupByMajor` e `recordedHistory`
+1. ⚠️ **I 14 KB di UI delle Release su ogni pagina** e le **`max-[]`** non sono decise.
+2. **Il mock disegna due righe che il modello non produce**; `groupByMajor` e `recordedHistory`
    calcolano quasi la stessa cosa.
-4. ⚠️ **Credito basso: non spendere niente senza chiedere.** Le cose dell'utente in `APERTE.md`,
+3. ⚠️ **Credito basso: non spendere niente senza chiedere.** Le cose dell'utente in `APERTE.md`,
    l'ambiente in `AMBIENTE.md`, il peso in `PESO.md`.
+4. **Committato su richiesta dell'utente**, in un commit solo (`8796e6f`, 97 file): l'estrazione
+   della sessione precedente e il dizionario insieme, perché separandoli il primo dei due sarebbe
+   uno stato mai girato da solo, e nella PR finiscono squashati comunque. L'handoff è nel commit
+   dopo. ⚠️ **Niente è pushato.** ⚠️ **Otto rami da cancellare** e lo stash
+   `residuo del checkout interrotto`, che sono dell'utente.
 
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

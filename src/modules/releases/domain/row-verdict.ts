@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import type { SummaryContent } from "@/modules/summaries";
 import type { SummaryStatus } from "./initial-summary-status";
 
@@ -25,34 +26,39 @@ type Row = {
   summary: SummaryContent | null;
 };
 
-function plural(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
-}
-
-export function rowVerdict({ actionRequired, unjudged, summaryStatus, summary }: Row): RowVerdict {
+// It takes `t` since ADR 0008: what a row says is a sentence in the dictionary, and what this
+// function decides is which sentence. The labels are the product's grammar and stay as written.
+export function rowVerdict(
+  { actionRequired, unjudged, summaryStatus, summary }: Row,
+  t: Translator,
+): RowVerdict {
   // DESIGN.md, Release Row: an action row says how many breaking changes it carries, so the count is
   // read on the row instead of on the Release page.
   if (actionRequired === true) {
-    const count = summary ? ` · ${plural(summary.breakingChanges.length, "breaking change")}` : "";
-    return { tone: "action", label: "warning:", claim: `action required${count}`, notes: false };
+    const claim = summary
+      ? t("release.verdict.actionCount", { count: summary.breakingChanges.length })
+      : t("release.verdict.action");
+    return { tone: "action", label: "warning:", claim, notes: false };
   }
-  if (actionRequired === false) return { tone: "ok", label: "ok:", claim: "safe to upgrade", notes: false };
+  if (actionRequired === false)
+    return { tone: "ok", label: "ok:", claim: t("release.verdict.safe"), notes: false };
   // There is a Summary here, and the row says so: what it has not got is a verdict. The paragraph
   // that explains it belongs to the Release page, not to a row.
-  if (unjudged) return { tone: "muted", label: "note:", claim: "not enough notes to judge", notes: false };
+  if (unjudged)
+    return { tone: "muted", label: "note:", claim: t("release.verdict.unjudged"), notes: false };
 
   switch (summaryStatus) {
     case "pending":
     case "processing":
-      return { tone: "muted", label: "pending:", claim: "summary queued", pending: true, notes: true };
+      return { tone: "muted", label: "pending:", claim: t("release.status.queued"), pending: true, notes: true };
     case "skipped":
-      return { tone: "muted", label: "note:", claim: "no summary for this older release", notes: true };
+      return { tone: "muted", label: "note:", claim: t("release.status.older"), notes: true };
     // No notes, no Summary, and nothing to point at: the row says what is missing and stops there.
     case "unavailable":
-      return { tone: "muted", label: "note:", claim: "no release notes to summarize", notes: false };
+      return { tone: "muted", label: "note:", claim: t("release.status.unavailable"), notes: false };
     case "failed":
-      return { tone: "muted", label: "note:", claim: "summary unavailable", notes: true };
+      return { tone: "muted", label: "note:", claim: t("release.status.failed"), notes: true };
     default:
-      return { tone: "muted", label: "note:", claim: "no summary", notes: true };
+      return { tone: "muted", label: "note:", claim: t("release.status.none"), notes: true };
   }
 }

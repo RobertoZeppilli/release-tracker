@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Dictionary, interpolate, placeholdersOf } from "./message";
+import { type Dictionary, interpolate, messageParts, placeholdersOf } from "./message";
 import { createTranslator } from "./translate";
 
 const dictionary = {
@@ -66,5 +66,24 @@ describe("placeholdersOf", () => {
 describe("interpolate", () => {
   it("prints a number as the figure it is", () => {
     expect(interpolate("{count} of {limit} followed", { count: 3, limit: 10 })).toBe("3 of 10 followed");
+  });
+});
+
+describe("messageParts", () => {
+  it("cuts a sentence at the gaps a component fills with elements", () => {
+    expect(messageParts("Signing in accepts the {terms}.")).toEqual([
+      "Signing in accepts the ",
+      { placeholder: "terms" },
+      ".",
+    ]);
+  });
+
+  it("keeps a sentence with no gap in one piece, and loses nothing at either end", () => {
+    expect(messageParts("no page at this address")).toEqual(["no page at this address"]);
+    expect(messageParts("{one} and {two}")).toEqual([
+      { placeholder: "one" },
+      " and ",
+      { placeholder: "two" },
+    ]);
   });
 });

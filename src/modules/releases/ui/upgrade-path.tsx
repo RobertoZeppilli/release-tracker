@@ -1,3 +1,4 @@
+import type { Translator } from "@/modules/i18n";
 import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { Fragment, type ReactNode } from "react";
 import { ColumnTitle } from "@/components/column-title";
@@ -47,6 +48,10 @@ type Props = {
   declaration?: ReactNode;
   // The plain list of Releases, shown when there is no path to show.
   children: ReactNode;
+  // ⚠️ A prop and not `getTranslator()`: this block is rendered by the page **and** by the client
+  // view that reads `?from=`, so it compiles into both graphs and can neither import `i18n/server`
+  // nor call a hook.
+  t: Translator;
 };
 
 function formMessage(
@@ -54,18 +59,20 @@ function formMessage(
   name: string,
   base: string,
   start: PathStart,
+  t: Translator,
 ): FormMessage | null {
   if (path.type === "invalid")
-    return { tone: "breaking", label: "error:", body: invalidMessage(path.reason, path.from, path.latest) };
+    return { tone: "breaking", label: "error:", body: invalidMessage(path.reason, path.from, path.latest, t) };
   // The counts below are built on a start nobody asked for, so the line that introduces them says
   // where it comes from (CONTEXT.md, Cammino di upgrade). A declared start needs no line of its own
   // any more: the `in use` row of the panel carries the version and the day it was declared, two
   // rows above the `from` that repeats it.
-  if (start.kind === "default") return { tone: "muted", label: "note:", body: defaultStartNote(path.from, start.reason) };
+  if (start.kind === "default")
+    return { tone: "muted", label: "note:", body: defaultStartNote(path.from, start.reason, t) };
   if (path.recorded) return null;
   const links = path.suggestions.map((version, index) => (
     <Fragment key={version}>
-      {index > 0 && " or "}
+      {index > 0 && ` ${t("path.or")} `}
       <Link href={`${base}?from=${encodeURIComponent(version)}`} className="text-link underline">
         {version}
       </Link>
@@ -74,10 +81,11 @@ function formMessage(
   return {
     tone: "muted",
     label: "note:",
+    // Two sentences and the links between them: a message cannot carry an element, so the question
+    // is a message of its own and the versions are composed after it (`message.ts`).
     body: (
       <>
-        {path.from} is not a recorded {name} release, so the path counts the recorded releases after
-        it. Did you mean {links}?
+        {t("path.unrecorded.why", { from: path.from, name })} {t("path.unrecorded.ask")} {links}?
       </>
     ),
   };
@@ -100,6 +108,7 @@ export function UpgradePathBlock({
   head,
   declaration,
   children,
+  t,
 }: Props) {
   const base = `/technologies/${slug}`;
   const computed = start.kind === "none" ? null : computeUpgradePath(releases, start.version);
@@ -123,16 +132,17 @@ export function UpgradePathBlock({
           {head}
           <section aria-labelledby="plan-title" className="mt-5 stacked:mt-7">
             <h2 id="plan-title" className="sr-only">
-              What to do
+              {t("path.whatToDo")}
             </h2>
-            <UpgradePanel latest={latest}>
+            <UpgradePanel latest={latest} t={t}>
               {declaration}
               <UpgradeForm
                 action={base}
                 latest={latest}
                 versions={versions}
                 value={start.kind === "none" ? "" : start.version}
-                message={computed && formMessage(computed, name, base, start)}
+                message={computed && formMessage(computed, name, base, start, t)}
+                t={t}
               />
             </UpgradePanel>
             {path ? (
@@ -141,9 +151,10 @@ export function UpgradePathBlock({
                 to={path.to}
                 counts={path.counts}
                 showAll={hidden > 0 ? { href: `${base}?from=`, total: history.listed } : null}
+                t={t}
               />
             ) : (
-              !computed && <HistoryOverview history={history} base={base} />
+              !computed && <HistoryOverview history={history} base={base} t={t} />
             )}
           </section>
         </div>
@@ -153,9 +164,9 @@ export function UpgradePathBlock({
         {/* The column names its own ordering, because the ordering is information: a path is read in
             the direction the upgrade is performed, the recorded history newest major first. */}
         <ColumnTitle id="stream-title">
-          {path ? "what has changed, in the order you upgrade" : "what has changed, newest major first"}
+          {t(path ? "path.changed.inOrder" : "path.changed.newest")}
         </ColumnTitle>
-        <BarLegend counts={legendCounts(path ? path.majors : history.majors)} />
+        <BarLegend counts={legendCounts(path ? path.majors : history.majors)} t={t} />
         {path ? (
           <PathGroups
             slug={slug}
@@ -163,6 +174,7 @@ export function UpgradePathBlock({
             from={path.from}
             to={path.to}
             previews={retired ? [] : path.previews}
+            t={t}
           />
         ) : (
           children
@@ -184,12 +196,14 @@ function PathGroups({
   from,
   to,
   previews,
+  t,
 }: {
   slug: string;
   majors: PathMajor<SummarizedRelease>[];
   from: string;
   to: string;
   previews: SummarizedRelease[];
+  t: Translator;
 }) {
   const widest = Math.max(1, ...majors.map((group) => group.counts.total));
   const bars = majors.length > 1;
@@ -201,7 +215,9 @@ function PathGroups({
           key={group.major}
           id={`v${group.major}`}
           title={`v${group.major}`}
-          words={<MajorWords counts={group.counts} after={from.startsWith(`${group.major}.`) ? from : undefined} />}
+          words={
+            <MajorWords counts={group.counts} after={from.startsWith(`${group.major}.`) ? from : undefined} t={t} />
+          }
           bar={bars ? <MajorBar counts={group.counts} widest={widest} /> : undefined}
         >
           {group.rows.map((row) => (
@@ -209,16 +225,17 @@ function PathGroups({
               key={rowKey(row)}
               slug={slug}
               row={row}
-              verdict={(release) => <ReleaseRowContent slug={slug} release={release} />}
+              verdict={(release) => <ReleaseRowContent slug={slug} release={release} t={t} />}
+              t={t}
             />
           ))}
         </Group>
       ))}
       {previews.length > 0 && (
-        <Group id="previews" title="previews" words={`ahead of ${to}`}>
+        <Group id="previews" title="previews" words={t("path.previews.ahead", { version: to })}>
           {previews.map((release) => (
             <ReleaseRow key={release.version} slug={slug} release={release}>
-              <ReleaseRowContent slug={slug} release={release} />
+              <ReleaseRowContent slug={slug} release={release} t={t} />
             </ReleaseRow>
           ))}
         </Group>

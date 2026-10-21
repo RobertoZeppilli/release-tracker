@@ -103,8 +103,12 @@ test.describe("a Developer", () => {
 
     // The cached page knows nothing about them: the state is read in the browser, per visitor.
     const html = await (await page.request.get(path())).text();
-    expect(html).not.toContain("Unfollow");
-    expect(html).not.toContain("Following");
+    // ⚠️ Not `not.toContain("Unfollow")` any more: since ADR 0008 the page carries the dictionary of
+    // its language for the browser to read, and `Unfollow {name}` is one of its entries. A word the
+    // page could say is not state, so what is checked is the button as it was rendered: its label
+    // with the Technology's own name in it, and the pressed state itself.
+    expect(html).not.toContain(`Unfollow ${technology.name}`);
+    expect(html).not.toContain('aria-pressed="true"');
 
     await toggle(page, "Unfollow").click();
     await expect(toggle(page, "Follow")).toHaveAttribute("aria-pressed", "false");
