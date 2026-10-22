@@ -1,7 +1,7 @@
 # Handoff, release-tracker: implementazione delle issue
 
 Parla con l'utente **in italiano**. Progetto in `C:\Users\rober\progetti\release-tracker`, repository
-git con remote privato **https://github.com/RobertoZeppilli/release-tracker** (branch `main`, `gh`
+git con remote **pubblico** su **https://github.com/RobertoZeppilli/release-tracker** (branch `main`, `gh`
 autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
 Produzione: **https://release-tracker-drab.vercel.app**.
 
@@ -29,38 +29,68 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (tredicesimo giro, 2026-10-21): la #131 è chiusa, e il prossimo lavoro non è
-ancora scelto.** La **PR 167** è mergiata in `main` con lo squash `86bad89`, e la **#131 si è chiusa
-da sé** alle 11:31 per la parola chiave nel corpo di quella PR: stavolta scritta nell'unico posto
-dove vada scritta, e mai in un messaggio di commit. Con lei la traduzione dell'interfaccia è
-**finita per intero**, dall'ADR 0008 fino all'audit axe nelle cinque lingue: nessuna delle quattro
-PR ha lasciato codice indietro.
+**Da dove ripartire (quindicesimo giro, 2026-10-22): la #169 è chiusa e lo schema delle Notifiche è
+in produzione, quindi la prossima issue si sceglie insieme.** Squash `a822f89`, PR 177, e il
+workflow *Deploy database* ha applicato `20261022170939_notifications.sql` alle 19:15 UTC: la
+**#170 è sbloccata**, perché la regola dei preview che leggono il database di produzione è
+soddisfatta. Il `main` locale è indietro: la modalità auto nega `git pull`, lo rimette in pari
+l'utente.
 
-⚠️ **La prossima issue si sceglie con l'utente, non si prende da soli**: la regola di chiedere prima
-di passare a una issue nuova vale ancora, e `gh issue list` è il punto di partenza.
+### Il difetto che ha trovato il test mai girato, e perché vale ricordarlo
 
-### Cos'è su `main` adesso
+Il commit `7091a2f` era stato scritto con Docker spento, quindi `pnpm test:integration` non era mai
+girato. Girato in questa sessione, ha mostrato che la fetta **duplicava le Notifiche alla seconda
+esecuzione**, cioè il criterio di accettazione che la issue dichiarava di rispettare, e che il
+messaggio del commit affermava come "idempotenza per costruzione".
 
-Le quattro PR della #131, in ordine: la 1 (ADR 0008), la 2 (`app/[locale]`, il proxy, i canonici),
-la 3a (il motore del dizionario e il guscio) con `/settings` e il piede rifatto, la 3b-1 (le stringhe
-dell'app), la 3b-2 (la landing), la 3b-3 (le cinque pagine documento) e la 4 (francese, spagnolo e
-tedesco, le parole del glossario per le tre lingue, l'audit axe fuori dall'inglese). Il **fallback
-inglese di `dictionaryFor` non copre più niente**, e il commento lì dice perché resta: non far
-spedire con dei buchi una **sesta** lingua.
+La causa, che vale per ogni upsert futuro di questo progetto: **`upsert` con `ignoreDuplicates` e
+senza `onConflict` non produce un `on conflict do nothing` nudo.** PostgREST inferisce la chiave
+primaria, che qui è un uuid nuovo e non collide mai, e l'indice unico esplode. E un indice
+**parziale non è inferibile** nemmeno nominandone le colonne, quindi i due indici parziali del
+primo commit non potevano servire allo scopo per cui erano stati scritti. Rimedio: una colonna
+generata `subject` (`coalesce(release_id::text, digest_week)`) e **un solo** indice unico normale su
+`(user_id, event, subject)`, che l'insert nomina. Vale anche per il Digest della #173.
+
+Due trappole delle fixture, trovate con lo stesso giro: una Sintesi `ready` senza provenienza viola
+`summaries_ready_provenance` (ADR della #88), e **in un insert multiplo PostgREST riempie con `null`
+la chiave assente da una riga** invece di usare il default della colonna.
+
+⚠️ **La lezione**: una fetta col test di integrazione mai girato non è una fetta finita, e il commit
+che la descrive può affermare il falso in buona fede. Docker si accende prima, non dopo.
+
+### Le tre scelte del quattordicesimo giro, chiuse
+
+1. **Eventi come enum a tre valori**: passata com'era, così `/settings` spegne `featured` e
+   `notable` separatamente.
+2. **Nessun trigger crea le preferenze**: passata com'era, una riga che manca è il valore di
+   partenza, che sta nel dominio.
+3. **Finestra del job allargata da 7 a 30 giorni**, gli stessi della Dashboard
+   (`src/modules/dashboard/domain/build-dashboard.ts:25`): la Notifica nasce quando la Sintesi si
+   settla e le fasi delle Sintesi si lanciano a mano, quindi con sette giorni **una Sintesi tardiva
+   non avrebbe notificato nessuno**. Scelta dell'utente fra tre strade.
+
+### Tre E2E di misura instabili, e perché non era la #169
+
+La PR 177 è fallita una volta e **è passata al rilancio senza cambiare una riga**, che elenca flaky
+`dashboard.spec.ts:267`, `technology.spec.ts:126` e `technology-follow.spec.ts:174`: tre test che
+*misurano la pagina*, quindi una causa sola, e la più probabile è in `AMBIENTE.md`, i font che non
+scaricano. ⚠️ **Non era GitHub.** È la **#178** (`bug`, `ready-for-agent`), che porta dentro anche
+il `timeout-minutes` che la CI non ha. Il racconto intero sta in `APERTE.md`, "Code da non perdere".
 
 ### Cosa resta
 
-1. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
-   revisione **prima del lancio**, non prima del merge. La riga che lo dice sta nei tre indici e in
-   `CONTEXT.md`, così non passano per verificati. È l'unico pezzo della #131 che sopravvive al merge.
-2. ⚠️ **I 14 KB di UI delle Release su ogni pagina** e le **`max-[]`** non sono decise.
-3. **Il mock disegna due righe che il modello non produce**; `groupByMajor` e `recordedHistory`
-   calcolano quasi la stessa cosa.
-4. ⚠️ **Credito basso: non spendere niente senza chiedere.** Utente in `APERTE.md`, ambiente in
-   `AMBIENTE.md`, peso in `PESO.md`.
-5. **Cose dell'utente, verificate e sicure**: **quindici rami locali e quindici sul remote**,
-   `ui-french-spanish-german` compreso, che la PR 167 non ha cancellato come nessuna prima di lei.
-   I locali vanno via con `-D` perché lo squash fa sì che git non li veda fusi, ma ognuno ha la sua
-   PR mergiata (`gh pr list --state merged`). E lo stash `residuo del checkout interrotto`, senza
-   niente di unico.
+1. **La prossima issue non è scelta**, e c'è anche la **#178** di sopra. Le Notifiche dopo la #169:
+   **#170** campanella (il contatore
+   non può buttare l'ISR), **#171** `/settings` col segno `Pro` e i giorni di prova, **#172** Slack,
+   **#173** email e Digest come entità, **#174** Lemon Squeezy, che l'ADR 0009 rende obbligatoria al
+   lancio e conviene aprire presto per i tempi del Merchant of Record. Non scelte: **#65**, **#130**,
+   **#69**, e la **#176** (Redis: la risposta è non adesso, ma dentro c'è il rate limiting, che non
+   esiste da nessuna parte ed è l'unico rischio di oggi).
+2. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
+   revisione **prima del lancio**, non prima del merge.
+3. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
+   `APERTE.md`, coi rami arretrati e il come si cancellano. Cancellarli è dell'utente.
+4. Un **server Next residuo sulla 3001** (pid 24028 il 2026-10-22), da chiudere: la regola è uno
+   solo, sulla 3000.
+5. ⚠️ **Credito basso: non spendere niente senza chiedere.**
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

@@ -79,6 +79,24 @@ Il primo comando della sessione nuova:
 leggi docs/HANDOFF.md, controlla la CI su main e dimmi che strade sono aperte
 ```
 
+## I rami arretrati, al 2026-10-21 (spostati qui dallo stato vivo)
+
+⚠️ **Cose dell'utente, verificate e sicure**: **quindici rami locali e quindici sul remote**,
+`ui-french-spanish-german` compreso, che la PR 167 non ha cancellato come nessuna prima di lei.
+I locali vanno via con `-D` perché lo squash fa sì che git non li veda fusi, ma ognuno ha la sua
+PR mergiata (`gh pr list --state merged`). E lo stash `residuo del checkout interrotto`, senza
+niente di unico. **Cancellare rami e fondere è dell'utente: la modalità auto lo nega.**
+
+## Due debiti che ogni giro si ripeteva (spostati qui il 2026-10-21)
+
+Stavano in fondo allo stato vivo, ricopiati parola per parola a ogni giro da settembre, e lo stato
+vivo ha superato le 100 righe. Stanno qui perché non sono di un giro: sono di questo progetto,
+finché qualcuno non li decide.
+
+1. ⚠️ **I 14 KB di UI delle Release su ogni pagina** e le **`max-[]`** non sono decise.
+2. **Il mock disegna due righe che il modello non produce**; `groupByMajor` e `recordedHistory`
+   calcolano quasi la stessa cosa.
+
 ## Cose dell'utente, e il flake che vive su `main`
 
 Spostate qui da `docs/HANDOFF.md` il 2026-10-13, parola per parola, per tenere lo stato vivo sotto
@@ -108,6 +126,24 @@ sotto le 100 righe.
 - **Il giro a mano nel browser su tutta l'app alla fine**, col metro della facilità d'uso, e **un
   sistema di notifiche interno** (idea del 2026-10-10, issue a parte, non aperta). ⚠️ **Rami,
   ordine degli ambienti e flake di `technology.spec.ts`**: in `APERTE.md`, "Cose dell'utente".
+
+Spostate qui da `docs/HANDOFF.md` il 2026-10-22, parola per parola, per tenere lo stato vivo sotto
+le 100 righe.
+
+- ⚠️ **Tre E2E di misura sono flaky, e insieme**: il 2026-10-22 la PR 177 è fallita su
+  `dashboard.spec.ts:267` (`overlap` 49px invece di ≤ 0) ed è passata al rilancio senza cambiare una
+  riga; quel rilancio elenca flaky anche `technology.spec.ts:126` e `technology-follow.spec.ts:174`.
+  Tre test che *misurano la pagina* instabili nello stesso run hanno una causa sola, e la più
+  probabile è già in `AMBIENTE.md`: i font di Google che a volte non scaricano e lasciano il
+  fallback metrico Arial, che cambia gli ingombri. **Non è GitHub** (Actions era operativo;
+  l'incidente di quel giorno riguardava Issues, PR e ricerca). Nella stessa issue va il
+  **`timeout-minutes` che la CI non ha**: due righe nello stesso file, da pagare in un giro solo.
+  È la **#178**, aperta il 2026-10-22.
+- ⚠️ **Il login degli E2E non funziona contro il dev server dell'utente**: la route risponde
+  `404` (atteso `204`), perché quel server gira senza il secret che la fa esistere. In CI l'ambiente
+  lo prepara il workflow, quindi riprodurre un E2E in locale richiede prima quella variabile.
+- Un **server Next residuo sulla 3001** (pid 24028 il 2026-10-22): da chiudere, la regola è uno solo
+  sulla 3000.
 
 ## Code da non perdere
 

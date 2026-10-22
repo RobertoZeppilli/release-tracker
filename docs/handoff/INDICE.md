@@ -18,6 +18,15 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del quattordicesimo giro: la #169 scritta e committata, e la PR da aprire (2026-10-22)
+  - ⚠️ Il test di integrazione mai girato: la fetta duplicava le Notifiche, e il commit diceva il contrario
+  - ⚠️ `upsert` con `ignoreDuplicates` e senza `onConflict` non è un `on conflict do nothing` nudo,
+    e un indice parziale non è inferibile: perciò una colonna generata e un indice unico solo
+  - ⚠️ Tre E2E di misura flaky nello stesso run, e non era GitHub: i font che non scaricano
+  - La finestra del job da 7 a 30 giorni, perché le fasi delle Sintesi si lanciano a mano
+- Stato del tredicesimo giro: le sette issue delle Notifiche aperte, e la #168 come primo passo (2026-10-21)
+  - Lo scope completo delle Notifiche scelto dall'utente: campanella più Slack più email
+  - La #69 rimessa in gioco, e il tasso misurato: una riga su quattro, non una su otto
 - Stato del dodicesimo giro: la PR 4 mergiata, e la #131 chiusa dal corpo della sua PR (2026-10-21)
   - Francese, spagnolo e tedesco: 51 file, le parole del glossario decise lingua per lingua
   - ⚠️ Due verbi in tedesco per `follow`: `folgen` regge il dativo ma non forma participio
