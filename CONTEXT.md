@@ -395,6 +395,8 @@ la tabella per cercarle.
 | Dashboard | dashboard | dashboard | Dashboard |
 | Cammino di upgrade | chemin de mise à jour | ruta de actualización | Upgrade-Pfad |
 | Seguire | suivre | seguir | folgen · verfolgt |
+| Notifica | notification | notificación | Benachrichtigung |
+| Digest settimanale | digest hebdomadaire | resumen semanal | wöchentlicher Digest |
 
 ⚠️ Due verbi in tedesco per `follow`, e la grammatica è quello che li divide: `folgen` regge il
 dativo, quindi è il verbo di ogni frase e di ogni pulsante, ma non forma participio attributivo né
@@ -435,6 +437,10 @@ passivo personale, e `gefolgte Technologien` non è tedesco. Quelle posizioni le
 | Cammino di upgrade | `UpgradePath` | parametro `?from=<version>` |
 | Sviluppatore | `Developer` | |
 | Visitatore | `Visitor` | |
+| Notifica | `Notification` | tabella `notifications`, una per Sviluppatore e per evento; `on delete cascade` su `auth.users`; conservata 90 giorni |
+| Canale di notifica | `NotificationChannel` | `in_app` · `slack` · `email`; `in_app` gratis, gli altri Pro |
+| Visto | `seenAt` | sulla Notifica, non sulla Release: il contatore conta le Notifiche con `seen_at` nullo |
+| Lingua preferita | `preferredLocale` | nelle impostazioni delle Notifiche, per email e Slack che non hanno un URL; manca, vale `en` |
 | Piano | `Plan` | `free` · `pro` · `team` |
 | Cancellazione dell'account | `delete account` | la pagina `/account` |
 | Prodotto | `Verdict` | mai tradotto, mai con l'articolo |

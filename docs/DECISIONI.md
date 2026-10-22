@@ -111,9 +111,13 @@ interferisce, perché qui non si pubblica un pacchetto e il repository sta sotto
 | **Tecnologie ritirate** seguite | Restano seguite e contano nei 10; si possono solo smettere di seguire, e poi non si possono più seguire. |
 | Tecnologia assente dal Catalogo | Solo una nota: il Catalogo è curato e le **Richieste di tecnologia** non sono aperte. Nessun form né link nell'MVP. |
 | Sezioni della Dashboard | ⚠️ **Rovesciata il 2026-10-10 con la #142.** Erano **Spotlight** (Release `featured` degli ultimi 30 giorni; se non ce ne sono, l'ultima major in forma compatta), **Latest**, **Previews** e **Weekly Digest**: quattro sezioni per **Rilevanza**, che facevano comparire la stessa Tecnologia fino a quattro volte nella stessa schermata. Ora la Dashboard è **due colonne per due domande**, la **Posizione dello stack** e il **Flusso**, e la Rilevanza vive sulla riga come glifo. Il **Digest settimanale** resta, come piega in fondo al Flusso. Vedi `CONTEXT.md`, Dashboard. |
-| Weekly Digest | Vista calcolata per settimana ISO (UTC), non salvata. Diventerà un'entità con le email. |
-| Stato "Visto" per Release | Rimandato: arriva con le Notifiche. |
+| Weekly Digest | Vista calcolata per settimana ISO (UTC), non salvata. Diventa un'**entità con le email** (#173), ed è uno dei tre eventi che generano una **Notifica**. | [0009](./adr/0009-notifiche-campanella-gratis-canali-pro.md) |
+| Stato "Visto" per Release | ⚠️ **Assorbito dalle Notifiche il 2026-10-22**, non aperto: **Visto sta sulla Notifica** (`seen_at`), e il contatore della campanella conta le Notifiche non viste. Nessuna tabella delle Release viste, che sarebbe una seconda strada da tenere in sincrono. | [0009](./adr/0009-notifiche-campanella-gratis-canali-pro.md) |
 | Filtri e tab | Nell'URL. |
+| **Notifiche**, cosa le genera (#168) | Una Release `featured` o `notable` di una Tecnologia seguita, e il **Digest settimanale**. Le `digest` no, arrivano dentro il Digest, com'è già per le Sintesi; le **Anteprime** no, perché per chi non le cerca sono rumore. | [0009](./adr/0009-notifiche-campanella-gratis-canali-pro.md) |
+| **Una Notifica nasce con la Sintesi** (#168) | Non al rilevamento: l'ADR 0003 separa i due passi, e al rilevamento non si sa ancora se la Release ha breaking changes, cioè la sola cosa per cui vale interrompere qualcuno. Se la Sintesi finisce `unavailable`, `skipped` o `failed` la Notifica nasce comunque, senza verdetto, e resta **una sola** per Release: su email e Slack non si riscrive niente di già spedito. | 0009 |
+| **Notifiche conservate 90 giorni** (#168) | Poi cancellate. La pagina della privacy è il database letto riga per riga, quindi le Notifiche, le impostazioni dei canali col webhook Slack e la **lingua preferita** sono tre voci nuove **in cinque lingue**, o il test dei dizionari cade. | 0009 |
+| **Lingua preferita** dello Sviluppatore (#168) | Nelle impostazioni delle Notifiche, non in `plans`, che parla di soldi, e non in una tabella di profilo, che non esiste: serve perché email e Slack **non hanno un URL** da cui leggere la lingua. Manca, vale l'inglese. Colonna nuova, quindi **migrazione prima del codice**. | 0009 |
 | Glossario della **Rilevanza** | `featured` · `notable` · `digest` · `preview` sono mostrati in tutta l'interfaccia e **non sono definiti a parole da nessuna parte** (il critique del 2026-10-07 le dà 1 su 5 su "Aiuto e documentazione"). La definizione la darà la **landing** (#26), non una pagina dell'app: è la pagina che deve dire cos'è il prodotto, e il vocabolario è parte di quella risposta. Dentro l'app la parola resta accoppiata al suo glifo, che è il minimo di WCAG, e non alla sua definizione. ⚠️ Scelta dell'utente il 2026-10-08, fra questa, un blocco con ancora su `/technologies` e una definizione in ogni intestazione di sezione. |
 | Scorciatoia del filtro | **`/` mette a fuoco il filtro** di `/technologies` e seleziona quello che c'è già. È l'unico tasto che l'app si prende, e solo mentre nessun altro ascolta: dentro un campo, o con un modificatore premuto, il tasto resta di chi ha il fuoco. Annunciata con `aria-keyshortcuts` sul campo e con `press / to filter` in Meta faint accanto al conteggio (vedi `DESIGN.md`, Follow Status and Filter). |
 | Seguire più Tecnologie insieme | **Rimandato a una issue**, non all'MVP di questa sessione: vuole un modello di selezione, una scrittura in blocco, il limite Free applicato al gruppo invece che alla singola riga e una cache ottimistica di gruppo. È una fetta, non un acceleratore da aggiungere al Follow Toggle. |
@@ -146,9 +150,10 @@ interferisce, perché qui non si pubblica un pacchetto e il repository sta sotto
 |---|---|---|
 | Principio | Gratis ciò che costa zero per utente; Pro ciò che cresce con l'uso. Sintesi e pagine pubbliche sempre gratuite. | [0004](./adr/0004-monetizzazione-e-merchant-of-record.md) |
 | Free | Dashboard, pagine pubbliche, massimo **10 Tecnologie seguite**, applicato dal database. | 0004 |
-| Pro (post-MVP) | Tecnologie illimitate, Notifiche email/Slack, scanner dei repository, Richieste di tecnologia con priorità. | 0004 |
+| Pro | Tecnologie illimitate, **Notifiche su Slack e via email**, scanner dei repository, Richieste di tecnologia con priorità. ⚠️ Non è più post-MVP: le Notifiche sono entrate prima del lancio il 2026-10-21. La **campanella in-app è gratis per sempre**, perché non ha costo marginale: è il criterio dell'ADR 0004 applicato, non cambiato. | 0004, [0009](./adr/0009-notifiche-campanella-gratis-canali-pro.md) |
 | Team (futuro) | Piano legato a un gruppo; non implementato. | 0004 |
-| Pagamenti | Lemon Squeezy come Merchant of Record, integrato insieme alle Notifiche. | 0004 |
+| Pagamenti | Lemon Squeezy come Merchant of Record, integrato insieme alle Notifiche. ⚠️ **Attivi al lancio**, scelta dell'utente il 2026-10-22 (#174): i canali esterni hanno una **prova di 30 giorni per Sviluppatore**, che parte dalla prima accensione di un canale e alla scadenza li spegne **senza diritti acquisiti**, e una prova che scade senza niente da comprare sarebbe una funzione spenta. | 0004, 0009 |
+| Come si dichiara quello che si paga | Il segno `Pro` sulle voci dei canali esterni **dal primo giorno**, anche mentre sono inclusi; in `/settings` una riga coi giorni di prova rimasti; la **FAQ** dice cosa è Free e cosa è Pro. Nessuna pagina dei prezzi prima del lancio: sarebbe una rotta nuova e cinque traduzioni in più per dire quello che la FAQ dice già. ⚠️ La ragione è dell'utente: l'app non può girare gratis a lungo, e l'abitudine al gratis non si disfa. | 0009 |
 | Cancellazione dell'account | Esiste dalla #132, su `/account`, e cancella la riga di `auth.users`: `follows` e `plans` la seguono per `on delete cascade`, quindi non c'è niente da ripulire a mano. La conferma è **una parola scritta** (`delete`), non un dialog (in quest'app non se ne apre nessuno) e non un bottone spento: la parola è controllata **sul server**, perché un form si può inviare senza la pagina. La chiave di servizio non lascia mai il server, quindi la cancellazione è una route handler e non una scrittura dal browser come il Follow. | — |
 | Revoca su GitHub | L'autorizzazione OAuth la tiene GitHub e **solo GitHub la può revocare**: la pagina lo dice e linka il posto. Con `NEXT_PUBLIC_GITHUB_CLIENT_ID` (il client ID dell'OAuth App, che sta nelle impostazioni del provider su Supabase e **non è un segreto**: viaggia in chiaro nell'URL del consenso) il link va dritto alla pagina dell'app, dove c'è `Revoke access`; senza, va all'elenco delle applicazioni autorizzate. Nessun servizio nuovo e nessuna chiamata a GitHub dal client. | — |
 
@@ -197,9 +202,15 @@ interferisce, perché qui non si pubblica un pacchetto e il repository sta sotto
 
 ## Fuori dall'MVP
 
-CSS/W3C · Richieste di tecnologia · Notifiche email/Slack · scanner di `package.json` ·
-pagamenti · piano Team · stato "Visto" · traduzioni delle Sintesi · pannello di amministrazione ·
-scraping dei blog.
+CSS/W3C · Richieste di tecnologia · scanner di `package.json` · piano Team · traduzioni delle
+Sintesi · pannello di amministrazione · scraping dei blog.
+
+⚠️ **Tre cose sono uscite da questa riga il 2026-10-21 e il 2026-10-22, per scelta dell'utente**, e
+stanno nell'ADR [0009](./adr/0009-notifiche-campanella-gratis-canali-pro.md): le **Notifiche su
+Slack e via email**, i **pagamenti** e lo **stato "Visto"**. Le Notifiche perché un prodotto che
+traccia le Release e non avvisa obbliga a tornare sul sito, i pagamenti perché i canali esterni sono
+Pro e la loro prova deve poter scadere, il Visto perché è il contatore della campanella. Lo scanner
+di `package.json` resta qui finché la #69 non è decisa.
 
 ## Aperto
 
