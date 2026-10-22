@@ -16,6 +16,10 @@ create table public.notifications (
   digest_week text,
   created_at timestamptz not null default now(),
   seen_at timestamptz,
+  -- What a Notification is about, in one column, so the uniqueness below is a plain index: Postgres
+  -- cannot infer a partial index in `on conflict`, and without inference a second run of the job
+  -- raises a duplicate key instead of writing nothing.
+  subject text generated always as (coalesce(release_id::text, digest_week)) stored,
   constraint notifications_subject check (
     case event
       when 'weekly_digest' then release_id is null and digest_week is not null
@@ -24,12 +28,11 @@ create table public.notifications (
   )
 );
 
--- What makes running the job twice harmless: the second insert conflicts instead of duplicating.
--- Two partial indexes rather than one over nullable columns, which would not constrain anything.
-create unique index notifications_once_per_release on public.notifications (user_id, event, release_id)
-  where release_id is not null;
-create unique index notifications_once_per_week on public.notifications (user_id, event, digest_week)
-  where digest_week is not null;
+-- What makes running the job twice harmless: the second insert conflicts instead of duplicating, and
+-- `generateNotifications` names these three columns so `on conflict do nothing` can infer the index.
+-- One Notification per Developer and per subject: a Release for the two Release events, an ISO week
+-- for the Digest. The check above is what keeps `subject` not null.
+create unique index notifications_once_per_subject on public.notifications (user_id, event, subject);
 
 -- The bell's counter, which is read on every page, so it must not scan a Developer's history.
 create index notifications_unseen_idx on public.notifications (user_id) where seen_at is null;

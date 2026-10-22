@@ -13,6 +13,8 @@ import {
 
 const PERMISSION_DENIED = "42501";
 
+const SeenRowSchema = z.object({ seen_at: z.string() });
+
 const NotificationRowsSchema = z.array(
   z.object({ id: z.uuid(), user_id: z.uuid(), event: z.string(), release_id: z.uuid().nullable() }),
 );
@@ -22,9 +24,17 @@ let alice: Developer;
 let bob: Developer;
 
 // The Release seeded for these tests is `featured`; its Summary starts `pending`, which is the state
-// in which no Notification is due yet.
+// in which no Notification is due yet. The provenance travels with the status because
+// `summaries_ready_provenance` refuses a `ready` row that does not say where it came from.
 async function setSummaryStatus(status: string): Promise<void> {
-  const { error } = await serviceClient().from("summaries").update({ status }).eq("release_id", content.releaseId);
+  const provenance =
+    status === "ready"
+      ? { content: { title: "Nothing here is read.", keyPoints: [] }, model: "claude-opus-5", prompt_version: "v1" }
+      : { content: null, model: null, prompt_version: null };
+  const { error } = await serviceClient()
+    .from("summaries")
+    .update({ status, ...provenance })
+    .eq("release_id", content.releaseId);
   if (error) throw error;
 }
 
@@ -134,7 +144,8 @@ describe("what a Developer can do with their own Notifications", () => {
     expect(error).toBeNull();
 
     const mine = await serviceClient().from("notifications").select("seen_at").eq("user_id", alice.id).single();
-    expect(mine.data).toMatchObject({ seen_at: seen });
+    // Compared as instants: Postgres hands back `+00:00` and its own precision, not the `Z` sent.
+    expect(new Date(SeenRowSchema.parse(mine.data).seen_at).getTime()).toBe(new Date(seen).getTime());
   });
 
   it("cannot mark another Developer's as Seen", async () => {
@@ -172,7 +183,9 @@ describe("pruneNotifications", () => {
     const old = new Date(Date.now() - (RETENTION_DAYS + 1) * 24 * 60 * 60 * 1000).toISOString();
     const inserted = await db.from("notifications").insert([
       { user_id: alice.id, event: "weekly_digest", digest_week: "2020-W01", created_at: old },
-      { user_id: alice.id, event: "weekly_digest", digest_week: "2026-W43" },
+      // Both rows carry `created_at`: in a bulk insert PostgREST fills a key missing from one row
+      // with null instead of the column default, and the column is not nullable.
+      { user_id: alice.id, event: "weekly_digest", digest_week: "2026-W43", created_at: new Date().toISOString() },
     ]);
     if (inserted.error) throw inserted.error;
 
