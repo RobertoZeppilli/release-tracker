@@ -2,6 +2,7 @@ import { serverEnv } from "@/env/server";
 import { isAuthorizedJob } from "@/lib/job-auth";
 import { createServiceClient } from "@/lib/supabase-server";
 import { createSourceAdapters, detectReleases } from "@/modules/detection/server";
+import { generateNotifications, pruneNotifications } from "@/modules/notifications/server";
 import { revalidateReleasePages } from "@/modules/releases/server";
 
 // The daily Detection (ADR 0003), the first of the three crons in `vercel.json`. It never calls the
@@ -12,7 +13,13 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   const adapters = createSourceAdapters({ githubToken: serverEnv.GITHUB_TOKEN });
-  const { detected, ...report } = await detectReleases(createServiceClient(), adapters);
+  const db = createServiceClient();
+  const { detected, ...report } = await detectReleases(db, adapters);
+  // Notifications ride along with the only cron there is (ADR 0009): the Summary phases are run by
+  // hand, so hanging the Notifications on them alone would leave a Release whose Summary was never
+  // coming, `unavailable` or `skipped` from birth, without one. Both steps are idempotent.
+  const notifications = await generateNotifications(db);
+  const pruned = await pruneNotifications(db);
   // A new Release changes the Technology page and gives the Release page its own address.
-  return Response.json({ ...report, detected, revalidated: revalidateReleasePages(detected) });
+  return Response.json({ ...report, detected, notifications, pruned, revalidated: revalidateReleasePages(detected) });
 }
