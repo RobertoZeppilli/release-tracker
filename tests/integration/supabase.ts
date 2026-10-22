@@ -80,6 +80,8 @@ export async function seedContent(): Promise<Content> {
 export async function deleteContent({ technologyId, releaseId }: Content): Promise<void> {
   const db = serviceClient();
   for (const [table, column, id] of [
+    // Before the Releases: a Notification points at one (ADR 0009).
+    ["notifications", "release_id", releaseId],
     ["summaries", "release_id", releaseId],
     ["release_notes", "release_id", releaseId],
     ["follows", "technology_id", technologyId],
