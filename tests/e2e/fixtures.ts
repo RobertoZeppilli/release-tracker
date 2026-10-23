@@ -330,6 +330,57 @@ export async function countUnseen(userId: string): Promise<number> {
 }
 
 // The Release a fixture's Version was given, which a Notification has to point at.
+// The Notification settings of a Developer, written and read with the service role: what `/settings`
+// saved is proved against the database and not against the page that saved it (issue #171).
+export async function setExternalTrial(userId: string, startedAt: Date | null): Promise<void> {
+  const { error } = await serviceClient()
+    .from("notification_settings")
+    .upsert(
+      { user_id: userId, external_trial_started_at: startedAt?.toISOString() ?? null },
+      { onConflict: "user_id" },
+    );
+  if (error) throw error;
+}
+
+export async function clearNotificationSettings(userId: string): Promise<void> {
+  const db = serviceClient();
+  const settings = await db.from("notification_settings").delete().eq("user_id", userId);
+  if (settings.error) throw settings.error;
+  const preferences = await db.from("notification_preferences").delete().eq("user_id", userId);
+  if (preferences.error) throw preferences.error;
+}
+
+const PreferenceRowSchema = z.object({ enabled: z.boolean() });
+
+// Null when the Developer never saved that pair, which is the declared starting point and not "off".
+export async function savedPreference(
+  userId: string,
+  event: string,
+  channel: string,
+): Promise<boolean | null> {
+  const { data, error } = await serviceClient()
+    .from("notification_preferences")
+    .select("enabled")
+    .eq("user_id", userId)
+    .eq("event", event)
+    .eq("channel", channel)
+    .maybeSingle();
+  if (error) throw error;
+  return data === null ? null : PreferenceRowSchema.parse(data).enabled;
+}
+
+const LocaleRowSchema = z.object({ preferred_locale: z.string() });
+
+export async function savedLocale(userId: string): Promise<string | null> {
+  const { data, error } = await serviceClient()
+    .from("notification_settings")
+    .select("preferred_locale")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data === null ? null : LocaleRowSchema.parse(data).preferred_locale;
+}
+
 export async function releaseIdFor(technologyId: string, version: string): Promise<string> {
   const { data, error } = await serviceClient()
     .from("releases")

@@ -33,6 +33,14 @@ export const faq = {
   "faq.prompt.a":
     "Non. Les synthèses sont écrites par un job sur le serveur, avant que quiconque ouvre la page, et ce job ne sait rien des comptes. Une synthèse est le même texte pour chaque lecteur. Le reste est dans la {privacy}.",
 
+  "faq.section.notifications": "les notifications, gratuit et Pro",
+  "faq.notify.q": "Quand est-ce que quelque chose m’avertit ?",
+  "faq.notify.a":
+    "Quand une release featured ou notable d’une technologie que vous suivez a sa synthèse. La cloche dans la barre du haut est gratuite pour toujours, et c’est le seul canal construit à ce jour.",
+  "faq.pro.q": "Qu’est-ce qui est Free et qu’est-ce qui est Pro ?",
+  "faq.pro.a":
+    "Free tient tout ce que le site est : chaque page de release, chaque synthèse, {limit} technologies suivies, et la cloche. Pro, ce sont les canaux de notification externes, Slack et l’e-mail, avec un essai de 30 jours qui démarre la première fois que vous en allumez un et non le jour de votre inscription. Quand l’essai se termine sans Pro, ces deux-là s’éteignent, pour tout le monde, et la cloche reste.",
+
   "faq.section.account": "le compte",
   "faq.scope.q": "Que demande la connexion GitHub ?",
   "faq.scope.a":
@@ -41,7 +49,7 @@ export const faq = {
   // naming it `count` would hand it to the plural rules for nothing.
   "faq.limit.q": "Pourquoi {limit} technologies ?",
   "faq.limit.a":
-    "Parce que c’est ce que tient le plan Free, et Free est le seul plan qui existe. C’est une stack, pas un catalogue : la limite est ce qui garde le dashboard lisible d’un coup d’œil.",
+    "Parce que c’est ce que tient le plan Free. C’est une stack, pas un catalogue : la limite est ce qui garde le dashboard lisible d’un coup d’œil.",
   "faq.delete.q": "Comment supprimer mon compte ?",
   "faq.delete.a":
     "Sur la {account}. Vous tapez un mot pour confirmer, et le compte part aussitôt, avec les technologies que vous suiviez et les versions que vous avez déclarées. Il n’y a pas de délai de grâce et rien pour revenir en arrière.",

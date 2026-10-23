@@ -11,7 +11,7 @@ export const privacy = {
 
   "privacy.held.title": "qué se guarda",
   "privacy.held.intro":
-    "Seis cosas, y todas llegan o del acceso con GitHub o de algo que hiciste en la app. No hay perfil que rellenar, ni nombre más allá del que GitHub publica, ni ningún campo que te pregunte nada más.",
+    "Nueve cosas, y todas llegan o del acceso con GitHub o de algo que hiciste en la app. No hay perfil que rellenar, ni nombre más allá del que GitHub publica, ni ningún campo que te pregunte nada más.",
   "privacy.held.id.label": "id de la cuenta",
   "privacy.held.id.why":
     "el identificador que crea el acceso, y la clave de cada una de las filas de abajo",
@@ -25,6 +25,15 @@ export const privacy = {
   "privacy.held.versions.why": "la versión que dices usar, y el día en que lo dijiste",
   "privacy.held.plan.label": "plan",
   "privacy.held.plan.why": "Free, para todas las cuentas",
+  "privacy.held.notifications.label": "notificaciones",
+  "privacy.held.notifications.why":
+    "de qué release te avisamos, el día en que se escribió, y si la has visto",
+  "privacy.held.channels.label": "canales de las notificaciones",
+  "privacy.held.channels.why":
+    "qué eventos te llegan por qué canal, y la dirección de slack que le des, si le das una",
+  "privacy.held.sendLocale.label": "idioma del correo y de slack",
+  "privacy.held.sendLocale.why":
+    "el idioma en que se escriben esos dos, que fijas en los ajustes",
   "privacy.held.yours":
     "Puedes leer tu propia copia de esa lista, rellena con tus filas, en la {account}.",
 
@@ -38,7 +47,7 @@ export const privacy = {
   "privacy.who.github":
     "autentica el acceso y entrega tu perfil público y tu dirección de correo. No tiene acceso a los datos de esta app, y esta app no tiene acceso a tus repositorios.",
   "privacy.who.supabase":
-    "lleva la base de datos y las sesiones: las seis filas de arriba viven ahí.",
+    "lleva la base de datos y las sesiones: las nueve filas de arriba viven ahí.",
   "privacy.who.vercel":
     "aloja la app, así que sirve cada petición y guarda los registros de peticiones que eso conlleva, y cuenta las páginas vistas con Vercel Analytics.",
   "privacy.who.anthropic":
@@ -53,6 +62,8 @@ export const privacy = {
   "privacy.keep.title": "cuánto tiempo, y cómo terminarlo",
   "privacy.keep.body":
     "Todo lo de arriba se guarda mientras exista la cuenta. Borrar la cuenta en la {account} lo quita al momento: la fila de la cuenta se va, y los seguimientos, las versiones declaradas y el plan se van con ella, porque están ligados a ella y se borran con ella. No hay periodo de gracia, ni archivo nuestro, ni nada con lo que deshacerlo.",
+  "privacy.keep.notifications":
+    "Las notificaciones son la única fila con un reloj propio: cada una se borra 90 días después de haberse escrito, vista o no, y después no queda nada de ella.",
   "privacy.keep.after":
     "Lo que queda después está fuera de la cuenta: el catálogo, las releases y las síntesis, y nada de eso fue nunca tuyo ni sobre ti. Los proveedores de arriba llevan sus propias copias de seguridad y registros con sus propios plazos, que no controlamos y de los que no podemos borrar.",
 

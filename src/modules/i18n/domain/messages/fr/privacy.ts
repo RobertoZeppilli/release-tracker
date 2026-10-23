@@ -11,7 +11,7 @@ export const privacy = {
 
   "privacy.held.title": "ce qui est conservé",
   "privacy.held.intro":
-    "Six choses, et toutes arrivent soit de la connexion GitHub, soit de quelque chose que vous avez fait dans l’app. Il n’y a pas de profil à remplir, pas de nom au-delà de celui que GitHub publie, et aucun champ qui vous demande autre chose.",
+    "Neuf choses, et toutes arrivent soit de la connexion GitHub, soit de quelque chose que vous avez fait dans l’app. Il n’y a pas de profil à remplir, pas de nom au-delà de celui que GitHub publie, et aucun champ qui vous demande autre chose.",
   "privacy.held.id.label": "identifiant du compte",
   "privacy.held.id.why":
     "l’identifiant que crée la connexion, et la clé de chacune des lignes ci-dessous",
@@ -25,6 +25,15 @@ export const privacy = {
   "privacy.held.versions.why": "la version que vous dites utiliser, et le jour où vous l’avez dite",
   "privacy.held.plan.label": "plan",
   "privacy.held.plan.why": "Free, pour chaque compte",
+  "privacy.held.notifications.label": "notifications",
+  "privacy.held.notifications.why":
+    "de quelle release vous avez été averti, le jour où elle a été écrite, et si vous l’avez vue",
+  "privacy.held.channels.label": "canaux des notifications",
+  "privacy.held.channels.why":
+    "quels événements vous parviennent sur quel canal, et l’adresse slack que vous lui donnez, si vous lui en donnez une",
+  "privacy.held.sendLocale.label": "langue des e-mails et de slack",
+  "privacy.held.sendLocale.why":
+    "la langue dans laquelle ces deux-là sont écrits, que vous réglez dans les paramètres",
   "privacy.held.yours":
     "Vous pouvez lire votre propre copie de cette liste, remplie avec vos lignes, sur la {account}.",
 
@@ -38,7 +47,7 @@ export const privacy = {
   "privacy.who.github":
     "authentifie la connexion et transmet votre profil public et votre adresse e-mail. Il n’a aucun accès aux données de cette app, et cette app n’a aucun accès à vos dépôts.",
   "privacy.who.supabase":
-    "fait tourner la base de données et les sessions : les six lignes ci-dessus vivent là.",
+    "fait tourner la base de données et les sessions : les neuf lignes ci-dessus vivent là.",
   "privacy.who.vercel":
     "héberge l’app, donc il sert chaque requête et garde les journaux de requêtes qui vont avec, et il compte les pages vues avec Vercel Analytics.",
   "privacy.who.anthropic":
@@ -53,6 +62,8 @@ export const privacy = {
   "privacy.keep.title": "combien de temps, et comment y mettre fin",
   "privacy.keep.body":
     "Tout ce qui est au-dessus est conservé tant que le compte existe. Supprimer le compte sur la {account} l’enlève aussitôt : la ligne du compte part, et les suivis, les versions déclarées et le plan partent avec elle, parce qu’ils y sont rattachés et supprimés avec elle. Il n’y a pas de délai de grâce, pas d’archive de notre côté, et rien pour revenir en arrière.",
+  "privacy.keep.notifications":
+    "Les notifications sont la seule ligne avec une horloge à elle : chacune est supprimée 90 jours après avoir été écrite, vue ou non, et il n’en reste rien ensuite.",
   "privacy.keep.after":
     "Ce qui reste ensuite est en dehors du compte : le catalogue, les releases et les synthèses, dont rien n’a jamais été à vous ni sur vous. Les prestataires ci-dessus tiennent leurs propres sauvegardes et journaux selon leurs propres calendriers, que nous ne contrôlons pas et dans lesquels nous ne pouvons pas supprimer.",
 

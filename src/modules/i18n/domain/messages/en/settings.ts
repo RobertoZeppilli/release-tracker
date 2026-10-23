@@ -10,4 +10,43 @@ export const settings = {
   // (ADR 0008), so the choice is the page it leads to.
   "settings.language.note":
     "The language is part of the address, so a page can be shared in the language it was read in. Release notes and summaries stay in their original language.",
+  // The Notifications section (issue #171, ADR 0009). `featured`, `notable`, `Pro`, `slack` and the
+  // bell's own words are the product's grammar and stay English in all five languages; the names of
+  // the glossary are translated inside the sentences, as everywhere else (ADR 0008).
+  "settings.notifications.title": "notifications",
+  "settings.notifications.intro":
+    "Which releases reach you, and where. The bell is free for good; Slack and email are Pro.",
+  "settings.notifications.featured.label": "featured releases",
+  "settings.notifications.featured.off":
+    "Switched off, a featured release of a technology you follow writes no notification at all: nothing on the bell, and nothing on a channel added later.",
+  "settings.notifications.notable.label": "notable releases",
+  "settings.notifications.notable.off":
+    "Switched off, a notable release writes no notification. The featured ones are a switch of their own, so the releases worth interrupting you for can stay on while these go quiet.",
+  // The accessible name of a switch: what it controls, since the state is `aria-checked` and saying
+  // it in the name too would have a screen reader read it twice.
+  "settings.notifications.switch": "{name} on the bell",
+  "settings.notifications.error":
+    "Not saved. The switch is back the way the database holds it, so what you see is what you have: press it again.",
+  "settings.notifications.digest":
+    "The weekly digest brings its own switch, on the day the digest itself arrives.",
+  "settings.notifications.external.title": "slack and email",
+  "settings.notifications.external.body":
+    "Both channels are being built, and each one brings its own switch here as it arrives. They carry the Pro mark from the first day, trial included: when the trial ends without Pro they switch off, and nothing is kept running out of habit. The bell stays, free.",
+  "settings.notifications.pro": "Pro",
+  // Not a plural: the trial is thirty days for everyone, and the figure is in the sentence so that
+  // the number lives in one place in the code (`EXTERNAL_TRIAL_DAYS`) rather than in five languages.
+  "settings.notifications.trial.waiting":
+    "Your {count} day trial of Slack and email starts the first time you switch one of them on, not on the day you signed up.",
+  "settings.notifications.trial.left": {
+    one: "One day left of your trial of Slack and email.",
+    other: "{count} days left of your trial of Slack and email.",
+  },
+  "settings.notifications.trial.ended":
+    "Your trial of Slack and email has ended. The bell is free for good; the two external channels need Pro.",
+  "settings.notifications.locale.title": "language of email and slack",
+  "settings.notifications.locale.note":
+    "Email and Slack have no address to read a language from, so they are written in this one. It does not change the language of the site, which stays the one in the address, and release notes and summaries stay in their original language.",
+  "settings.notifications.locale.choose": "Write email and Slack in {name}",
+  "settings.notifications.locale.error":
+    "Not saved. The language is still the one marked here, which is the one the database holds: press it again.",
 } as const;

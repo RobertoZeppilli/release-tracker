@@ -13,4 +13,16 @@ export {
   planReleaseNotifications,
   type ReleaseCandidate,
 } from "./domain/plan";
-export { CHANNELS, enabledByDefault, isEnabled, type Preference, wantsEvent } from "./domain/preferences";
+export {
+  canSwitch,
+  CHANNELS,
+  enabledByDefault,
+  EXTERNAL_CHANNELS,
+  isEnabled,
+  isExternal,
+  LIVE_CHANNELS,
+  LIVE_EVENTS,
+  type Preference,
+  wantsEvent,
+} from "./domain/preferences";
+export { EXTERNAL_TRIAL_DAYS, type Trial, trialOf } from "./domain/trial";
