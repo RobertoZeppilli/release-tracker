@@ -1,6 +1,15 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { generateNotifications, pruneNotifications, RETENTION_DAYS } from "@/modules/notifications/server";
+import { DEFAULT_LOCALE } from "@/modules/i18n";
+import { EXTERNAL_TRIAL_DAYS, trialOf } from "@/modules/notifications";
+import {
+  generateNotifications,
+  pruneNotifications,
+  readNotificationSettings,
+  RETENTION_DAYS,
+  writePreference,
+  writePreferredLocale,
+} from "@/modules/notifications/server";
 import {
   type Content,
   createDeveloper,
@@ -174,6 +183,101 @@ describe("what a Developer can do with their own Notifications", () => {
       .from("notifications")
       .insert({ user_id: alice.id, event: "featured_release", release_id: content.releaseId });
     expect(error?.code).toBe(PERMISSION_DENIED);
+  });
+});
+
+// What `/settings` writes and reads back (issue #171). The two statements are the ones the Server
+// Actions run, taken as functions so the write can be proved against the real database: what the
+// action adds around them is the identity read from the request cookies and the validation of the
+// form, neither of which exists without a request.
+describe("the Notification settings a Developer saves", () => {
+  beforeEach(async () => {
+    const cleared = await serviceClient()
+      .from("notification_settings")
+      .delete()
+      .in("user_id", [alice.id, bob.id]);
+    if (cleared.error) throw cleared.error;
+  });
+
+  it("reads the declared starting point while nothing was ever saved", async () => {
+    const settings = await readNotificationSettings(alice.client);
+    expect(settings).toEqual({
+      preferredLocale: DEFAULT_LOCALE,
+      externalTrialStartedAt: null,
+      preferences: [],
+    });
+    // Nothing saved is the whole trial still in hand, which is the line `/settings` prints.
+    expect(trialOf(settings.externalTrialStartedAt, new Date())).toEqual({ kind: "not-started" });
+  });
+
+  it("holds a switch across a reload, and the job obeys it", async () => {
+    await writePreference(alice.client, alice.id, {
+      event: "featured_release",
+      channel: "in_app",
+      enabled: false,
+    });
+
+    // The reload: a second read, with nothing kept in between.
+    const settings = await readNotificationSettings(alice.client);
+    expect(settings.preferences).toEqual([
+      { event: "featured_release", channel: "in_app", enabled: false },
+    ]);
+
+    await setSummaryStatus("ready");
+    await generateNotifications(serviceClient());
+    expect(await notificationsOf(alice)).toEqual([]);
+  });
+
+  it("writes one row however many times the switch is pressed", async () => {
+    for (const enabled of [false, true, false]) {
+      await writePreference(alice.client, alice.id, { event: "notable_release", channel: "in_app", enabled });
+    }
+    const settings = await readNotificationSettings(alice.client);
+    expect(settings.preferences).toEqual([
+      { event: "notable_release", channel: "in_app", enabled: false },
+    ]);
+  });
+
+  it("saves the preferred language, creating the row, and reads it back", async () => {
+    await writePreferredLocale(alice.client, alice.id, "de");
+    expect((await readNotificationSettings(alice.client)).preferredLocale).toBe("de");
+    await writePreferredLocale(alice.client, alice.id, "fr");
+    expect((await readNotificationSettings(alice.client)).preferredLocale).toBe("fr");
+  });
+
+  it("never starts or moves the trial by saving a language", async () => {
+    const started = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString();
+    const seeded = await serviceClient()
+      .from("notification_settings")
+      .upsert({ user_id: alice.id, external_trial_started_at: started }, { onConflict: "user_id" });
+    if (seeded.error) throw seeded.error;
+
+    await writePreferredLocale(alice.client, alice.id, "es");
+
+    const settings = await readNotificationSettings(alice.client);
+    expect(settings.externalTrialStartedAt?.getTime()).toBe(new Date(started).getTime());
+    // The day of the last day: the line still says one day left rather than none (ADR 0009).
+    expect(trialOf(settings.externalTrialStartedAt, new Date())).toEqual({ kind: "running", daysLeft: 1 });
+    expect(EXTERNAL_TRIAL_DAYS).toBe(30);
+  });
+
+  it("cannot save a preference or a language for another Developer", async () => {
+    await expect(
+      writePreference(bob.client, alice.id, { event: "featured_release", channel: "in_app", enabled: false }),
+    ).rejects.toMatchObject({ code: PERMISSION_DENIED });
+    await expect(writePreferredLocale(bob.client, alice.id, "it")).rejects.toMatchObject({
+      code: PERMISSION_DENIED,
+    });
+    expect((await readNotificationSettings(alice.client)).preferences).toEqual([]);
+  });
+
+  it("reads only its own: another Developer's rows are not in the answer", async () => {
+    await writePreference(bob.client, bob.id, { event: "featured_release", channel: "in_app", enabled: false });
+    await writePreferredLocale(bob.client, bob.id, "de");
+
+    const mine = await readNotificationSettings(alice.client);
+    expect(mine.preferences).toEqual([]);
+    expect(mine.preferredLocale).toBe(DEFAULT_LOCALE);
   });
 });
 

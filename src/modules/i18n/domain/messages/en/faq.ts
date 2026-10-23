@@ -31,6 +31,14 @@ export const faq = {
   "faq.prompt.a":
     "No. The summaries are written by a job on the server, before anyone opens the page, and that job knows nothing about accounts. A summary is the same text for every reader. The rest of it is in the {privacy}.",
 
+  "faq.section.notifications": "notifications, free and Pro",
+  "faq.notify.q": "When does something notify me?",
+  "faq.notify.a":
+    "When a featured or notable release of a technology you follow has its summary in. The bell in the top bar is free for good, and it is the only channel built so far.",
+  "faq.pro.q": "What is Free and what is Pro?",
+  "faq.pro.a":
+    "Free holds everything the site is: every release page, every summary, {limit} technologies followed, and the bell. Pro is the external notification channels, Slack and email, with a 30 day trial that starts the first time you switch one of them on rather than on the day you signed up. When the trial ends without Pro those two switch off, for everyone, and the bell stays.",
+
   "faq.section.account": "the account",
   "faq.scope.q": "What does the GitHub sign-in ask for?",
   "faq.scope.a":
@@ -39,7 +47,7 @@ export const faq = {
   // naming it `count` would hand it to the plural rules for nothing.
   "faq.limit.q": "Why {limit} technologies?",
   "faq.limit.a":
-    "Because that is what the Free plan holds, and Free is the only plan there is. It is a stack, not a catalog: the limit is what keeps the dashboard a page you can read at a glance.",
+    "Because that is what the Free plan holds. It is a stack, not a catalog: the limit is what keeps the dashboard a page you can read at a glance.",
   "faq.delete.q": "How do I delete my account?",
   "faq.delete.a":
     "On the {account}. You type one word to confirm, and the account goes at once, with the technologies you followed and the versions you declared. There is no grace period and nothing to undo it with.",

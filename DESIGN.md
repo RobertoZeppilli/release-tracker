@@ -876,6 +876,37 @@ is one column inside the page's container, in two parts separated by a 1px `rule
   by the keyboard for no reason. The guard is the typed word, checked on the server, and the refusal
   comes back as the page's own `error:` line with the field `aria-invalid`.
 
+### Notification Settings (Settings)
+The second section of `/settings`, under the language of the page (issue #171, ADR 0009). It is one
+column at the 72ch measure, each block opened by a Mono 13px lowercase title over a 1px `rule`, like
+the sections of the Account Page.
+
+- **The switch is the Select Many mark**, `[ ]` and `[x]` in Mono 16px with tabular figures, off in
+  `text-faint` and on in `text`, 4px of padding taking the target to 24px (SC 2.5.8). It is the same
+  control the Catalog selects rows with, and that is the point: the system had a checkbox already,
+  drawn in its own voice, so a switch with a track and a knob would have been a second object saying
+  the same thing. ⚠️ **No hue in either state**, as everywhere outside a verdict.
+- **A row is the mark, the event and what happens when it is off**: the label in Mono 13px `text`,
+  the consequence under it in Meta `text-muted` at the prose measure. The consequence is printed
+  always and not on hover, because the question a reader has at a switch is what they lose by
+  pressing it.
+- **The accessible name is what the switch controls, never its state**: `featured releases on the
+  bell`, with `aria-checked` carrying the rest, and the visible label is inside that name (SC 2.5.3).
+- **A refusal is the page's own `error:` line**, Mono `breaking`, inside the row it belongs to and
+  announced (`role="alert"`), and the mark goes back to what the database holds: a switch that kept
+  the press it could not save would be a switch that lies.
+- **`slack and email` carry the `Pro` mark from the first day**, as the mono word in Meta `text-muted`
+  on the baseline of the title, with no drawn object around it: a badge would be a shape this system
+  does not own, and hue is reserved for severity. Under it, one line in Meta `text` says how much of
+  the 30 day trial is left, or when it would start, or that it has ended. ⚠️ **The two channels have
+  no switch until they can send something** (#172, #173): a switch over a channel that sends nothing
+  is a promise, and the line that says they are being built is the honest shape of the same news.
+- **The language of email and slack is the language picker's row, pressed instead of followed**: the
+  same five 44px bordered controls, the saved one filled with `aria-pressed`. It looks the same
+  because it is the same choice made twice, and it is a press and not a link because this language
+  has no address to be read from (ADR 0008, ADR 0009). A line under the title says it does not change
+  the language of the site.
+
 ### The Bench (signature, landing)
 
 The landing is one real Release on a bench, examined in four stages that never leave the page: `source`, `cite`, `verdict`, `help`. The specimen is React 19.0.0, its notes are the ones GitHub serves, and the line the page cites is line 47 of them. Nothing on the landing is a mock-up of a Release: a page that argues for cited judgments cannot make its own claims uncheckable.

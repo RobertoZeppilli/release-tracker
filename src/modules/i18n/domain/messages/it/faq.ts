@@ -32,13 +32,21 @@ export const faq = {
   "faq.prompt.a":
     "No. Le sintesi le scrive un job sul server, prima che qualcuno apra la pagina, e quel job non sa niente degli account. Una sintesi è lo stesso testo per chiunque legga. Il resto sta nell'{privacy}.",
 
+  "faq.section.notifications": "le notifiche, gratis e Pro",
+  "faq.notify.q": "Quando qualcosa mi avvisa?",
+  "faq.notify.a":
+    "Quando una release featured o notable di una tecnologia che segui ha la sua sintesi pronta. La campanella nella barra in alto è gratis per sempre, ed è l'unico canale costruito finora.",
+  "faq.pro.q": "Cosa è Free e cosa è Pro?",
+  "faq.pro.a":
+    "Free tiene tutto quello che il sito è: ogni pagina di release, ogni sintesi, {limit} tecnologie seguite e la campanella. Pro sono i canali esterni delle notifiche, Slack e l'email, con una prova di 30 giorni che parte la prima volta che ne accendi uno e non dal giorno in cui ti sei registrato. Quando la prova finisce senza Pro quei due si spengono, per tutti, e la campanella resta.",
+
   "faq.section.account": "l'account",
   "faq.scope.q": "Cosa chiede l'accesso con GitHub?",
   "faq.scope.a":
     "Il tuo profilo pubblico e il tuo indirizzo email. Nessun accesso a nessun repository, privato o pubblico, e sul tuo account GitHub non viene scritto mai niente.",
   "faq.limit.q": "Perché {limit} tecnologie?",
   "faq.limit.a":
-    "Perché è quello che tiene il piano Free, e Free è l'unico piano che c'è. È uno stack, non un catalogo: il limite è quello che tiene la Dashboard una pagina che si legge in un colpo d'occhio.",
+    "Perché è quello che tiene il piano Free. È uno stack, non un catalogo: il limite è quello che tiene la Dashboard una pagina che si legge in un colpo d'occhio.",
   "faq.delete.q": "Come cancello il mio account?",
   "faq.delete.a":
     "Dalla {account}. Scrivi una parola per confermare, e l'account va via subito, con le tecnologie che seguivi e le versioni che avevi dichiarato. Non c'è un periodo di grazia e non c'è niente con cui tornare indietro.",

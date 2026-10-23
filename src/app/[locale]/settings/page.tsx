@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
+import { createRequestClient } from "@/lib/supabase-request";
 import { requireAccount } from "@/modules/auth/server";
 import { getTranslator } from "@/modules/i18n/server";
 import { LocalePicker } from "@/modules/i18n/ui";
+import { trialOf } from "@/modules/notifications";
+import { readNotificationSettings } from "@/modules/notifications/server";
+import { NotificationSettings } from "@/modules/notifications/ui";
 
 // Behind the login and never indexed, so the whole of its metadata is the title in the page's own
 // language (ADR 0008). It reads `settings.title`, the key the heading below reads, and not a key of
@@ -22,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SettingsPage() {
   await requireAccount("/settings");
   const t = await getTranslator();
+  // Read here and handed down, so the section stays a component that is given what it draws. The
+  // Developer's own client: RLS is what keeps the two rows theirs (`readNotificationSettings`).
+  const settings = await readNotificationSettings(await createRequestClient());
 
   return (
     <>
@@ -36,6 +43,12 @@ export default async function SettingsPage() {
           </p>
           <LocalePicker variant="page" />
         </section>
+        <NotificationSettings
+          preferences={settings.preferences}
+          preferredLocale={settings.preferredLocale}
+          trial={trialOf(settings.externalTrialStartedAt, new Date())}
+          t={t}
+        />
       </main>
     </>
   );

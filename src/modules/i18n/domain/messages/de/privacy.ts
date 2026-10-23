@@ -13,7 +13,7 @@ export const privacy = {
 
   "privacy.held.title": "was gespeichert wird",
   "privacy.held.intro":
-    "Sechs Dinge, und sie kommen alle entweder aus der Anmeldung mit GitHub oder aus etwas, das du in der App getan hast. Es gibt kein Profil zum Ausfüllen, keinen Namen über den hinaus, den GitHub veröffentlicht, und kein Feld, das dich nach etwas anderem fragt.",
+    "Neun Dinge, und sie kommen alle entweder aus der Anmeldung mit GitHub oder aus etwas, das du in der App getan hast. Es gibt kein Profil zum Ausfüllen, keinen Namen über den hinaus, den GitHub veröffentlicht, und kein Feld, das dich nach etwas anderem fragt.",
   "privacy.held.id.label": "account-id",
   "privacy.held.id.why":
     "die Kennung, die die Anmeldung anlegt, und der Schlüssel jeder Zeile hier unten",
@@ -27,6 +27,15 @@ export const privacy = {
   "privacy.held.versions.why": "die Version, die du einsetzt, und der Tag, an dem du es gesagt hast",
   "privacy.held.plan.label": "plan",
   "privacy.held.plan.why": "Free, für jeden Account",
+  "privacy.held.notifications.label": "benachrichtigungen",
+  "privacy.held.notifications.why":
+    "von welchem Release du erfahren hast, der Tag, an dem sie geschrieben wurde, und ob du sie gesehen hast",
+  "privacy.held.channels.label": "kanäle der benachrichtigungen",
+  "privacy.held.channels.why":
+    "welche Ereignisse dich über welchen Kanal erreichen, und die Slack-Adresse, die du ihm gibst, falls du eine gibst",
+  "privacy.held.sendLocale.label": "sprache von e-mail und slack",
+  "privacy.held.sendLocale.why":
+    "die Sprache, in der diese zwei geschrieben werden, die du in den Einstellungen festlegst",
   "privacy.held.yours":
     "Deine eigene Kopie dieser Liste, mit deinen Zeilen gefüllt, kannst du auf der {account} lesen.",
 
@@ -40,7 +49,7 @@ export const privacy = {
   "privacy.who.github":
     "authentifiziert die Anmeldung und übergibt dein öffentliches Profil und deine E-Mail-Adresse. Es hat keinen Zugriff auf die Daten dieser App, und diese App hat keinen Zugriff auf deine Repositories.",
   "privacy.who.supabase":
-    "betreibt die Datenbank und die Sessions: die sechs Zeilen von oben liegen dort.",
+    "betreibt die Datenbank und die Sessions: die neun Zeilen von oben liegen dort.",
   "privacy.who.vercel":
     "hostet die App, bedient also jede Anfrage und führt die Anfrage-Logs, die dazugehören, und zählt die Seitenaufrufe über Vercel Analytics.",
   "privacy.who.anthropic":
@@ -55,6 +64,8 @@ export const privacy = {
   "privacy.keep.title": "wie lange, und wie man es beendet",
   "privacy.keep.body":
     "Alles von oben wird gespeichert, solange der Account existiert. Den Account auf der {account} zu löschen nimmt es sofort weg: die Zeile des Accounts geht, und die Folgen, die angegebenen Versionen und der Plan gehen mit ihr, weil sie an sie geschlüsselt sind und mit ihr gelöscht werden. Es gibt keine Schonfrist, kein Archiv bei uns und nichts, womit man es zurücknimmt.",
+  "privacy.keep.notifications":
+    "Die Benachrichtigungen sind die eine Zeile mit einer eigenen Uhr: jede wird 90 Tage nach dem Schreiben gelöscht, gesehen oder nicht, und danach bleibt nichts von ihr.",
   "privacy.keep.after":
     "Was danach bleibt, liegt außerhalb des Accounts: der Katalog, die Releases und die Zusammenfassungen, und nichts davon war je deins oder über dich. Die Anbieter von oben führen ihre eigenen Backups und Logs nach ihren eigenen Zeitplänen, die wir weder steuern noch aus denen wir löschen können.",
 

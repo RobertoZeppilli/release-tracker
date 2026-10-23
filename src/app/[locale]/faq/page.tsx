@@ -34,7 +34,7 @@ export default async function FaqPage() {
   const t = await getTranslator();
 
   return (
-    <DocumentPage title={t("page.faq.title")} updated="2026-10-15" lede={t("faq.lede")}>
+    <DocumentPage title={t("page.faq.title")} updated="2026-10-23" lede={t("faq.lede")}>
       <DocumentSection title={t("faq.section.product")}>
         <Question question={t("faq.does.q")}>
           <p>{t("faq.does.a")}</p>
@@ -70,6 +70,17 @@ export default async function FaqPage() {
               }}
             />
           </p>
+        </Question>
+      </DocumentSection>
+
+      {/* The three places ADR 0009 asks the Free/Pro line to be said are the `Pro` mark in
+          `/settings`, the line of days left beside it, and these two questions. */}
+      <DocumentSection title={t("faq.section.notifications")}>
+        <Question question={t("faq.notify.q")}>
+          <p>{t("faq.notify.a")}</p>
+        </Question>
+        <Question question={t("faq.pro.q")}>
+          <p>{t("faq.pro.a", { limit: FREE_FOLLOW_LIMIT })}</p>
         </Question>
       </DocumentSection>
 

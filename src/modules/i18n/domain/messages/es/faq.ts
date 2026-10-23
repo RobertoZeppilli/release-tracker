@@ -33,6 +33,14 @@ export const faq = {
   "faq.prompt.a":
     "No. Las síntesis las escribe un job en el servidor, antes de que nadie abra la página, y ese job no sabe nada de cuentas. Una síntesis es el mismo texto para todos los lectores. El resto está en la {privacy}.",
 
+  "faq.section.notifications": "las notificaciones, gratis y Pro",
+  "faq.notify.q": "¿Cuándo me avisa algo?",
+  "faq.notify.a":
+    "Cuando una release featured o notable de una tecnología que sigues tiene su síntesis lista. La campana de la barra de arriba es gratis para siempre, y es el único canal construido hasta ahora.",
+  "faq.pro.q": "¿Qué es Free y qué es Pro?",
+  "faq.pro.a":
+    "Free tiene todo lo que el sitio es: cada página de release, cada síntesis, {limit} tecnologías seguidas y la campana. Pro son los canales externos de las notificaciones, Slack y el correo, con una prueba de 30 días que empieza la primera vez que enciendes uno de ellos y no el día en que te registraste. Cuando la prueba termina sin Pro esos dos se apagan, para todos, y la campana se queda.",
+
   "faq.section.account": "la cuenta",
   "faq.scope.q": "¿Qué pide el acceso con GitHub?",
   "faq.scope.a":
@@ -41,7 +49,7 @@ export const faq = {
   // naming it `count` would hand it to the plural rules for nothing.
   "faq.limit.q": "¿Por qué {limit} tecnologías?",
   "faq.limit.a":
-    "Porque es lo que tiene el plan Free, y Free es el único plan que hay. Es una stack, no un catálogo: el límite es lo que mantiene el dashboard en una página que se lee de un vistazo.",
+    "Porque es lo que tiene el plan Free. Es una stack, no un catálogo: el límite es lo que mantiene el dashboard en una página que se lee de un vistazo.",
   "faq.delete.q": "¿Cómo borro mi cuenta?",
   "faq.delete.a":
     "En la {account}. Escribes una palabra para confirmar, y la cuenta se va al momento, con las tecnologías que seguías y las versiones que declaraste. No hay periodo de gracia ni nada con lo que deshacerlo.",

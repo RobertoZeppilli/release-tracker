@@ -24,7 +24,21 @@ export async function generateMetadata(): Promise<Metadata> {
 // ⚠️ It is a list of **keys** and not of strings now (issue #131): the label and the reason are two
 // messages per row, so a row added here without its two keys is a build error, and a row added
 // without its Italian is a failing dictionary test rather than an English line on an Italian page.
-const HELD = ["id", "email", "github", "follows", "versions", "plan"] as const;
+// ⚠️ The last three arrived with the Notifications (ADR 0009): `notifications` for what was sent,
+// `notification_preferences` for which event reaches which channel, and `notification_settings` for
+// the language the external channels are written in. The count is in the prose above the list, so a
+// row added here is a word to change there as well.
+const HELD = [
+  "id",
+  "email",
+  "github",
+  "follows",
+  "versions",
+  "plan",
+  "notifications",
+  "channels",
+  "sendLocale",
+] as const;
 
 export default async function PrivacyPage() {
   const t = await getTranslator();
@@ -32,7 +46,7 @@ export default async function PrivacyPage() {
   return (
     <DocumentPage
       title={t("page.privacy.title")}
-      updated="2026-10-15"
+      updated="2026-10-23"
       lede={t("privacy.lede")}
       governing
     >
@@ -100,6 +114,7 @@ export default async function PrivacyPage() {
             }}
           />
         </p>
+        <p>{t("privacy.keep.notifications")}</p>
         <p>{t("privacy.keep.after")}</p>
       </DocumentSection>
 

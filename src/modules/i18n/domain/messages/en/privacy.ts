@@ -9,7 +9,7 @@ export const privacy = {
 
   "privacy.held.title": "what is held",
   "privacy.held.intro":
-    "Six things, and they all arrive either from the GitHub sign-in or from something you did in the app. There is no profile to fill in, no name beyond the one GitHub publishes, and no field that asks you anything else.",
+    "Nine things, and they all arrive either from the GitHub sign-in or from something you did in the app. There is no profile to fill in, no name beyond the one GitHub publishes, and no field that asks you anything else.",
   "privacy.held.id.label": "account id",
   "privacy.held.id.why": "the identifier the sign-in creates, which every row below is keyed by",
   "privacy.held.email.label": "email address",
@@ -22,6 +22,16 @@ export const privacy = {
   "privacy.held.versions.why": "the version you say you are on, and the day you said it",
   "privacy.held.plan.label": "plan",
   "privacy.held.plan.why": "Free, for every account",
+  // The three rows the Notifications brought (ADR 0009, issue #171). The retention is said in
+  // `privacy.keep.notifications`, which is the one row with a clock of its own.
+  "privacy.held.notifications.label": "notifications",
+  "privacy.held.notifications.why":
+    "which release you were told about, the day it was written, and whether you have seen it",
+  "privacy.held.channels.label": "notification channels",
+  "privacy.held.channels.why":
+    "which events reach you on which channel, and the slack address you give it, if you give it one",
+  "privacy.held.sendLocale.label": "language of email and slack",
+  "privacy.held.sendLocale.why": "the language those two are written in, which you set in the settings",
   "privacy.held.yours": "You can read your own copy of that list, filled in with your rows, on the {account}.",
 
   "privacy.prompt.title": "no personal data enters a prompt",
@@ -33,7 +43,7 @@ export const privacy = {
   "privacy.who.title": "who else touches it",
   "privacy.who.github":
     "authenticates the sign-in and hands over your public profile and email address. It has no access to this app’s data, and this app has no access to your repositories.",
-  "privacy.who.supabase": "runs the database and the sessions: the six rows above live there.",
+  "privacy.who.supabase": "runs the database and the sessions: the nine rows above live there.",
   "privacy.who.vercel":
     "hosts the app, so it serves every request and keeps the request logs that come with doing so, and it counts page views through Vercel Analytics.",
   "privacy.who.anthropic":
@@ -48,6 +58,8 @@ export const privacy = {
   "privacy.keep.title": "how long, and how to end it",
   "privacy.keep.body":
     "Everything above is kept while the account exists. Deleting the account on the {account} removes it at once: the account row goes, and the follows, the declared versions and the plan go with it, because they are keyed to it and deleted with it. There is no grace period, no archive of ours, and nothing to undo it with.",
+  "privacy.keep.notifications":
+    "The notifications are the one row with a clock of its own: each is deleted 90 days after it was written, seen or not, and nothing of it is kept after that.",
   "privacy.keep.after":
     "What stays after that is outside the account: the catalog, the releases and the summaries, none of which were ever yours or about you. The providers above run their own backups and logs on their own schedules, which we neither control nor can delete from.",
 
