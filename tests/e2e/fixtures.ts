@@ -298,3 +298,45 @@ export async function countFollows(userId: string): Promise<number> {
   if (error) throw error;
   return count ?? 0;
 }
+
+// A Notification written from outside the browser, which is what the job does (issue #169). The
+// bell's tests need rows without running the job: the job reads Releases, follows and preferences,
+// and what the panel is about is none of those.
+export async function addNotification(
+  userId: string,
+  releaseId: string,
+  event: "featured_release" | "notable_release" = "featured_release",
+): Promise<void> {
+  const { error } = await serviceClient().from("notifications").insert({ user_id: userId, event, release_id: releaseId });
+  if (error) throw error;
+}
+
+// Notifications outlive a test, like follows: a suite that shares one Developer starts from none.
+export async function clearNotifications(userId: string): Promise<void> {
+  const { error } = await serviceClient().from("notifications").delete().eq("user_id", userId);
+  if (error) throw error;
+}
+
+// What the database holds, as opposed to what the bell says: the counter answers before the write
+// lands, so the proof that a press was written is a read with the service role.
+export async function countUnseen(userId: string): Promise<number> {
+  const { count, error } = await serviceClient()
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .is("seen_at", null);
+  if (error) throw error;
+  return count ?? 0;
+}
+
+// The Release a fixture's Version was given, which a Notification has to point at.
+export async function releaseIdFor(technologyId: string, version: string): Promise<string> {
+  const { data, error } = await serviceClient()
+    .from("releases")
+    .select("id")
+    .eq("technology_id", technologyId)
+    .eq("version", version)
+    .single();
+  if (error) throw error;
+  return IdRowSchema.parse(data).id;
+}

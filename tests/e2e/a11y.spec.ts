@@ -2,12 +2,15 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import {
   addFollows,
+  addNotification,
   arrived,
+  clearNotifications,
   declareCurrentVersion,
   e2eAuthSecret,
   type FixtureDeveloper,
   type FixtureFillers,
   type FixtureTechnology,
+  releaseIdFor,
   seedDeveloper,
   seedFillers,
   seedTechnology,
@@ -72,8 +75,11 @@ test.beforeAll(async () => {
   ]);
 });
 
+// ⚠️ The Notifications go before the Technology: `notifications.release_id` is a plain foreign key,
+// so a Release one of them points at cannot be deleted, and `remove` deletes the Releases.
 test.afterAll(async () => {
   await developer.clearFollows();
+  await clearNotifications(developer.id);
   await Promise.all([developer.remove(), technology.remove(), fillers.remove()]);
 });
 
@@ -136,6 +142,28 @@ for (const theme of THEMES) {
       await page.getByLabel(/type delete to confirm/).fill("nope");
       await page.getByRole("button", { name: "Delete account" }).click();
       await expect(page).toHaveURL("/account?error=confirm");
+      await scan(page, theme);
+    });
+
+    // The bell's panel, open, which is the one part of the bar that holds a list (issue #170). It is
+    // scanned on the Dashboard because the bell only exists for a signed-in Developer, and the rows
+    // in it carry the three things axe has to weigh here: a name on the button that says how many,
+    // a Significance shape with a word beside it, and a control per row that is not a bare glyph.
+    test("the notification panel, open", async ({ page }) => {
+      // No follow is written: a Notification is a row of its own and the bell reads it directly, so
+      // nothing here touches the follows the rest of this file shares. Cleared first because the two
+      // themes run this twice, and one Notification per Developer and per Release is what the unique
+      // index allows (ADR 0009).
+      await clearNotifications(developer.id);
+      await addNotification(developer.id, await releaseIdFor(technology.id, "2.0.0"));
+      await signIn(page);
+      await page.goto("/dashboard");
+      await arrived(page);
+
+      const bell = page.locator('button[aria-controls="notification-panel"]');
+      await expect(bell).toHaveAccessibleName("Notifications, 1 unseen");
+      await bell.click();
+      await expect(page.locator("#notification-panel")).toBeVisible();
       await scan(page, theme);
     });
 
@@ -310,8 +338,17 @@ for (const locale of ["it", "fr", "es", "de"] as const) {
       await signIn(page);
       await developer.clearFollows();
       await addFollows(developer.id, [technology.id]);
+      // The bell's panel is opened here, and this is where its four translations are audited: the
+      // accessible name carries a number inside a translated sentence, which is the shape 2.5.3 is
+      // broken by, and `mark all as seen` is a second control one language could give the same name.
+      await clearNotifications(developer.id);
+      await addNotification(developer.id, await releaseIdFor(technology.id, "2.0.0"));
       await page.goto(`/${locale}/dashboard`);
       await expect(page.locator("#page-verdict")).toBeVisible();
+      await scan(page, "dark");
+
+      await page.locator('button[aria-controls="notification-panel"]').click();
+      await expect(page.locator("#notification-panel")).toBeVisible();
       await scan(page, "dark");
     });
   });
@@ -328,6 +365,26 @@ test.describe("target size in the top bar", () => {
     await page.goto("/dashboard");
     await page.getByRole("button", { name: /^Account/ }).click();
     const box = await page.getByRole("button", { name: "sign out" }).boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(MINIMUM);
+    expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
+  });
+
+  // The bell grows when it has a number to print, so it is measured with one: the glyph alone is
+  // the 34px square the account button is, and the figure beside it only makes it wider.
+  test("the bell and the control on a notification row are at least 24 by 24", async ({ page }) => {
+    await clearNotifications(developer.id);
+    await addNotification(developer.id, await releaseIdFor(technology.id, "2.0.0"));
+    await signIn(page);
+    await page.goto("/dashboard");
+    await arrived(page);
+
+    const bell = page.locator('button[aria-controls="notification-panel"]');
+    const bellBox = await bell.boundingBox();
+    expect(bellBox?.width).toBeGreaterThanOrEqual(MINIMUM);
+    expect(bellBox?.height).toBeGreaterThanOrEqual(MINIMUM);
+
+    await bell.click();
+    const box = await page.getByRole("button", { name: /^Mark / }).boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(MINIMUM);
     expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
   });

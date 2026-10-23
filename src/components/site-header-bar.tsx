@@ -4,9 +4,11 @@ import { User, X } from "lucide-react";
 import Image from "next/image";
 import { LocaleLink as Link, useTranslator } from "@/modules/i18n/ui";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useRef, useState } from "react";
 import { loginPath } from "@/modules/auth";
 import { type Developer, useSession } from "@/modules/auth/ui";
+import { NotificationBell } from "@/modules/notifications/ui";
+import { useSheet } from "./sheet";
 import { NAV, type NavItem } from "./site-nav";
 import { SkeletonBox } from "./waiting";
 import { ThemeToggle } from "./theme-toggle";
@@ -24,17 +26,6 @@ const QUOTA = "ml-auto flex h-[56px] items-center";
 // in the panel above 640px it is the compact 24px line the bar has room for.
 const ITEM =
   "flex min-h-[44px] items-center border-b border-rule px-4 font-mono text-body text-text-muted no-underline hover:bg-sunken hover:text-text sm:min-h-[24px] sm:border-0 sm:px-3 sm:text-label";
-
-const PHONE = "(max-width: 639px)";
-
-// One element in two shapes means the panel always holds the row of the other shape, hidden by the
-// breakpoint: above 640px its first `a, button` is the sheet's `Close account`, at `display: none`.
-// `.focus()` on something that is not rendered does nothing, so the focus would stay on the trigger
-// and the next Tab would land on the theme toggle, which sits in the bar and not in the panel.
-function inside(panel: HTMLElement | null): HTMLElement[] {
-  const items = [...(panel?.querySelectorAll<HTMLElement>("a, button") ?? [])];
-  return items.filter((item) => item.getClientRects().length > 0);
-}
 
 // The account panel holds what belongs to the viewer rather than to the page: who is signed in and
 // the way out. Below 640px it holds the two destinations as well, because that is where they live on
@@ -55,59 +46,20 @@ export function SiteHeaderBar({
   const t = useTranslator();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
-  const account = useRef<HTMLDivElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  // A panel over the page closes when the page is used: anything outside it takes the click back.
-  // On a phone there is no outside, since the sheet covers the page, and the close button is the way.
-  useEffect(() => {
-    if (!open) return;
-    function onPointerDown({ target }: PointerEvent) {
-      if (target instanceof Node && account.current?.contains(target)) return;
-      setOpen(false);
-    }
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  // The sheet covers the page, so the page behind it must not scroll under it and the keyboard must
-  // not walk out into what it hides: WCAG 2.2 AA 2.4.11 asks that a focused element is not buried by
-  // what the author put over it. Above 640px the panel is not modal and neither applies.
-  useEffect(() => {
-    if (!open || !window.matchMedia(PHONE).matches) return;
-    const was = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = was;
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    inside(panel.current)[0]?.focus();
-  }, [open]);
-
-  function close() {
+  const close = useCallback(() => {
     setOpen(false);
     button.current?.focus();
-  }
-
-  function keepTabInside(event: React.KeyboardEvent) {
-    if (event.key !== "Tab" || !window.matchMedia(PHONE).matches) return;
-    const items = inside(panel.current);
-    const edge = event.shiftKey ? items[0] : items[items.length - 1];
-    if (document.activeElement !== edge) return;
-    event.preventDefault();
-    (event.shiftKey ? items[items.length - 1] : items[0])?.focus();
-  }
+  }, []);
+  // The bar is the frame: a pointer inside it does not close the panel, and the panel hangs from it
+  // so it lands on the page's own gutter rather than on the button (DESIGN.md, Account panel).
+  const { frame: account, panel, onKeyDown } = useSheet(open, close);
 
   return (
     <div
       ref={account}
-      onKeyDown={(event) => {
-        if (event.key === "Escape" && open) close();
-      }}
+      onKeyDown={onKeyDown}
       // The gap is 12px below 640px and 24px above it. With the sections gone from the line the row
       // is the wordmark, the quota and the actions, and at 320px those three plus two 24px gaps
       // come to within a couple of pixels of the screen: the row cannot wrap any more, so what it
@@ -124,7 +76,11 @@ export function SiteHeaderBar({
       </Link>
       {children}
       {quota && <span className={QUOTA}>{quota}</span>}
-      <div className={`flex h-[56px] shrink-0 items-center gap-4 whitespace-nowrap ${quota ? "" : "ml-auto"}`}>
+      {/* ⚠️ 12px between the actions below 640px and 16px above, measured: with the bell in the row
+            the Dashboard at 320px in German overflowed the screen by 7px, and the group's own gaps
+            are what the bar had left to give. It is the same step the row outside it already takes
+            (`gap-x-3 sm:gap-x-5`). */}
+      <div className={`flex h-[56px] shrink-0 items-center gap-3 whitespace-nowrap sm:gap-4 ${quota ? "" : "ml-auto"}`}>
         {/* No answer is offered until the session is known: a wrong state for an instant would put
             the login in front of someone already signed in. What the box does instead of waiting
             empty is wear the shape of what is coming (DESIGN.md, The Waiting Rule, the skeleton).
@@ -144,6 +100,15 @@ export function SiteHeaderBar({
           >
             {t("shell.signIn")}
           </a>
+        )}
+        {/* The bell, for a signed-in Developer only: a visitor has none and nothing is asked for on
+            their behalf (issue #170). It stands before the account because it is about the product
+            and the account is about the viewer. */}
+        {/* ⚠️ `key`: another Developer is another bell. The number and the rows in it belong to the
+            session that was allowed to read them, and a key is what says so without the hook
+            holding an effect that forgets. */}
+        {session.state === "developer" && (
+          <NotificationBell key={session.developerId} developerId={session.developerId} />
         )}
         {session.state === "developer" && (
           <button
@@ -169,7 +134,6 @@ export function SiteHeaderBar({
           section={section}
           onClose={close}
           onFollow={() => setOpen(false)}
-          onTab={keepTabInside}
         />
       )}
     </div>
@@ -186,14 +150,12 @@ function AccountPanel({
   section,
   onClose,
   onFollow,
-  onTab,
 }: {
   ref: React.Ref<HTMLDivElement>;
   developer: Developer;
   section?: NavItem;
   onClose: () => void;
   onFollow: () => void;
-  onTab: (event: React.KeyboardEvent) => void;
 }) {
   const t = useTranslator();
 
@@ -204,7 +166,6 @@ function AccountPanel({
     <div
       ref={ref}
       id={PANEL_ID}
-      onKeyDown={onTab}
       className="fixed inset-[0px] z-30 flex flex-col bg-ground sm:absolute sm:inset-auto sm:top-[calc(100%+8px)] sm:right-5 sm:z-20 sm:block sm:min-w-[180px] sm:rounded-md sm:border sm:border-rule sm:bg-raised sm:py-2"
     >
       <div className="flex h-[56px] shrink-0 items-center justify-between border-b border-rule px-4 sm:hidden">

@@ -7,6 +7,7 @@ import { dashboard } from "./dashboard";
 import { doc } from "./doc";
 import { faq } from "./faq";
 import { landing } from "./landing";
+import { notification } from "./notification";
 import { page } from "./page";
 import { path } from "./path";
 import { privacy } from "./privacy";
@@ -30,6 +31,7 @@ export const IT: MessageDictionary = {
   ...doc,
   ...faq,
   ...landing,
+  ...notification,
   ...page,
   ...path,
   ...privacy,
