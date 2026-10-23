@@ -29,68 +29,71 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (quindicesimo giro, 2026-10-22): la #169 è chiusa e lo schema delle Notifiche è
-in produzione, quindi la prossima issue si sceglie insieme.** Squash `a822f89`, PR 177, e il
-workflow *Deploy database* ha applicato `20261022170939_notifications.sql` alle 19:15 UTC: la
-**#170 è sbloccata**, perché la regola dei preview che leggono il database di produzione è
-soddisfatta. Il `main` locale è indietro: la modalità auto nega `git pull`, lo rimette in pari
-l'utente.
+**Da dove ripartire (sedicesimo giro, 2026-10-23): la #170 è scritta, committata e verificata, e il
+push è da fare a mano.** Commit `5d3bf7c` sul ramo `170-notifiche-campanella`, 23 file: la modalità
+auto ha negato il `git push`, quindi il ramo **non è su GitHub e la PR non è aperta**. Servono
+`git push -u origin 170-notifiche-campanella` e poi `gh pr create`, col corpo che chiude la #170 in
+inglese (`Closes #170`). Questo file non va pushato finché la PR è aperta: un push riavvia la CI.
 
-### Il difetto che ha trovato il test mai girato, e perché vale ricordarlo
+### Cosa ha portato la #170
 
-Il commit `7091a2f` era stato scritto con Docker spento, quindi `pnpm test:integration` non era mai
-girato. Girato in questa sessione, ha mostrato che la fetta **duplicava le Notifiche alla seconda
-esecuzione**, cioè il criterio di accettazione che la issue dichiarava di rispettare, e che il
-messaggio del commit affermava come "idempotenza per costruzione".
+La campanella col numero, il pannello che elenca le Notifiche, il Visto che fa scendere quel numero
+senza ricaricare, in cinque lingue. Il numero si legge **dal browser**, come lo stato di accesso, e
+`pnpm build` mostra le cinque pagine della landing ancora `●` SSG: era il criterio della issue.
 
-La causa, che vale per ogni upsert futuro di questo progetto: **`upsert` con `ignoreDuplicates` e
-senza `onConflict` non produce un `on conflict do nothing` nudo.** PostgREST inferisce la chiave
-primaria, che qui è un uuid nuovo e non collide mai, e l'indice unico esplode. E un indice
-**parziale non è inferibile** nemmeno nominandone le colonne, quindi i due indici parziali del
-primo commit non potevano servire allo scopo per cui erano stati scritti. Rimedio: una colonna
-generata `subject` (`coalesce(release_id::text, digest_week)`) e **un solo** indice unico normale su
-`(user_id, event, subject)`, che l'insert nomina. Vale anche per il Digest della #173.
+Il comportamento accessibile del pannello (Esc, il focus che torna al grilletto, la trappola del Tab
+sul telefono, lo scroll bloccato dietro la sheet) è stato **estratto in `src/components/sheet.ts`** e
+lo usano sia la campanella sia il pannello account: `site-header-bar.tsx` è scesa da 295 a 250 righe.
+`DESIGN.md` ha la sezione *Notification Bell*.
 
-Due trappole delle fixture, trovate con lo stesso giro: una Sintesi `ready` senza provenienza viola
-`summaries_ready_provenance` (ADR della #88), e **in un insert multiplo PostgREST riempie con `null`
-la chiave assente da una riga** invece di usare il default della colonna.
+⚠️ **Il Digest settimanale non è nella lista né nel conteggio**, di proposito: la riga su cui
+stamparlo arriva con la **#173**, e chi la fa deve togliere il filtro `SHOWN` in
+`src/modules/notifications/ui/notifications-store.ts` o le sue Notifiche resteranno invisibili.
 
-⚠️ **La lezione**: una fetta col test di integrazione mai girato non è una fetta finita, e il commit
-che la descrive può affermare il falso in buona fede. Docker si accende prima, non dopo.
+⚠️ **La voce `notifications` nella pagina privacy è ancora da scrivere**, in cinque lingue (ADR 0009).
+È stata lasciata alla **#171**, che aggiunge i canali e la lingua preferita: la prosa conta le voci a
+parole ("Six things"), quindi si passa da sei a nove **una volta sola** invece di due.
 
-### Le tre scelte del quattordicesimo giro, chiuse
+### Le due misure della campanella, che non sono due gusti
 
-1. **Eventi come enum a tre valori**: passata com'era, così `/settings` spegne `featured` e
-   `notable` separatamente.
-2. **Nessun trigger crea le preferenze**: passata com'era, una riga che manca è il valore di
-   partenza, che sta nel dominio.
-3. **Finestra del job allargata da 7 a 30 giorni**, gli stessi della Dashboard
-   (`src/modules/dashboard/domain/build-dashboard.ts:25`): la Notifica nasce quando la Sintesi si
-   settla e le fasi delle Sintesi si lanciano a mano, quindi con sette giorni **una Sintesi tardiva
-   non avrebbe notificato nessuno**. Scelta dell'utente fra tre strade.
+1. **A 320px in tedesco la barra sforava lo schermo di 7px** con la campanella dentro. Rimedio: il
+   gap delle azioni scende a 12px sotto i 640 e resta 16 sopra, lo stesso passo che la riga fuori dal
+   gruppo prendeva già. Il test che lo tiene è in `tests/e2e/notifications.spec.ts`.
+2. **Il numero visibile si ferma a `9+`**: la barra ha 25px di slack misurati e due glifi è quello
+   che comprano, e la cifra esatta sta nel nome accessibile e nel pannello.
 
-### Tre E2E di misura instabili, e perché non era la #169
+### ⚠️ Il dev server riusato si impunta, e un rosso locale non è un rosso
 
-La PR 177 è fallita una volta e **è passata al rilancio senza cambiare una riga**, che elenca flaky
-`dashboard.spec.ts:267`, `technology.spec.ts:126` e `technology-follow.spec.ts:174`: tre test che
-*misurano la pagina*, quindi una causa sola, e la più probabile è in `AMBIENTE.md`, i font che non
-scaricano. ⚠️ **Non era GitHub.** È la **#178** (`bug`, `ready-for-agent`), che porta dentro anche
-il `timeout-minutes` che la CI non ha. Il racconto intero sta in `APERTE.md`, "Code da non perdere".
+In **dev** fallivano cinque test di `account`, `keyboard`, `navigation` e `overflow`, e **tutti
+passano contro il build di produzione**, quello che gira in CI; lo stesso server ha anche risposto
+**404 su `/api/test/session`**, una rotta che esiste. Ucciderlo è tutto il rimedio, quindi un rosso
+locale si rigira con `CI=1 pnpm test:e2e <suite>` prima di crederci, e somiglia al tema della **#178**.
+⚠️ Il build va rifatto prima di un giro `CI=1`: la prima volta il 320px è fallito contro un
+`pnpm start` che serviva un build anteriore alla correzione.
+
+### Le verifiche
+
+`lint`, `typecheck`, `test` (729), `test:integration` (82), `build`, e contro il build di produzione
+`notifications` 8/8, il gruppo `account keyboard top-bar overflow navigation notifications` 61/61,
+`a11y` 61 col pannello scansionato da axe nei due temi in inglese e nelle altre quattro lingue.
+
+⚠️ **Resta rosso `a11y › the folded digest list of a Technology page`, e non c'entra con la #170**: il
+database locale ha **zero Tecnologie**, quindi `/technologies/vite` non esiste e il test non ha niente
+da misurare. Serve il Catalogo importato in locale.
 
 ### Cosa resta
 
-1. **La prossima issue non è scelta**, e c'è anche la **#178** di sopra. Le Notifiche dopo la #169:
-   **#170** campanella (il contatore
-   non può buttare l'ISR), **#171** `/settings` col segno `Pro` e i giorni di prova, **#172** Slack,
-   **#173** email e Digest come entità, **#174** Lemon Squeezy, che l'ADR 0009 rende obbligatoria al
-   lancio e conviene aprire presto per i tempi del Merchant of Record. Non scelte: **#65**, **#130**,
-   **#69**, e la **#176** (Redis: la risposta è non adesso, ma dentro c'è il rate limiting, che non
-   esiste da nessuna parte ed è l'unico rischio di oggi).
-2. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
+1. **Push e PR della #170**, i comandi sopra. Poi `merge` e cancellazione del ramo, che sono
+   dell'utente: la modalità auto li nega.
+2. **La prossima issue si sceglie insieme.** Le Notifiche dopo la #170: **#171** `/settings` col segno
+   `Pro`, i giorni di prova e le due voci della privacy, **#172** Slack, **#173** email e Digest come
+   entità, **#174** Lemon Squeezy, obbligatoria al lancio per l'ADR 0009 e da aprire presto per i
+   tempi del Merchant of Record. C'è anche la **#178** (E2E di misura instabili e il
+   `timeout-minutes` che la CI non ha). Non scelte: **#65**, **#130**, **#69**, **#176** (Redis: la
+   risposta è non adesso, ma dentro c'è il rate limiting, che non esiste da nessuna parte).
+3. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
    revisione **prima del lancio**, non prima del merge.
-3. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
-   `APERTE.md`, coi rami arretrati e il come si cancellano. Cancellarli è dell'utente.
-4. Un **server Next residuo sulla 3001** (pid 24028 il 2026-10-22), da chiudere: la regola è uno
-   solo, sulla 3000.
+4. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
+   `APERTE.md`, coi rami arretrati: cancellarli è dell'utente.
 5. ⚠️ **Credito basso: non spendere niente senza chiedere.**
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.
