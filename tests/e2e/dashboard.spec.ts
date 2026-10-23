@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   addFollows,
+  arrived,
   declareCurrentVersion,
   e2eAuthSecret,
   type FixtureDeveloper,
@@ -268,6 +269,10 @@ test("keeps the verdict short, the list without a scrollbar and the columns apar
   await addFollows(developer.id, [breaking.id, safe.id, busy.id, queued.id]);
   await signIn(page);
   await page.goto("/dashboard");
+  // ⚠️ Before the first measurement, never after it: the wait and the page share the document for a
+  // moment, so `main aside` and `main > p` can come from two different `main` elements
+  // (`arrived()` in `fixtures.ts`, and issue #178).
+  await arrived(page);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
   const measured = await page.evaluate(() => {

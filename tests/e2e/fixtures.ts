@@ -281,6 +281,69 @@ export async function arrived(page: Page): Promise<void> {
   await expect(page.locator('[data-waiting="page"]')).toHaveCount(0);
 }
 
+// ⚠️ **The page forgets its render.** `/technologies/[slug]` is `revalidate = 3600`, so the
+// first render of a slug is served for an hour: a test that writes to a Technology and then reads
+// its page can be handed the page from before the write, byte for byte, with `x-nextjs-cache: HIT`.
+// Measured in issue #178, where the test pressed a retired Technology that the page still offered a
+// Follow for; inside the full suite a prefetch from the Catalog is enough to have warmed it, and
+// alone nothing warms it, which is why the test passed 44 runs by itself. `route` is the pattern and
+// not one path, so one call reaches every slug in every language.
+export async function forgetRender(page: Page, route: string): Promise<void> {
+  const response = await page.request.post("/api/test/revalidate", {
+    data: { secret: e2eAuthSecret(), route },
+  });
+  expect(response.status(), "the test-only revalidation route answered").toBe(204);
+}
+
+// ⚠️ **The control answers, as opposed to being on the page.** A Follow Toggle is a
+// `type="button"` with a handler and no form behind it, so until React has hydrated it a press does
+// **nothing at all**, and it leaves no trace: the test goes on to wait for an effect that will never
+// come and fails on the assertion after the click, five seconds later and somewhere else. That is
+// issue #178, where `technology-follow.spec.ts` passed 44 runs alone and failed inside the full
+// suite, and where throttling the CPU 20x reproduces it every time: `page.goto` resolves on `load`,
+// which says the scripts arrived, never that they have run. React writes its own keys onto every
+// element it hydrates, so whether this button is wired yet is a question the page can answer.
+// Call this before the first press of a client control, not before an assertion: a locator that
+// only reads waits by itself.
+export async function wired(locator: Locator): Promise<void> {
+  await expect(async () => {
+    const hydrated = await locator.evaluate((node: Element) =>
+      Object.keys(node).some((key) => key.startsWith("__react")),
+    );
+    expect(hydrated, "React has hydrated the control").toBe(true);
+  }).toPass();
+}
+
+// ⚠️ **The box as layout has it, and of the element the document actually holds.** The
+// Technology page replaces its whole tree once shortly after `load` (its `h1` is built twice, which
+// an observer in the page counted), so the node a locator resolved a moment earlier can already be
+// detached, and a detached element measures 0 in every direction:
+// `boundingBox()` answers `null`, `getBoundingClientRect()` answers zeros, and the live element
+// beside it has the right number all along. That is issue #178, where a mark 24px wide was read as
+// `undefined` in 17 runs out of 20 against the production build. What is retried here is **which
+// element is measured**, never the number it gives: the measurement itself is asserted once, by the
+// test, against the threshold `DESIGN.md` sets.
+export async function boxOf(locator: Locator): Promise<{ width: number; height: number; top: number; left: number }> {
+  let box = { width: 0, height: 0, top: 0, left: 0 };
+
+  await expect(async () => {
+    const seen = await locator.evaluate((node: Element) => {
+      const rect = node.getBoundingClientRect();
+      return {
+        width: rect.width,
+        height: rect.height,
+        top: rect.top,
+        left: rect.left,
+        connected: node.isConnected,
+      };
+    });
+    expect(seen.connected, "the element measured is still the one on the page").toBe(true);
+    box = { width: seen.width, height: seen.height, top: seen.top, left: seen.left };
+  }).toPass();
+
+  return box;
+}
+
 // Whether the account is still there, asked of the auth schema itself: the only way to prove that a
 // deletion went through, since the app's own pages can only say that nobody is signed in.
 export async function developerExists(id: string): Promise<boolean> {

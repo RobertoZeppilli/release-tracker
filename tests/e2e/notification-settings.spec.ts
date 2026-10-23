@@ -68,12 +68,18 @@ test("a press is saved on the server and holds across a reload", async ({ page }
   await page.reload();
   await expect(featuredSwitch(page)).toHaveAttribute("aria-checked", "false");
 
-  // And back on, which is the same write with the other value rather than a second row.
+  // And back on, which is the same write with the other value rather than a second row. The mark
+  // turns before the write lands, so the write is waited for here as it is above: a reload that
+  // beats it reads the row from before the press and the page is right to draw what it finds
+  // (issue #178, where this failed inside the full suite).
   await featuredSwitch(page).click();
   await expect(featuredSwitch(page)).toHaveAttribute("aria-checked", "true");
+  await expect(async () => {
+    expect(await savedPreference(developer.id, "featured_release", "in_app")).toBe(true);
+  }).toPass();
+
   await page.reload();
   await expect(featuredSwitch(page)).toHaveAttribute("aria-checked", "true");
-  expect(await savedPreference(developer.id, "featured_release", "in_app")).toBe(true);
 });
 
 test("the switch is reached and pressed by keyboard alone", async ({ page }) => {
