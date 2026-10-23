@@ -3,6 +3,7 @@ import {
   addFollows,
   e2eAuthSecret,
   followWritten,
+  forgetRender,
   type FixtureDeveloper,
   type FixtureFillers,
   type FixtureTechnology,
@@ -10,6 +11,7 @@ import {
   seedDeveloper,
   seedFillers,
   seedTechnology,
+  wired,
 } from "./fixtures";
 
 const FREE_LIMIT = 10;
@@ -174,8 +176,13 @@ test.describe("a Developer", () => {
   test("can only unfollow a retired Technology, and the page says so", async ({ page }) => {
     await addFollows(developer.id, [leaving.id]);
     await retireTechnology(leaving.id);
+    // The retirement has to reach the page, which may hold a render from before it: see
+    // `forgetRender()`.
+    await forgetRender(page, "/[locale]/technologies/[slug]");
     await page.goto(path(leaving));
 
+    // The press is the test, so the button has to be wired before it: see `wired()`.
+    await wired(toggle(page, "Unfollow", leaving));
     await toggle(page, "Unfollow", leaving).click();
     await expect(page.getByText("can't be followed again")).toBeVisible();
     await expect(page.getByRole("button", { name: /^(Follow|Unfollow) / })).toHaveCount(0);

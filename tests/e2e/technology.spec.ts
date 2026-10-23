@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { type FixtureTechnology, seedTechnology } from "./fixtures";
+import { boxOf, type FixtureTechnology, seedTechnology } from "./fixtures";
 
 // Needs the Catalog synced and imported into the local database (`pnpm catalog:sync`), from real Sources.
 test("a Technology page is public and shows its header", async ({ page }) => {
@@ -131,6 +131,8 @@ test("the Technology page carries the mark beside the headline, and the heading 
   await expect(mark).toHaveAttribute("aria-hidden", "true");
   await expect(mark.locator("path")).toHaveAttribute("fill", "currentColor");
   await expect(heading).toHaveAccessibleName("Vite");
-  const box = await mark.boundingBox();
-  expect(box?.width).toBeCloseTo(24, 0);
+  // Read through `boxOf()`, for the reason it carries: the same 24px, of the mark the document
+  // holds rather than of the one this page threw away when it rebuilt itself.
+  const box = await boxOf(mark);
+  expect(box.width).toBeCloseTo(24, 0);
 });
