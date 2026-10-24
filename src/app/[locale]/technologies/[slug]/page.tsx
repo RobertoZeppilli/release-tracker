@@ -15,9 +15,11 @@ import { defaultUpgradeStart, groupByMajor, recordedHistory } from "@/modules/re
 import { listReleases } from "@/modules/releases/server";
 import { ReleaseList, UpgradePathBlock, UpgradePathView } from "@/modules/releases/ui";
 
-// ISR: no page is built ahead (the build has no database); each is rendered on its first visit,
-// then served from cache and regenerated at most once an hour.
-export const revalidate = 3600;
+// ISR with no expiry: no page is built ahead (the build has no database), each is rendered on its
+// first visit and then served from cache until `revalidateReleasePages` drops it, which detection
+// does the moment a Release of this Technology is recorded. The page moves when detection runs and
+// at no other time, so an hourly expiry only paid to render the same page again.
+export const revalidate = false;
 
 // The split: two columns at 1240px, *what do I have to do about this Technology* at 360px on the
 // left and *what has changed in it* on the right (DESIGN.md, Technology, the split). The 1041px step
