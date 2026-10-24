@@ -118,7 +118,7 @@ export default async function ReleasePage({ params }: Props) {
           )}
           <span>
             {/* `imported` and `detected` are values of the Release record, and so is the kind of
-                the Source: identifiers, not words (CONTEXT.md, "Codice / UI"). */}
+                the Source: identifiers, not words (GLOSSARY.md, "Codice / UI"). */}
             {release.origin} {release.recordedAt.toISOString().slice(0, 10)}
             {detection && ` ${t("release.via", { source: detection.kind })}`}
           </span>

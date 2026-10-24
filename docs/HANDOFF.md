@@ -14,7 +14,7 @@ diario in `docs/handoff/<anno>-<mese>.md`, **da non leggere per intero**), `docs
 (Docker e il PATH, il dev server unico sulla 3000, le due shell, i token, preferenze e skill).
 Il peso delle pagine misurato prima del codice, con la procedura per il "dopo", sta in
 `docs/handoff/PESO.md`.
-Altrove: **PRD issue #1**, `PRODUCT.md`, `CONTEXT.md`, `docs/DECISIONI.md`, `docs/adr/0001…0007`,
+Altrove: **PRD issue #1**, `PRODUCT.md`, `GLOSSARY.md`, `docs/DECISIONI.md`, `docs/adr/0001…0007`,
 `DESIGN.md` e i mock in `design/mocks/`, **ADR 0008** per le cinque lingue.
 
 ⚠️ **Prima di dare qualcosa per non deciso, cercalo là**: `grep -rn "<parola>" docs/handoff/`.
