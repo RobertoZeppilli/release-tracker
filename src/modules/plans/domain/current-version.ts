@@ -1,7 +1,7 @@
 import type { InvalidFrom } from "@/modules/releases";
 
 // The Version in use lives on a follow, with the day it was declared: the app never observes it, so
-// a count built on it is only readable next to that day (CONTEXT.md, Versione in uso).
+// a count built on it is only readable next to that day (GLOSSARY.md, Versione in uso).
 export type CurrentVersion = { version: string; declaredAt: Date };
 
 export type Follow = { technologyId: string; currentVersion: CurrentVersion | null };

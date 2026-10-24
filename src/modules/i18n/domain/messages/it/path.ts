@@ -1,7 +1,7 @@
 import type { MessageDictionary } from "../index";
 
 // The Upgrade Path, in Italian: `cammino di upgrade`, which is the glossary's own name for it
-// (CONTEXT.md). `featured`, `notable`, `digest` and `major` stay as they are: the first three are
+// (GLOSSARY.md). `featured`, `notable`, `digest` and `major` stay as they are: the first three are
 // the product's grammar (ADR 0008) and `major` is the word the reader already uses for a version.
 // `aggiornamento sicuro` is the Italian of `safe to upgrade`, decided with the user on 2026-10-16.
 export const path = {

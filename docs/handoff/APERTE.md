@@ -59,7 +59,7 @@ nessuna `ready-for-agent`" è di nuovo vero. La **#80**
 qualche dollaro, perché le Sintesi si generano con Haiku 5.5. La #93 **spende** su Anthropic, poco; **#65**, tecnica, serve solo il via, e adesso va
 letta insieme allo stage (vedi lo Stato: la strada 1 potrebbe non servire più); **#26** la landing
 page, chiusa da tempo e ripensata dalla #141; **#69** esplicitamente dopo il lancio. La **#80** è chiusa, e la
-scelta fra le sue tre strade è stata la 3, scritta in `CONTEXT.md`: il backfill non genera Sintesi.
+scelta fra le sue tre strade è stata la 3, scritta in `GLOSSARY.md`: il backfill non genera Sintesi.
 
 **Fuori dalle issue, due cose vive e non decise**, nate in chat il 2026-10-06 e scritte nello Stato:
 l'**exit code di `catalog:sync`** quando una Fonte è giù per davvero, e l'**ordine stage / #65** con

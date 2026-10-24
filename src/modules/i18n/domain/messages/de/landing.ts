@@ -61,7 +61,7 @@ export const landing = {
   "landing.thin.note":
     "Das ist der Satz, den Verdict anstelle eines Urteils ausgibt, wenn die Notes nur woandershin verweisen. „Ich habe keine Breaking Changes gefunden“ und „es gibt keine Breaking Changes“ sind zwei verschiedene Aussagen, und die zweite wird nie anstelle der ersten ausgegeben.",
 
-  // Vocabulary Legend. The four definitions are CONTEXT.md's own sentences in the interface's
+  // Vocabulary Legend. The four definitions are GLOSSARY.md's own sentences in the interface's
   // language.
   "landing.words.title": "Vier Wörter auf jedem Release",
   "landing.words.sub":

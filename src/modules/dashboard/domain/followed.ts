@@ -2,7 +2,7 @@ import type { Judged, SummaryContent } from "@/modules/summaries";
 import type { Significance, SummaryStatus } from "@/modules/releases";
 
 // The Version in use is declared, never observed, so it travels with the day it was declared: a
-// count built on it is only readable next to that day (CONTEXT.md, Versione in uso).
+// count built on it is only readable next to that day (GLOSSARY.md, Versione in uso).
 export type CurrentVersion = { version: string; declaredAt: Date };
 
 export type FollowedTechnology = {
@@ -13,7 +13,7 @@ export type FollowedTechnology = {
 
 // `summary` is the content of a ready Summary, already validated; null while there is none. The
 // verdict comes with it instead of being read off the content, because a ready Summary does not
-// always carry one: see `Judged` (CONTEXT.md, Note giudicabili).
+// always carry one: see `Judged` (GLOSSARY.md, Note giudicabili).
 export type DashboardRelease = Judged & {
   slug: string;
   version: string;

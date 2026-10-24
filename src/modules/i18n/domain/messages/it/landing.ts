@@ -1,9 +1,9 @@
 // La landing, in italiano. È l'unica pagina scritta in prosa e non in etichette, quindi è anche la
 // sola dove la traduzione è una riscrittura: le frasi sono tenute alla stessa misura dell'inglese,
 // perché la pagina è una colonna di testo e una frase che cresce di una riga sposta tutto il resto.
-// `breaking changes` resta inglese, come fa la prosa italiana di CONTEXT.md e come decide ADR 0008.
+// `breaking changes` resta inglese, come fa la prosa italiana di GLOSSARY.md e come decide ADR 0008.
 // Le due affermazioni della nota sulle note non giudicabili sono parola per parola quelle di
-// CONTEXT.md: sono la regola del prodotto, non una frase di questa pagina.
+// GLOSSARY.md: sono la regola del prodotto, non una frase di questa pagina.
 export const landing = {
   // L'infinito e non l'imperativo: un titolo italiano che dà un ordine al lettore suona come una
   // pubblicità, e la frase inglese è una promessa, non un comando.
@@ -51,7 +51,7 @@ export const landing = {
   "landing.thin.note":
     "È la frase che Verdict stampa invece di un verdetto quando le note rimandano soltanto altrove. «Non ho trovato breaking changes» e «non ci sono breaking changes» sono affermazioni diverse, e la seconda non viene mai stampata al posto della prima.",
 
-  // Le quattro definizioni sono le frasi di CONTEXT.md (Rilevanza) dette in italiano. I quattro
+  // Le quattro definizioni sono le frasi di GLOSSARY.md (Rilevanza) dette in italiano. I quattro
   // nomi, `featured` e gli altri, non si traducono: sono quelli che l'app stampa su ogni release.
   "landing.words.title": "Quattro parole su ogni release",
   "landing.words.sub":

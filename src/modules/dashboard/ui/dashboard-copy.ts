@@ -17,7 +17,7 @@ export type Verdict = { tone: Tone; label: string; claim: string };
 // The page verdict counts Releases, not Technologies, and a Release without a ready Summary is
 // never called safe: "nothing needs action" is what we know, not a promise that all is well.
 // A null verdict is the page with nothing it can judge, and there it says so instead of reassuring:
-// an empty set makes "nothing needs action" true of nothing (CONTEXT.md, Verdetto della Dashboard).
+// an empty set makes "nothing needs action" true of nothing (GLOSSARY.md, Verdetto della Dashboard).
 // The muted claim is the short form of `nothing here can be judged yet`: shortened, never wrapped.
 // At Column verdict scale the long one measures 516px inside a 360px column, and the rule is that
 // the copy gives way, not the scale and not the one line (DESIGN.md, The One-Line Verdict Rule).
@@ -46,7 +46,7 @@ export function standingWords(
       action: true,
     };
   }
-  // CONTEXT.md, Distanza: with no declaration there is no Distance, so there is nothing for a bar
+  // GLOSSARY.md, Distanza: with no declaration there is no Distance, so there is nothing for a bar
   // to be a share of and the row says exactly that.
   if (row.distance === null)
     return { words: t("dashboard.standing.noVersion"), action: false };

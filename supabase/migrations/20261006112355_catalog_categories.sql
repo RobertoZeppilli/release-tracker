@@ -1,6 +1,6 @@
 -- The Category of a Technology (issue #86): the trade it plies in a stack, and the way the Catalog
 -- reads. Curated by us in `catalog/<slug>.json`, never read from a Source, and a closed set of ten:
--- an enum, so a value outside CONTEXT.md is refused here and not only by the Catalog schema.
+-- an enum, so a value outside GLOSSARY.md is refused here and not only by the Catalog schema.
 create type public.technology_category as enum ('language', 'runtime', 'framework', 'server framework', 'database', 'build tool', 'testing', 'lint and formatting', 'library', 'platform');
 
 alter table public.technologies add column category public.technology_category;

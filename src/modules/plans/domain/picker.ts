@@ -2,7 +2,7 @@ import { CATEGORIES, type Category } from "@/modules/catalog";
 
 // The Catalog as a Developer picks from it: what is followed, what can still be followed, and the
 // retired Technologies that are still followed. A retired Technology that nobody follows is not
-// shown at all, because it can never be followed again (CONTEXT.md, "Seguire").
+// shown at all, because it can never be followed again (GLOSSARY.md, "Seguire").
 export type PickerTechnology = {
   id: string;
   slug: string;

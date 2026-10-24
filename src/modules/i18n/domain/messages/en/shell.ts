@@ -3,7 +3,7 @@
 // other language is a translation of this file (ADR 0008).
 // ⚠️ The names of the glossary are here too, with their English value, and a translation keeps them
 // in English rather than leaving them out: `Dashboard` and `Technology` are names, not text
-// (`CONTEXT.md`), and a word that is the same in five languages should still be one key, so the one
+// (`GLOSSARY.md`), and a word that is the same in five languages should still be one key, so the one
 // place that decides it is a dictionary instead of a component nobody thought to look at.
 export const shell = {
   "shell.skipToContent": "Skip to content",

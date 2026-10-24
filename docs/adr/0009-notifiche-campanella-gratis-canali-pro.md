@@ -11,7 +11,7 @@ perché la regola del progetto è che una regola di dominio nuova si scrive prim
 Tecnologia hanno due Notifiche, non una condivisa, perché Visto, canale e lingua sono di una persona
 e non di un fatto. La riga pende da `auth.users` con `on delete cascade` come `follows` e `plans`,
 quindi la cancellazione dell'account la porta via senza niente da ripulire a mano. Il nome sta nel
-glossario di `CONTEXT.md` con le parole delle cinque lingue (ADR 0008): identificatore `Notification`
+glossario di `GLOSSARY.md` con le parole delle cinque lingue (ADR 0008): identificatore `Notification`
 nel codice e nel database, dentro le frasi Notifica, notification, notificación, Benachrichtigung.
 
 **Tre eventi la generano**: una Release `featured` o una `notable` di una Tecnologia seguita, e il

@@ -6,7 +6,7 @@ import { StreamEvent } from "./stream-event";
 import { WeeklyDigest } from "./weekly-digest";
 
 // The right half of the Dashboard: one stream in date order, no sections, the date the only
-// ordering (CONTEXT.md, Flusso). Nothing here counts how far behind the reader is: that is the
+// ordering (GLOSSARY.md, Flusso). Nothing here counts how far behind the reader is: that is the
 // Standing's question, one column to the left (DESIGN.md, The Two Questions Rule).
 export function Stream({
   stream,

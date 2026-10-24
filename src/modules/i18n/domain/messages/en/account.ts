@@ -1,5 +1,5 @@
 // The strings of the account: what it is made of, the way in (`/login`) and the way out of it
-// (`delete account`, CONTEXT.md). One namespace for the two pages, because signing in and ending an
+// (`delete account`, GLOSSARY.md). One namespace for the two pages, because signing in and ending an
 // account are the two ends of the same thing, and a reader of this file is asking about both.
 export const account = {
   "account.intro":

@@ -7,7 +7,7 @@ import { isoWeekKey, isoWeekOf } from "./iso-week";
 import { buildStanding, type Standing } from "./standing";
 import { buildStream, type Stream } from "./stream";
 
-// CONTEXT.md, Verdetto della Dashboard: the verdict counts Releases, not Technologies, and it is
+// GLOSSARY.md, Verdetto della Dashboard: the verdict counts Releases, not Technologies, and it is
 // the sum of the Standing's rows by construction, the same count made once per row and once at the
 // head. Null when nothing in the set can be judged: an empty set authorizes no reassurance.
 export type DashboardVerdict = { needsAction: number; safe: number };

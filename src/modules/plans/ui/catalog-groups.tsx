@@ -11,7 +11,7 @@ const GRID = "grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] items-stretch
 const TITLE_CLASS =
   "mb-2 flex items-baseline gap-3 font-mono text-section-title font-semibold tracking-[0.02em] text-text-muted after:h-px after:flex-1 after:-translate-y-1 after:bg-rule after:content-['']";
 
-// DESIGN.md, Catalog Column: by name the Catalog is read by Category, in the ten groups CONTEXT.md
+// DESIGN.md, Catalog Column: by name the Catalog is read by Category, in the ten groups GLOSSARY.md
 // declares and in its order; by latest release the Categories go, replaced by one group, because a
 // list ordered by date and cut into Categories is ordered by neither. Either way one title names the
 // one ordering in force, and the column's own title names it again.
