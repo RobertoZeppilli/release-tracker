@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del sedicesimo giro: la #170 chiusa e la prossima issue da scegliere (2026-10-23)
+  - ⚠️ Il dev server riusato si impunta, e un rosso locale non è un rosso: si rigira con `CI=1`
+  - Le due misure della campanella: i 7px del tedesco a 320px, e il numero fermo a `9+`
 - Stato del quindicesimo giro: la #169 chiusa e la prossima issue da scegliere (2026-10-22)
 - Stato del quattordicesimo giro: la #169 scritta e committata, e la PR da aprire (2026-10-22)
   - ⚠️ Il test di integrazione mai girato: la fetta duplicava le Notifiche, e il commit diceva il contrario
