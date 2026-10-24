@@ -4,9 +4,10 @@ import { createPublicClient } from "@/lib/supabase";
 import { LOCALES, localeAlternates, localePath } from "@/modules/i18n";
 import { listSitemapPages } from "@/modules/releases/server";
 
-// ISR like the pages it lists, and `revalidateReleasePages` marks it stale as soon as a Release is
-// recorded or a Summary settles, so the sitemap never lags behind the pages by an hour.
-export const revalidate = 3600;
+// `revalidateReleasePages` marks the sitemap stale as soon as a Release is recorded or a Summary
+// settles: that, and not the expiry, is how it keeps up with the pages it lists. The day is a floor
+// under on-demand revalidation, in case a page is ever added without going through it.
+export const revalidate = 86400;
 
 const STATIC_PAGES = ["/terms", "/privacy", "/attributions", "/faq", "/contact"] as const;
 

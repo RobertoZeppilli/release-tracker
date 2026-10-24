@@ -281,8 +281,8 @@ export async function arrived(page: Page): Promise<void> {
   await expect(page.locator('[data-waiting="page"]')).toHaveCount(0);
 }
 
-// ⚠️ **The page forgets its render.** `/technologies/[slug]` is `revalidate = 3600`, so the
-// first render of a slug is served for an hour: a test that writes to a Technology and then reads
+// ⚠️ **The page forgets its render.** `/technologies/[slug]` is `revalidate = false`, so the
+// first render of a slug is served indefinitely: a test that writes to a Technology and then reads
 // its page can be handed the page from before the write, byte for byte, with `x-nextjs-cache: HIT`.
 // Measured in issue #178, where the test pressed a retired Technology that the page still offered a
 // Follow for; inside the full suite a prefetch from the Catalog is enough to have warmed it, and
