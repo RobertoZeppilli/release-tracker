@@ -3,7 +3,7 @@ import type { MessageDictionary } from "../index";
 // I termini, in italiano. Ogni affermazione è una che il codice rende vera (issue #132), quindi la
 // traduzione è tenuta piatta come l'inglese: una frase italiana più morbida prometterebbe qualcosa
 // che l'app non fa, ed è l'unico modo in cui questa pagina può sbagliare.
-// `Free` resta `Free`: è il nome del Piano (CONTEXT.md), non l'aggettivo.
+// `Free` resta `Free`: è il nome del Piano (GLOSSARY.md), non l'aggettivo.
 export const terms = {
   "terms.lede":
     "Cos'è il servizio, a cosa ti impegna e cosa non promette. È corto perché il prodotto è piccolo, e qui sotto non c'è niente che descriva una cosa che l'app non fa.",

@@ -3,7 +3,7 @@
 -- standing. That timestamp is the database's to write: a client that could set it could also make a
 -- stale declaration look fresh.
 --
--- Validation mirrors the start of the Upgrade Path (CONTEXT.md): well formed, and not newer than the
+-- Validation mirrors the start of the Upgrade Path (GLOSSARY.md): well formed, and not newer than the
 -- latest stable Release. Three custom SQLSTATEs travel to the browser through PostgREST, as the follow
 -- rules already do: 'FVMAL' not a Version, 'FVNEW' newer than the latest stable, 'FVNST' no stable
 -- Release to measure from.

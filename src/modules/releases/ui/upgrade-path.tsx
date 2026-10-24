@@ -64,7 +64,7 @@ function formMessage(
   if (path.type === "invalid")
     return { tone: "breaking", label: "error:", body: invalidMessage(path.reason, path.from, path.latest, t) };
   // The counts below are built on a start nobody asked for, so the line that introduces them says
-  // where it comes from (CONTEXT.md, Cammino di upgrade). A declared start needs no line of its own
+  // where it comes from (GLOSSARY.md, Cammino di upgrade). A declared start needs no line of its own
   // any more: the `in use` row of the panel carries the version and the day it was declared, two
   // rows above the `from` that repeats it.
   if (start.kind === "default")

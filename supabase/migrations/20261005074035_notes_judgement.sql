@@ -1,4 +1,4 @@
--- The verdict of a Summary is muted when the Release Notes only point elsewhere (CONTEXT.md,
+-- The verdict of a Summary is muted when the Release Notes only point elsewhere (GLOSSARY.md,
 -- Note giudicabili). The rule is in `src/modules/summaries/domain/notes-judgement.ts` and needs at
 -- most the first NOTES_HEAD_LENGTH characters: longer notes describe something. The column carries
 -- one character over that cap, which is what tells a capped head from a whole one, so the Dashboard

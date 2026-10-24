@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-// The Plan names, as the database enum spells them (CONTEXT.md, Piano). `team` exists in the enum
+// The Plan names, as the database enum spells them (GLOSSARY.md, Piano). `team` exists in the enum
 // and nothing issues it yet; the schema still accepts it, because a reader of the row is not the
 // place to discover a value the database already allows.
 const PlanRowSchema = z.object({ plan: z.enum(["free", "pro", "team"]) });

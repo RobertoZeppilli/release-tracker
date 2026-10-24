@@ -1,7 +1,7 @@
 import type { MessageDictionary } from "../index";
 
 // The Dashboard, in Italian. The verdict is said with the glossary's own words: `Intervento
-// richiesto` is the name of the judgement (CONTEXT.md), so a sentence about it reads `richiede un
+// richiesto` is the name of the judgement (GLOSSARY.md), so a sentence about it reads `richiede un
 // intervento`. `digest` stays as it is, here and everywhere: it is the name of a Significance.
 export const dashboard = {
   // ⚠️ Short because the Column verdict is: at 1.2rem inside a 326px panel the line holds about 26

@@ -121,7 +121,7 @@ test("says nothing needs action when every featured Release is safe", async ({ p
   await expect(total(page, "releases behind in all")).toHaveCount(0);
 });
 
-// CONTEXT.md, Verdetto della Dashboard: the verdict is the sum of the rows under it, by
+// GLOSSARY.md, Verdetto della Dashboard: the verdict is the sum of the rows under it, by
 // construction. The page used to print a number over two rows that said something else.
 test("prints a verdict that is the sum of the rows under it", async ({ page }) => {
   await addFollows(developer.id, [breaking.id, ahead.id, safe.id]);
@@ -135,7 +135,7 @@ test("prints a verdict that is the sum of the rows under it", async ({ page }) =
   await expect(standingRow(page, safe.name)).toContainText("no version declared");
 });
 
-// CONTEXT.md, Verdetto della Dashboard: the verdict counts the Upgrade Path from the Version in use
+// GLOSSARY.md, Verdetto della Dashboard: the verdict counts the Upgrade Path from the Version in use
 // too, so nothing need have happened in the window for the page to say there is work.
 test("counts the work ahead of the Version in use, with nothing in the window", async ({ page }) => {
   await addFollows(developer.id, [ahead.id]);
@@ -157,7 +157,7 @@ test("gives no verdict when nothing it accounts for can be judged", async ({ pag
   await expect(page.locator("#page-verdict")).not.toContainText("nothing needs action");
 });
 
-// CONTEXT.md, Distanza: without a declaration there is no Distance, so the row says so and draws no
+// GLOSSARY.md, Distanza: without a declaration there is no Distance, so the row says so and draws no
 // bar. A bar there would be the one number this product promises never to invent.
 test("says a Technology with no declaration has no distance, and draws no bar for it", async ({ page }) => {
   // Two declarations, so the bar lane is drawn at all: with fewer than two Distances it goes
@@ -210,7 +210,7 @@ test("offers the Catalog when the Developer follows nothing, and follows from th
   await expect(page.locator("#page-verdict")).toBeVisible();
 });
 
-// CONTEXT.md, Flusso: one stream in date order with no divisions by Significance, and the Digests
+// GLOSSARY.md, Flusso: one stream in date order with no divisions by Significance, and the Digests
 // are the one thing that leaves it, folded at its quiet end.
 test("puts the window in one stream in date order, with the Digests folded at the end", async ({ page }) => {
   await addFollows(developer.id, [busy.id]);

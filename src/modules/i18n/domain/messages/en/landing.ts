@@ -65,7 +65,7 @@ export const landing = {
   "landing.thin.note":
     "This is the sentence Verdict prints instead of a verdict when the notes only point elsewhere. “I found no breaking changes” and “there are no breaking changes” are different claims, and the second one is never printed in place of the first.",
 
-  // Vocabulary Legend. The four definitions are CONTEXT.md's own sentences (Rilevanza) in the
+  // Vocabulary Legend. The four definitions are GLOSSARY.md's own sentences (Rilevanza) in the
   // interface's language, and they live here rather than in the landing's domain because a
   // definition is copy: the domain keeps the four levels and their order.
   "landing.words.title": "Four words on every release",

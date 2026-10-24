@@ -5,7 +5,7 @@ export type DefaultStartReason = "previousMajor" | "oldest";
 
 export type DefaultStart = { version: string; reason: DefaultStartReason };
 
-// CONTEXT.md, Cammino di upgrade: the start the page derives when no Version was given and none is
+// GLOSSARY.md, Cammino di upgrade: the start the page derives when no Version was given and none is
 // declared in use. The last Release of the previous major, so the path always contains the major
 // Release itself, which is where the breaking changes are. Below one major there is no jump to
 // show, so the oldest recorded Release stands in; with a single stable Release there is no path at

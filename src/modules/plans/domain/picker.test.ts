@@ -104,7 +104,7 @@ describe("groupByCategory", () => {
     technology("Vue", { category: "framework" }),
   ];
 
-  // Not alphabetical by Category: the order is the one CONTEXT.md declares, from the language to the
+  // Not alphabetical by Category: the order is the one GLOSSARY.md declares, from the language to the
   // platform, because the Catalog is read to put a stack together.
   it("keeps the declared order of the Categories, and the row order inside each", () => {
     expect(groupByCategory(rows)).toEqual([

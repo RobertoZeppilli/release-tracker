@@ -11,13 +11,13 @@ Parla con l'utente **in italiano**.
 2. PRD: issue GitHub #1. Lavoro: issue #2 e seguenti (`gh issue list`, `gh issue view N`).
    - `ready-for-agent` = implementabile in autonomia; `ready-for-human` = fermati e chiedi.
    - Rispetta "Blocked by" e i criteri di accettazione dell'issue.
-3. Quando servono: `CONTEXT.md` (glossario), `docs/DECISIONI.md`, `docs/adr/`, `DESIGN.md`,
+3. Quando servono: `GLOSSARY.md` (glossario), `docs/DECISIONI.md`, `docs/adr/`, `DESIGN.md`,
    mock in `design/mocks/` (fonte per l'aspetto delle schermate).
 
 ## Regole
 
 - **Lingua**: documenti e dominio in italiano; codice e database in inglese, usando solo i nomi
-  della tabella in `CONTEXT.md` (es. Rilevanza = `Significance`, mai `priority`). L'**interfaccia è
+  della tabella in `GLOSSARY.md` (es. Rilevanza = `Significance`, mai `priority`). L'**interfaccia è
   tradotta in cinque lingue** (ADR 0008): le stringhe nascono in inglese in `src/modules/i18n`, la
   grammatica del prodotto (`featured`, `notable`, `digest`, `preview`, `note:` e gli altri prefissi)
   resta in inglese in ogni lingua, i **nomi** del glossario si traducono dentro le frasi con la
@@ -32,7 +32,7 @@ Parla con l'utente **in italiano**.
 - **Nessuna chiamata esterna dal client** (GitHub, npm, Anthropic solo dai job server).
 - **Accessibilità** WCAG 2.2 AA; dark mode di default.
 - Rispetta "Fuori dall'MVP" in `docs/DECISIONI.md`. Una regola di dominio nuova va fissata in
-  `CONTEXT.md` o in un ADR prima di codificarla.
+  `GLOSSARY.md` o in un ADR prima di codificarla.
 
 ## Flusso
 

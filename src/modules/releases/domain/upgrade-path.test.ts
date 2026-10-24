@@ -20,7 +20,7 @@ function versions(result: UpgradePath<Release>): string[] {
 }
 
 describe("computeUpgradePath", () => {
-  // CONTEXT.md, Note giudicabili: a Release whose notes could not be judged is one to check, so it
+  // GLOSSARY.md, Note giudicabili: a Release whose notes could not be judged is one to check, so it
   // joins `missing` and is counted again under `unjudged`, which is what keeps the words honest.
   it("counts a Release whose notes could not be judged as one to check, never as safe", () => {
     const result = path(

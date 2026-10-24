@@ -64,7 +64,7 @@ export function CurrentVersionField({ technologyId, name, latest }: { technology
 // Where a Developer declares the Version they are on, the first row of the Upgrade Panel, right
 // above the start of the path it feeds. The day of the declaration is always under it: the app never
 // checks it, so a reader has to be able to see how old it is. Clearing it is one press, because a
-// declaration nobody keeps up is worse than none (CONTEXT.md, Versione in uso).
+// declaration nobody keeps up is worse than none (GLOSSARY.md, Versione in uso).
 function DeclarationRow({ technologyId, name, latest }: { technologyId: string; name: string; latest: string | null }) {
   const t = useTranslator();
   const follows = useFollows();
