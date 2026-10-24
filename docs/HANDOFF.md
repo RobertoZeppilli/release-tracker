@@ -29,71 +29,72 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (sedicesimo giro, 2026-10-23): la #170 è scritta, committata e verificata, e il
-push è da fare a mano.** Commit `5d3bf7c` sul ramo `170-notifiche-campanella`, 23 file: la modalità
-auto ha negato il `git push`, quindi il ramo **non è su GitHub e la PR non è aperta**. Servono
-`git push -u origin 170-notifiche-campanella` e poi `gh pr create`, col corpo che chiude la #170 in
-inglese (`Closes #170`). Questo file non va pushato finché la PR è aperta: un push riavvia la CI.
+**Da dove ripartire (diciassettesimo giro, 2026-10-23): la #171 è chiusa, quindi la prossima issue si
+sceglie insieme.** Squash `a031c36`, PR 180, mergiata dall'utente: niente migrazione, perché lo schema
+era già quello della #169. Il ramo locale `171-settings-notifiche` è ancora lì, e cancellarlo è
+dell'utente.
 
-### Cosa ha portato la #170
+### Cosa ha portato la #171
 
-La campanella col numero, il pannello che elenca le Notifiche, il Visto che fa scendere quel numero
-senza ricaricare, in cinque lingue. Il numero si legge **dal browser**, come lo stato di accesso, e
-`pnpm build` mostra le cinque pagine della landing ancora `●` SSG: era il criterio della issue.
+La sezione `notifications` in `/settings`: un interruttore per le Release `featured` e uno per le
+`notable` sulla campanella, ognuno con sotto che cosa si perde a spegnerlo, il blocco di Slack e
+dell'email col segno `Pro` e la riga dei giorni di prova, e la lingua con cui quei due canali saranno
+scritti. Cinque lingue, e `DESIGN.md` ha la sezione *Notification Settings (Settings)*.
 
-Il comportamento accessibile del pannello (Esc, il focus che torna al grilletto, la trappola del Tab
-sul telefono, lo scroll bloccato dietro la sheet) è stato **estratto in `src/components/sheet.ts`** e
-lo usano sia la campanella sia il pannello account: `site-header-bar.tsx` è scesa da 295 a 250 righe.
-`DESIGN.md` ha la sezione *Notification Bell*.
+La privacy è passata **da sei voci a nove in una volta sola**, con la frase dei 90 giorni accanto a
+quella che dice che tutto resta finché resta l'account; la FAQ dice che cosa è Free e che cosa è Pro,
+il terzo posto che l'ADR 0009 chiede, e `faq.limit.a` non dice più che "Free è l'unico piano che c'è".
 
-⚠️ **Il Digest settimanale non è nella lista né nel conteggio**, di proposito: la riga su cui
-stamparlo arriva con la **#173**, e chi la fa deve togliere il filtro `SHOWN` in
-`src/modules/notifications/ui/notifications-store.ts` o le sue Notifiche resteranno invisibili.
+### Le prime Server Action del progetto, e le quattro regole che le tengono
 
-⚠️ **La voce `notifications` nella pagina privacy è ancora da scrivere**, in cinque lingue (ADR 0009).
-È stata lasciata alla **#171**, che aggiunge i canali e la lingua preferita: la prosa conta le voci a
-parole ("Six things"), quindi si passa da sei a nove **una volta sola** invece di due.
+Scelte dall'utente il 2026-10-23 e scritte in `docs/DECISIONI.md`.
 
-### Le due misure della campanella, che non sono due gusti
+1. L'identità si legge **dai cookie della richiesta**, mai dal form.
+2. Il form si valida **dentro l'azione**: si può postare senza la pagina.
+3. Scrive il client dello Sviluppatore, e la **RLS** è quello che lega la riga a lui.
+4. L'SQL vive a parte in `write-notification-settings.ts`, così il test di integrazione lo gira
+   contro il database vero: l'azione è solo identità più validazione.
 
-1. **A 320px in tedesco la barra sforava lo schermo di 7px** con la campanella dentro. Rimedio: il
-   gap delle azioni scende a 12px sotto i 640 e resta 16 sopra, lo stesso passo che la riga fuori dal
-   gruppo prendeva già. Il test che lo tiene è in `tests/e2e/notifications.spec.ts`.
-2. **Il numero visibile si ferma a `9+`**: la barra ha 25px di slack misurati e due glifi è quello
-   che comprano, e la cifra esatta sta nel nome accessibile e nel pannello.
+⚠️ **Un client component non può importare l'azione**: la regola ESLint `no-server-import-in-client`
+guarda il percorso e non il contenuto, ed è rimasta com'era. Il server component passa l'azione
+**come prop**, e i tipi della risposta stanno in `src/modules/notifications/domain/saving.ts`.
 
-### ⚠️ Il dev server riusato si impunta, e un rosso locale non è un rosso
+⚠️ **`canSwitch` è la regola unica** di che cosa si accende oggi: la disegna la pagina e la fa
+rispettare l'azione, quindi un post costruito a mano non accende Slack, l'email o il Digest. La #172
+e la #173 la allargano, ognuna col proprio canale, e l'interruttore è il mark tipografico di Select
+Many con `role="checkbox"`, non un oggetto nuovo.
 
-In **dev** fallivano cinque test di `account`, `keyboard`, `navigation` e `overflow`, e **tutti
-passano contro il build di produzione**, quello che gira in CI; lo stesso server ha anche risposto
-**404 su `/api/test/session`**, una rotta che esiste. Ucciderlo è tutto il rimedio, quindi un rosso
-locale si rigira con `CI=1 pnpm test:e2e <suite>` prima di crederci, e somiglia al tema della **#178**.
-⚠️ Il build va rifatto prima di un giro `CI=1`: la prima volta il 320px è fallito contro un
-`pnpm start` che serviva un build anteriore alla correzione.
+### ⚠️ Tre trappole già pagate
+
+1. **Un messaggio con `{count}` vuole la forma `many`** in italiano, francese e spagnolo, o il test
+   dei dizionari cade: vale anche per un numero che non arriverà mai a un milione.
+2. **Il dev server rimasto sulla 3000 va chiuso prima di un giro `CI=1`**, che vuole la porta libera
+   per `pnpm start`. Resta la lezione del giro scorso: un rosso locale si rigira lì prima di crederci.
+3. **`trialOf` non dice mai "0 giorni"** mentre i canali funzionano: l'ultimo giorno è un giorno, e
+   allo scadere dei trenta lo stato è `ended`. Era il criterio della issue sulla riga che deve dire
+   il vero il giorno della scadenza.
 
 ### Le verifiche
 
-`lint`, `typecheck`, `test` (729), `test:integration` (82), `build`, e contro il build di produzione
-`notifications` 8/8, il gruppo `account keyboard top-bar overflow navigation notifications` 61/61,
-`a11y` 61 col pannello scansionato da axe nei due temi in inglese e nelle altre quattro lingue.
-
-⚠️ **Resta rosso `a11y › the folded digest list of a Technology page`, e non c'entra con la #170**: il
-database locale ha **zero Tecnologie**, quindi `/technologies/vite` non esiste e il test non ha niente
-da misurare. Serve il Catalogo importato in locale.
+`lint`, `typecheck`, `test` (727), `test:integration` (89), `build`, e contro il build di produzione
+`notification-settings` 7/7, il gruppo `account overflow keyboard navigation locales notifications`
+70/70, `a11y legal` 84 passati.
+⚠️ **Resta rosso in locale `a11y › the folded digest list of a Technology page`**, come il giro
+scorso e per la stessa ragione: il database locale ha **zero Tecnologie**, quindi `/technologies/vite`
+non esiste. Serve il Catalogo importato in locale.
 
 ### Cosa resta
 
-1. **Push e PR della #170**, i comandi sopra. Poi `merge` e cancellazione del ramo, che sono
-   dell'utente: la modalità auto li nega.
-2. **La prossima issue si sceglie insieme.** Le Notifiche dopo la #170: **#171** `/settings` col segno
-   `Pro`, i giorni di prova e le due voci della privacy, **#172** Slack, **#173** email e Digest come
-   entità, **#174** Lemon Squeezy, obbligatoria al lancio per l'ADR 0009 e da aprire presto per i
-   tempi del Merchant of Record. C'è anche la **#178** (E2E di misura instabili e il
-   `timeout-minutes` che la CI non ha). Non scelte: **#65**, **#130**, **#69**, **#176** (Redis: la
-   risposta è non adesso, ma dentro c'è il rate limiting, che non esiste da nessuna parte).
-3. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
+1. **La prossima issue si sceglie insieme.** Le Notifiche dopo la #171: **#172** Slack, **#173** email
+   e Digest come entità (e chi la fa deve togliere il filtro `SHOWN` in
+   `src/modules/notifications/ui/notifications-store.ts`, o le sue Notifiche resteranno invisibili),
+   **#174** Lemon Squeezy, obbligatoria al lancio per l'ADR 0009 e da aprire presto per i tempi del
+   Merchant of Record. C'è anche la **#178** (E2E di misura instabili e il `timeout-minutes` che la CI
+   non ha). Non scelte: **#65**, **#130**, **#69**, **#176** (Redis: non adesso, ma dentro c'è il rate
+   limiting, che non esiste da nessuna parte).
+2. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
    revisione **prima del lancio**, non prima del merge.
-4. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
+3. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
    `APERTE.md`, coi rami arretrati: cancellarli è dell'utente.
-5. ⚠️ **Credito basso: non spendere niente senza chiedere.**
+4. ⚠️ **Credito basso: non spendere niente senza chiedere.**
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.
