@@ -2,7 +2,7 @@
 
 L'interfaccia si legge in **inglese, italiano, francese, spagnolo e tedesco**; l'inglese resta la
 base e la lingua in cui le stringhe nascono. Questo cambia la regola di `CLAUDE.md` e di
-`CONTEXT.md` "codice, database e interfaccia in inglese", che da qui vale per **codice e database**:
+`GLOSSARY.md` "codice, database e interfaccia in inglese", che da qui vale per **codice e database**:
 l'interfaccia è tradotta, i **nomi del glossario in quanto identificatori** no.
 
 Il contenuto non si traduce, e la distinzione è l'argomento del prodotto, non una scorciatoia. Le
@@ -23,7 +23,7 @@ che una legenda fa.
 ⚠️ **Correzione del 2026-10-16, decisa dall'utente.** La prima stesura di questo ADR diceva "i nomi
 del glossario non si traducono", e letta alla lettera dava "le **Release** delle **Technology** che
 segui", che non è italiano. Quello che non si traduce è il **nome in quanto identificatore**: la
-colonna "Codice / UI" di `CONTEXT.md` resta la verità per codice, database, chiavi e valori. Dentro
+colonna "Codice / UI" di `GLOSSARY.md` resta la verità per codice, database, chiavi e valori. Dentro
 una frase dell'interfaccia vale invece la colonna "Dominio" della stessa tabella, cioè la parola che
 quella lingua usa: in italiano **Tecnologia** e **Tecnologie**, non `Technology`, e così `Catalog` →
 Catalogo, `Significance` → Rilevanza, `ReleaseNotes` → Note di rilascio, `Summary` → Sintesi. Dove
@@ -32,7 +32,7 @@ tiene: è la colonna "Dominio" a dirlo, non una regola nuova.
 Resta fuori da questa correzione la **grammatica** del capoverso qui sopra: `featured`, `notable`,
 `digest`, `preview` e i prefissi non sono nomi di cose, sono segni che compaiono identici dentro le
 Sintesi, e quelli non si traducono in nessuna lingua.
-⚠️ Per **francese, spagnolo e tedesco** `CONTEXT.md` non ha una colonna: le parole si scelgono nella
+⚠️ Per **francese, spagnolo e tedesco** `GLOSSARY.md` non ha una colonna: le parole si scelgono nella
 PR delle tre lingue e sono fra quelle **non riviste da madrelingua**.
 
 La lingua sta **nell'URL, e l'inglese non ha prefisso**: `/technologies/vite` è l'inglese canonico,

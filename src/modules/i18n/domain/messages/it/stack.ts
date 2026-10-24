@@ -3,7 +3,7 @@ import type { MessageDictionary } from "../index";
 // What a Developer follows, in Italian. The Categories and the two layouts are **values** written in
 // the address and in the stored preference, so they are not in the dictionary at all (ADR 0008);
 // `category` as the word the reader reads is `Genere`, which is the glossary's name for it
-// (CONTEXT.md). `piano free` keeps `Free`, which is the name of a Plan.
+// (GLOSSARY.md). `piano free` keeps `Free`, which is the name of a Plan.
 export const stack = {
   "stack.title": "cosa segui, per nome",
   "stack.figure.followed": "seguite",

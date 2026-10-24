@@ -12,7 +12,7 @@ export type ReleaseDetail = {
   summaryStatus: SummaryStatus | null;
   // Only for a `ready` Summary whose content validates.
   summary: StoredSummary | null;
-  // A ready Summary whose Release Notes could not be judged (CONTEXT.md, Note giudicabili): the
+  // A ready Summary whose Release Notes could not be judged (GLOSSARY.md, Note giudicabili): the
   // Summary is shown, its verdict is not.
   unjudged: boolean;
 };

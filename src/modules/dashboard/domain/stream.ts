@@ -2,7 +2,7 @@ import { compareVersions, parseVersion } from "@/modules/releases";
 import type { DashboardRow } from "./followed";
 import { type IsoWeek, isoWeekKey, isoWeekOf, isoWeekRange } from "./iso-week";
 
-// One day of the Flusso: the Releases published on it, newest first (CONTEXT.md, Flusso).
+// One day of the Flusso: the Releases published on it, newest first (GLOSSARY.md, Flusso).
 export type StreamDay = {
   date: string;
   thisWeek: boolean;
@@ -85,7 +85,7 @@ function weeklyDigest(rows: readonly DashboardRow[]): DigestWeek[] {
 }
 
 // The Stream is one stream in date order with no divisions by Significance, and the Digests are the
-// one thing that leaves it: they fold per ISO week at its quiet end (CONTEXT.md, Digest settimanale).
+// one thing that leaves it: they fold per ISO week at its quiet end (GLOSSARY.md, Digest settimanale).
 export function buildStream(
   rows: readonly DashboardRow[],
   thisWeek: string,

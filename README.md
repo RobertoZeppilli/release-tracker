@@ -1,7 +1,7 @@
 # release-tracker
 
 Traccia le Release delle Tecnologie di un Catalogo curato e ne genera Sintesi con l'AI.
-Prodotto e dominio: `PRODUCT.md`, `CONTEXT.md`; decisioni: `docs/DECISIONI.md`, `docs/adr/`.
+Prodotto e dominio: `PRODUCT.md`, `GLOSSARY.md`; decisioni: `docs/DECISIONI.md`, `docs/adr/`.
 
 ## Sviluppo locale
 

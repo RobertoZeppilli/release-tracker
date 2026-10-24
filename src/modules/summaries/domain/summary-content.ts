@@ -15,7 +15,7 @@ export const BreakingChangeSchema = z.object({
   ...Quote,
 });
 
-// The Summary as stored in `summaries.content`. CONTEXT.md: Action required is yes exactly when
+// The Summary as stored in `summaries.content`. GLOSSARY.md: Action required is yes exactly when
 // there is a breaking change, and every breaking change says how to migrate.
 export const SummaryContentSchema = SummaryVerdictSchema.extend({
   // The prompt asks for 120 characters, the schema allows 140. Constrained decoding grants the shape

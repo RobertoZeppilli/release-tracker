@@ -1,7 +1,7 @@
 import type { MessageDictionary } from "../index";
 
 // The titles and the descriptions, in German. `Dashboard` and `Account` are names and stay as they
-// are (CONTEXT.md); `Technologies` is the other kind and becomes `Technologien`.
+// are (GLOSSARY.md); `Technologies` is the other kind and becomes `Technologien`.
 export const page = {
   // The product name is inside this title, so this is the page where the layout's `%s · Verdict` is
   // turned off: it would say the name twice.

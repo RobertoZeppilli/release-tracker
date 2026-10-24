@@ -17,8 +17,10 @@ import { getRelease } from "@/modules/releases/server";
 import { type ExternalSource, OriginalLanguageNote, ReleaseHeader, ReleaseNotesSource, SummaryStatusBlock } from "@/modules/releases/ui";
 import { CitationProvider, SummaryView } from "@/modules/summaries/ui";
 
-// ISR like the Technology page: rendered on the first visit, regenerated at most once an hour.
-export const revalidate = 3600;
+// ISR with no expiry: a recorded Release does not change, so the first render is the final one and
+// `revalidateReleasePages` is the only thing that drops it, as soon as a Summary settles. An hourly
+// expiry rewrote every crawled page up to 24 times a day, and the cache holds thousands of them.
+export const revalidate = false;
 
 export function generateStaticParams(): { slug: string; version: string }[] {
   return [];
@@ -116,7 +118,7 @@ export default async function ReleasePage({ params }: Props) {
           )}
           <span>
             {/* `imported` and `detected` are values of the Release record, and so is the kind of
-                the Source: identifiers, not words (CONTEXT.md, "Codice / UI"). */}
+                the Source: identifiers, not words (GLOSSARY.md, "Codice / UI"). */}
             {release.origin} {release.recordedAt.toISOString().slice(0, 10)}
             {detection && ` ${t("release.via", { source: detection.kind })}`}
           </span>

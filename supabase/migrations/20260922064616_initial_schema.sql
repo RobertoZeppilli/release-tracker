@@ -1,4 +1,4 @@
--- Initial schema for the entities of PRD #1. Names follow the table in CONTEXT.md.
+-- Initial schema for the entities of PRD #1. Names follow the table in GLOSSARY.md.
 
 create type public.significance as enum ('featured', 'notable', 'digest', 'preview');
 create type public.source_role as enum ('detection', 'notes');

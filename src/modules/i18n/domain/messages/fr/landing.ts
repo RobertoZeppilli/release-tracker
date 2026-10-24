@@ -62,7 +62,7 @@ export const landing = {
   "landing.thin.note":
     "C’est la phrase que Verdict imprime au lieu d’un verdict quand les notes ne font que renvoyer ailleurs. « Je n’ai trouvé aucun breaking change » et « il n’y a aucun breaking change » sont deux affirmations différentes, et la seconde n’est jamais imprimée à la place de la première.",
 
-  // Vocabulary Legend. The four definitions are CONTEXT.md's own sentences in the interface's
+  // Vocabulary Legend. The four definitions are GLOSSARY.md's own sentences in the interface's
   // language.
   "landing.words.title": "Quatre mots sur chaque release",
   "landing.words.sub":

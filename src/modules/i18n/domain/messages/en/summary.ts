@@ -7,7 +7,7 @@
 export const summary = {
   "summary.verdict.action": "action required",
   "summary.verdict.safe": "safe to upgrade",
-  // `notesJudgeable` in CONTEXT.md, whose own row carries this sentence: the seventh state, where
+  // `notesJudgeable` in GLOSSARY.md, whose own row carries this sentence: the seventh state, where
   // the notes point elsewhere instead of describing what changed.
   "summary.verdict.unjudged": "not enough notes to judge",
   "summary.unjudged.why":

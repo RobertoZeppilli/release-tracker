@@ -100,7 +100,7 @@ async function backfillTechnology(
   );
   if (written.error) throw written.error;
 
-  // CONTEXT.md, Stato della sintesi: notes arriving late settle the Summary as `skipped`, never as
+  // GLOSSARY.md, Stato della sintesi: notes arriving late settle the Summary as `skipped`, never as
   // `pending`. The guard is the whole safety of this step: a `ready` or `failed` Summary is never
   // touched, and nothing is ever queued, so this run cannot spend.
   const settled = await db

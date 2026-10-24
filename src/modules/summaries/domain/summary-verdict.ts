@@ -16,7 +16,7 @@ export type SummaryVerdict = z.infer<typeof SummaryVerdictSchema>;
 // Release without a verdict as one to check keeps doing the right thing without knowing about this.
 export type Judged = { actionRequired: boolean | null; unjudged: boolean };
 
-// CONTEXT.md, Note giudicabili: a `safe to upgrade` stands only on notes that described something.
+// GLOSSARY.md, Note giudicabili: a `safe to upgrade` stands only on notes that described something.
 // "We found no breaking changes" and "there are no breaking changes" are different claims, and the
 // product does not print the second when it means the first.
 //

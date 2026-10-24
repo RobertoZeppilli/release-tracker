@@ -1,4 +1,4 @@
-// Release Notes that only point elsewhere cannot support a verdict (CONTEXT.md, Note giudicabili).
+// Release Notes that only point elsewhere cannot support a verdict (GLOSSARY.md, Note giudicabili).
 // The rule errs toward silence: a line that describes anything keeps the notes judgeable, so an
 // unknown way of pointing reads as a description rather than muting an honest verdict.
 

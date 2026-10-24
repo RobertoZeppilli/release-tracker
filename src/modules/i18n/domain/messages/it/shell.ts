@@ -1,7 +1,7 @@
 import type { MessageDictionary } from "../index";
 
 // The frame, in Italian. `dashboard` stays as it is: the glossary's own column says the name is
-// `Dashboard` in Italian too (CONTEXT.md), and a word a language already uses is not translated for
+// `Dashboard` in Italian too (GLOSSARY.md), and a word a language already uses is not translated for
 // the sake of it. `technologies` is the other kind of name and does become `tecnologie`, because the
 // rule is that a glossary name reads with that language's word inside a sentence (ADR 0008).
 export const shell = {
@@ -15,7 +15,7 @@ export const shell = {
   "shell.settings": "impostazioni",
   "shell.account.open": "Account",
   "shell.account.openAs": "Account, accesso come {handle}",
-  // Not `chiudi l'account`: `chiusura` is the word CONTEXT.md forbids for ending an account, and a
+  // Not `chiudi l'account`: `chiusura` is the word GLOSSARY.md forbids for ending an account, and a
   // button that closes a panel must not be read as the one that deletes everything.
   "shell.account.close": "Chiudi il pannello dell'account",
   "shell.breadcrumb": "Percorso di navigazione",

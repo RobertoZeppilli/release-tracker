@@ -7,7 +7,7 @@ const vite = technology("vite", "Vite", declared("5.4.11"));
 const node = technology("node", "Node.js");
 
 describe("buildDashboard", () => {
-  // CONTEXT.md, Verdetto della Dashboard: the verdict is the sum of the Standing's rows by
+  // GLOSSARY.md, Verdetto della Dashboard: the verdict is the sum of the Standing's rows by
   // construction. The page used to print `3` over two rows that each said `1`.
   it("prints a verdict that is the sum of the rows under it", () => {
     const dashboard = buildDashboard(

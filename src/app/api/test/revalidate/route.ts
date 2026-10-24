@@ -4,7 +4,7 @@ import { serverEnv } from "@/env/server";
 
 // Drops the cached render of one route, because an end-to-end test that writes to a Technology and
 // then reads its page would otherwise be handed the page from before the write: the Technology page
-// is `revalidate = 3600`, so the first render of a slug is served for an hour and a row written
+// is `revalidate = false`, so the first render of a slug is served until something drops it and a row
 // after it never reaches the page (issue #178). The route exists only when E2E_AUTH_SECRET is set:
 // unset in production, where every request gets the same 404 as a route that was never written.
 //

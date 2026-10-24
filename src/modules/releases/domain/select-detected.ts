@@ -30,7 +30,7 @@ export function selectDetected<T extends DetectionCandidate>(
     .map((release) => ({ ...release, summarize: summarize(release, previewedMajors) }));
 }
 
-// Only the first Preview of a major gets a Summary (CONTEXT.md): once the major has any Release,
+// Only the first Preview of a major gets a Summary (GLOSSARY.md): once the major has any Release,
 // stable or Preview, the following betas and rcs are `skipped`.
 function summarize(release: DetectionCandidate, seenMajors: Set<number>): boolean {
   if (release.significance === "digest") return false;

@@ -3,7 +3,7 @@
 // kind of string wherever it sits, and because this is the list to read when asking whether a page
 // has been translated at all. The two diagnostic pages are here for the same reason: they are what
 // a page says when there is no page.
-// ⚠️ `Dashboard` stays `Dashboard` in Italian: the glossary's own column says so (CONTEXT.md, and
+// ⚠️ `Dashboard` stays `Dashboard` in Italian: the glossary's own column says so (GLOSSARY.md, and
 // ADR 0008's correction), and a name a language already uses is not translated for the sake of it.
 export const page = {
   // The landing carries the product name inside its own title, which is why the layout's `%s · Verdict`

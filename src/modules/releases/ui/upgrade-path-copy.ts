@@ -27,7 +27,7 @@ export function barHasAction(groups: readonly PathCounts[]): boolean {
   return groups.some((group) => group.actionRequired > 0);
 }
 
-// Releases without a ready Summary are never called safe (CONTEXT.md, Cammino di upgrade). The
+// Releases without a ready Summary are never called safe (GLOSSARY.md, Cammino di upgrade). The
 // verdict counts all of `missing`, while the Stat Row beside it splits that number in two, so it
 // cannot borrow either half's word: `to check` belongs to `unjudged` alone (see missingWords).
 export function pathVerdict(counts: PathCounts, t: Translator): Verdict {

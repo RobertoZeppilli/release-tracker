@@ -4,7 +4,7 @@
 // the same question about both.
 // ⚠️ The Categories (`language`, `framework`, `build tool`, …) and the two layouts (`rows`, `grid`)
 // are **values**, not words: they are written in the address and in the stored preference, and
-// CONTEXT.md's "Codice / UI" column is the truth for them, so they stay as they are in every
+// GLOSSARY.md's "Codice / UI" column is the truth for them, so they stay as they are in every
 // language (ADR 0008).
 export const stack = {
   "stack.title": "what you follow, by name",

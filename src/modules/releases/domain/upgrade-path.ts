@@ -4,7 +4,7 @@ import type { SummaryStatus } from "./initial-summary-status";
 import { compareVersions, parseVersion, sortByVersion, splitByMajor } from "./version";
 
 // `actionRequired` is null while the Release has no ready Summary, and also when it has one whose
-// Release Notes could not be judged (CONTEXT.md, Note giudicabili): `unjudged` tells the two apart,
+// Release Notes could not be judged (GLOSSARY.md, Note giudicabili): `unjudged` tells the two apart,
 // because only one of them can say there is a Summary to read.
 export type PathRelease = ListedRelease & { actionRequired: boolean | null; unjudged: boolean };
 
@@ -47,7 +47,7 @@ export type UpgradePath<T> =
       previews: T[];
     };
 
-// CONTEXT.md, Cammino di upgrade: a `from` missing from the recorded Releases still gets a path,
+// GLOSSARY.md, Cammino di upgrade: a `from` missing from the recorded Releases still gets a path,
 // because the recorded history covers only the last 12 months.
 export function computeUpgradePath<T extends PathRelease>(releases: readonly T[], typed: string): UpgradePath<T> {
   const written = typed.trim();
@@ -113,7 +113,7 @@ export function recordedHistory<T extends PathRelease>(releases: readonly T[]): 
   };
 }
 
-// The Version in use is validated exactly as the start of an Upgrade Path (CONTEXT.md), so the two
+// The Version in use is validated exactly as the start of an Upgrade Path (GLOSSARY.md), so the two
 // can never drift apart: same releases, same function, only the reason is kept.
 export function upgradeStartRejection(releases: readonly PathRelease[], typed: string): InvalidFrom | null {
   const path = computeUpgradePath(releases, typed);

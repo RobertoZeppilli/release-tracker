@@ -2,7 +2,7 @@ import type { MessageDictionary } from "../index";
 
 // The bell and its panel, in German. `featured` and `notable` stay in English: they are the names of
 // a Significance, which is the product's own grammar. `verfolgt` and not `gefolgt`, as the glossary
-// has it: `folgen` forms no attributive participle (CONTEXT.md).
+// has it: `folgen` forms no attributive participle (GLOSSARY.md).
 export const notification = {
   "notification.title": "benachrichtigungen",
   // What the bell says while the number is still on its way: a name that claims none unseen
