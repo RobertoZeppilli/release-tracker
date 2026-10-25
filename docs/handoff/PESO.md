@@ -188,3 +188,66 @@ e le icone. La UI delle Release viaggia su ogni pagina dell'app, anche su una ch
 login. 1.2 KB su 324 è lo 0.4% e non è il problema; **i 14 KB che non servono a quella pagina lo
 sono**, e sono lì da prima di questo redesign. Separarli è un lavoro suo, di chunking e di import
 dai barrel, non una riga di questa misura.
+
+## Le scritture ISR, e le due misure sbagliate prima di quella giusta (2026-10-25)
+
+Vercel ha avvisato al **75% delle 200.000 scritture ISR** del piano gratuito del team (~150.000).
+Misure diverse da quelle qui sopra: non il peso sul filo per il browser, ma **l'output scritto nella
+cache ISR**, che e' quello che Vercel fattura.
+
+Tre cose da non riscoprire, perche' ognuna e' costata un giro:
+
+1. ⚠️ **Una scrittura non e' una pagina, e' un'unita da 8 KB.**
+2. ⚠️ **Le scritture ISR sono compresse** (*"Automatic compression of ISR writes helps keep costs
+   down"*). Misurare con `curl -H "Accept-Encoding: identity"` gonfia il risultato di **~7x**. E' il
+   confronto con le tabelle qui sopra, che erano gia compresse, ad aver fatto emergere l'errore.
+3. ⚠️ **Rigenerare contenuto identico costa zero**: *"when revalidation runs and the content hasn't
+   changed from the previous version, no ISR write units are incurred"*. Quindi una scadenza oraria
+   su una pagina che non cambia **era gia gratis**, e `revalidate` non era il problema.
+
+### Come si prende
+
+HTML + risposta RSC, sommati, compressi:
+
+```bash
+u="https://release-tracker-drab.vercel.app/technologies/angular"
+gz=$(curl -s "$u" -H "Accept-Encoding: identity" | gzip -9 | wc -c)
+rgz=$(curl -s "$u?_rsc=1" -H "RSC: 1" -H "Accept-Encoding: identity" | gzip -9 | wc -c)
+echo "$(( (gz+rgz+8191)/8192 )) unita da 8KB"
+```
+
+### Il "prima", 2026-10-25 su `61d99da`
+
+| Pagina | Non compresso | Compresso | Unita da 8 KB |
+| --- | --: | --: | --: |
+| `/technologies/angular` | 439 KB | 64 KB | **8** |
+| `/technologies/angular/22.2.3` | 161 KB | 41 KB | **6** |
+
+Il brotli dal filo conferma: 33.081 byte per l'HTML della pagina Tecnologia, contro 250.738 non
+compressi. Dell'HTML non compresso l'**83%** e' il payload RSC inlinato (`self.__next_f`): ogni
+`SummarizedRelease` porta la prosa intera della Sintesi, 106 Release su `angular`, e
+`computeUpgradePath` non legge mai `summary` (gli bastano `version`, `significance`,
+`actionRequired`, `unjudged`, `summaryStatus`).
+
+### Il conto che torna
+
+Il sitemap ha **10.535 indirizzi**: ~2.060 percorsi Release x 5 lingue, piu 38 Tecnologie x 5.
+Scaldare tutta la superficie una volta: 10.300 x 6 + 190 x 8 = **~63.000 unita**. Le ~150.000
+consumate sono **~2,4 scaldate complete**, e ogni deploy di produzione azzera la cache ISR
+([docs](https://vercel.com/docs/incremental-static-regeneration)): **51 deploy in 15 giorni**,
+verificato con `vercel ls`.
+
+⚠️ **La leva e' il numero di percorsi, non il peso di ognuno.** Sei unita sono poche; moltiplicate
+per 10.300 sono tutto il conto. Tagliare il moltiplicatore x5 delle lingue sulla superficie
+**indicizzata** vale ~80% e non tocca il prodotto: `Note di rilascio e Sintesi non si traducono`
+(CLAUDE.md), quindi le cinque versioni di una pagina Release hanno lo stesso corpo parola per parola,
+e `hreflang` difende un contenuto che in cinque lingue non esiste. Le pagine Tecnologia, che hanno la
+cornice tradotta, restano tutte e cinque.
+
+Due dettagli gia verificati: `hreflang` nel sitemap **non basta**, Google crawla anche gli URL
+alternati, quindi vanno non dichiarati; e con `dynamicParams` aperto uno slug inesistente va in
+`notFound()` e **anche il 404 viene messo in cache**, quindi un bot che prova indirizzi casuali paga
+scritture. E' un **emendamento ad ADR 0008**, non una sua sostituzione: le cinque lingue
+dell'interfaccia restano.
+
+La seconda leva non e' codice: **accorpare i deploy di produzione**, 3,4 al giorno oggi.
