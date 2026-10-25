@@ -29,72 +29,60 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (diciassettesimo giro, 2026-10-23): la #171 è chiusa, quindi la prossima issue si
-sceglie insieme.** Squash `a031c36`, PR 180, mergiata dall'utente: niente migrazione, perché lo schema
-era già quello della #169. Il ramo locale `171-settings-notifiche` è ancora lì, e cancellarlo è
-dell'utente.
+**Da dove ripartire (diciottesimo giro, 2026-10-25): la #178 e' chiusa e la prossima issue si sceglie
+insieme.** Niente lavoro di prodotto in corso: il giro e' andato su un avviso di Vercel e sulla
+manutenzione del repository. `main` a `61d99da` (PR #183, squash), CI verde, tree pulito.
 
-### Cosa ha portato la #171
+### L'avviso di Vercel al 75% delle scritture ISR
 
-La sezione `notifications` in `/settings`: un interruttore per le Release `featured` e uno per le
-`notable` sulla campanella, ognuno con sotto che cosa si perde a spegnerlo, il blocco di Slack e
-dell'email col segno `Pro` e la riga dei giorni di prova, e la lingua con cui quei due canali saranno
-scritti. Cinque lingue, e `DESIGN.md` ha la sezione *Notification Settings (Settings)*.
+⚠️ **Le misure, i tre errori da non rifare e la strada giusta stanno in `docs/handoff/PESO.md`**,
+sezione *Le scritture ISR*. In due righe: una scrittura e' un'unita da **8 KB compressi**, non una
+pagina; rigenerare contenuto identico **costa zero**; e la leva e' **il numero di percorsi** (10.535
+indirizzi nel sitemap, ~63.000 unita per scaldarli tutti), **non il peso di ognuno** (8 unita la
+pagina Tecnologia, 6 la pagina Release).
 
-La privacy è passata **da sei voci a nove in una volta sola**, con la frase dei 90 giorni accanto a
-quella che dice che tutto resta finché resta l'account; la FAQ dice che cosa è Free e che cosa è Pro,
-il terzo posto che l'ADR 0009 chiede, e `faq.limit.a` non dice più che "Free è l'unico piano che c'è".
+Fatto: `revalidate = false` sulle due pagine Technology e `86400` sul sitemap (PR #183). **Non e' il
+rimedio all'avviso** — le scritture su contenuto identico erano gia gratis — ma taglia le letture ISR
+e le invocazioni, e il modello su evento era gia quello giusto: `revalidateReleasePages` faceva il
+lavoro. **Da non riproporre come rimedio.**
 
-### Le prime Server Action del progetto, e le quattro regole che le tengono
+⚠️ **La #185 e' aperta con i numeri sbagliati**: etichetta portata a `ready-for-human` e un commento
+in testa che la smonta, perche' il suo criterio ("sotto le 12 unita") e' gia soddisfatto oggi, a 8.
+Va riscopata o chiusa, **non presa cosi' com'e'**.
 
-Scelte dall'utente il 2026-10-23 e scritte in `docs/DECISIONI.md`.
+### Manutenzione del repository fatta questo giro
 
-1. L'identità si legge **dai cookie della richiesta**, mai dal form.
-2. Il form si valida **dentro l'azione**: si può postare senza la pagina.
-3. Scrive il client dello Sviluppatore, e la **RLS** è quello che lega la riga a lui.
-4. L'SQL vive a parte in `write-notification-settings.ts`, così il test di integrazione lo gira
-   contro il database vero: l'azione è solo identità più validazione.
-
-⚠️ **Un client component non può importare l'azione**: la regola ESLint `no-server-import-in-client`
-guarda il percorso e non il contenuto, ed è rimasta com'era. Il server component passa l'azione
-**come prop**, e i tipi della risposta stanno in `src/modules/notifications/domain/saving.ts`.
-
-⚠️ **`canSwitch` è la regola unica** di che cosa si accende oggi: la disegna la pagina e la fa
-rispettare l'azione, quindi un post costruito a mano non accende Slack, l'email o il Digest. La #172
-e la #173 la allargano, ognuna col proprio canale, e l'interruttore è il mark tipografico di Select
-Many con `role="checkbox"`, non un oggetto nuovo.
-
-### ⚠️ Tre trappole già pagate
-
-1. **Un messaggio con `{count}` vuole la forma `many`** in italiano, francese e spagnolo, o il test
-   dei dizionari cade: vale anche per un numero che non arriverà mai a un milione.
-2. **Il dev server rimasto sulla 3000 va chiuso prima di un giro `CI=1`**, che vuole la porta libera
-   per `pnpm start`. Resta la lezione del giro scorso: un rosso locale si rigira lì prima di crederci.
-3. **`trialOf` non dice mai "0 giorni"** mentre i canali funzionano: l'ultimo giorno è un giorno, e
-   allo scadere dei trenta lo stato è `ended`. Era il criterio della issue sulla riga che deve dire
-   il vero il giorno della scadenza.
+- **PR #184 chiusa senza mergiare** e ramo cancellato: il contenuto era gia su `main` con la #183,
+  provato a vuoto (`git merge --no-commit --no-ff` poi `git diff --cached` vuoto). ⚠️ Un ramo riusato
+  dopo uno squash merge fa si' che git non riconosca i suoi commit come applicati: GitHub mostra il
+  diff dalla base comune e offre una PR che non ha niente da portare.
+- Rinomino `CONTEXT.md` in `GLOSSARY.md` chiuso negli ultimi tre file. ⚠️ `docs/handoff/2026-10.md`
+  **non riscritto** (39 occorrenze): dichiara di essere copiato parola per parola, quindi una riga
+  d'intestazione dice che quel nome e' cambiato.
+- ⚠️ **20 rami remoti con la PR gia MERGED** sono ancora li. Il criterio buono e' lo stato della PR,
+  non `git diff` contro `main`, che mostra solo che `main` e' andato avanti. Cancellarli e' dell'utente.
+- ⚠️ Un fallimento CI **unico in 15 fallimenti storici**: `supabase start` morto su
+  `failed to bind host port 54322: address already in use`, prima di ogni test, su `ubuntu-latest`
+  (VM nuova per job, quindi non e' collisione fra run). Causa radice non trovata. Se torna, vale una
+  issue accanto alla #178.
 
 ### Le verifiche
 
-`lint`, `typecheck`, `test` (727), `test:integration` (89), `build`, e contro il build di produzione
-`notification-settings` 7/7, il gruppo `account overflow keyboard navigation locales notifications`
-70/70, `a11y legal` 84 passati.
-⚠️ **Resta rosso in locale `a11y › the folded digest list of a Technology page`**, come il giro
-scorso e per la stessa ragione: il database locale ha **zero Tecnologie**, quindi `/technologies/vite`
-non esiste. Serve il Catalogo importato in locale.
+`typecheck`, `lint`, `test` (727/727), `build` verdi sul contenuto mergiato. CI della #183 verde
+(`check` 35s, `integration` 7m21s).
 
 ### Cosa resta
 
-1. **La prossima issue si sceglie insieme.** Le Notifiche dopo la #171: **#172** Slack, **#173** email
-   e Digest come entità (e chi la fa deve togliere il filtro `SHOWN` in
+1. **La prossima issue si sceglie insieme.** Le Notifiche: **#172** Slack, **#173** email e Digest
+   come entita (e chi la fa deve togliere il filtro `SHOWN` in
    `src/modules/notifications/ui/notifications-store.ts`, o le sue Notifiche resteranno invisibili),
    **#174** Lemon Squeezy, obbligatoria al lancio per l'ADR 0009 e da aprire presto per i tempi del
-   Merchant of Record. C'è anche la **#178** (E2E di misura instabili e il `timeout-minutes` che la CI
-   non ha). Non scelte: **#65**, **#130**, **#69**, **#176** (Redis: non adesso, ma dentro c'è il rate
-   limiting, che non esiste da nessuna parte).
-2. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
+   Merchant of Record. Non scelte: **#65**, **#130**, **#69**, **#176** (Redis: non adesso, ma dentro
+   c'e' il rate limiting, che non esiste da nessuna parte).
+2. **La #185 da riscopare o chiudere**, e la superficie indicizzata da aprire come issue se si decide.
+3. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
    revisione **prima del lancio**, non prima del merge.
-3. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
-   `APERTE.md`, coi rami arretrati: cancellarli è dell'utente.
-4. ⚠️ **Credito basso: non spendere niente senza chiedere.**
+4. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
+   `APERTE.md`, coi rami arretrati: cancellarli e' dell'utente.
+5. ⚠️ **Credito basso: non spendere niente senza chiedere.**
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

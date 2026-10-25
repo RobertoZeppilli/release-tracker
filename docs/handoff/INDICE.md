@@ -18,6 +18,8 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del diciassettesimo giro: la #171 chiusa e la prossima issue da scegliere (2026-10-23)
+  - ⚠️ Le prime Server Action del progetto, e le quattro regole che le tengono
 - Stato del sedicesimo giro: la #170 chiusa e la prossima issue da scegliere (2026-10-23)
   - ⚠️ Il dev server riusato si impunta, e un rosso locale non è un rosso: si rigira con `CI=1`
   - Le due misure della campanella: i 7px del tedesco a 320px, e il numero fermo a `9+`
