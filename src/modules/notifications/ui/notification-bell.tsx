@@ -73,7 +73,11 @@ export function NotificationBell({ developerId }: { developerId: string }) {
         <div
           ref={panel}
           id={PANEL_ID}
-          className="fixed inset-[0px] z-30 flex flex-col bg-ground sm:absolute sm:inset-auto sm:top-[calc(100%+8px)] sm:right-[0px] sm:z-20 sm:w-[340px] sm:rounded-md sm:border sm:border-rule sm:bg-raised sm:py-2"
+          // ⚠️ `whitespace-normal`: the bar's group of actions carries `whitespace-nowrap` for its own
+          // controls (`site-header-bar.tsx`), and the panel hangs inside that group, so it inherits it.
+          // A sentence that cannot wrap is wider than the 340px panel, and a box with `overflow-y-auto`
+          // does not keep `overflow-x: visible`: the panel grew a horizontal scrollbar.
+          className="fixed inset-[0px] z-30 flex flex-col bg-ground whitespace-normal sm:absolute sm:inset-auto sm:top-[calc(100%+8px)] sm:right-[0px] sm:z-20 sm:w-[340px] sm:rounded-md sm:border sm:border-rule sm:bg-raised sm:py-2"
         >
           <div className="flex h-[56px] shrink-0 items-center justify-between border-b border-rule px-4 sm:hidden">
             <span className="font-mono text-label text-text-faint">{t("notification.title")}</span>

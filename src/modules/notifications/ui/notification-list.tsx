@@ -34,7 +34,7 @@ export function NotificationRow({
         <SignificanceGlyph significance={significanceOf(item.event)} />
         {!item.seen && <span className="sr-only">{t("notification.unseen")}</span>}
       </span>
-      <span className={`font-sans text-[16px] leading-[1.45] font-semibold tracking-[-0.01em] ${item.seen ? "text-text-muted" : "text-text"}`}>
+      <span className={`font-sans text-[16px] leading-[1.45] font-semibold tracking-[-0.01em] break-words ${item.seen ? "text-text-muted" : "text-text"}`}>
         {item.technologyName}
       </span>
       <Link
