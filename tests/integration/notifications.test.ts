@@ -204,6 +204,8 @@ describe("the Notification settings a Developer saves", () => {
     expect(settings).toEqual({
       preferredLocale: DEFAULT_LOCALE,
       externalTrialStartedAt: null,
+      // No webhook saved, which is what keeps the Slack switches of #172 sending nothing.
+      slackHint: null,
       preferences: [],
     });
     // Nothing saved is the whole trial still in hand, which is the line `/settings` prints.

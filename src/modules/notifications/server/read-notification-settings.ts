@@ -7,6 +7,9 @@ import type { Preference } from "../domain/preferences";
 const SettingsRowSchema = z.object({
   preferred_locale: localeSchema,
   external_trial_started_at: z.iso.datetime({ offset: true }).nullable(),
+  // The hint and never the URL: `slack_webhook_url` is not in the read grant of `authenticated`, so
+  // naming it here would fail the query rather than return a secret (#172).
+  slack_webhook_hint: z.string().nullable(),
 });
 
 const PreferenceRowSchema = z.array(
@@ -18,6 +21,8 @@ export type NotificationSettings = {
   // Null is "no external channel was ever switched on", which is the whole trial still in hand, and
   // not "the trial is over": `trialOf` is what turns the two into the lines `/settings` prints.
   externalTrialStartedAt: Date | null;
+  // Where the saved webhook points, as `webhookHint` writes it, or null when there is none.
+  slackHint: string | null;
   // Only the rows actually saved. Everything absent is the declared starting point, which
   // `domain/preferences` holds and both this page and the job read through `isEnabled`.
   preferences: Preference[];
@@ -31,7 +36,10 @@ export type NotificationSettings = {
 // starting point instead of treating the absence as an error.
 export async function readNotificationSettings(db: SupabaseClient): Promise<NotificationSettings> {
   const [settings, preferences] = await Promise.all([
-    db.from("notification_settings").select("preferred_locale, external_trial_started_at").maybeSingle(),
+    db
+      .from("notification_settings")
+      .select("preferred_locale, external_trial_started_at, slack_webhook_hint")
+      .maybeSingle(),
     db.from("notification_preferences").select("event, channel, enabled"),
   ]);
   if (settings.error) throw settings.error;
@@ -41,6 +49,7 @@ export async function readNotificationSettings(db: SupabaseClient): Promise<Noti
   return {
     preferredLocale: row?.preferred_locale ?? DEFAULT_LOCALE,
     externalTrialStartedAt: row?.external_trial_started_at ? new Date(row.external_trial_started_at) : null,
+    slackHint: row?.slack_webhook_hint ?? null,
     preferences: PreferenceRowSchema.parse(preferences.data),
   };
 }

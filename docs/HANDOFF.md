@@ -26,63 +26,75 @@ sposta parola per parola** in cima al file del suo mese, con un titolo `##` prop
 riga in `INDICE.md`. Niente riassunti: un riassunto è dove si perde la ragione per cui una cosa era
 stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
-
 ## Stato
 
-**Da dove ripartire (diciottesimo giro, 2026-10-25): la #178 e' chiusa e la prossima issue si sceglie
-insieme.** Niente lavoro di prodotto in corso: il giro e' andato su un avviso di Vercel e sulla
-manutenzione del repository. `main` a `61d99da` (PR #183, squash), CI verde, tree pulito.
+**Da dove ripartire (diciannovesimo giro, 2026-10-26): la #172 e' fatta e verde sul ramo
+`172-notifiche-slack`, e manca solo la PR**, con `Closes #172` **in inglese** nel corpo.
+`main` a `c8ccd66` (la PR #186 e' stata mergiata dopo l'handoff del giro scorso, che diceva `61d99da`).
 
-### L'avviso di Vercel al 75% delle scritture ISR
+### Il canale Slack (#172)
 
-⚠️ **Le misure, i tre errori da non rifare e la strada giusta stanno in `docs/handoff/PESO.md`**,
-sezione *Le scritture ISR*. In due righe: una scrittura e' un'unita da **8 KB compressi**, non una
-pagina; rigenerare contenuto identico **costa zero**; e la leva e' **il numero di percorsi** (10.535
-indirizzi nel sitemap, ~63.000 unita per scaldarli tutti), **non il peso di ognuno** (8 unita la
-pagina Tecnologia, 6 la pagina Release).
+Le tre decisioni che la issue lasciava aperte sono state prese con l'utente e **scritte prima del
+codice**, in `docs/DECISIONI.md` (tre righe, #172) e in `GLOSSARY.md` (Consegna, Webhook Slack):
+**un solo messaggio per giro e per Sviluppatore**, a elenco, perche' un webhook regge circa un
+messaggio al secondo (⚠️ non tocca l'ADR 0009: la Notifica resta una per Release, il raggruppamento
+e' della **consegna**); **il webhook in `notification_secrets`**, tabella senza alcun grant per il
+client, scritta solo col service role con l'identita' presa dai cookie, e il client rilegge solo
+`slack_webhook_hint`; **`notification_deliveries`**, una riga per Notifica e canale, che regge
+l'email della #173 e rende provabile che un webhook rotto non ferma gli altri.
 
-Fatto: `revalidate = false` sulle due pagine Technology e `86400` sul sitemap (PR #183). **Non e' il
-rimedio all'avviso** — le scritture su contenuto identico erano gia gratis — ma taglia le letture ISR
-e le invocazioni, e il modello su evento era gia quello giusto: `revalidateReleasePages` faceva il
-lavoro. **Da non riproporre come rimedio.**
+⚠️ **La prima versione dello schema era sbagliata e l'ha smascherata la pagina vera.** Con l'URL in
+`notification_settings` e il `grant select` ristretto alle altre colonne, **ogni upsert** del client
+dello Sviluppatore su quella tabella falliva, **il salvataggio della lingua compreso**: `insert ...
+on conflict do update` richiede `select` **sull'intera tabella**, non sulle colonne che nomina
+(`permission denied for table`, riprodotto in psql con `set local role authenticated`). Da qui la
+tabella separata, e un test di integrazione nuovo che copre proprio quell'upsert, che prima nessuno
+provava col client dello Sviluppatore.
 
-⚠️ **La #185 e' aperta con i numeri sbagliati**: etichetta portata a `ready-for-human` e un commento
-in testa che la smonta, perche' il suo criterio ("sotto le 12 unita") e' gia soddisfatto oggi, a 8.
-Va riscopata o chiusa, **non presa cosi' com'e'**.
+Migrazione `20261026085450_slack_channel.sql`, applicata in locale. Codice: `domain/slack.ts` e
+`domain/slack-plan.ts` (testati), `server/send-slack.ts`, `deliver-slack.ts`, `save-slack.ts`,
+`ui/slack-webhook.tsx`, le righe Slack in `/settings`, diciassette stringhe **in cinque lingue**.
+L'invio e' agganciato al cron della Detection, dopo `generateNotifications`.
 
-### Manutenzione del repository fatta questo giro
+⚠️ **Nessun ritentativo**: una consegna `failed` non si ripete, e cio' che lo Sviluppatore legge in
+`/settings` e' la ragione. ⚠️ **`deliverSlack` non legge `@/env`**: il `siteUrl` glielo passa la
+route, come il token GitHub della Detection, e leggerlo dal modulo **rompeva i test di integrazione**,
+che non caricano `.env.local`. ⚠️ **Il trial non partiva da nessuna parte**: `savePreference` ora
+chiama `startExternalTrial` quando si accende un canale esterno (ADR 0009); prima non serviva perche'
+solo `in_app` era accendibile.
 
-- **PR #184 chiusa senza mergiare** e ramo cancellato: il contenuto era gia su `main` con la #183,
-  provato a vuoto (`git merge --no-commit --no-ff` poi `git diff --cached` vuoto). ⚠️ Un ramo riusato
-  dopo uno squash merge fa si' che git non riconosca i suoi commit come applicati: GitHub mostra il
-  diff dalla base comune e offre una PR che non ha niente da portare.
-- Rinomino `CONTEXT.md` in `GLOSSARY.md` chiuso negli ultimi tre file. ⚠️ `docs/handoff/2026-10.md`
-  **non riscritto** (39 occorrenze): dichiara di essere copiato parola per parola, quindi una riga
-  d'intestazione dice che quel nome e' cambiato.
-- ⚠️ **20 rami remoti con la PR gia MERGED** sono ancora li. Il criterio buono e' lo stato della PR,
-  non `git diff` contro `main`, che mostra solo che `main` e' andato avanti. Cancellarli e' dell'utente.
-- ⚠️ Un fallimento CI **unico in 15 fallimenti storici**: `supabase start` morto su
-  `failed to bind host port 54322: address already in use`, prima di ogni test, su `ubuntu-latest`
-  (VM nuova per job, quindi non e' collisione fra run). Causa radice non trovata. Se torna, vale una
-  issue accanto alla #178.
+### La prova visiva
 
-### Le verifiche
+`/settings` aperta sulla 3000: un URL non di Slack e' rifiutato e lo dice, uno buono salva e stampa
+l'indizio, il pulsante della prova si accende, e l'interruttore `featured` su Slack scrive la
+preferenza **e avvia la prova di 30 giorni** (verificato in psql). Corretti due difetti che solo la
+pagina mostrava: la frase diceva "i due interruttori qui sopra" mentre stanno sotto, e la riga del
+raggruppamento era ripetuta identica sui due, dove serviva dire che la campanella continua a suonare.
+⚠️ **`db:reset` cancella l'utente di sviluppo**: si rifa con `pnpm dev:login`.
 
-`typecheck`, `lint`, `test` (727/727), `build` verdi sul contenuto mergiato. CI della #183 verde
-(`check` 35s, `integration` 7m21s).
+### L'overflow della campanella, sistemato per strada
+
+Chiesto dall'utente a meta giro. ⚠️ **Non era una regola del pannello: e' l'ereditarieta' di
+`white-space`.** Il gruppo di azioni della barra porta `whitespace-nowrap` per i suoi controlli, il
+pannello e' figlio di quel gruppo e lo ereditava, la frase dello stato vuoto non andava a capo e un
+contenitore con `overflow-y-auto` **non resta** `overflow-x: visible`. Rimedio: `whitespace-normal`
+sul pannello, `break-words` sul nome della Tecnologia; misurato in produzione, `scrollWidth` da
+643px a 338px. Il pannello dell'account **non** e' toccato: ha larghezza elastica, quindi li' il
+nowrap allarga invece di tagliare.
+
+**Verifiche**: `typecheck`, `lint`, `test` (743/743), `test:integration` (98/98, con
+`slack-channel.test.ts` nuovo), `build`, tutti verdi. Il database locale e' **acceso** (`pnpm db:stop`
+quando serve) e dentro ha il webhook finto della prova, che non manda da nessuna parte.
 
 ### Cosa resta
 
-1. **La prossima issue si sceglie insieme.** Le Notifiche: **#172** Slack, **#173** email e Digest
-   come entita (e chi la fa deve togliere il filtro `SHOWN` in
-   `src/modules/notifications/ui/notifications-store.ts`, o le sue Notifiche resteranno invisibili),
-   **#174** Lemon Squeezy, obbligatoria al lancio per l'ADR 0009 e da aprire presto per i tempi del
-   Merchant of Record. Non scelte: **#65**, **#130**, **#69**, **#176** (Redis: non adesso, ma dentro
-   c'e' il rate limiting, che non esiste da nessuna parte).
-2. **La #185 da riscopare o chiudere**, e la superficie indicizzata da aprire come issue se si decide.
-3. ⚠️ **Francese, spagnolo e tedesco non sono rivisti da madrelingua**, e l'ADR 0008 chiede quella
-   revisione **prima del lancio**, non prima del merge.
-4. **I due debiti di sempre** (i 14 KB con le `max-[]`, il mock con `groupByMajor`) stanno in
-   `APERTE.md`, coi rami arretrati: cancellarli e' dell'utente.
+1. **Aprire la PR della #172**, poi scegliere insieme: **#173** email e Digest (e chi la fa deve
+   togliere il filtro `SHOWN` in `src/modules/notifications/ui/notifications-store.ts`), **#174**
+   Lemon Squeezy, obbligatoria al lancio per l'ADR 0009. Non scelte: **#65**, **#130**, **#69**,
+   **#176** (dentro c'e' il rate limiting, che non esiste da nessuna parte).
+2. **La #185 da riscopare o chiudere** (numeri sbagliati), e la superficie indicizzata se si decide.
+3. ⚠️ **Francese, spagnolo e tedesco non rivisti da madrelingua**, e questo giro ne ha aggiunti
+   diciassette: l'ADR 0008 chiede la revisione **prima del lancio**.
+4. **I due debiti di sempre** e i **20 rami remoti con la PR gia MERGED**: `APERTE.md` e il diario.
 5. ⚠️ **Credito basso: non spendere niente senza chiedere.**
 Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.

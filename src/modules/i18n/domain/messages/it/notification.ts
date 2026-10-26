@@ -19,5 +19,17 @@ export const notification = {
     "Ancora niente. Una Notifica arriva quando una Release featured o notable di una Tecnologia che segui ha la sua Sintesi.",
   "notification.markAll": "segna tutte come viste",
   "notification.markOne": "Segna {name} {version} come vista",
+  // Il messaggio Slack, che non ha una pagina da cui essere letto.
+  "notification.slack.heading": {
+    one: "{count} nuova Release dalle Tecnologie che segui",
+    many: "{count} nuove Release dalle Tecnologie che segui",
+    other: "{count} nuove Release dalle Tecnologie che segui",
+  },
+  "notification.slack.more": {
+    one: "e altre {count}",
+    many: "e altre {count}",
+    other: "e altre {count}",
+  },
+  "notification.slack.test": "Messaggio di prova da verdict. Il canale Slack funziona.",
   "notification.unseen": "da vedere",
 } as const satisfies Partial<MessageDictionary>;
