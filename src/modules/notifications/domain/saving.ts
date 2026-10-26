@@ -19,3 +19,16 @@ export type LocaleSaved = { status: Saving; locale: Locale };
 export type SaveSwitch = (previous: SwitchSaved, form: FormData) => Promise<SwitchSaved>;
 
 export type SaveLocale = (previous: LocaleSaved, form: FormData) => Promise<LocaleSaved>;
+
+// What the webhook field shows after a save: the hint, which is all a Developer ever reads back of
+// their webhook (#172), or null when there is none.
+export type WebhookSaved = { status: Saving; hint: string | null };
+
+export type SaveWebhook = (previous: WebhookSaved, form: FormData) => Promise<WebhookSaved>;
+
+// ⚠️ The proof of delivery, which is a send and not a save: a wrong webhook is otherwise discovered
+// the day it was needed. `failed` carries what Slack answered, because "it did not work" leaves the
+// Developer with nothing to fix.
+export type TestSent = { status: "idle" | "sent" | "failed"; error: string | null };
+
+export type SendTest = (previous: TestSent, form: FormData) => Promise<TestSent>;

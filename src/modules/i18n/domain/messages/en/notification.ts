@@ -21,5 +21,13 @@ export const notification = {
   "notification.markAll": "mark all as seen",
   // Names the row, because a page of identical buttons says nothing about which one is which.
   "notification.markOne": "Mark {name} {version} as seen",
+  // The Slack message, which has no page to be read on. One message per run with a line per
+  // Release (`docs/DECISIONI.md`), so ten Releases are not ten sends.
+  "notification.slack.heading": {
+    one: "{count} new release from the technologies you follow",
+    other: "{count} new releases from the technologies you follow",
+  },
+  "notification.slack.more": { one: "and {count} more", other: "and {count} more" },
+  "notification.slack.test": "Test message from verdict. The Slack channel is working.",
   "notification.unseen": "unseen",
 } as const;

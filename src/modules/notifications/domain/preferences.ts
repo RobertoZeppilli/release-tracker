@@ -24,7 +24,8 @@ export function isExternal(channel: NotificationChannel): boolean {
 // switch for a channel that sends nothing would be a promise, and the weekly Digest has no line to
 // be printed on until #173 (see `notifications-store`, SHOWN). `/settings` draws only these, and the
 // Server Action refuses anything else: a form can be posted without the page.
-export const LIVE_CHANNELS = ["in_app"] as const satisfies readonly NotificationChannel[];
+// #172 lit the Slack column; the email waits for #173, which is what sends one.
+export const LIVE_CHANNELS = ["in_app", "slack"] as const satisfies readonly NotificationChannel[];
 export const LIVE_EVENTS = [
   "featured_release",
   "notable_release",

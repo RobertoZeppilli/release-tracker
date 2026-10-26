@@ -25,7 +25,7 @@ export const settings = {
     "El resumen semanal traerá su propio interruptor, el día en que llegue el resumen mismo.",
   "settings.notifications.external.title": "slack y correo",
   "settings.notifications.external.body":
-    "Los dos canales están en construcción, y cada uno traerá aquí su interruptor cuando llegue. Llevan la marca Pro desde el primer día, prueba incluida: cuando la prueba termina sin Pro se apagan, y nada sigue encendido por costumbre. La campana se queda, gratis.",
+    "Slack ya está, con sus propios interruptores aquí abajo; el email todavía se está construyendo y traerá los suyos cuando llegue. Llevan la marca Pro desde el primer día, prueba incluida: cuando la prueba termina sin Pro se apagan, y nada sigue encendido por costumbre. La campana se queda, gratis.",
   "settings.notifications.pro": "Pro",
   "settings.notifications.trial.waiting":
     "Tu prueba de {count} días de Slack y del correo empieza la primera vez que enciendes uno de ellos, no el día en que te registraste.",
@@ -36,6 +36,27 @@ export const settings = {
   },
   "settings.notifications.trial.ended":
     "Tu prueba de Slack y del correo ha terminado. La campana es gratis para siempre; los dos canales externos piden Pro.",
+  "settings.notifications.switch.slack": "{name} en Slack",
+  "settings.notifications.slack.title": "slack",
+  "settings.notifications.slack.note":
+    "Slack pide un incoming webhook: crea uno en tu workspace, elige el canal y pega aquí la URL. Es un secreto, así que una vez guardado solo vuelves a leer adónde apunta, nunca la URL entera.",
+  "settings.notifications.slack.label": "URL del incoming webhook",
+  "settings.notifications.slack.save": "guardar",
+  "settings.notifications.slack.remove": "quitar",
+  "settings.notifications.slack.current": "Envía a {hint}. Deja el campo vacío y guarda para quitarlo.",
+  "settings.notifications.slack.none": "Todavía no hay webhook, así que los dos interruptores de abajo no envían nada.",
+  "settings.notifications.slack.invalid":
+    "No guardado. La URL de un webhook empieza por https://hooks.slack.com/services/ y viene de tu propio workspace.",
+  "settings.notifications.slack.featured.off":
+    "Apagado, las releases featured siguen llegando a la campana y dejan de llegar a Slack.",
+  "settings.notifications.slack.notable.off":
+    "Apagado, las releases notable dejan de llegar a Slack. Las featured tienen su propio interruptor y pueden seguir llegando.",
+  "settings.notifications.slack.grouping":
+    "Un mensaje por ronda, con una línea por release: diez releases en una ronda llegan como un solo mensaje, no diez.",
+  "settings.notifications.slack.test": "enviar un mensaje de prueba",
+  "settings.notifications.slack.testOk": "El mensaje de prueba salió. El canal funciona.",
+  "settings.notifications.slack.testFailed": "Slack no lo aceptó: {error}",
+  "settings.notifications.slack.testEmpty": "Todavía no hay nada que probar: guarda antes un webhook.",
   "settings.notifications.locale.title": "idioma del correo y de slack",
   "settings.notifications.locale.note":
     "El correo y Slack no tienen una dirección de la que leer un idioma, así que se escriben en este. No cambia el idioma del sitio, que sigue siendo el de la dirección, y las notas de la versión y las síntesis se quedan en su idioma original.",

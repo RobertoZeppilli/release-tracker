@@ -2,18 +2,27 @@ import type { Locale, MessageKey, Translator } from "@/modules/i18n";
 import { isEnabled, LIVE_CHANNELS, LIVE_EVENTS, type Preference } from "../domain/preferences";
 import { EXTERNAL_TRIAL_DAYS, type Trial } from "../domain/trial";
 import { savePreference, savePreferredLocale } from "../server/save-notification-settings";
+import { saveSlackWebhook, sendSlackTest } from "../server/save-slack";
 import { PreferenceRow } from "./preference-row";
 import { PreferredLocaleChoice } from "./preferred-locale-choice";
+import { SlackWebhook } from "./slack-webhook";
 
-// The one channel a switch can be drawn for today (`canSwitch`): the bell. Slack and the email are
-// declared below instead of switched, because a switch for a channel that sends nothing would be a
-// promise, and #172 and #173 each bring their own.
-const [BELL] = LIVE_CHANNELS;
+// The channels a switch may be drawn for (`canSwitch`): the bell, free for good, and Slack, which
+// #172 lit. The email is declared below instead of switched, because a switch for a channel that
+// sends nothing would be a promise, and #173 brings its own.
+const [BELL, SLACK] = LIVE_CHANNELS;
 
 // The two strings an event needs, by event, so a third one cannot be added here without its words.
 const ROWS: Readonly<Record<(typeof LIVE_EVENTS)[number], { label: MessageKey; off: MessageKey }>> = {
   featured_release: { label: "settings.notifications.featured.label", off: "settings.notifications.featured.off" },
   notable_release: { label: "settings.notifications.notable.label", off: "settings.notifications.notable.off" },
+};
+
+// The same two events on Slack say something else when they are off: the bell keeps ringing, and it
+// is the channel that goes quiet. The bell's sentence would have claimed the Notification itself.
+const SLACK_OFF: Readonly<Record<(typeof LIVE_EVENTS)[number], MessageKey>> = {
+  featured_release: "settings.notifications.slack.featured.off",
+  notable_release: "settings.notifications.slack.notable.off",
 };
 
 function trialLine(trial: Trial, t: Translator): string {
@@ -33,10 +42,13 @@ export function NotificationSettings({
   preferences,
   preferredLocale,
   trial,
+  slackHint,
   t,
 }: {
   preferences: readonly Preference[];
   preferredLocale: Locale;
+  // The hint of the saved webhook, or null: the URL itself is not readable, by grant (#172).
+  slackHint: string | null;
   trial: Trial;
   // A prop and not `getTranslator()`: this file is exported from the module's `ui` index, which
   // client components import too.
@@ -60,6 +72,7 @@ export function NotificationSettings({
             enabled={isEnabled(preferences, event, BELL)}
             label={t(ROWS[event].label)}
             consequence={t(ROWS[event].off)}
+            switchKey="settings.notifications.switch"
             action={savePreference}
           />
         ))}
@@ -79,6 +92,32 @@ export function NotificationSettings({
         {t("settings.notifications.external.body")}
       </p>
       <p className="mt-2 max-w-prose font-sans text-meta text-text">{trialLine(trial, t)}</p>
+
+      <h4 className="mt-6 font-mono text-label text-text">{t("settings.notifications.slack.title")}</h4>
+      <p className="mt-2 max-w-prose font-sans text-meta text-text-muted">
+        {t("settings.notifications.slack.note")}
+      </p>
+      <SlackWebhook hint={slackHint} save={saveSlackWebhook} test={sendSlackTest} />
+      {/* The switches come after the webhook, in the order the Developer does it: there is nothing
+          to switch on before there is somewhere to send. */}
+      <ul className="mt-4">
+        {LIVE_EVENTS.map((event) => (
+          <PreferenceRow
+            key={`slack-${event}`}
+            event={event}
+            channel={SLACK}
+            enabled={isEnabled(preferences, event, SLACK)}
+            label={t(ROWS[event].label)}
+            consequence={t(SLACK_OFF[event])}
+            switchKey="settings.notifications.switch.slack"
+            action={savePreference}
+          />
+        ))}
+      </ul>
+      {/* Said once, under both switches: it is how the channel behaves, not what either switch does. */}
+      <p className="mt-2 max-w-prose font-sans text-meta text-text-faint">
+        {t("settings.notifications.slack.grouping")}
+      </p>
 
       <h3 className="mt-6 border-t border-rule pt-4 font-mono text-label text-text">
         {t("settings.notifications.locale.title")}

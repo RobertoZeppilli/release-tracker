@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import type { MessageKey } from "@/modules/i18n";
 import { useTranslator } from "@/modules/i18n/ui";
 import { SeverityLabel } from "@/modules/releases/ui";
 import type { NotificationChannel, NotificationEvent } from "../domain/events";
@@ -24,6 +25,7 @@ export function PreferenceRow({
   enabled,
   label,
   consequence,
+  switchKey,
   action,
 }: {
   event: NotificationEvent;
@@ -32,6 +34,9 @@ export function PreferenceRow({
   enabled: boolean;
   label: string;
   consequence: string;
+  // Which channel the accessible name says, since the same row is drawn for the bell and for Slack
+  // and a name that said neither would leave two identical controls on the page.
+  switchKey: MessageKey;
   // The Server Action, handed down instead of imported (see `domain/saving`).
   action: SaveSwitch;
 }) {
@@ -60,7 +65,7 @@ export function PreferenceRow({
             type="submit"
             role="checkbox"
             aria-checked={shown}
-            aria-label={t("settings.notifications.switch", { name: label })}
+            aria-label={t(switchKey, { name: label })}
             aria-busy={pending || undefined}
             aria-describedby={failed ? errorId : undefined}
             className={`${MARK} ${shown ? "text-text" : "text-text-faint hover:text-text-muted"}`}

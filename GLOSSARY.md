@@ -441,6 +441,8 @@ passivo personale, e `gefolgte Technologien` non è tedesco. Quelle posizioni le
 | Canale di notifica | `NotificationChannel` | `in_app` · `slack` · `email`; `in_app` gratis, gli altri Pro |
 | Visto | `seenAt` | sulla Notifica, non sulla Release: il contatore conta le Notifiche con `seen_at` nullo |
 | Lingua preferita | `preferredLocale` | nelle impostazioni delle Notifiche, per email e Slack che non hanno un URL; manca, vale `en` |
+| Consegna | `NotificationDelivery` | tabella `notification_deliveries`, una riga per Notifica e canale con esito, errore e istante |
+| Webhook Slack | `slackWebhookUrl` | segreto in `notification_secrets`, tabella senza grant per il client; si rilegge solo l'indizio `slackWebhookHint` (host e ultime quattro cifre) |
 | Piano | `Plan` | `free` · `pro` · `team` |
 | Cancellazione dell'account | `delete account` | la pagina `/account` |
 | Prodotto | `Verdict` | mai tradotto, mai con l'articolo |

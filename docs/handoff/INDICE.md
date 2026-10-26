@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del diciottesimo giro: la #178 chiusa e l'avviso ISR misurato (2026-10-25)
+  - ⚠️ Un ramo riusato dopo uno squash merge offre una PR che non ha niente da portare
+  - ⚠️ Le scritture ISR si contano in unita da 8 KB, e la leva e' il numero di percorsi
 - Stato del diciassettesimo giro: la #171 chiusa e la prossima issue da scegliere (2026-10-23)
   - ⚠️ Le prime Server Action del progetto, e le quattro regole che le tengono
 - Stato del sedicesimo giro: la #170 chiusa e la prossima issue da scegliere (2026-10-23)

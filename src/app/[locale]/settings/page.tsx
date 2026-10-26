@@ -47,6 +47,7 @@ export default async function SettingsPage() {
           preferences={settings.preferences}
           preferredLocale={settings.preferredLocale}
           trial={trialOf(settings.externalTrialStartedAt, new Date())}
+          slackHint={settings.slackHint}
           t={t}
         />
       </main>

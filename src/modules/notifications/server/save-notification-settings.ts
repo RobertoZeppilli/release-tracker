@@ -4,9 +4,9 @@ import { z } from "zod";
 import { createRequestClient } from "@/lib/supabase-request";
 import { localeSchema } from "@/modules/i18n";
 import { NotificationChannelSchema, NotificationEventSchema } from "../domain/events";
-import { canSwitch } from "../domain/preferences";
+import { canSwitch, isExternal } from "../domain/preferences";
 import type { LocaleSaved, SwitchSaved } from "../domain/saving";
-import { writePreference, writePreferredLocale } from "./write-notification-settings";
+import { startExternalTrial, writePreference, writePreferredLocale } from "./write-notification-settings";
 
 // ⚠️ **The first Server Actions in this project**, chosen with the user on 2026-10-23 and written
 // down in `docs/DECISIONI.md`. Everything else that writes from a page either writes from the
@@ -53,6 +53,12 @@ export async function savePreference(previous: SwitchSaved, form: FormData): Pro
   if (error || !data.user) return { status: "failed", enabled: previous.enabled };
 
   try {
+    // ⚠️ Switching an external channel **on** is what starts the 30 day trial (ADR 0009), and
+    // nothing else does: not signing up, not saving the language. It goes first, so a trial that
+    // fails to start leaves the switch off rather than an external channel running outside a trial.
+    if (isExternal(parsed.data.channel) && parsed.data.enabled) {
+      await startExternalTrial(supabase, data.user.id, new Date());
+    }
     await writePreference(supabase, data.user.id, parsed.data);
   } catch {
     // The reason is not shown to the reader: what they can do about it is press again, and the line

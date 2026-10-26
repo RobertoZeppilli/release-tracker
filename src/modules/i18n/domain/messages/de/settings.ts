@@ -25,7 +25,7 @@ export const settings = {
     "Der wöchentliche Digest bringt seinen eigenen Schalter mit, an dem Tag, an dem der Digest selbst kommt.",
   "settings.notifications.external.title": "slack und e-mail",
   "settings.notifications.external.body":
-    "Beide Kanäle werden gebaut, und jeder bringt seinen Schalter mit, sobald er da ist. Sie tragen das Zeichen Pro vom ersten Tag an, Testzeit eingeschlossen: endet die Testzeit ohne Pro, gehen sie aus, und nichts bleibt aus Gewohnheit an. Die Glocke bleibt, gratis.",
+    "Slack ist da, mit eigenen Schaltern weiter unten; die E-Mail wird noch gebaut und bringt ihre eigenen mit, wenn sie kommt. Sie tragen das Pro-Zeichen vom ersten Tag an, Testphase eingeschlossen: Endet die Testphase ohne Pro, schalten sie sich ab, und nichts bleibt aus Gewohnheit an. Die Glocke bleibt, kostenlos.",
   "settings.notifications.pro": "Pro",
   "settings.notifications.trial.waiting":
     "Deine Testzeit von {count} Tagen für Slack und E-Mail beginnt, wenn du einen der beiden zum ersten Mal einschaltest, nicht am Tag der Anmeldung.",
@@ -35,6 +35,27 @@ export const settings = {
   },
   "settings.notifications.trial.ended":
     "Deine Testzeit für Slack und E-Mail ist vorbei. Die Glocke ist für immer gratis; die zwei externen Kanäle brauchen Pro.",
+  "settings.notifications.switch.slack": "{name} auf Slack",
+  "settings.notifications.slack.title": "slack",
+  "settings.notifications.slack.note":
+    "Slack braucht einen Incoming Webhook: Lege einen in deinem Workspace an, wähle den Kanal und füge die URL hier ein. Sie ist ein Geheimnis, nach dem Speichern liest du nur noch, wohin sie zeigt, nie die URL selbst.",
+  "settings.notifications.slack.label": "URL des Incoming Webhooks",
+  "settings.notifications.slack.save": "speichern",
+  "settings.notifications.slack.remove": "entfernen",
+  "settings.notifications.slack.current": "Sendet an {hint}. Lass das Feld leer und speichere, um ihn zu entfernen.",
+  "settings.notifications.slack.none": "Noch kein Webhook, also senden die beiden Schalter unten nichts.",
+  "settings.notifications.slack.invalid":
+    "Nicht gespeichert. Die URL eines Webhooks beginnt mit https://hooks.slack.com/services/ und kommt aus deinem eigenen Workspace.",
+  "settings.notifications.slack.featured.off":
+    "Aus, erreichen featured Releases weiterhin die Glocke und nicht mehr Slack.",
+  "settings.notifications.slack.notable.off":
+    "Aus, erreichen notable Releases Slack nicht mehr. Die featured haben einen eigenen Schalter und können weiter ankommen.",
+  "settings.notifications.slack.grouping":
+    "Eine Nachricht pro Lauf, mit einer Zeile pro Release: zehn Releases in einem Lauf kommen als eine Nachricht an, nicht als zehn.",
+  "settings.notifications.slack.test": "Testnachricht senden",
+  "settings.notifications.slack.testOk": "Die Testnachricht ist raus. Der Kanal funktioniert.",
+  "settings.notifications.slack.testFailed": "Slack hat sie nicht angenommen: {error}",
+  "settings.notifications.slack.testEmpty": "Noch nichts zu testen: Speichere zuerst einen Webhook.",
   "settings.notifications.locale.title": "sprache von e-mail und slack",
   "settings.notifications.locale.note":
     "E-Mail und Slack haben keine Adresse, aus der sie eine Sprache lesen könnten, also werden sie in dieser geschrieben. Es ändert nicht die Sprache der Seite, die die der Adresse bleibt, und Release Notes und Zusammenfassungen bleiben in ihrer Originalsprache.",
