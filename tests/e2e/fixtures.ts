@@ -411,6 +411,10 @@ export async function clearNotificationSettings(userId: string): Promise<void> {
   if (settings.error) throw settings.error;
   const preferences = await db.from("notification_preferences").delete().eq("user_id", userId);
   if (preferences.error) throw preferences.error;
+  // The Slack webhook lives in a table of its own, which no client may touch (#172): without this
+  // line a webhook saved by one test would still be there for the next one.
+  const secrets = await db.from("notification_secrets").delete().eq("user_id", userId);
+  if (secrets.error) throw secrets.error;
 }
 
 const PreferenceRowSchema = z.object({ enabled: z.boolean() });

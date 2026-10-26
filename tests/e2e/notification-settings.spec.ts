@@ -113,14 +113,51 @@ test("the line of the trial comes from the database, and is true on the last day
   await expect(page.getByText("Your trial of Slack and email has ended.")).toBeVisible();
 });
 
-test("the external channels carry the Pro mark while nothing can be switched on yet", async ({ page }) => {
+test("the external channels carry the Pro mark, and Slack is the one that can be switched on", async ({ page }) => {
   await signIn(page);
   await page.goto("/settings");
 
   const heading = page.getByRole("heading", { name: /slack and email/ });
   await expect(heading).toContainText("Pro");
-  // Only the two bell switches exist: a switch for a channel that sends nothing would be a promise.
-  await expect(page.getByRole("checkbox")).toHaveCount(2);
+  // Four: the two bell switches and the two Slack ones (#172). The email has none, because a switch
+  // for a channel that sends nothing would be a promise, and #173 brings its own.
+  await expect(page.getByRole("checkbox")).toHaveCount(4);
+  // Nothing to prove while there is nowhere to send.
+  await expect(page.getByRole("button", { name: "send a test message" })).toBeDisabled();
+});
+
+test("the Slack webhook is read back as a hint, never as the URL", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/settings");
+
+  const field = page.getByLabel("incoming webhook URL");
+  await field.fill("https://hooks.slack.com/services/T0/B0/E2eTest4321");
+  await page.getByRole("button", { name: "save" }).click();
+
+  await expect(page.getByText("Sending to hooks.slack.com/\u20264321")).toBeVisible();
+  await expect(page.getByRole("button", { name: "send a test message" })).toBeEnabled();
+  // ⚠️ The secret is never printed back: the field stays empty and the page holds the hint alone.
+  await expect(field).toHaveValue("");
+  await expect(page.locator("body")).not.toContainText("E2eTest4321");
+
+  // An empty field saved is the way back out, and it must leave the switches sending nothing.
+  await page.getByRole("button", { name: "save" }).click();
+  await expect(page.getByText("No webhook yet")).toBeVisible();
+  await expect(page.getByRole("button", { name: "send a test message" })).toBeDisabled();
+});
+
+test("a webhook that is not Slack's is refused, and says why", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/settings");
+
+  await page.getByLabel("incoming webhook URL").fill("https://hooks.slack.com.example.test/services/T0");
+  await page.getByRole("button", { name: "save" }).click();
+
+  // Next keeps its own empty `role="alert"` route announcer in the page, so the error is read
+  // by the text it carries, not by the role alone.
+  const error = page.getByRole("alert").filter({ hasText: "error:" });
+  await expect(error).toContainText("https://hooks.slack.com/services/");
+  await expect(page.getByText("No webhook yet")).toBeVisible();
 });
 
 test("the language of email and slack is saved, and is not the language of the site", async ({ page }) => {
