@@ -1,13 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { slackApp } from "@/lib/slack-app";
 import { createServiceClient } from "@/lib/supabase-server";
 import { DEFAULT_LOCALE, type Locale, localePath } from "@/modules/i18n";
 import { channelHint, readState } from "@/modules/notifications";
-import {
-  exchangeSlackCode,
-  slackOauthCredentials,
-  slackStateSigner,
-  writeSlackWebhook,
-} from "@/modules/notifications/server";
+import { exchangeSlackCode, slackStateSigner, writeSlackWebhook } from "@/modules/notifications/server";
 
 // The second half of "Add to Slack" (#188): Slack sends the Developer back with a `code`, the
 // webhook is fetched with it, and `/settings` says which channel it reached.
@@ -26,12 +22,12 @@ function back(origin: string, locale: Locale, outcome: string): NextResponse {
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { origin, searchParams } = request.nextUrl;
-  const credentials = slackOauthCredentials();
-  if (!credentials) return back(origin, DEFAULT_LOCALE, "unavailable");
+  const app = slackApp();
+  if (!app) return back(origin, DEFAULT_LOCALE, "unavailable");
 
   // The `state` first, before anything else is read: until it is verified this request is nobody's.
   const raw = searchParams.get("state");
-  const state = raw ? readState(raw, slackStateSigner(credentials.clientSecret), new Date()) : null;
+  const state = raw ? readState(raw, slackStateSigner(app.clientSecret), new Date()) : null;
   if (!state) return back(origin, DEFAULT_LOCALE, "denied");
 
   // "Cancel" on the consent screen comes back with an `error` and no `code`, and it is not a failure
@@ -39,7 +35,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const code = searchParams.get("code");
   if (!code) return back(origin, state.locale, "cancelled");
 
-  const exchanged = await exchangeSlackCode(code);
+  const exchanged = await exchangeSlackCode(app, code);
   if (!exchanged.ok) return back(origin, state.locale, "failed");
 
   const { url, channel } = exchanged.webhook;

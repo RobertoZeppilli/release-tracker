@@ -11,9 +11,7 @@ export { type SendResult, sendToSlack, type SendToSlack } from "./send-slack";
 export {
   exchangeSlackCode,
   type ExchangeResult,
-  isSlackOauthEnabled,
-  slackOauthCredentials,
-  slackRedirectUri,
+  type SlackApp,
   slackStateSigner,
 } from "./slack-oauth";
 export {

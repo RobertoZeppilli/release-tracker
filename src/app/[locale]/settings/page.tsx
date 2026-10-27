@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
+import { slackApp } from "@/lib/slack-app";
 import { createRequestClient } from "@/lib/supabase-request";
 import { requireAccount } from "@/modules/auth/server";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { LocalePicker } from "@/modules/i18n/ui";
 import { trialOf } from "@/modules/notifications";
-import { isSlackOauthEnabled, readNotificationSettings } from "@/modules/notifications/server";
+import { readNotificationSettings } from "@/modules/notifications/server";
 import { NotificationSettings, slackOutcomeKey } from "@/modules/notifications/ui";
 
 // Behind the login and never indexed, so the whole of its metadata is the title in the page's own
@@ -56,7 +57,7 @@ export default async function SettingsPage({
           preferredLocale={settings.preferredLocale}
           trial={trialOf(settings.externalTrialStartedAt, new Date())}
           slackHint={settings.slackHint}
-          slackOauth={isSlackOauthEnabled()}
+          slackOauth={slackApp() !== null}
           slackOutcome={slackOutcomeKey(typeof slack === "string" ? slack : null)}
           locale={await currentLocale()}
           t={t}
