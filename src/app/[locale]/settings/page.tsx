@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
+import { slackApp } from "@/lib/slack-app";
 import { createRequestClient } from "@/lib/supabase-request";
 import { requireAccount } from "@/modules/auth/server";
-import { getTranslator } from "@/modules/i18n/server";
+import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { LocalePicker } from "@/modules/i18n/ui";
 import { trialOf } from "@/modules/notifications";
 import { readNotificationSettings } from "@/modules/notifications/server";
-import { NotificationSettings } from "@/modules/notifications/ui";
+import { NotificationSettings, slackOutcomeKey } from "@/modules/notifications/ui";
 
 // Behind the login and never indexed, so the whole of its metadata is the title in the page's own
 // language (ADR 0008). It reads `settings.title`, the key the heading below reads, and not a key of
@@ -23,9 +24,17 @@ export async function generateMetadata(): Promise<Metadata> {
 // the reason the foot had to be rebuilt in two columns (`LocalePicker`, the foot variant).
 // ⚠️ Signed in only, like `/account`: the language itself is reachable from the foot of every public
 // page, so a visitor sent here would find a page of preferences they have nowhere to keep.
-export default async function SettingsPage() {
+// `?slack=` is what the two routes of "Add to Slack" leave in the address on the way back (#188);
+// reading it is also what makes this page say which channel it reached, since the hint below is read
+// from the database after the write.
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ slack?: string | string[] }>;
+}) {
   await requireAccount("/settings");
   const t = await getTranslator();
+  const slack = (await searchParams).slack;
   // Read here and handed down, so the section stays a component that is given what it draws. The
   // Developer's own client: RLS is what keeps the two rows theirs (`readNotificationSettings`).
   const settings = await readNotificationSettings(await createRequestClient());
@@ -48,6 +57,9 @@ export default async function SettingsPage() {
           preferredLocale={settings.preferredLocale}
           trial={trialOf(settings.externalTrialStartedAt, new Date())}
           slackHint={settings.slackHint}
+          slackOauth={slackApp() !== null}
+          slackOutcome={slackOutcomeKey(typeof slack === "string" ? slack : null)}
+          locale={await currentLocale()}
           t={t}
         />
       </main>

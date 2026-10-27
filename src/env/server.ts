@@ -12,4 +12,6 @@ export const serverEnv = parseServerEnv({
   E2E_AUTH_SECRET: process.env.E2E_AUTH_SECRET,
   DEV_LOGIN_EMAIL: process.env.DEV_LOGIN_EMAIL,
   DEV_LOGIN_PASSWORD: process.env.DEV_LOGIN_PASSWORD,
+  SLACK_CLIENT_ID: process.env.SLACK_CLIENT_ID,
+  SLACK_CLIENT_SECRET: process.env.SLACK_CLIENT_SECRET,
 });

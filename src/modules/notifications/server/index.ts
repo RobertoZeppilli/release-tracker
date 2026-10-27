@@ -9,6 +9,12 @@ export { pruneNotifications, RETENTION_DAYS } from "./prune-notifications";
 export { type NotificationSettings, readNotificationSettings } from "./read-notification-settings";
 export { type SendResult, sendToSlack, type SendToSlack } from "./send-slack";
 export {
+  exchangeSlackCode,
+  type ExchangeResult,
+  type SlackApp,
+  slackStateSigner,
+} from "./slack-oauth";
+export {
   startExternalTrial,
   writePreference,
   writePreferredLocale,

@@ -74,10 +74,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
 // Everything but the paths that have no language of their own and must not be rewritten: the
 // internals of Next, the route handlers (`next/root-params` does not even reach them), the OAuth
-// callbacks and the files served from the app root.
+// callbacks, Slack's own round of #188, and the files served from the app root.
 // ⚠️ **No clause against paths with a dot**: a Release page is `/technologies/vite/7.1.0`, and a
 // rule that skipped dotted paths would be a rule that skipped the Releases. The files are named
 // one by one instead.
 export const config = {
-  matcher: ["/((?!_next|api|auth|icon.svg|sitemap.xml|robots.txt).*)"],
+  matcher: ["/((?!_next|api|auth|slack|icon.svg|sitemap.xml|robots.txt).*)"],
 };
