@@ -39,7 +39,19 @@ export const settings = {
   "settings.notifications.switch.slack": "{name} su Slack",
   "settings.notifications.slack.title": "slack",
   "settings.notifications.slack.note":
-    "Slack vuole un incoming webhook: creane uno nel tuo workspace, scegli il canale e incolla qui l'URL. È un segreto, quindi una volta salvato rileggi solo dove punta, mai l'URL intero.",
+    "Una pressione, e Slack chiede in quale canale devono arrivare i messaggi. La app Slack è di Verdict, quindi non crei niente e non c'è nessun URL da copiare o da tenere.",
+  "settings.notifications.slack.connect": "Add to Slack",
+  "settings.notifications.slack.result.connected": "Slack è collegato.",
+  "settings.notifications.slack.result.cancelled": "Niente è cambiato: l'autorizzazione non è stata data.",
+  "settings.notifications.slack.result.failed":
+    "Slack non ha completato l'autorizzazione, quindi non è stato salvato niente. Riprova.",
+  "settings.notifications.slack.result.denied":
+    "Quel ritorno non appartiene a un'autorizzazione cominciata qui, quindi è stato rifiutato. Ricomincia da questa pagina.",
+  "settings.notifications.slack.result.unavailable":
+    "Add to Slack non è disponibile qui, quindi incolla un webhook qui sotto.",
+  "settings.notifications.slack.manual": "oppure incolla un webhook a mano",
+  "settings.notifications.slack.manualNote":
+    "L'altra via, e la sola in sviluppo: crea un incoming webhook nel tuo workspace, scegli il canale e incolla l'URL. È un segreto, quindi una volta salvato rileggi solo dove punta, mai l'URL intero.",
   "settings.notifications.slack.label": "URL dell'incoming webhook",
   "settings.notifications.slack.save": "salva",
   "settings.notifications.slack.remove": "rimuovi",

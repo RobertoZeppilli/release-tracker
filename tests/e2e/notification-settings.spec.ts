@@ -199,3 +199,29 @@ test("the German page keeps its switches at 320px", async ({ page }) => {
   expect(box).not.toBeNull();
   if (box) expect(box.x + box.width).toBeLessThanOrEqual(320);
 });
+
+// "Add to Slack" (#188). The round itself cannot be driven from here: Slack demands an HTTPS
+// `redirect_uri`, so it is proved by hand in production and written up. What is proved here is the
+// state the tests and development run in, which is the credentials unset: no button, the webhook
+// field still the way in, and the install route saying so instead of leading nowhere.
+test("without the Slack app's credentials there is no button, and the install route says so", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/settings");
+  await expect(page.getByRole("link", { name: "Add to Slack" })).toHaveCount(0);
+  // The field is not hidden by the button existing elsewhere: it is the other way in, and here the
+  // only one.
+  await expect(page.getByLabel("incoming webhook URL")).toBeVisible();
+
+  await page.goto("/slack/install");
+  await expect(page).toHaveURL(/\/settings\?slack=unavailable/);
+  await expect(page.getByRole("status").filter({ hasText: "Add to Slack is not available here" })).toBeVisible();
+});
+
+// The forged return Slack warns about, which is the half of the round that does not need Slack: a
+// `state` the server never signed is refused, and nothing is written for anybody.
+test("a return with a state that was not signed here is refused", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/slack/callback?code=whatever&state=forged.signature");
+  await expect(page).toHaveURL(/\/settings\?slack=(denied|unavailable)/);
+  await expect(page.getByText("No webhook yet")).toBeVisible();
+});

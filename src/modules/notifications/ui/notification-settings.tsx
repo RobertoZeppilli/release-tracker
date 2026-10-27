@@ -4,6 +4,7 @@ import { EXTERNAL_TRIAL_DAYS, type Trial } from "../domain/trial";
 import { savePreference, savePreferredLocale } from "../server/save-notification-settings";
 import { saveSlackWebhook, sendSlackTest } from "../server/save-slack";
 import { PreferenceRow } from "./preference-row";
+import { SlackConnect } from "./slack-connect";
 import { PreferredLocaleChoice } from "./preferred-locale-choice";
 import { SlackWebhook } from "./slack-webhook";
 
@@ -43,12 +44,24 @@ export function NotificationSettings({
   preferredLocale,
   trial,
   slackHint,
+  slackOauth,
+  slackOutcome,
+  locale,
   t,
 }: {
   preferences: readonly Preference[];
   preferredLocale: Locale;
-  // The hint of the saved webhook, or null: the URL itself is not readable, by grant (#172).
+  // The hint of the saved webhook, or null: the URL itself is not readable, by grant (#172). Since
+  // #188 it is the channel by name when the webhook came from "Add to Slack", and the host with
+  // four characters when it was pasted, because that is all a pasted URL can say about itself.
   slackHint: string | null;
+  // Whether "Add to Slack" exists at all: it needs the credentials of the Slack app, which are
+  // unset in development, where Slack's HTTPS `redirect_uri` cannot be satisfied (#188).
+  slackOauth: boolean;
+  // What the round left in the address on the way back, already turned into a key, or null.
+  slackOutcome: MessageKey | null;
+  // The language of the page, which the install route needs to send the Developer back here.
+  locale: Locale;
   trial: Trial;
   // A prop and not `getTranslator()`: this file is exported from the module's `ui` index, which
   // client components import too.
@@ -94,8 +107,29 @@ export function NotificationSettings({
       <p className="mt-2 max-w-prose font-sans text-meta text-text">{trialLine(trial, t)}</p>
 
       <h4 className="mt-6 font-mono text-label text-text">{t("settings.notifications.slack.title")}</h4>
+      {/* The press comes first and the field after it (#188): the field is the way in that is left
+          when the round cannot run, and in development it is the only one. */}
+      {slackOauth && (
+        <>
+          <p className="mt-2 max-w-prose font-sans text-meta text-text-muted">
+            {t("settings.notifications.slack.note")}
+          </p>
+          <SlackConnect locale={locale} t={t} />
+        </>
+      )}
+      {slackOutcome && (
+        <p
+          role="status"
+          className="mt-3 max-w-prose font-mono text-diagnostic text-text"
+        >
+          {t(slackOutcome)}
+        </p>
+      )}
+      <h5 className="mt-6 font-mono text-label text-text-muted">
+        {t("settings.notifications.slack.manual")}
+      </h5>
       <p className="mt-2 max-w-prose font-sans text-meta text-text-muted">
-        {t("settings.notifications.slack.note")}
+        {t("settings.notifications.slack.manualNote")}
       </p>
       <SlackWebhook hint={slackHint} save={saveSlackWebhook} test={sendSlackTest} />
       {/* The switches come after the webhook, in the order the Developer does it: there is nothing
