@@ -47,6 +47,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...releaseMeta(page.technology.name, page.release, await getTranslator()),
     path: releasePath(page.technology.slug, page.release.version),
     locale: await currentLocale(),
+    // The Release page is the one page that declares no translations of itself: its body, the
+    // Release Notes and the Summary, is not translated (ADR 0008, emendamento del 2026-10-28).
+    hreflang: false,
   });
 }
 

@@ -82,3 +82,33 @@ Lo hanno misurato sei E2E caduti.
 risponderebbe con la sua 404 nuda, senza guscio, senza tema e senza piede. `global-not-found.tsx`
 era l'altra strada ed è stata rifiutata: è un secondo guscio con i suoi font, il suo script del tema
 e il suo piede, e un piede incollato due volte è un piede che divergerà.
+
+## Emendamento del 2026-10-28: quali indirizzi vengono dichiarati a un motore di ricerca
+
+⚠️ **Questo emendamento non tocca le cinque lingue**, nessuna di esse e nessuna pagina: cambia solo
+quali indirizzi il sito **dichiara** a un crawler. Le pagine Release restano raggiungibili, tradotte
+nella loro cornice e corrette in tutte e cinque le lingue, e il `canonical` di ognuna continua a
+nominare sé stessa.
+
+**La pagina Release è dichiarata solo nella lingua di default.** Non entra nel sitemap per cinque e
+non porta `alternates.languages` nel suo `<head>`. La ragione è dentro questo ADR: *Note di rilascio
+e Sintesi non si traducono*, quindi le cinque versioni di una pagina Release hanno **lo stesso corpo
+parola per parola**, e `hreflang` difendeva un contenuto che in cinque lingue non esiste. Le pagine
+**Tecnologia restano tutte e cinque**: lì la cornice tradotta è quasi tutta la pagina. Restano per
+cinque anche la landing e le cinque pagine che dicono cos'è il prodotto.
+
+**Il motivo è il prezzo, e il prezzo è misurato** (`docs/handoff/PESO.md`): il 2026-10-23 il progetto
+ha consumato il 100% delle 200.000 scritture ISR del piano. La leva è il **numero di percorsi**, non
+il peso di ognuno: 10.535 indirizzi dichiarati scendono a ~2.100, cioè circa l'80% delle scritture.
+⚠️ **Non è il contenuto rigenerato**: `revalidate = false` non era il rimedio, perché rigenerare
+contenuto identico era già gratis.
+
+⚠️ **Va spento in entrambi i posti.** Togliere `hreflang` dal solo sitemap non basta: Google crawla
+anche gli URL che un `hreflang` nel `<head>` nomina, e quelli resterebbero dichiarati pagina per
+pagina.
+
+⚠️ **Dichiarare meno non è impedire il crawl.** Il selettore nel piede linka la stessa pagina nelle
+altre quattro lingue, quindi un crawler può arrivarci dai link interni. Un `noindex` sulle quattro
+lingue non di default della pagina Release era l'altra strada, ed è stata **rifiutata per ora**: è
+una decisione più forte, quelle pagine escono dall'indice del tutto, e il taglio del grosso si
+ottiene senza.

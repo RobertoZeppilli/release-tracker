@@ -31,7 +31,17 @@ describe("sitemapPages", () => {
   });
 
   it("falls back to the Technology itself when it has no Release", () => {
-    expect(sitemapPages([vite], [])).toEqual([{ path: "/technologies/vite", lastModified: day("2026-01-01") }]);
+    expect(sitemapPages([vite], [])).toEqual([
+      { path: "/technologies/vite", kind: "technology", lastModified: day("2026-01-01") },
+    ]);
+  });
+
+  // The route reads `kind` to decide which pages it declares in all five languages and which only
+  // in the default one (ADR 0008, emendamento del 2026-10-28), so a Release that came back marked
+  // as a Technology page would be ~2.060 paths declared five times again.
+  it("says of each page whether it is a Technology page or a Release page", () => {
+    const pages = sitemapPages([vite], [{ technologyId: "t-vite", version: "6.0.0", lastModified: day("2026-02-01") }]);
+    expect(pages.map((page) => page.kind)).toEqual(["technology", "release"]);
   });
 
   it("encodes build metadata in the Release path", () => {
