@@ -78,26 +78,29 @@ test("a link keeps the language it was clicked in", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "it");
 });
 
+// ⚠️ The two sitemap tests name no seeded fixture, and cannot: in CI the suite runs against
+// `pnpm start`, where the sitemap is the one the build prerendered, so a Technology seeded in
+// `beforeAll` is not in it. What they assert is the **shape** of the addresses, over the real
+// Catalog that CI syncs before building (`tests/integration/sitemap.test.ts` says the same thing
+// from the other side: the route is prerendered and an E2E against the build cannot drive it).
 test("the sitemap lists every page in all five languages, each naming the others", async ({ request }) => {
   const xml = await (await request.get("/sitemap.xml")).text();
   for (const locale of ["it", "fr", "es", "de"]) {
     expect(xml).toContain(`/${locale}/faq`);
-    expect(xml).toContain(`/${locale}/technologies/${technology.slug}<`);
+    // A Technology page keeps its five addresses: one path segment under `/technologies`.
+    expect(xml).toMatch(new RegExp(`<loc>[^<]*/${locale}/technologies/[^/<]+</loc>`));
   }
   expect(xml).toContain('hreflang="x-default"');
 });
 
 // ADR 0008, emendamento del 2026-10-28: the Release page is declared once, in the default language.
-// ⚠️ The address is matched with the closing `<` of the tag: without it `/technologies/<slug>` also
-// matches every Release path under it, and the assertion would pass while testing nothing.
+// A Release path is the one with **two** segments under `/technologies`, and it is matched up to the
+// closing tag: without `</loc>` the expression would also match a Technology page.
 test("the sitemap declares a Release page once, in the default language only", async ({ request }) => {
   const xml = await (await request.get("/sitemap.xml")).text();
-  const release = `/technologies/${technology.slug}/1.0.0<`;
 
-  expect(xml).toContain(release);
-  for (const locale of ["it", "fr", "es", "de"]) {
-    expect(xml).not.toContain(`/${locale}${release}`);
-  }
+  expect(xml).toMatch(/<loc>https?:\/\/[^/<]+\/technologies\/[^/<]+\/[^/<]+<\/loc>/);
+  expect(xml).not.toMatch(/<loc>[^<]*\/(it|fr|es|de)\/technologies\/[^/<]+\/[^/<]+<\/loc>/);
 });
 
 test("a Release page declares no translations of itself, and still names itself canonical", async ({ page }) => {
