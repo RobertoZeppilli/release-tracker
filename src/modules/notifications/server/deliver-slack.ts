@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { selectAllRows } from "@/lib/supabase-rows";
 import { createTranslator, DEFAULT_LOCALE, dictionaryFor, localePath, localeSchema } from "@/modules/i18n";
 import { releasePath } from "@/modules/releases";
 import { NotificationChannelSchema, NotificationEventSchema } from "../domain/events";
@@ -65,6 +66,8 @@ export async function deliverSlack(
   { siteUrl, now = new Date(), send = sendToSlack }: DeliverOptions,
 ): Promise<DeliverReport> {
   const since = new Date(now.getTime() - WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  // Unpaged on purpose and not by oversight: `MAX_PER_RUN` is a ceiling under the page, so the run
+  // takes the oldest five hundred and leaves the rest to the next one (issue #190).
   const candidates = await db
     .from("notifications")
     .select("id, user_id, event, releases!inner (version, technologies!inner (name, slug)), notification_deliveries (channel)")
@@ -131,6 +134,9 @@ function withUrls(
 async function readRecipients(db: SupabaseClient, userIds: readonly string[]): Promise<SlackRecipient[]> {
   // The webhooks first, from the table a client cannot read: whoever has none cannot be sent to, and
   // reading their settings, Plan and preferences would be three queries for nothing.
+  //
+  // One row per Developer, and `userIds` is at most `MAX_PER_RUN`, so this and the two reads keyed
+  // the same way stay under the page without asking for one (issue #190).
   const secrets = await db
     .from("notification_secrets")
     .select("user_id, slack_webhook_url")
@@ -148,14 +154,25 @@ async function readRecipients(db: SupabaseClient, userIds: readonly string[]): P
   if (settings.error) throw settings.error;
   const rows = SettingsSchema.parse(settings.data);
   const [preferences, plans] = await Promise.all([
-    db.from("notification_preferences").select("user_id, event, channel, enabled").in("user_id", ids),
+    // The one read here that does not hold one row per Developer: three events by three channels is
+    // up to nine, so five hundred Developers are four thousand five hundred rows (issue #190).
+    selectAllRows((from, to) =>
+      db
+        .from("notification_preferences")
+        .select("user_id, event, channel, enabled")
+        .in("user_id", ids)
+        // The primary key, the only order over these rows without ties.
+        .order("user_id")
+        .order("event")
+        .order("channel")
+        .range(from, to),
+    ),
     db.from("plans").select("user_id, plan").in("user_id", ids),
   ]);
-  if (preferences.error) throw preferences.error;
   if (plans.error) throw plans.error;
 
   const byUser = new Map<string, Preference[]>();
-  for (const row of PreferenceSchema.parse(preferences.data)) {
+  for (const row of PreferenceSchema.parse(preferences)) {
     byUser.set(row.user_id, [...(byUser.get(row.user_id) ?? []), { event: row.event, channel: row.channel, enabled: row.enabled }]);
   }
   const paid = new Map(PlanSchema.parse(plans.data).map((row) => [row.user_id, row.plan !== "free"]));

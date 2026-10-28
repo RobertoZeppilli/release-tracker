@@ -10,6 +10,9 @@ const FollowRowSchema = z.object({
 
 // Read with the Developer's own client: RLS returns their follows and nobody else's, so the query
 // carries no `user_id` and cannot be pointed at another Developer.
+//
+// Unpaged: RLS leaves one Developer's rows, and nobody can follow more Technologies than the
+// Catalog holds, which is sixty (issue #190).
 export async function readFollows(db: SupabaseClient): Promise<Follow[]> {
   const { data, error } = await db
     .from("follows")

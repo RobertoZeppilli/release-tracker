@@ -67,6 +67,8 @@ export async function submitPendingSummaries(
   return { batchId, submitted: sending, failed, pending: [] };
 }
 
+// Unpaged because `chunks` already bounds it: each part is a hundred ids, so a part can never answer
+// with more than a hundred rows (issue #190).
 async function loadReleases(db: SupabaseClient, ids: string[]) {
   const releases = [];
   for (const part of chunks(ids)) {

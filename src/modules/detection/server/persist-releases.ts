@@ -40,6 +40,8 @@ export async function persistReleases(
   );
   if (inserted.error) throw inserted.error;
 
+  // Unpaged: restricted to the Versions this one run is writing for one Technology, and the initial
+  // import keeps a twelve month window, so the list never approaches a thousand (issue #190).
   const stored = await db.from("releases").select("id, version").eq("technology_id", technology.id).in("version", versions);
   if (stored.error) throw stored.error;
   const idByVersion = new Map(ReleaseIdSchema.parse(stored.data).map((row) => [row.version, row.id]));

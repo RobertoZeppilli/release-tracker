@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { selectAllRows } from "@/lib/supabase-rows";
 import type { SummaryBatches, SummaryResult } from "../domain/summary-batches";
 import { parseSummaryOutput } from "../domain/summary-output";
 import type { SummaryScope } from "./summary-scope";
@@ -32,18 +33,22 @@ export async function collectSummaryBatches(
   batches: SummaryBatches,
   { technologyIds }: SummaryScope = {},
 ): Promise<CollectReport> {
-  const query = db
-    .from("summaries")
-    .select("release_id, batch_id, releases!inner(version, technologies!inner(slug))")
-    .eq("status", "processing")
-    .not("batch_id", "is", null);
-  if (technologyIds) query.in("releases.technology_id", technologyIds);
-  const { data, error } = await query;
-  if (error) throw error;
+  // Paged: a run that submitted the whole Catalog leaves more than a thousand Summaries
+  // `processing`, and unpaged each run saw only the first thousand of them (issue #190).
+  const submitted = await selectAllRows((from, to) => {
+    const query = db
+      .from("summaries")
+      .select("release_id, batch_id, releases!inner(version, technologies!inner(slug))")
+      .eq("status", "processing")
+      .not("batch_id", "is", null);
+    if (technologyIds) query.in("releases.technology_id", technologyIds);
+    // By the primary key, the only order over these rows without ties.
+    return query.order("release_id").range(from, to);
+  });
 
   const byBatch = new Map<string, string[]>();
   const pageOf = new Map<string, ChangedRelease>();
-  for (const row of SubmittedSchema.parse(data)) {
+  for (const row of SubmittedSchema.parse(submitted)) {
     byBatch.set(row.batch_id, [...(byBatch.get(row.batch_id) ?? []), row.release_id]);
     pageOf.set(row.release_id, { slug: row.releases.technologies.slug, version: row.releases.version });
   }

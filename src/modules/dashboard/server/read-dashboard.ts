@@ -29,6 +29,12 @@ export type DashboardData = { followed: FollowedTechnology[]; releases: Dashboar
 // One query for the whole page, read with the Developer's own client: RLS picks their follows, so
 // the query carries no `user_id`. Every Release comes back, not just the window: the compact row
 // needs the latest major however old, and the Weekly Digest of the next slice needs them all.
+//
+// Unpaged because a Developer cannot follow more Technologies than the Catalog holds, which is sixty
+// (issue #190). ⚠️ The embedded Releases are a different matter: measured against the local
+// database, `max_rows` cuts an embedded list at a thousand **per parent row**, and an embedded list
+// cannot be paged. Today the busiest Technology has 245, so the day one passes a thousand this
+// embedding has to become a second query, the way `listSitemapPages` already does it.
 export async function readDashboard(db: SupabaseClient): Promise<DashboardData> {
   const { data, error } = await db
     .from("follows")
