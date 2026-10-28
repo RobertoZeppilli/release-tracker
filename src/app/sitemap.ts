@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { env } from "@/env";
 import { createPublicClient } from "@/lib/supabase";
-import { LOCALES, localeAlternates, localePath } from "@/modules/i18n";
+import { DEFAULT_LOCALE, LOCALES, localeAlternates, localePath } from "@/modules/i18n";
 import { listSitemapPages } from "@/modules/releases/server";
 
 // `revalidateReleasePages` marks the sitemap stale as soon as a Release is recorded or a Summary
@@ -36,6 +36,19 @@ function entry(path: string, lastModified?: Date): MetadataRoute.Sitemap {
   }));
 }
 
+// A page whose body is the same word for word in every language is declared once, in the default
+// one, with no `hreflang` (ADR 0008, emendamento del 2026-10-28). It is the Release page, and it is
+// what the sitemap is made of: declaring its ~2.060 paths five times was ~80% of the ISR writes the
+// plan includes. The page itself stays reachable, and correct, in all five languages.
+function defaultLocaleEntry(path: string, lastModified: Date): MetadataRoute.Sitemap {
+  return [
+    {
+      url: absolute(localePath(DEFAULT_LOCALE, path)),
+      lastModified,
+    },
+  ];
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages = await listSitemapPages(createPublicClient());
   return [
@@ -47,6 +60,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // the same reason the landing does not: they change when their text is edited, which is a
     // deploy and not a row anything here could read.
     ...STATIC_PAGES.flatMap((path) => entry(path)),
-    ...pages.flatMap(({ path, lastModified }) => entry(path, lastModified)),
+    ...pages.flatMap(({ path, kind, lastModified }) =>
+      kind === "release" ? defaultLocaleEntry(path, lastModified) : entry(path, lastModified),
+    ),
   ];
 }

@@ -82,8 +82,33 @@ test("the sitemap lists every page in all five languages, each naming the others
   const xml = await (await request.get("/sitemap.xml")).text();
   for (const locale of ["it", "fr", "es", "de"]) {
     expect(xml).toContain(`/${locale}/faq`);
+    expect(xml).toContain(`/${locale}/technologies/${technology.slug}<`);
   }
   expect(xml).toContain('hreflang="x-default"');
+});
+
+// ADR 0008, emendamento del 2026-10-28: the Release page is declared once, in the default language.
+// ⚠️ The address is matched with the closing `<` of the tag: without it `/technologies/<slug>` also
+// matches every Release path under it, and the assertion would pass while testing nothing.
+test("the sitemap declares a Release page once, in the default language only", async ({ request }) => {
+  const xml = await (await request.get("/sitemap.xml")).text();
+  const release = `/technologies/${technology.slug}/1.0.0<`;
+
+  expect(xml).toContain(release);
+  for (const locale of ["it", "fr", "es", "de"]) {
+    expect(xml).not.toContain(`/${locale}${release}`);
+  }
+});
+
+test("a Release page declares no translations of itself, and still names itself canonical", async ({ page }) => {
+  await page.goto(`/it/technologies/${technology.slug}/1.0.0`);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    new RegExp(`/it/technologies/${technology.slug}/1.0.0$`),
+  );
+  await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(0);
+  // The page is still the Italian one: what went away is the declaration, not the language.
+  await expect(page.locator("html")).toHaveAttribute("lang", "it");
 });
 
 // The picker, which is what makes the five languages a choice instead of five addresses. ADR 0008
