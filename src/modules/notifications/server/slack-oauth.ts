@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createHmac } from "node:crypto";
+import type { z } from "zod";
 import { SLACK_ACCESS_URL, SlackAccessSchema } from "../domain/slack-oauth";
 import type { Signer } from "../domain/slack-state";
 
@@ -51,11 +52,18 @@ export async function exchangeSlackCode(app: SlackApp, code: string): Promise<Ex
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     const parsed = SlackAccessSchema.safeParse(await response.json());
-    if (!parsed.success) return { ok: false, error: "malformed" };
+    // Which fields were wrong, by **name**, never by value: a response we refused is still a
+    // response that carries a webhook, and `malformed` on its own would send whoever reads the log
+    // back here to guess. The path and the kind of each complaint are enough to fix the schema.
+    if (!parsed.success) return { ok: false, error: `malformed ${issues(parsed.error)}`.slice(0, MAX_ERROR) };
     if (!parsed.data.ok) return { ok: false, error: parsed.data.error.slice(0, MAX_ERROR) };
     const { url, channel } = parsed.data.incoming_webhook;
     return { ok: true, webhook: { url, channel } };
   } catch (cause) {
     return { ok: false, error: (cause instanceof Error ? cause.message : String(cause)).slice(0, MAX_ERROR) };
   }
+}
+
+function issues(error: z.ZodError): string {
+  return error.issues.map((issue) => `${issue.path.join(".") || "(root)"}:${issue.code}`).join(" ");
 }
