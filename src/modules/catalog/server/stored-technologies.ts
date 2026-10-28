@@ -46,6 +46,9 @@ export function toStoredTechnology(row: unknown): StoredTechnology {
   };
 }
 
+// Unpaged, here and in `listActiveTechnologies`: the Catalog is curated by hand and sixty rows, and
+// what keeps these two under the page is the Catalog itself, not a filter (issue #190). The embedded
+// Sources are a handful per Technology, and an embedded list is cut at a thousand of its own.
 export async function readStoredTechnologies(db: SupabaseClient): Promise<StoredTechnology[]> {
   const { data, error } = await db.from("technologies").select(TECHNOLOGY_COLUMNS);
   if (error) throw error;

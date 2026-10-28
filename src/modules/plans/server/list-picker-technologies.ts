@@ -16,6 +16,10 @@ const PickerRowSchema = z.object({
 
 // One query for the whole picker: Versions are short strings and the page is behind the login, so a
 // per Technology query would cost far more than the rows it saves.
+//
+// Unpaged because the Catalog is curated and sixty rows. ⚠️ The embedded Releases carry the same
+// caveat as `readDashboard`: an embedded list is cut at a thousand per Technology and cannot be
+// paged, and only `latestStableRelease` reads it, so a cut would quietly pick the wrong latest.
 export async function listPickerTechnologies(db: SupabaseClient): Promise<PickerTechnology[]> {
   const { data, error } = await db
     .from("technologies")

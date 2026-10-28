@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { selectAllRows } from "@/lib/supabase-rows";
 import { SignificanceSchema, SummaryStatusSchema } from "@/modules/releases";
 import { NotificationChannelSchema, NotificationEventSchema } from "../domain/events";
 import { planReleaseNotifications, type ReleaseCandidate } from "../domain/plan";
@@ -42,13 +43,21 @@ export type GenerateReport = { considered: number; planned: number };
 // and `skipped` are set when a Release is born, far from where `ready` and `failed` are decided.
 export async function generateNotifications(db: SupabaseClient, now: Date = new Date()): Promise<GenerateReport> {
   const since = new Date(now.getTime() - WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
-  const releases = await db
-    .from("releases")
-    .select("id, technology_id, significance, significance_override, summaries (status)")
-    .gte("created_at", since);
-  if (releases.error) throw releases.error;
+  // Paged, and not because the window is usually small: after a `catalog:sync` every Release carries
+  // the same `created_at`, so for thirty days the window holds the whole Catalog. Unpaged, the job
+  // considered a thousand of them and ignored the rest without a word (issue #190).
+  const releases = await selectAllRows((from, to) =>
+    db
+      .from("releases")
+      .select("id, technology_id, significance, significance_override, summaries (status)")
+      .gte("created_at", since)
+      // By `id` and not by date: an import batch shares one `created_at`, and paging over a column
+      // with ties can repeat or skip a row.
+      .order("id")
+      .range(from, to),
+  );
 
-  const candidates: ReleaseCandidate[] = CandidateSchema.parse(releases.data).flatMap((row) =>
+  const candidates: ReleaseCandidate[] = CandidateSchema.parse(releases).flatMap((row) =>
     row.summaries === null
       ? []
       : [
@@ -63,22 +72,37 @@ export async function generateNotifications(db: SupabaseClient, now: Date = new 
   if (candidates.length === 0) return { considered: 0, planned: 0 };
 
   const technologyIds = [...new Set(candidates.map((candidate) => candidate.technologyId))];
-  const follows = await db.from("follows").select("user_id, technology_id").in("technology_id", technologyIds);
-  if (follows.error) throw follows.error;
-  const followers = FollowerSchema.parse(follows.data).map((row) => ({
+  // One row per Technology followed per Developer, so it grows with the subscribers: paged, ordered
+  // by the primary key, which is the only order without ties.
+  const follows = await selectAllRows((from, to) =>
+    db
+      .from("follows")
+      .select("user_id, technology_id")
+      .in("technology_id", technologyIds)
+      .order("user_id")
+      .order("technology_id")
+      .range(from, to),
+  );
+  const followers = FollowerSchema.parse(follows).map((row) => ({
     userId: row.user_id,
     technologyId: row.technology_id,
   }));
   if (followers.length === 0) return { considered: candidates.length, planned: 0 };
 
   const userIds = [...new Set(followers.map((follower) => follower.userId))];
-  const saved = await db
-    .from("notification_preferences")
-    .select("user_id, event, channel, enabled")
-    .in("user_id", userIds);
-  if (saved.error) throw saved.error;
+  // Up to four rows per Developer, so a thousand rows is around two hundred and fifty subscribers.
+  const saved = await selectAllRows((from, to) =>
+    db
+      .from("notification_preferences")
+      .select("user_id, event, channel, enabled")
+      .in("user_id", userIds)
+      .order("user_id")
+      .order("event")
+      .order("channel")
+      .range(from, to),
+  );
   const preferences = new Map<string, Preference[]>();
-  for (const row of PreferenceSchema.parse(saved.data)) {
+  for (const row of PreferenceSchema.parse(saved)) {
     const mine = preferences.get(row.user_id) ?? [];
     mine.push({ event: row.event, channel: row.channel, enabled: row.enabled });
     preferences.set(row.user_id, mine);

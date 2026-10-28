@@ -31,6 +31,7 @@ function declarationOf(row: z.infer<typeof DeclarationSchema>): CurrentVersion |
     : null;
 }
 
+// Unpaged, as `readFollows` is: RLS leaves one Developer's rows, bounded by the Catalog (issue #190).
 export async function fetchFollows(): Promise<Follow[]> {
   const { data, error } = await createSessionClient().from("follows").select(COLUMNS);
   if (error) throw new Error(error.message);

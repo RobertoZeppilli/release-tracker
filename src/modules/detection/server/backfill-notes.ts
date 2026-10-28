@@ -103,6 +103,8 @@ async function backfillTechnology(
   // GLOSSARY.md, Stato della sintesi: notes arriving late settle the Summary as `skipped`, never as
   // `pending`. The guard is the whole safety of this step: a `ready` or `failed` Summary is never
   // touched, and nothing is ever queued, so this run cannot spend.
+  // The returned rows are only counted, and a mutation's rows are not capped by `max_rows`
+  // (issue #190), so the number is right even for a Technology with more than a thousand.
   const settled = await db
     .from("summaries")
     .update({ status: "skipped", updated_at: new Date().toISOString() })

@@ -40,6 +40,8 @@ export async function readNotificationSettings(db: SupabaseClient): Promise<Noti
       .from("notification_settings")
       .select("preferred_locale, external_trial_started_at, slack_webhook_hint")
       .maybeSingle(),
+    // Unpaged: RLS leaves this Developer's rows, and three events by three channels is nine at the
+    // very most (issue #190).
     db.from("notification_preferences").select("event, channel, enabled"),
   ]);
   if (settings.error) throw settings.error;

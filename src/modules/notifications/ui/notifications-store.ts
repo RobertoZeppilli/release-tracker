@@ -39,6 +39,7 @@ export async function fetchUnseen(): Promise<number> {
   return count ?? 0;
 }
 
+// Unpaged: `PAGE` is twenty, a ceiling far under PostgREST's thousand (issue #190).
 export async function fetchFeed(): Promise<FeedItem[]> {
   const { data, error } = await createSessionClient()
     .from("notifications")
