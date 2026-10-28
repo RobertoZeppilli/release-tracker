@@ -36,7 +36,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!code) return back(origin, state.locale, "cancelled");
 
   const exchanged = await exchangeSlackCode(app, code);
-  if (!exchanged.ok) return back(origin, state.locale, "failed");
+  if (!exchanged.ok) {
+    // The only trace a redirect can leave. `failed` is one sentence on the page and two different
+    // realities here, and without this line the function log says nothing at all: the round is
+    // unreproducible in development, where there are no credentials and Slack refuses localhost.
+    // Slack's own word is what gets logged (`invalid_client_id`, `code_already_used`), never the
+    // secret and never the webhook.
+    console.error("slack oauth: exchange failed", exchanged.error);
+    return back(origin, state.locale, "failed");
+  }
 
   const { url, channel } = exchanged.webhook;
   // The channel **by name**, which is what the page then prints: the pasted URL could only ever say
@@ -44,10 +52,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const hint = channelHint(channel);
   try {
     await writeSlackWebhook(createServiceClient(), state.userId, { url, hint });
-  } catch {
+  } catch (cause) {
+    console.error("slack oauth: write failed", writeReason(cause));
     return back(origin, state.locale, "failed");
   }
   // The name is not passed back in the URL: the page reads the hint from the database on the next
   // paint, which is also the proof that the write landed.
   return back(origin, state.locale, "connected");
+}
+
+// The code and the sentence of a failed write and nothing else: `details` of a PostgREST error can
+// carry the offending row, and that row holds the webhook. A PostgrestError is a plain object and
+// not an `Error`, so both fields are read by name rather than through `instanceof`.
+function writeReason(cause: unknown): string {
+  if (typeof cause !== "object" || cause === null) return String(cause);
+  const code = "code" in cause ? String(cause.code) : "";
+  const message = "message" in cause ? String(cause.message) : "";
+  return `${code} ${message}`.trim() || "unknown";
 }
