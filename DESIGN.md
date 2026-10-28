@@ -871,10 +871,12 @@ is one column inside the page's container, in two parts separated by a 1px `rule
   field at 14ch, the button the standard 34px one. ⚠️ **The destructive control is not inked**, and
   this is the rule and not an omission: hue means severity in this system and a coral button would
   read as a verdict about a Release. What carries the weight is the word the reader types.
-- ⚠️ **No confirm dialog and no disabled button.** A native dialog is out (nothing in this app opens
-  one), and a button that is dead until the field is right explains itself twice and is unreachable
-  by the keyboard for no reason. The guard is the typed word, checked on the server, and the refusal
-  comes back as the page's own `error:` line with the field `aria-invalid`.
+- ⚠️ **No confirm dialog and no disabled button.** The app does open one dialog, since 2026-10-28,
+  for "Add to Slack": a dialog here explains a step that leaves the app, and is **never** the guard
+  of a destructive act, which is this typed word. A button that is dead until the field is right
+  explains itself twice and is unreachable by the keyboard for no reason. The guard is the typed
+  word, checked on the server, and the refusal comes back as the page's own `error:` line with the
+  field `aria-invalid`.
 
 ### Notification Settings (Settings)
 The second section of `/settings`, under the language of the page (issue #171, ADR 0009). It is one

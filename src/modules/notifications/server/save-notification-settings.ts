@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createRequestClient } from "@/lib/supabase-request";
 import { localeSchema } from "@/modules/i18n";
@@ -27,6 +28,12 @@ import { startExternalTrial, writePreference, writePreferredLocale } from "./wri
 // them, rather than importing this file: a client component may not import a module's `server`
 // folder (ADR 0006, the `no-server-import-in-client` rule), and the shape of the answer is a type in
 // `domain/saving` for the same reason.
+
+// ⚠️ The route pattern and not `/settings`: the page lives under `[locale]`, and the address the
+// reader sees has no prefix in the default language (ADR 0008). A Server Action revalidates
+// nothing by itself, so without this the press writes the row and the page keeps drawing the state
+// from before it -- which is what two E2E caught on 2026-10-28.
+const SETTINGS_ROUTE = "/[locale]/settings";
 
 const SwitchSchema = z.object({
   event: NotificationEventSchema,
@@ -83,4 +90,17 @@ export async function savePreferredLocale(previous: LocaleSaved, form: FormData)
     return { status: "failed", locale: previous.locale };
   }
   return { status: "saved", locale: parsed.data };
+}
+
+// The press that starts the thirty days, decided with the user on 2026-10-28: until the Pro plan
+// can be bought (#174) something has to open the trial, and Slack is drawn only once it is open.
+// ⚠️ No answer and no `useActionState`: it is a plain form in a server component, so what the
+// reader sees after it is the page rendered again from the database. A write that fails leaves the
+// press where it was, which is the honest state, and the platform log already holds the error.
+export async function startProTrial(): Promise<void> {
+  const supabase = await createRequestClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) return;
+  await startExternalTrial(supabase, data.user.id, new Date());
+  revalidatePath(SETTINGS_ROUTE, "page");
 }

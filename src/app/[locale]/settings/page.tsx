@@ -5,9 +5,9 @@ import { createRequestClient } from "@/lib/supabase-request";
 import { requireAccount } from "@/modules/auth/server";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { LocalePicker } from "@/modules/i18n/ui";
-import { trialOf } from "@/modules/notifications";
+import { slackOutcomeKey, trialOf } from "@/modules/notifications";
 import { readNotificationSettings } from "@/modules/notifications/server";
-import { NotificationSettings, slackOutcomeKey } from "@/modules/notifications/ui";
+import { NotificationSettings, PreferredLocaleSection } from "@/modules/notifications/ui";
 
 // Behind the login and never indexed, so the whole of its metadata is the title in the page's own
 // language (ADR 0008). It reads `settings.title`, the key the heading below reads, and not a key of
@@ -45,19 +45,33 @@ export default async function SettingsPage({
       <main id="content" className="mx-auto max-w-content px-4 pt-5 pb-8 sm:px-5 sm:pt-6">
         <h1 className="font-sans text-headline font-semibold">{t("settings.title")}</h1>
         <p className="mt-3 max-w-prose font-sans text-body text-text-muted">{t("settings.intro")}</p>
-        <section className="mt-6 max-w-measure border-t border-rule pt-4">
-          <h2 className="font-mono text-label text-text">{t("shell.language")}</h2>
+        {/* The two zones of the page (#194): Language and Notifications, each an `h2` at 18px over
+            its own rule, with `h3` inside and nothing below that. The two language choices live in
+            the same zone because they are the same matter -- one is the language of the page, which
+            is an address to follow (ADR 0008), the other the language the channels with no address
+            are written in (ADR 0009) -- and their two notes are what keeps them apart. The second
+            one stays a component of the Notifications module, which owns the action that saves it. */}
+        <section aria-labelledby="language" className="mt-6 max-w-measure border-t border-rule pt-4">
+          <h2 id="language" className="font-sans text-title font-semibold text-text">
+            {t("settings.language.title")}
+          </h2>
+          <h3 className="mt-4 font-mono text-label text-text">{t("settings.language.interface")}</h3>
           <p className="mt-2 max-w-prose font-sans text-meta text-text-muted">
             {t("settings.language.note")}
           </p>
           <LocalePicker variant="page" />
+          <PreferredLocaleSection
+            saved={settings.preferredLocale}
+            connected={settings.slackHint !== null}
+            t={t}
+          />
         </section>
         <NotificationSettings
           preferences={settings.preferences}
-          preferredLocale={settings.preferredLocale}
           trial={trialOf(settings.externalTrialStartedAt, new Date())}
           slackHint={settings.slackHint}
           slackOauth={slackApp() !== null}
+          devPreview={process.env.NODE_ENV !== "production"}
           slackOutcome={slackOutcomeKey(typeof slack === "string" ? slack : null)}
           locale={await currentLocale()}
           t={t}
