@@ -4,14 +4,17 @@ export const settings = {
   "settings.title": "Impostazioni",
   "settings.intro":
     "Come l'app si legge per te. Niente di qui è condiviso con nessuno, e niente nelle pagine pubbliche delle release e delle tecnologie dipende da questo.",
+  "settings.language.title": "Lingua",
+  "settings.language.interface": "lingua dell'interfaccia",
   "settings.language.note":
     "La lingua è parte dell'indirizzo, così una pagina si può condividere nella lingua in cui è stata letta. Le note di rilascio e le sintesi restano nella loro lingua originale.",
   // La sezione delle Notifiche (issue #171, ADR 0009). `featured`, `notable`, `digest` e `Pro` sono
   // la grammatica del prodotto e restano in inglese; i nomi del glossario si traducono dentro le
   // frasi (ADR 0008).
-  "settings.notifications.title": "notifiche",
+  "settings.notifications.title": "Notifiche",
   "settings.notifications.intro":
-    "Quali Release ti raggiungono, e dove. La campanella è gratis per sempre; Slack e l'email sono Pro.",
+    "Quali Release ti raggiungono, e dove. La campanella è gratis per sempre; Slack è Pro.",
+  "settings.notifications.bell.title": "la campanella",
   "settings.notifications.featured.label": "Release featured",
   "settings.notifications.featured.off":
     "Spento, una Release featured di una Tecnologia che segui non scrive nessuna Notifica: niente sulla campanella, e niente su un canale aggiunto dopo.",
@@ -23,24 +26,22 @@ export const settings = {
     "Non salvato. L'interruttore è tornato come lo tiene il database, quindi quello che vedi è quello che hai: premilo di nuovo.",
   "settings.notifications.digest":
     "Il Digest settimanale porta il suo interruttore, il giorno in cui arriva il Digest stesso.",
-  "settings.notifications.external.title": "slack e email",
-  "settings.notifications.external.body":
-    "Slack c'è, con i suoi interruttori qui sotto; l'email è ancora in costruzione e porterà i suoi quando arriva. Portano il segno Pro dal primo giorno, prova inclusa: quando la prova finisce senza Pro si spengono, e niente resta acceso per abitudine. La campanella resta, gratis.",
   "settings.notifications.pro": "Pro",
-  "settings.notifications.trial.waiting":
-    "La tua prova di {count} giorni di Slack e dell'email parte la prima volta che ne accendi uno, non dal giorno in cui ti sei registrato.",
+  "settings.notifications.trial.start": "avvia la prova di 30 giorni di Pro",
+  "settings.notifications.trial.note": "30 giorni, gratis. Dopo, Slack chiede Pro; la campanella resta gratis.",
   "settings.notifications.trial.left": {
-    one: "Resta un giorno di prova di Slack e dell'email.",
-    many: "Restano {count} giorni di prova di Slack e dell'email.",
-    other: "Restano {count} giorni di prova di Slack e dell'email.",
+    one: "Resta un giorno di prova di Pro.",
+    many: "Restano {count} giorni di prova di Pro.",
+    other: "Restano {count} giorni di prova di Pro.",
   },
-  "settings.notifications.trial.ended":
-    "La tua prova di Slack e dell'email è finita. La campanella è gratis per sempre; i due canali esterni chiedono Pro.",
+  "settings.notifications.trial.ended": "La prova di Pro è finita. Slack chiede Pro; la campanella resta gratis.",
   "settings.notifications.switch.slack": "{name} su Slack",
   "settings.notifications.slack.title": "slack",
-  "settings.notifications.slack.note":
-    "Una pressione, e Slack chiede in quale canale devono arrivare i messaggi. La app Slack è di Verdict, quindi non crei niente e non c'è nessun URL da copiare o da tenere.",
   "settings.notifications.slack.connect": "Add to Slack",
+  "settings.notifications.slack.dialog.title": "Aggiungi Verdict a Slack",
+  "settings.notifications.slack.dialog.asks": "Slack chiede un workspace e un canale.",
+  "settings.notifications.slack.dialog.continue": "procedi su Slack",
+  "settings.notifications.slack.dialog.cancel": "annulla",
   "settings.notifications.slack.result.connected": "Slack è collegato.",
   "settings.notifications.slack.result.cancelled": "Niente è cambiato: l'autorizzazione non è stata data.",
   "settings.notifications.slack.result.failed":
@@ -69,10 +70,10 @@ export const settings = {
   "settings.notifications.slack.testOk": "Il messaggio di prova è partito. Il canale funziona.",
   "settings.notifications.slack.testFailed": "Slack non l'ha accettato: {error}",
   "settings.notifications.slack.testEmpty": "Non c'è ancora niente da provare: salva prima un webhook.",
-  "settings.notifications.locale.title": "lingua di email e slack",
+  "settings.notifications.locale.title": "lingua di slack",
   "settings.notifications.locale.note":
-    "L'email e Slack non hanno un indirizzo da cui leggere una lingua, quindi sono scritte in questa. Non cambia la lingua del sito, che resta quella nell'indirizzo, e le Note di rilascio e le Sintesi restano nella loro lingua originale.",
-  "settings.notifications.locale.choose": "Scrivi email e Slack in {name}",
+    "Slack non ha un indirizzo da cui leggere una lingua, quindi viene scritto in questa. Non cambia la lingua del sito, che resta quella nell'indirizzo, e le Note di rilascio e le Sintesi restano nella loro lingua originale.",
+  "settings.notifications.locale.choose": "Scrivi Slack in {name}",
   "settings.notifications.locale.error":
     "Non salvato. La lingua è ancora quella segnata qui, che è quella che tiene il database: premila di nuovo.",
 } as const satisfies Partial<MessageDictionary>;

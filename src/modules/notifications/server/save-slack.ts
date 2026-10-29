@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase-server";
 import { createRequestClient } from "@/lib/supabase-request";
 import { createTranslator, DEFAULT_LOCALE, dictionaryFor, localeSchema } from "@/modules/i18n";
@@ -33,6 +34,9 @@ export async function saveSlackWebhook(previous: WebhookSaved, form: FormData): 
     } catch {
       return { status: "failed", hint: previous.hint };
     }
+    // The page draws things that depend on there being a channel -- the language Slack is written
+    // in (#194) -- so the route is revalidated: the answer below moves the hint, not the page.
+    revalidatePath("/[locale]/settings", "page");
     return { status: "saved", hint: null };
   }
 
@@ -46,6 +50,7 @@ export async function saveSlackWebhook(previous: WebhookSaved, form: FormData): 
   } catch {
     return { status: "failed", hint: previous.hint };
   }
+  revalidatePath("/[locale]/settings", "page");
   return { status: "saved", hint };
 }
 

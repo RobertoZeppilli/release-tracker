@@ -8,7 +8,7 @@ import type { LocaleSaved, SaveLocale } from "../domain/saving";
 
 // The same five controls as the picker above it on this page, at the same 44px, because they are the
 // same choice made twice: there the language of the page, which is an address to follow (ADR 0008);
-// here the language email and Slack are written in, which has no address to read and so is a value
+// here the language Slack is written in, which has no address to read and so is a value
 // to save (ADR 0009). The look is shared on purpose, and what separates them is that one is a row of
 // links and this is a row of presses, with the saved one marked.
 const CHOICE =
