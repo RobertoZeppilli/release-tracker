@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createRequestClient } from "@/lib/supabase-request";
+import { createServiceClient } from "@/lib/supabase-server";
 import { localeSchema } from "@/modules/i18n";
 import { NotificationChannelSchema, NotificationEventSchema } from "../domain/events";
 import { canSwitch, isExternal } from "../domain/preferences";
@@ -20,9 +21,12 @@ import { startExternalTrial, writePreference, writePreferredLocale } from "./wri
 // request cookies, never taken from the form, so the row written belongs to whoever is signed in;
 // and the form is validated here too, because a form can be posted without the page.
 //
-// The write goes through the Developer's own client, not the service role: RLS is what binds the
-// row to them (`with check (user_id = auth.uid())`), so a crafted post cannot write a preference
-// for somebody else even though the id travels in the statement.
+// The two preferences are written with the Developer's own client, not the service role: RLS is what
+// binds the row to them (`with check (user_id = auth.uid())`), so a crafted post cannot write a
+// preference for somebody else even though the id travels in the statement.
+// ⚠️ **The trial is the exception**, since the audit of 2026-11-02: `external_trial_started_at` is
+// the gate of the external channels, so it is no longer granted to a client and `startExternalTrial`
+// is handed the service role. The identity is still read from the cookies, right here.
 
 // ⚠️ The two controls are **handed** these actions as props by the server component that draws
 // them, rather than importing this file: a client component may not import a module's `server`
@@ -64,7 +68,7 @@ export async function savePreference(previous: SwitchSaved, form: FormData): Pro
     // nothing else does: not signing up, not saving the language. It goes first, so a trial that
     // fails to start leaves the switch off rather than an external channel running outside a trial.
     if (isExternal(parsed.data.channel) && parsed.data.enabled) {
-      await startExternalTrial(supabase, data.user.id, new Date());
+      await startExternalTrial(createServiceClient(), data.user.id, new Date());
     }
     await writePreference(supabase, data.user.id, parsed.data);
   } catch {
@@ -101,6 +105,6 @@ export async function startProTrial(): Promise<void> {
   const supabase = await createRequestClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return;
-  await startExternalTrial(supabase, data.user.id, new Date());
+  await startExternalTrial(createServiceClient(), data.user.id, new Date());
   revalidatePath(SETTINGS_ROUTE, "page");
 }
