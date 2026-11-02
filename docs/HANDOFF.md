@@ -28,73 +28,73 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (diciannovesimo giro, 2026-10-26): la #172 e' fatta e verde sul ramo
-`172-notifiche-slack`, e manca solo la PR**, con `Closes #172` **in inglese** nel corpo.
-`main` a `c8ccd66` (la PR #186 e' stata mergiata dopo l'handoff del giro scorso, che diceva `61d99da`).
+**Da dove ripartire (venticinquesimo giro, 2026-10-29): la #194 e la #199 sono chiuse e mergiate
+(PR **#200**, squash), CI verde, e il prossimo lavoro si sceglie dalla lista qui sotto.** `main`
+remoto a `648db0c`; ⚠️ **il `main` locale e' indietro e il ramo in uso e' ancora
+`settings-riordinata`**: la modalita' auto nega `git pull`, li rimette in pari l'utente. Albero
+pulito a parte i file del diario. **#197 chiusa** misurando: zero 404 sotto
+`/technologies` nei Runtime Logs, quindi nessun rimedio (strada 3, le misure restano nella issue).
+⚠️ **Quattro rami da cancellare**, in remoto e in locale: `settings-riordinata` (mergiato ora),
+`sitemap-una-lingua`, `letture-senza-pagina`, `grant-notifiche-service-role`: sono dell'utente.
 
-### Il canale Slack (#172)
+### La pagina Settings riordinata (#194)
 
-Le tre decisioni che la issue lasciava aperte sono state prese con l'utente e **scritte prima del
-codice**, in `docs/DECISIONI.md` (tre righe, #172) e in `GLOSSARY.md` (Consegna, Webhook Slack):
-**un solo messaggio per giro e per Sviluppatore**, a elenco, perche' un webhook regge circa un
-messaggio al secondo (⚠️ non tocca l'ADR 0009: la Notifica resta una per Release, il raggruppamento
-e' della **consegna**); **il webhook in `notification_secrets`**, tabella senza alcun grant per il
-client, scritta solo col service role con l'identita' presa dai cookie, e il client rilegge solo
-`slack_webhook_hint`; **`notification_deliveries`**, una riga per Notifica e canale, che regge
-l'email della #173 e rende provabile che un webhook rotto non ferma gli altri.
+Due zone, `h2` a 18px sul token `--text-title` e con l'iniziale maiuscola (**Language**,
+**Notifications**), dentro solo `h3`: `h4` e `h5` spariti, perche' la struttura dei titoli e'
+lettura assistiva (WCAG 2.2 AA, 1.3.1). `settings.notifications.external.title` cancellata nelle
+cinque lingue: i canali esterni sono un concetto, non un titolo, e il segno `Pro` col conteggio
+stanno sull'`h3` di Slack. Campo manuale del webhook **solo quando `slackOauth` e' falso**, cioe' in
+sviluppo e in CI. Le due scelte della lingua stanno nella stessa zona, e **"language of slack"
+compare solo a canale aggiunto** (chiesto dall'utente): vive in `preferred-locale-section.tsx`, nel
+modulo Notifiche perche' l'azione che salva e' sua e l'indice `server` e' `server-only`.
+⚠️ **I riferimenti all'email sono tolti da tutte le parole visibili**, cinque lingue, perche' la
+#173 non e' sviluppata. Il canale `email` resta nel dominio e nel database.
 
-⚠️ **La prima versione dello schema era sbagliata e l'ha smascherata la pagina vera.** Con l'URL in
-`notification_settings` e il `grant select` ristretto alle altre colonne, **ogni upsert** del client
-dello Sviluppatore su quella tabella falliva, **il salvataggio della lingua compreso**: `insert ...
-on conflict do update` richiede `select` **sull'intera tabella**, non sulle colonne che nomina
-(`permission denied for table`, riprodotto in psql con `set local role authenticated`). Da qui la
-tabella separata, e un test di integrazione nuovo che copre proprio quell'upsert, che prima nessuno
-provava col client dello Sviluppatore.
+### Il modal, e il tasto che apre la prova (#199)
 
-Migrazione `20261026085450_slack_channel.sql`, applicata in locale. Codice: `domain/slack.ts` e
-`domain/slack-plan.ts` (testati), `server/send-slack.ts`, `deliver-slack.ts`, `save-slack.ts`,
-`ui/slack-webhook.tsx`, le righe Slack in `/settings`, diciassette stringhe **in cinque lingue**.
-L'invio e' agganciato al cron della Detection, dopo `generateNotifications`.
+**Primo dialog dell'app**: `@radix-ui/react-dialog`, `src/components/ui/dialog.tsx` ristilizzato sui
+token. Deciso e registrato in `docs/DECISIONI.md` (riga Dialog), e le due frasi che dicevano "in
+quest'app non se ne apre nessuno" sono corrette qui e in `DESIGN.md`: **un dialog spiega un passo che
+porta fuori dall'app, e non e' mai la guardia di un atto distruttivo**, che resta la parola scritta
+controllata sul server.
+⚠️ **L'apertura e' tenuta a mano con `useState`, non dal `Trigger` di Radix**: `composeEventHandlers`
+salta il suo handler quando il figlio ha fermato il default, quindi un link dentro al `Trigger` o
+naviga via o non apre niente. Il bottone resta un link: senza JavaScript deve raggiungere
+`/slack/install`.
 
-⚠️ **Nessun ritentativo**: una consegna `failed` non si ripete, e cio' che lo Sviluppatore legge in
-`/settings` e' la ragione. ⚠️ **`deliverSlack` non legge `@/env`**: il `siteUrl` glielo passa la
-route, come il token GitHub della Detection, e leggerlo dal modulo **rompeva i test di integrazione**,
-che non caricano `.env.local`. ⚠️ **Il trial non partiva da nessuna parte**: `savePreference` ora
-chiama `startExternalTrial` quando si accende un canale esterno (ADR 0009); prima non serviva perche'
-solo `in_app` era accendibile.
+**Le spiegazioni del piano Pro sono tagliate** su richiesta dell'utente (tre paragrafi nella pagina,
+cinque righe nel modal). Restano una riga nel modal, la riga accanto al tasto e il conteggio. **Il
+tasto `start the 30 day Pro trial`** e' l'unica porta in produzione finche' la #174 non vende Pro, e
+**Slack si disegna solo a prova aperta**; in sviluppo sempre, per poterci lavorare (`devPreview`).
+⚠️ **Una Server Action non revalida da sola**: il tasto scriveva la riga e la pagina restava quella
+di prima. `revalidatePath("/[locale]/settings", "page")` sta ora in `startProTrial` e in
+`saveSlackWebhook`, col **pattern della rotta** e non `/settings`, che sotto `[locale]` non esiste.
+⚠️ **Due cose non hanno prova automatica, dichiarate dentro gli e2e**: la disposizione di produzione
+senza campo manuale, e il modal; servono le credenziali Slack, che la CI non ha.
+`tests/e2e/slack-dialog.spec.ts` **si salta da solo** senza di esse e gira cosi':
+`SLACK_CLIENT_ID=0000000000.1111111111 SLACK_CLIENT_SECRET=finto pnpm dev`, poi
+`pnpm test:e2e slack-dialog`. ⚠️ In locale "procedi su Slack" dara' sempre `Invalid client_id`:
+Slack rifiuta `localhost` come `redirect_uri`, quindi la sua meta' del giro si prova in produzione.
 
-### La prova visiva
+### Lo stato dell'ambiente, lasciato cosi'
 
-`/settings` aperta sulla 3000: un URL non di Slack e' rifiutato e lo dice, uno buono salva e stampa
-l'indizio, il pulsante della prova si accende, e l'interruttore `featured` su Slack scrive la
-preferenza **e avvia la prova di 30 giorni** (verificato in psql). Corretti due difetti che solo la
-pagina mostrava: la frase diceva "i due interruttori qui sopra" mentre stanno sotto, e la riga del
-raggruppamento era ripetuta identica sui due, dove serviva dire che la campanella continua a suonare.
-⚠️ **`db:reset` cancella l'utente di sviluppo**: si rifa con `pnpm dev:login`.
-
-### L'overflow della campanella, sistemato per strada
-
-Chiesto dall'utente a meta giro. ⚠️ **Non era una regola del pannello: e' l'ereditarieta' di
-`white-space`.** Il gruppo di azioni della barra porta `whitespace-nowrap` per i suoi controlli, il
-pannello e' figlio di quel gruppo e lo ereditava, la frase dello stato vuoto non andava a capo e un
-contenitore con `overflow-y-auto` **non resta** `overflow-x: visible`. Rimedio: `whitespace-normal`
-sul pannello, `break-words` sul nome della Tecnologia; misurato in produzione, `scrollWidth` da
-643px a 338px. Il pannello dell'account **non** e' toccato: ha larghezza elastica, quindi li' il
-nowrap allarga invece di tagliare.
-
-**Verifiche**: `typecheck`, `lint`, `test` (743/743), `test:integration` (98/98, con
-`slack-channel.test.ts` nuovo), `build`, tutti verdi. Il database locale e' **acceso** (`pnpm db:stop`
-quando serve) e dentro ha il webhook finto della prova, che non manda da nessuna parte.
+Database locale col Catalogo vero: **1945 Release e 60 Tecnologie**. ⚠️ Lo stato Slack del database
+locale e' stato **azzerato** (segreto, hint, inizio della prova). ⚠️ `db:reset` cancella l'utente di
+sviluppo: `pnpm dev:login`. Resta uno `stash@{0}` non nostro. **Nessun server sulla 3000.**
 
 ### Cosa resta
 
-1. **Aprire la PR della #172**, poi scegliere insieme: **#173** email e Digest (e chi la fa deve
-   togliere il filtro `SHOWN` in `src/modules/notifications/ui/notifications-store.ts`), **#174**
-   Lemon Squeezy, obbligatoria al lancio per l'ADR 0009. Non scelte: **#65**, **#130**, **#69**,
-   **#176** (dentro c'e' il rate limiting, che non esiste da nessuna parte).
-2. **La #185 da riscopare o chiudere** (numeri sbagliati), e la superficie indicizzata se si decide.
-3. ⚠️ **Francese, spagnolo e tedesco non rivisti da madrelingua**, e questo giro ne ha aggiunti
-   diciassette: l'ADR 0008 chiede la revisione **prima del lancio**.
-4. **I due debiti di sempre** e i **20 rami remoti con la PR gia MERGED**: `APERTE.md` e il diario.
-5. ⚠️ **Credito basso: non spendere niente senza chiedere.**
-Il primo comando della sessione nuova: `leggi docs/HANDOFF.md`.
+1. **#198** cosa include Pro e cosa resta gratis, `ready-for-human`: sblocca la #174 e le parole di
+   `/settings`. Senza, il tasto della prova dice solo quello che ADR 0009 ha gia' deciso, cioe' che
+   senza Pro Slack tace e la campanella resta.
+2. **I due accertamenti della #190 che solo l'utente puo' fare**, in coda alla PR #195: le Release
+   in **produzione** con `created_at` negli ultimi trenta giorni, e **Max rows** su Supabase.
+3. ⚠️ **Le scritture ISR hanno toccato il 100% il 2026-10-23**: misure in `docs/handoff/PESO.md`. La
+   leva che resta non e' codice: **accorpare i deploy di produzione**.
+4. Poi si sceglie insieme: **#173** email e Digest, **#174** Lemon Squeezy (obbligatoria al lancio); non scelte **#65**, **#130**, **#69**, **#176**, e **la #185** va riscopata o chiusa.
+5. ⚠️ **Tre cose vive stanno in `APERTE.md` e `AMBIENTE.md`**: le due misure su `max_rows`, le due
+   cose non viste di Slack (che un messaggio **arrivi**, e la distribuzione pubblica della app
+   Verdict), e la e2e che nomina una fixture nel sitemap e cade solo in CI.
+6. ⚠️ **Francese, spagnolo e tedesco non rivisti da madrelingua** (ADR 0008, prima del lancio): le
+   parole nuove di questo giro sono tante.
+7. **I due debiti di sempre**: `APERTE.md` e il diario. ⚠️ **Credito basso: non spendere senza chiedere.**

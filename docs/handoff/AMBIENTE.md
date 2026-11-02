@@ -69,6 +69,26 @@ stesso contenuto che sul ramo era già un commit suo: l'handoff arrivava due vol
 stato di prima, già sceso parola per parola in `docs/handoff/2026-10.md`. Niente rebase e niente
 force push su un ramo già pushato.
 
+### Come si prova che un ramo e' entrato, e i 45 cancellati
+
+Spostato qui da `docs/HANDOFF.md` il 2026-10-28, parola per parola, per la stessa ragione.
+
+Cancellati tutti i rami locali e remoti tranne `main`. ⚠️ **Con lo squash merge
+`git branch --merged` e un rimerge di prova non dicono niente**: conflittano sempre, e il conflitto
+non e' lavoro unico. La prova e' la PR (`gh pr list --state all --json headRefName,mergedAt`), piu' il
+confronto tra tip del ramo e data del merge **in secondi**: confrontare `+02:00` con `Z` come stringhe
+da falsi allarmi. L'unico commit mai entrato in `main` era una nota di diario di tredici giorni prima.
+
+## ⚠️ Una e2e che nomina una fixture nel sitemap cade solo in CI
+
+Le due prove nuove del sitemap passavano in locale e cadevano in CI, **e non per il codice**: in
+locale girano contro `pnpm dev`, che il sitemap lo ricalcola; in CI contro `pnpm start`, dove il
+sitemap e' **quello che la build ha prerenderizzato**, e una Tecnologia seminata nel `beforeAll` non
+ci sta dentro. Lo dicevano gia' `tests/integration/sitemap.test.ts` e la riga di `INDICE.md` del
+ventesimo giro, e sono state trovate dopo. Ora le due prove verificano la **forma** degli indirizzi
+sul Catalogo che CI sincronizza: un percorso Release ha **due** segmenti sotto `/technologies`, e di
+quelli non ne esiste nessuno sotto `/it`, `/fr`, `/es`, `/de`.
+
 ## Preferenze dell'utente
 
 - Vuole consigli motivati con una raccomandazione; approva spesso le raccomandazioni.
