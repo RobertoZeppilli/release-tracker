@@ -18,6 +18,23 @@ cosa era stata decisa.
 
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del ventitreesimo giro: le cinque lingue fuori dal sitemap, e il 404 in cache misurato (2026-10-28)
+  - ⚠️ Spegnere `hreflang` nel solo sitemap non basta: Google crawla gli URL che il `<head>` nomina
+  - ⚠️ Un 404 sotto `/technologies` finisce in cache per un anno, e una entry per lingua
+- Stato del ventiduesimo giro: le letture senza pagina, e due misure su max_rows (2026-10-28)
+  - ⚠️ PostgREST tronca una `select` a mille righe e non dice niente di quelle che ha lasciato fuori
+  - ⚠️ Le pagine di una lettura si ordinano sulla chiave primaria, non su una data con pari
+  - ⚠️ `max_rows` vale per ogni lista annidata, e una lista annidata non si puo' paginare
+- Stato del ventunesimo giro: la #188 chiusa e il grant che mancava (2026-10-28)
+  - ⚠️ Il service role non vede una tabella nuova sul progetto remoto: il grant va dato a mano
+  - ⚠️ Nessun file sotto `src/modules` legge l'ambiente, o cade la CI delle prove di integrazione
+  - ⚠️ Lo `state` di Slack OAuth e' firmato col client secret, quindi un secret sbagliato lo supera
+- Stato del ventesimo giro: la #172 chiusa, e la #188 che aspetta la app Verdict (2026-10-26)
+  - ⚠️ In locale `pnpm test:e2e` contro il dev server non e' una prova: serve `pnpm build` e `CI=1`
+  - ⚠️ Dopo un `catalog:sync` va cancellato `.next`, o il build riusa la cache ISR di prima
+- Stato del diciannovesimo giro: il canale Slack della #172, e la CI rossa per un e2e (2026-10-26)
+  - ⚠️ Un `insert ... on conflict do update` vuole `select` su tutta la tabella, non sulle colonne che nomina
+  - ⚠️ L'overflow di un pannello era l'ereditarieta di `white-space`, non una regola sua
 - Stato del diciottesimo giro: la #178 chiusa e l'avviso ISR misurato (2026-10-25)
   - ⚠️ Un ramo riusato dopo uno squash merge offre una PR che non ha niente da portare
   - ⚠️ Le scritture ISR si contano in unita da 8 KB, e la leva e' il numero di percorsi

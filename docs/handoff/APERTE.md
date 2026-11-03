@@ -313,3 +313,25 @@ atteso e poi confrontate a ogni versione del prompt.
 
 Ogni lancio spende davvero: ~15 Release da qualche migliaio di token, Opus 5 a $5/1M in ingresso,
 dimezzato dalla Batch API, pochi centesimi a giro. **Nessun lancio senza avvisare prima l'utente.**
+
+## Spostate dallo stato vivo il 2026-10-28, parola per parola
+
+### ⚠️ Due cose su `max_rows`, misurate il 2026-10-28 e da non rimisurare
+
+1. **Non** tocca le righe che una `delete` o una `update` restituiscono: 1200 su 1200. Quindi il
+   conteggio di `pruneNotifications` e il `settled` di `backfillNotes` sono giusti.
+2. **Vale per ogni lista annidata, e per ciascuna riga genitore**: 1200 Release sotto una Tecnologia
+   tornano 1000. E una lista annidata **non si puo' paginare**. Riguarda `readDashboard` e
+   `listPickerTechnologies`: oggi la Tecnologia piu' carica ne ha 245, quindi dormono, ma quando una
+   passa il migliaio quell'embedding va sciolto in una seconda query come fa `listSitemapPages`. Nel
+   picker il danno sarebbe silenzioso: solo `latestStableRelease` lo legge, e sceglierebbe la Release
+   piu' recente sbagliata.
+
+### ⚠️ Slack, le due cose non viste
+
+1. **La prova che manca**, l'unica cosa di Slack non vista: un messaggio che **arriva** da un invio
+   nostro. In `/settings` c'e' "Slack is connected" e il canale giusto; il bottone del messaggio di
+   prova non e' mai stato premuto con un webhook vero. Nel canale di prova restano **webhook orfani**
+   da ripulire in Incoming Webhooks.
+2. **Mai verificato se la app Verdict ha la distribuzione pubblica attiva** (Manage Distribution).
+   Senza, "Add to Slack" funziona solo dal tuo spazio e per chiunque altro e' un errore di Slack.

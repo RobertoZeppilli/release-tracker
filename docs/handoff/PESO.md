@@ -251,3 +251,57 @@ scritture. E' un **emendamento ad ADR 0008**, non una sua sostituzione: le cinqu
 dell'interfaccia restano.
 
 La seconda leva non e' codice: **accorpare i deploy di produzione**, 3,4 al giorno oggi.
+
+## Il 100% raggiunto, l'economia del piano e il filtro dei deploy (2026-10-28)
+
+Il **2026-10-23** il team ha toccato il **100% delle 200.000 scritture ISR** incluse. Quattro fatti
+che non erano scritti da nessuna parte, cercati nella documentazione di Vercel e nel forum il
+2026-10-28:
+
+- ⚠️ **La quota e' del conto, non del progetto.** Le 200.000 sono un totale del team Hobby, quindi
+  anche gli altri progetti ci contribuiscono. La pagina dei piani parla di "piani Hobby messi in
+  pausa", non di progetti, e le segnalazioni nel forum parlano dei deploy **di un team**. La
+  documentazione non chiude la questione: l'ipotesi prudente e' i deploy di tutto il conto.
+- **Hobby non ha consumo a pagamento**: nessun addebito e nessuna cancellazione, il rischio e' la
+  pausa.
+- **La finestra e' mobile su trenta giorni**, non un ciclo di fatturazione: il consumo vecchio esce
+  mano a mano, quindi non torna a zero se il progetto lavora. Il consumo del 14-23 ottobre esce da
+  solo verso il 13-23 novembre. ⚠️ Per questo un taglio **abbassa il plateau** e non e' un risparmio
+  una volta sola.
+- Esiste un **aumento temporaneo una volta sola**, da chiedere all'assistenza. Si spende una volta:
+  da tenere per quando serve, non ora.
+- ⚠️ Un conto rimasto in pausa **non si sblocca sempre da solo** quando il consumo rientra: in quel
+  caso si chiede a `vercel.com/help`.
+
+### Il filtro dei deploy (PR #191)
+
+`scripts/vercel-ignore-build.mjs` e `"ignoreCommand"` in `vercel.json`. Misurato su `main`: **30
+deploy di produzione in 14 giorni**, con punte di 8 il 15 ottobre, e **8 dei 30 toccavano solo
+documenti**, cioe' il 27% di cache ISR azzerata per un sito identico byte per byte.
+
+- ⚠️ **Uscita 0 annulla il deploy, uscita 1 lo fa partire**, al contrario di come si leggono i codici
+  di uscita. Un deploy annullato **non ricostruisce**, quindi la produzione in esecuzione resta quella
+  e la sua cache ISR non si perde.
+- ⚠️ I deploy annullati **contano ancora sulla quota dei deployment**, ma non sulle scritture ISR.
+- ⚠️ Gira **prima** dell'installazione delle dipendenze: Node puro, nessun import.
+- ⚠️ Confronta **un commit solo** (`HEAD^..HEAD`). Su `main` e' esatto perche' una PR entra con uno
+  squash, ma due commit spinti insieme, uno di codice e uno di documenti, farebbero guardare solo
+  l'ultimo. Nel dubbio si deploya sempre.
+- `ignoreCommand` in `vercel.ts` e' stato segnalato come non onorato: restare su `vercel.json`.
+
+## La superficie dichiarata, tagliata e misurata (PR #196, 2026-10-28)
+
+La leva grossa della #192 e' stata tirata: la pagina Release entra nel sitemap **solo nella lingua di
+default** e non dichiara `alternates.languages` nemmeno nel suo `<head>`. Contato sul sitemap servito
+dal Catalogo vero in locale, **2.275 indirizzi dichiarati invece di 10.055, cioe' -77%**: 1.945
+Release tutte in inglese e **zero** nelle altre quattro lingue, 300 Tecnologie (60 per cinque),
+landing e cinque statiche per cinque. `hreflang` resta su 330 entry.
+
+⚠️ **Il conto di cui sopra e' la superficie dichiarata, non la bolletta.** Quanto scenda davvero lo
+dira' la finestra dei trenta giorni: la cache si azzera a ogni deploy di produzione, e **la leva che
+resta non e' codice, e' accorpare i deploy** (3,4 al giorno).
+
+⚠️ **Un costo che questo taglio non tocca, misurato lo stesso giorno**: il 404 di uno slug o di una
+versione inesistente **viene messo in cache** (`x-nextjs-cache` MISS poi HIT, `s-maxage=31536000`,
+una entry per lingua), quindi un bot che prova indirizzi casuali paga scritture. I numeri e le tre
+strade stanno nella **issue #197**; il catch-all `[...rest]` invece e' dinamico e non paga.
