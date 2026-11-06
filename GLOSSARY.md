@@ -348,8 +348,20 @@ _Evitare_: utente (ambiguo tra i due), user, cliente.
 Il livello di servizio di uno **Sviluppatore**: _Free_ o _Pro_ (in futuro _Team_, legato a un
 gruppo e non alla singola persona). Il _Free_ permette di **Seguire** al massimo 10 **Tecnologie**
 (ritirate comprese), limite imposto dal database: l'interfaccia lo anticipa ma non è l'autorità;
-le **Sintesi** e le pagine pubbliche non dipendono mai dal **Piano**.
+le **Sintesi** e le pagine pubbliche non dipendono mai dal **Piano**. Il confine intero fra _Free_ e
+_Pro_, voce per voce e con quello che accade alla fine della **Prova di Pro**, sta nella tabella in
+coda all'ADR [0009](docs/adr/0009-notifiche-campanella-gratis-canali-pro.md) e si legge solo lì.
+⚠️ Le **Tecnologie** seguite oltre la decima da chi scende da _Pro_ a _Free_ **restano** e smettono
+di notificare: il limite vale per **aggiungerne**, non per togliere quelle che ci sono.
 _Evitare_: abbonamento (è il rapporto col provider di pagamento), tier, licenza.
+
+**Prova di Pro**:
+I 30 giorni in cui uno **Sviluppatore** usa i **Canali di notifica** esterni senza pagare. Parte
+**dalla prima accensione** di uno di quei canali e non dalla registrazione, e apre **quelli e
+nient'altro**: non sblocca le **Tecnologie** illimitate, così nessuno supera il limite del **Piano**
+senza aver pagato. Alla scadenza senza _Pro_ i canali esterni si spengono per tutti, senza diritti
+acquisiti, la campanella resta e **niente di salvato viene cancellato**, webhook compreso.
+_Evitare_: trial (resta il nome in codice), periodo di grazia (non c'è), demo.
 
 **Cancellazione dell'account**:
 La fine del rapporto, decisa dallo **Sviluppatore** e immediata: spariscono l'account, i **Follow**
@@ -397,6 +409,7 @@ la tabella per cercarle.
 | Seguire | suivre | seguir | folgen · verfolgt |
 | Notifica | notification | notificación | Benachrichtigung |
 | Digest settimanale | digest hebdomadaire | resumen semanal | wöchentlicher Digest |
+| Prova di Pro | essai Pro | prueba de Pro | Pro-Testzeit |
 
 ⚠️ Due verbi in tedesco per `follow`, e la grammatica è quello che li divide: `folgen` regge il
 dativo, quindi è il verbo di ogni frase e di ogni pulsante, ma non forma participio attributivo né
@@ -444,6 +457,7 @@ passivo personale, e `gefolgte Technologien` non è tedesco. Quelle posizioni le
 | Consegna | `NotificationDelivery` | tabella `notification_deliveries`, una riga per Notifica e canale con esito, errore e istante |
 | Webhook Slack | `slackWebhookUrl` | segreto in `notification_secrets`, tabella senza grant per il client; si rilegge solo l'indizio `slackWebhookHint` (host e ultime quattro cifre) |
 | Piano | `Plan` | `free` · `pro` · `team` |
+| Prova di Pro | `externalTrialStartedAt` | colonna `notification_settings.external_trial_started_at`, scritta dal service role; 30 giorni, solo i canali esterni; UI en: "Pro trial" |
 | Cancellazione dell'account | `delete account` | la pagina `/account` |
 | Prodotto | `Verdict` | mai tradotto, mai con l'articolo |
 

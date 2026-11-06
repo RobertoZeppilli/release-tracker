@@ -78,3 +78,67 @@ lancio: sarebbe una rotta nuova e cinque traduzioni in più per dire quello che 
 
 Il **limite Free di 10 Tecnologie** non si tocca, resta imposto dal database, e resta il confine che
 lo Sviluppatore incontra comunque dal primo giorno.
+
+## Emendamento del 2026-11-03: la tabella Free/Pro, decisa una volta sola (#198)
+
+Questo ADR diceva due cose sole, la campanella gratis e i canali esterni Pro, e su tutto il resto
+ogni schermata inventava il confine a modo suo: due schermate che lo inventano diverso sono un
+prodotto che mente. Qui c'è il confine intero, riga per riga, deciso dall'utente il 2026-11-03.
+**Ogni riga dice anche cosa accade alla fine della Prova senza Pro**, perché è lì che un piano si
+vede, e la colonna non è un dettaglio di implementazione: è la promessa che la #174 deve far pagare.
+
+| Voce | Free | Pro | Alla fine della Prova senza Pro |
+|---|---|---|---|
+| Pagine pubbliche (Release, Tecnologia, le cinque pagine documento) | Tutte, senza account | Uguale | Niente cambia: non dipendono dal Piano |
+| **Sintesi** | Tutte, **senza tetto**: non a mese, non per Rilevanza | Uguale | Niente cambia |
+| Dashboard, Posizione dello stack, Flusso, Digest settimanale in pagina | Sì | Uguale | Niente cambia |
+| **Tecnologie seguite** | Al massimo **10**, ritirate comprese, imposto dal database | Illimitate | Il limite torna a 10 per **aggiungerne**; le Tecnologie già seguite oltre la decima **restano** e smettono di notificare |
+| **Campanella in-app** | **Gratis per sempre** | Uguale | Resta accesa, con tutti i suoi eventi, Digest compreso |
+| **Slack** | No | Sì | Si spegne |
+| **Email** | No | Sì | Si spegne |
+| **Digest settimanale come Notifica** | Sulla campanella | Su campanella, Slack ed email | Resta sulla campanella, si spegne sugli altri due |
+| Lingua preferita delle Notifiche | Si imposta e vale per la campanella | Vale anche per Slack ed email | Resta salvata |
+| Webhook Slack e interruttori dei canali | Non applicabile | Salvati e usati | **Restano salvati e dormienti**: niente viene cancellato |
+| Scanner dei repository | Non esiste al lancio | Non esiste al lancio | Non applicabile |
+| Richieste di tecnologia | Non esistono al lancio | Non esistono al lancio | Non applicabile |
+
+**Le Sintesi non hanno tetto, ed è il criterio dell'ADR 0004 applicato e non un regalo.** Una Sintesi
+è di una Release e non di un lettore: la scrive un job sul server, prima che qualcuno apra la pagina,
+ed è lo stesso testo per tutti. Costa uguale con dieci lettori e con diecimila, quindi un tetto non
+risparmierebbe niente e chiuderebbe il canale di acquisizione via SEO, che è l'altra metà di quel
+criterio. Nessun limite a mese e nessun limite per Rilevanza.
+
+⚠️ **La Prova di 30 giorni apre i canali esterni e nient'altro.** Non sblocca le Tecnologie
+illimitate. La ragione è che così **nessuno supera il limite senza aver pagato**, e alla scadenza non
+c'è nessun dato in eccesso da arbitrare: si spengono due interruttori. La colonna che la segna sta
+nelle impostazioni delle Notifiche (`external_trial_started_at`) e il nome dice già questo.
+
+**Le Tecnologie oltre la decima di chi scende da Pro restano, e smettono di notificare.** Il trigger
+`enforce_follow_rules` è `before insert`: blocca la riga numero 11 e non tocca le righe che ci sono
+già, quindi questa decisione è **ciò che il database fa oggi**, nominato invece che lasciato
+all'interpretazione. Restano in Dashboard e mostrano le loro Release, perché cancellare il lavoro di
+chi ha pagato sarebbe una punizione, non un confine; non generano Notifiche, perché la Notifica è la
+funzione, e per aggiungerne una nuova si torna sotto le dieci o si torna a Pro.
+
+**Il Digest segue il canale, non diventa un confine nuovo.** È uno dei tre eventi che generano una
+Notifica, e la regola di questo ADR è già scritta sui canali: in-app gratis, Slack ed email Pro. Un
+Digest Pro anche sulla campanella taglierebbe dentro l'unica cosa dichiarata gratis per sempre, e la
+FAQ dovrebbe spiegare un'eccezione; un Digest gratis via email farebbe pagare a noi l'invio di posta
+di chi non paga, che è esattamente il costo che l'ADR 0004 mette nel Pro.
+
+**Chi non passa a Pro non perde niente di salvato.** Interruttori, lingua preferita e **webhook
+Slack** restano dove sono: il job di consegna smette di usarli, e basta. Riaccendere dopo il
+pagamento è un click invece di un altro giro OAuth, e la pagina della privacy continua a dire una
+cosa sola e vera, che i dati restano finché resta l'account. Il webhook è già un segreto in
+`notification_secrets`, tabella senza grant per il client (#201): custodirlo spento non aggiunge
+superficie, mentre cancellarlo aggiungerebbe un lavoro da rifare proprio a chi sta per pagare.
+
+**Due voci che l'ADR 0004 metteva nel Pro non esistono al lancio** e la tabella lo dice invece di
+tacerle: lo **scanner dei repository** e le **Richieste di tecnologia** sono fuori dall'MVP
+(`docs/DECISIONI.md`), e la FAQ già risponde che le Richieste non sono aperte. Restano possibilità
+del dopo, non parti del confine che si paga.
+
+**Le parole nuove.** `GLOSSARY.md` prende **Prova di Pro** come nome di dominio, con le cinque
+lingue che l'interfaccia usa già (`prova di Pro`, `Pro trial`, `essai Pro`, `prueba de Pro`,
+`Pro-Testzeit`): la cosa esisteva nel codice e nei dizionari ma non aveva una riga nel glossario, e
+una regola di dominio senza nome si reinventa. La voce **Piano** porta il rimando a questa tabella.
