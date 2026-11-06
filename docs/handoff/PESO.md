@@ -305,3 +305,46 @@ resta non e' codice, e' accorpare i deploy** (3,4 al giorno).
 versione inesistente **viene messo in cache** (`x-nextjs-cache` MISS poi HIT, `s-maxage=31536000`,
 una entry per lingua), quindi un bot che prova indirizzi casuali paga scritture. I numeri e le tre
 strade stanno nella **issue #197**; il catch-all `[...rest]` invece e' dinamico e non paga.
+
+## Il dizionario, 44.830 byte su ogni pagina dell'app (2026-11-06)
+
+Preso aprendo la #185 e misurando il payload **pezzo per pezzo** invece di ripartire dal suo testo.
+Il testo diceva "la pagina Tecnologia spedisce 106 Sintesi": non e' vero. In produzione `angular` ha
+**121 Release e cinque Sintesi pronte**, perche' le `digest` hanno la Sintesi `skipped`;
+`breakingChanges` compare **tre volte** in tutto il payload, e l'array che attraversa il confine
+client e' fatto di scalari, 27.171 byte. La prosa che la issue voleva togliere **non c'era**.
+
+I 192.395 byte della risposta RSC di `/technologies/angular`, divisi:
+
+| Pezzo | Byte | Cos'e' |
+| --- | --: | --- |
+| Dizionario i18n | 44.830 | tutte le 505 stringhe, prop del `LocaleProvider` |
+| Markup delle 121 righe | ~120.000 | il contenuto che si vede a schermo |
+| Props del client component | 27.171 | l'array delle Release, scalari |
+
+⚠️ **Il dizionario sta su ogni pagina**, non su questa: `LocaleProvider` e' un client component e
+riceveva il dizionario intero, con dentro `privacy` (4.790), `landing` (4.903), `faq` (3.862),
+`terms` (3.147), `attributions` e `contact`, parole che solo un server component legge. Inlinato
+nell'HTML e di nuovo nella risposta RSC, quindi **due volte** in cio' che la cache ISR conserva.
+
+### Il taglio, e il prima/dopo preso in locale sugli stessi dati
+
+189 chiavi su 505 sopravvivono nei chunk del client: **11.493 byte invece di 44.830** (gz 3.425
+invece di 13.106). `next start` sulla 3001, HTML non compresso, due build dello stesso albero con la
+sola riga del layout diversa:
+
+| Pagina | Prima | Dopo | gz prima | gz dopo |
+| --- | --: | --: | --: | --: |
+| `/` | 127.780 | 93.089 | 31.143 | 21.432 |
+| `/login` | 68.944 | 34.253 | 18.978 | 8.620 |
+| `/privacy` | 86.778 | 52.087 | 20.984 | 12.245 |
+| `/technologies/angular` | 204.618 | 169.927 | 30.768 | 20.070 |
+
+⚠️ **Come si tiene onesto.** L'elenco e' generato dai chunk (`pnpm i18n:client-keys`) e committato,
+la CI lo verifica con `--check` dopo `pnpm build`, e vive in `i18n/server/`, indice `server-only`.
+Lo script si ferma se l'elenco stesso finisse in un chunk: sarebbe l'unico modo in cui la misura
+potrebbe misurare se stessa e restare ferma per sempre.
+
+⚠️ **Quello che resta sulla pagina Tecnologia sono i ~120.000 byte di markup delle righe**, cioe' il
+contenuto vero. Scenderebbe solo mostrando meno righe, che e' una scelta di prodotto e non uno
+spreco: e' quello che la #185 chiamava "il taglio a dieci righe".

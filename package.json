@@ -20,6 +20,7 @@
     "summary:eval": "tsx --conditions=react-server scripts/evaluate-summaries.mts",
     "summary:reimport": "tsx --conditions=react-server scripts/reimport-summaries.mts",
     "icons:sync": "tsx scripts/sync-technology-marks.mts",
+    "i18n:client-keys": "tsx scripts/i18n-client-keys.mts",
     "page:weight": "tsx scripts/page-weight.mts"
   },
   "dependencies": {
