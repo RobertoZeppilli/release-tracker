@@ -42,7 +42,12 @@ export function createTranslator<Given extends Dictionary>(
     const message = dictionary[key];
     // The key itself, when the dictionary has not got it. It is unreadable on purpose: a missing
     // key is a bug the tests catch, and a blank or an ellipsis would hide it until a reader found one.
-    if (message === undefined) return key;
+    // In development it also says so out loud, because the browser is handed a selection now
+    // (`clientDictionary`) and a key left out of it would otherwise only show as a word gone odd.
+    if (message === undefined) {
+      if (process.env.NODE_ENV === "development") console.warn(`i18n: no message for \`${key}\``);
+      return key;
+    }
     return interpolate(formOf(message, locale, params), params);
   };
 }
