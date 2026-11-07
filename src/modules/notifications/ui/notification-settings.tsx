@@ -95,7 +95,7 @@ export function NotificationSettings({
             enabled={isEnabled(preferences, event, BELL)}
             label={t(ROWS[event].label)}
             consequence={t(ROWS[event].off)}
-            switchKey="settings.notifications.switch"
+            switchName={t("settings.notifications.switch", { name: t(ROWS[event].label) })}
             action={savePreference}
           />
         ))}
@@ -182,7 +182,7 @@ export function NotificationSettings({
               enabled={isEnabled(preferences, event, SLACK)}
               label={t(ROWS[event].label)}
               consequence={t(SLACK_OFF[event])}
-              switchKey="settings.notifications.switch.slack"
+              switchName={t("settings.notifications.switch.slack", { name: t(ROWS[event].label) })}
               action={savePreference}
             />
           ))}

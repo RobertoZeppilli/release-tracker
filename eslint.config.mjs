@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import { noMessageKeyInClient } from "./eslint/no-message-key-in-client.mjs";
 import { noServerImportInClient } from "./eslint/no-server-import-in-client.mjs";
 
 const MODULES = "auth|catalog|releases|detection|summaries|dashboard|plans|i18n";
@@ -23,10 +24,18 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    plugins: { local: { rules: { "no-server-import-in-client": noServerImportInClient } } },
+    plugins: {
+      local: {
+        rules: {
+          "no-message-key-in-client": noMessageKeyInClient,
+          "no-server-import-in-client": noServerImportInClient,
+        },
+      },
+    },
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/consistent-type-assertions": ["error", { assertionStyle: "never" }],
+      "local/no-message-key-in-client": "error",
       "local/no-server-import-in-client": "error",
       "no-restricted-imports": ["error", { patterns: [moduleBoundaries, relativeCrossModule] }],
     },

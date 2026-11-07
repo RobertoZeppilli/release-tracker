@@ -60,3 +60,20 @@ describe("module boundaries", () => {
     expect(await ruleIds(code, "src/app/fixture.ts")).toContain("@typescript-eslint/no-explicit-any");
   });
 });
+
+// The switches of `/settings` printed their own key to the reader once: the name was chosen in a
+// Server Component and translated in a Client one, so its literal was in no client chunk and
+// `clientDictionary` left the message on the server.
+describe("messages across the client boundary", () => {
+  it("rejects a message key named in a client component", async () => {
+    const code = '"use client";\nimport type { MessageKey } from "@/modules/i18n";\nexport const k: MessageKey = "shell.sections";\n';
+    expect(await ruleIds(code, "src/modules/releases/ui/fixture.tsx")).toContain(
+      "local/no-message-key-in-client",
+    );
+  });
+
+  it("allows a message key in a server component, which is where it is translated", async () => {
+    const code = 'import type { MessageKey } from "@/modules/i18n";\nexport const k: MessageKey = "shell.sections";\n';
+    expect(await ruleIds(code, "src/modules/releases/ui/fixture.tsx")).toEqual([]);
+  });
+});
