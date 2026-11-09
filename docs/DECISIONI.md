@@ -45,6 +45,36 @@ perché un dominio è una spesa: il nome del prodotto non dipende dal dominio es
 resta dov'è. Esiste un pacchetto npm `verdict` e un utente GitHub `Verdict`: nessuno dei due
 interferisce, perché qui non si pubblica un pacchetto e il repository sta sotto l'account personale.
 
+### Il lancio: 20 gennaio 2027, e la lista d'attesa
+
+**La data del lancio è mercoledì 20 gennaio 2027**, decisa dall'utente il 2026-11-09, ed e'
+scritta **in chiaro** sulla landing. Una data precisa è una promessa, e una promessa è ciò che fa
+lasciare l'email: "presto" non lo fa. Da qui a quel giorno l'app si finisce con calma, e la landing
+raccoglie indirizzi invece di mostrare una porta aperta su un prodotto che non vende ancora niente.
+
+**Le pagine Tecnologia restano pubbliche e indicizzate.** Nascondere `/technologies/*` dietro un
+"coming soon" butterebbe l'indicizzazione dei 2.275 indirizzi del sitemap (#192), cioè il solo
+canale che porta qualcuno alla **Lista d'attesa**: una landing isolata senza traffico raccoglie zero
+email. La waitlist converte **perché** il visitatore vede prima un verdetto vero, quindi la parte
+che vende resta aperta e si chiude solo la parte che non è finita.
+
+⚠️ **Quello che si chiude è la nascita di un account, e si chiude nel callback OAuth**, non su
+`/login`: con GitHub il provider del login e quello della registrazione sono lo stesso, quindi non
+esiste una rotta "signup" da spegnere. Chi arriva senza avere già un account viene rimandato alla
+landing con la data e il campo email; gli **Sviluppatori** che esistono già entrano come prima e la
+**Dashboard** non si tocca. Il perché di questa forma, e cosa la riapre, stanno nell'ADR
+[0010](./adr/0010-lista-attesa-e-porta-chiusa.md).
+
+**Nessuna email viene spedita prima del lancio.** La **Lista d'attesa** è una tabella e un campo:
+costo zero, nessun servizio nuovo, niente da configurare. Il solo messaggio parte il 20 gennaio
+2027, e quello è il punto in cui questa decisione incrocia la #173, che porta il canale email e la
+disiscrizione.
+
+⚠️ **Le visite non sono domanda.** Al 2026-11-09 il sito prende molte visite da Singapore e ha due
+Sviluppatori: `ap-southeast-1` è una regione di data center, quindi quel traffico va letto come
+crawler finché qualcosa non prova il contrario. La **Lista d'attesa** esiste anche per questo: un
+indirizzo lasciato da una persona è il primo numero che non si può confondere con un bot.
+
 ## Modello del dominio
 
 | Decisione | Dettaglio | ADR |
