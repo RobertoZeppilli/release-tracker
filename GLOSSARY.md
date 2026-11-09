@@ -372,6 +372,24 @@ contengono niente di una persona, e l'autorizzazione che GitHub tiene da parte s
 può revocare. Firmare di nuovo fa un account nuovo e vuoto, non quello di prima.
 _Evitare_: disattivazione, sospensione, chiusura (promettono un ritorno che non c'è).
 
+**Lista d'attesa**:
+L'elenco degli indirizzi email lasciati prima del lancio da chi vuole essere avvisato il giorno in
+cui Verdict apre. Una riga dell'elenco è una **Iscrizione**. Non è un account e non diventa un
+account da sé: il giorno del lancio parte un solo messaggio, e chi vuole entrare firma con GitHub
+come chiunque altro. Esiste perché il lancio ha una data (`docs/DECISIONI.md`, "Il lancio: 20
+gennaio 2027") e fino a quel giorno un account nuovo non nasce (ADR
+[0010](./docs/adr/0010-lista-attesa-e-porta-chiusa.md)).
+_Evitare_: newsletter (non è un invio periodico), early access (non dà nessun accesso in
+anticipo), lead, contatto.
+
+**Iscrizione**:
+Una riga della **Lista d'attesa**: un indirizzo email normalizzato, la lingua in cui chi lo ha
+lasciato stava leggendo, il giorno in cui lo ha lasciato e da quale pagina. Un indirizzo vale **una
+sola** Iscrizione: chiederla due volte non crea niente e il lettore legge che c'è già. Non porta
+un nome, perché un nome non serve a mandare un messaggio e sarebbe un dato in piu' da custodire.
+_Evitare_: iscritto (è la persona, non la riga), signup (resta il nome in codice), registrazione
+(quella fa un account).
+
 ## Nomi in codice e interfaccia
 
 Codice e database sono in inglese, e ogni termine ha un solo nome inglese. L'**interfaccia è
@@ -410,6 +428,7 @@ la tabella per cercarle.
 | Notifica | notification | notificación | Benachrichtigung |
 | Digest settimanale | digest hebdomadaire | resumen semanal | wöchentlicher Digest |
 | Prova di Pro | essai Pro | prueba de Pro | Pro-Testzeit |
+| Lista d'attesa | liste d'attente | lista de espera | Warteliste |
 
 ⚠️ Due verbi in tedesco per `follow`, e la grammatica è quello che li divide: `folgen` regge il
 dativo, quindi è il verbo di ogni frase e di ogni pulsante, ma non forma participio attributivo né
