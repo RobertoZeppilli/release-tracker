@@ -17,6 +17,7 @@ import { shell } from "./shell";
 import { stack } from "./stack";
 import { summary } from "./summary";
 import { terms } from "./terms";
+import { waitlist } from "./waitlist";
 
 // German, one namespace per file, the same files English has. Typed as the whole dictionary and not
 // as a partial one, so a key added to English is a key the compiler asks this language for: the
@@ -41,4 +42,5 @@ export const DE: MessageDictionary = {
   ...stack,
   ...summary,
   ...terms,
+  ...waitlist,
 };
