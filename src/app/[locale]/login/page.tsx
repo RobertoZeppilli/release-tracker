@@ -1,6 +1,6 @@
 import { LogIn, TerminalSquare } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslator } from "@/modules/i18n/server";
+import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { Filled, LocaleLink as Link } from "@/modules/i18n/ui";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
@@ -8,6 +8,8 @@ import { serverEnv } from "@/env/server";
 import { safeRedirectPath } from "@/modules/auth";
 import { getDeveloper } from "@/modules/auth/server";
 import { SeverityLabel } from "@/modules/releases/ui";
+import { doorClosed, launchDay } from "@/modules/waitlist";
+import { HelpPointer } from "@/components/help-pointer";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslator();
@@ -37,17 +39,21 @@ function errorKey(value: string | undefined): (typeof ERRORS)[keyof typeof ERROR
 const BUTTON =
   "inline-flex h-[34px] items-center gap-2 rounded-md border px-3 font-sans text-[14px] font-medium hover:bg-raised";
 
-type Props = { searchParams: Promise<{ next?: string; error?: string; deleted?: string }> };
+type Props = { searchParams: Promise<{ next?: string; error?: string; deleted?: string; closed?: string }> };
 
 export default async function LoginPage({ searchParams }: Props) {
   const t = await getTranslator();
-  const { next, error, deleted } = await searchParams;
+  const { next, error, deleted, closed } = await searchParams;
   const target = safeRedirectPath(next);
   // Already signed in: the login has nothing to ask.
   if (await getDeveloper()) redirect(target);
   const message = errorKey(error);
   // Both set only in local development; in production the route behind this button answers 404.
   const localDeveloper = Boolean(serverEnv.DEV_LOGIN_EMAIL && serverEnv.DEV_LOGIN_PASSWORD);
+  // The door of the Waitlist (ADR 0010): until the launch an account that does not exist yet is not
+  // created, and `?closed=1` is where the callback sends whoever was turned away.
+  const door = doorClosed(new Date());
+  const day = launchDay(await currentLocale());
 
   return (
     <>
@@ -63,6 +69,24 @@ export default async function LoginPage({ searchParams }: Props) {
             <SeverityLabel tone="muted" label="note:" />{" "}
             <span className="inline-block">{t("account.login.deleted")}</span>
           </p>
+        ) : null}
+        {door && closed ? (
+          <p role="status" className="mt-4 max-w-prose font-mono text-diagnostic text-text-muted">
+            <SeverityLabel tone="muted" label="note:" />{" "}
+            <span className="inline-block">{t("waitlist.door.refused")}</span>
+          </p>
+        ) : null}
+        {door ? (
+          <section aria-labelledby="door-title" className="mt-5 max-w-measure rounded-md border border-rule bg-raised p-4">
+            <h2 id="door-title" className="font-mono text-column-verdict">
+              {t("waitlist.claim", { day })}
+            </h2>
+            <p className="mt-2 font-sans text-body text-text-muted">{t("waitlist.door.body")}</p>
+            <p className="mt-3">
+              <HelpPointer href="/#waitlist">{t("waitlist.door.leaveEmail")}</HelpPointer>
+            </p>
+            <p className="mt-3 font-mono text-meta text-text-faint">{t("waitlist.door.existing")}</p>
+          </section>
         ) : null}
         {message ? (
           <p role="alert" className="mt-4 max-w-measure font-mono text-status text-breaking">

@@ -193,4 +193,12 @@ export const CLIENT_KEYS = [
   "stack.version.save",
   "stack.wall.full",
   "stack.wall.room",
+  "waitlist.already",
+  "waitlist.failed",
+  "waitlist.invalid",
+  "waitlist.join",
+  "waitlist.joined",
+  "waitlist.label",
+  "waitlist.promise",
+  "waitlist.trap",
 ] as const satisfies readonly MessageKey[];

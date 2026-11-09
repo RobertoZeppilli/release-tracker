@@ -959,6 +959,22 @@ It exists because the app shows these four words everywhere and defines them now
 
 What the product is not, in the register the product already has: a `note:` line in `text-muted` with the info glyph, then Grotesk prose at the measure. **It has no band of its own**: it sits in the right half of the closing band, beside the closing claim and the entry action. A whole band saying what the product is not gave a counter-argument the same weight as the demonstration, and it was the fifth stop on a page whose reader had already decided by the fourth. Beside the closing claim it is read by whoever is still weighing the decision, which is exactly who it was written for. Dependabot and Renovate open a pull request when a version moves; a newsletter says a release was interesting; this product says whether this Release asks something of you, and cites the line it read. No comparison table, no competitor logo, and no claim about another tool's quality: naming what a neighbour does well is the only way the sentence stays true, and the only way it stays persuasive to someone who already uses one.
 
+### Waitlist Block (landing)
+
+The one place a Visitor writes anything into this product, and it is the band under the first screen: the claim in Display Mono at Status scale, the date **written out in the reader's language**, the machine-readable day in Mono Meta `text-faint` under it, then the field and the button the app already has (`VERSION_INPUT_CLASS` and `VERSION_BUTTON_CLASS`, widened to 34ch because an address is not a version). It owns no furniture of its own: no card, no gradient, no "join 400 others" counter, which with two users would be a number working against the sentence beside it.
+
+**The date is printed, not softened.** `Verdict opens on January 20, 2027.` A precise day is a promise, and a promise is what makes somebody leave an address; "soon" is what a page says when it has nothing to commit to. The day is formatted from one constant (`LAUNCH_AT`), so the landing, the login page and the door of the callback cannot disagree about it, and no translator retypes it.
+
+**The four answers are the app's own grammar** (The Severity Pairing Rule), and which label they take is the whole design of this control: `ok:` for the address that went in, **`note:` for one that was already there**, `error:` only for an address that is not an address and for a write that did not happen. Asked twice is not a failure: the reader got what they wanted the first time, and a red line there would tell them they had made a mistake they had not made. On a settled answer **the field is taken away** and the one line stays: a form still standing after a success invites the reader to wonder whether it worked.
+
+Under the field, in Grotesk Meta `text-muted`, the whole of what is promised: one message, on the day, no newsletter, the address goes to nobody. It sits inside the field's `aria-describedby`, so it is read with the field and not after it.
+
+### Closed Door (login)
+
+Where somebody arrives who has no account yet, while the launch is in the future (ADR 0010). A panel at the measure, 1px `rule` on `raised`: the same claim as the landing at Column Verdict scale, a Grotesk line saying accounts open on the day, a Help Pointer to the field on the home page, and a Mono Meta line for the reader who already has an account, because the sign-in button under it still works and has to be seen to still work. A reader turned away by the callback gets one `note:` line above the panel saying **no account was created**: the refusal names what did not happen, which is the only thing they could be worried about.
+
+The sign-in button is **not** hidden or disabled while the door is shut. The door is the callback's, not the button's: GitHub is one provider for signing in and for signing up, so a disabled button would shut out the Developers who already have accounts in order to say something a sentence says better.
+
 ### Inline Code
 Mono at 0.92em on `sunken`, 1px 5px padding, 4px radius.
 

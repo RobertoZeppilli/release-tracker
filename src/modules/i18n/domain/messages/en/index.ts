@@ -14,6 +14,7 @@ import { release } from "./release";
 import { settings } from "./settings";
 import { stack } from "./stack";
 import { terms } from "./terms";
+import { waitlist } from "./waitlist";
 import { shell } from "./shell";
 import { summary } from "./summary";
 
@@ -38,6 +39,7 @@ export const EN = {
   ...stack,
   ...summary,
   ...terms,
+  ...waitlist,
 } as const;
 
 // The shape every other language has to fill. It is derived from the English dictionary rather than
