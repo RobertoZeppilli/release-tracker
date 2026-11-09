@@ -74,5 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm build
+      # The messages handed to the browser are read off the chunks this build emitted, so a
+      # client component that starts using a new one fails here until the list is regenerated.
+      - run: pnpm i18n:client-keys --check
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e

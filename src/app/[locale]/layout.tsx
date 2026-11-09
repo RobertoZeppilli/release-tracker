@@ -5,7 +5,8 @@ import { Fragment_Mono, Hanken_Grotesk } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { themeInitScript } from "@/components/theme";
 import { env } from "@/env";
-import { dictionaryFor, isLocale, LOCALES } from "@/modules/i18n";
+import { isLocale, LOCALES } from "@/modules/i18n";
+import { clientDictionary } from "@/modules/i18n/server";
 import { LocaleProvider } from "@/modules/i18n/ui";
 import "../globals.css";
 
@@ -53,10 +54,11 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
         {/* The language and its dictionary, for the half of the tree that cannot read them from
             the server: a Client Component cannot call `next/root-params`, and every internal link is
             a client one. The dictionary is resolved here, once per page, so the browser is handed
-            the one language it is reading and not all five. */}
+            the one language it is reading and not all five -- and of that one language, only the
+            messages the client chunks can ask for (`clientDictionary`). */}
         {/* A provider renders no element of its own, so `main` and `footer` stay direct children
             of `body`, which `globals.css` needs them to be. */}
-        <LocaleProvider locale={locale} dictionary={dictionaryFor(locale)}>
+        <LocaleProvider locale={locale} dictionary={clientDictionary(locale)}>
           {children}
           {/* The foot belongs to the layout and not to the pages: issue #132 asks the five pages
               that say what the product is to be reachable from every page at every width, and a
