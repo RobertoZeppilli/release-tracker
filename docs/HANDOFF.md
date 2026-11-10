@@ -3,7 +3,8 @@
 Parla con l'utente **in italiano**. Progetto in `C:\Users\rober\progetti\release-tracker`, repository
 git con remote **pubblico** su **https://github.com/RobertoZeppilli/release-tracker** (branch `main`, `gh`
 autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
-Produzione: **https://release-tracker-drab.vercel.app**.
+Produzione: **https://release-tracker-drab.vercel.app** (diventa una vetrina statica, #215).
+⚠️ **Dal 2026-11-10 il prodotto non si vende**: open source e self-hosted, ADR 0011.
 
 ## Questo file sta sotto le 100 righe, per scelta dell'utente (2026-10-10)
 
@@ -14,8 +15,9 @@ diario in `docs/handoff/<anno>-<mese>.md`, **da non leggere per intero**), `docs
 (Docker e il PATH, il dev server unico sulla 3000, le due shell, i token, preferenze e skill).
 Il peso delle pagine misurato prima del codice, con la procedura per il "dopo", sta in
 `docs/handoff/PESO.md`.
-Altrove: **PRD issue #1**, `PRODUCT.md`, `GLOSSARY.md`, `docs/DECISIONI.md`, `docs/adr/0001…0007`,
-`DESIGN.md` e i mock in `design/mocks/`, **ADR 0008** per le cinque lingue.
+Altrove: **PRD issue #1**, `PRODUCT.md`, `GLOSSARY.md`, `docs/DECISIONI.md`, `docs/adr/0001…0011`,
+`DESIGN.md` e i mock in `design/mocks/`, **ADR 0008** per le cinque lingue e **ADR 0011** per la
+svolta open source, che supera 0004, 0009 e 0010 e cambia il canale dell'0007.
 
 ⚠️ **Prima di dare qualcosa per non deciso, cercalo là**: `grep -rn "<parola>" docs/handoff/`.
 ⚠️ **Le issue erano sospese e l'utente le ha rilanciate il 2026-10-15** chiedendo la #131: la
@@ -25,76 +27,73 @@ sospensione è finita, ma vale sempre la regola di chiedere prima di passare a u
 sposta parola per parola** in cima al file del suo mese, con un titolo `##` proprio, e si aggiunge la
 riga in `INDICE.md`. Niente riassunti: un riassunto è dove si perde la ragione per cui una cosa era
 stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
-
 ## Stato
 
-**Da dove ripartire (venticinquesimo giro, 2026-10-29): la #194 e la #199 sono chiuse e mergiate
-(PR **#200**, squash), CI verde, e il prossimo lavoro si sceglie dalla lista qui sotto.** `main`
-remoto a `648db0c`; ⚠️ **il `main` locale e' indietro e il ramo in uso e' ancora
-`settings-riordinata`**: la modalita' auto nega `git pull`, li rimette in pari l'utente. Albero
-pulito a parte i file del diario. **#197 chiusa** misurando: zero 404 sotto
-`/technologies` nei Runtime Logs, quindi nessun rimedio (strada 3, le misure restano nella issue).
-⚠️ **Quattro rami da cancellare**, in remoto e in locale: `settings-riordinata` (mergiato ora),
-`sitemap-una-lingua`, `letture-senza-pagina`, `grant-notifiche-service-role`: sono dell'utente.
+**Da dove ripartire (trentesimo giro, 2026-11-10): Verdict non si vende piu'.** L'utente ha deciso
+oggi che l'app diventa **open source**, si scarica con `npx verdict-tracker` e gira sul computer di
+chi la usa con la sua chiave Anthropic. Le ragioni sono sue e stanno scritte nell'**ADR 0011**: dare
+una mano alla comunita' degli sviluppatori, e farsi conoscere come sviluppatore. **Niente codice e'
+stato scritto oggi**: la sessione ha deciso, aperto dieci issue e aggiornato i documenti.
 
-### La pagina Settings riordinata (#194)
+### Cosa cambia, in una riga per cosa
 
-Due zone, `h2` a 18px sul token `--text-title` e con l'iniziale maiuscola (**Language**,
-**Notifications**), dentro solo `h3`: `h4` e `h5` spariti, perche' la struttura dei titoli e'
-lettura assistiva (WCAG 2.2 AA, 1.3.1). `settings.notifications.external.title` cancellata nelle
-cinque lingue: i canali esterni sono un concetto, non un titolo, e il segno `Pro` col conteggio
-stanno sull'`h3` di Slack. Campo manuale del webhook **solo quando `slackOauth` e' falso**, cioe' in
-sviluppo e in CI. Le due scelte della lingua stanno nella stessa zona, e **"language of slack"
-compare solo a canale aggiunto** (chiesto dall'utente): vive in `preferred-locale-section.tsx`, nel
-modulo Notifiche perche' l'azione che salva e' sua e l'indice `server` e' `server-only`.
-⚠️ **I riferimenti all'email sono tolti da tutte le parole visibili**, cinque lingue, perche' la
-#173 non e' sviluppata. Il canale `email` resta nel dominio e nel database.
+Via il Piano, i pagamenti e **l'autenticazione** (una copia e' di una persona sola). Via **Supabase**:
+il database diventa un file SQLite in `~/.verdict/`, letto con `node:sqlite`, che sta dentro Node 24.
+Le Sintesi passano dalla **Messages API** invece dei batch, Haiku 5.5 resta. Il Rilevamento parte
+quando apri la Dashboard se i dati sono vecchi, o col bottone. Lo stato personale (Tecnologie seguite
+e Versioni in uso) sta in **`verdict.json`**, non nel database, cosi' si copia su un altro computer.
+Le pagine pubbliche restano indicizzate come **sito statico senza nessuna variabile d'ambiente**, e
+cosi' **le scritture ISR vanno a zero**: con `revalidate = false` le faceva il deploy, 2.275 pagine
+per volta. Licenza **MIT**, README e CONTRIBUTING in inglese; glossario, documenti interni e issue
+restano in italiano. Le cinque lingue restano, e la revisione di francese, spagnolo e tedesco diventa
+il primo contributo che si chiede.
 
-### Il modal, e il tasto che apre la prova (#199)
+### Le tredici issue, nell'ordine in cui il sito pubblico non si rompe mai
 
-**Primo dialog dell'app**: `@radix-ui/react-dialog`, `src/components/ui/dialog.tsx` ristilizzato sui
-token. Deciso e registrato in `docs/DECISIONI.md` (riga Dialog), e le due frasi che dicevano "in
-quest'app non se ne apre nessuno" sono corrette qui e in `DESIGN.md`: **un dialog spiega un passo che
-porta fuori dall'app, e non e' mai la guardia di un atto distruttivo**, che resta la parola scritta
-controllata sul server.
-⚠️ **L'apertura e' tenuta a mano con `useState`, non dal `Trigger` di Radix**: `composeEventHandlers`
-salta il suo handler quando il figlio ha fermato il default, quindi un link dentro al `Trigger` o
-naviga via o non apre niente. Il bottone resta un link: senza JavaScript deve raggiungere
-`/slack/install`.
+#219 → #215 → #209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216. Ogni issue porta i suoi criteri di accettazione e il suo "Blocked by".
 
-**Le spiegazioni del piano Pro sono tagliate** su richiesta dell'utente (tre paragrafi nella pagina,
-cinque righe nel modal). Restano una riga nel modal, la riga accanto al tasto e il conteggio. **Il
-tasto `start the 30 day Pro trial`** e' l'unica porta in produzione finche' la #174 non vende Pro, e
-**Slack si disegna solo a prova aperta**; in sviluppo sempre, per poterci lavorare (`devPreview`).
-⚠️ **Una Server Action non revalida da sola**: il tasto scriveva la riga e la pagina restava quella
-di prima. `revalidatePath("/[locale]/settings", "page")` sta ora in `startProTrial` e in
-`saveSlackWebhook`, col **pattern della rotta** e non `/settings`, che sotto `[locale]` non esiste.
-⚠️ **Due cose non hanno prova automatica, dichiarate dentro gli e2e**: la disposizione di produzione
-senza campo manuale, e il modal; servono le credenziali Slack, che la CI non ha.
-`tests/e2e/slack-dialog.spec.ts` **si salta da solo** senza di esse e gira cosi':
-`SLACK_CLIENT_ID=0000000000.1111111111 SLACK_CLIENT_SECRET=finto pnpm dev`, poi
-`pnpm test:e2e slack-dialog`. ⚠️ In locale "procedi su Slack" dara' sempre `Invalid client_id`:
-Slack rifiuta `localhost` come `redirect_uri`, quindi la sua meta' del giro si prova in produzione.
+⚠️ **La #215 sta seconda, e non e' un dettaglio di gusto**: il sito e' il progetto da portfolio
+dell'utente, e la #211 toglie Supabase mettendo un file sul disco, che su Vercel fra due richieste non
+esiste. Fatta statica subito, mentre Supabase e' ancora in piedi e serve i dati in build, la produzione
+diventa solo file e **nessuna issue sul codice locale la puo' piu' rompere**. Le scritture ISR vanno a
+zero da subito. Il contenuto nuovo della landing e' la **#221**, lo spegnimento di Supabase e delle
+chiavi la **#222** (`ready-for-human`, porta a senso unico).
 
-### Lo stato dell'ambiente, lasciato cosi'
+⚠️ **La porta a senso unico e' la #222**: Supabase si cancella **solo dopo** che i suoi dati sono nel
+file distribuito e verificati. La' ci sono le Sintesi gia' pagate, e si ricomprano se si spegne prima.
 
-Database locale col Catalogo vero: **1945 Release e 60 Tecnologie**. ⚠️ Lo stato Slack del database
-locale e' stato **azzerato** (segreto, hint, inizio della prova). ⚠️ `db:reset` cancella l'utente di
-sviluppo: `pnpm dev:login`. Resta uno `stash@{0}` non nostro. **Nessun server sulla 3000.**
+### Le decisioni che sembreranno strane a chi legge dopo
 
-### Cosa resta
+- **La chiave Anthropic e' obbligatoria** anche se la Action della vetrina potrebbe servire le Sintesi
+  a tutti gratis. Considerata e scartata il 2026-11-10: un'app che vive perche' il suo autore continua
+  a pagare muore quando lui smette. Il file iniziale porta le Sintesi gia' fatte, quindi la prima
+  apertura e' piena; la chiave serve dalle Release nuove.
+- **Le Notifiche hanno due forme**: campanella e Digest mentre l'app gira, e il workflow nel
+  repository di chi usa l'app per essere avvisati ad app chiusa. L'email esce dall'MVP, quindi la
+  **#173 va riscritta** tenendo il Digest.
+- **La #69 (import da `package.json`) cambia peso**: su un'app che gira dentro la cartella del tuo
+  progetto non e' una comodita', e' il modo naturale di iniziare. Scrive in `verdict.json` (#217).
+  L'utente non l'ha ancora messa in coda alla catena: va proposta.
 
-1. **#198** cosa include Pro e cosa resta gratis, `ready-for-human`: sblocca la #174 e le parole di
-   `/settings`. Senza, il tasto della prova dice solo quello che ADR 0009 ha gia' deciso, cioe' che
-   senza Pro Slack tace e la campanella resta.
-2. **I due accertamenti della #190 che solo l'utente puo' fare**, in coda alla PR #195: le Release
-   in **produzione** con `created_at` negli ultimi trenta giorni, e **Max rows** su Supabase.
-3. ⚠️ **Le scritture ISR hanno toccato il 100% il 2026-10-23**: misure in `docs/handoff/PESO.md`. La
-   leva che resta non e' codice: **accorpare i deploy di produzione**.
-4. Poi si sceglie insieme: **#173** email e Digest, **#174** Lemon Squeezy (obbligatoria al lancio); non scelte **#65**, **#130**, **#69**, **#176**, e **la #185** va riscopata o chiusa.
-5. ⚠️ **Tre cose vive stanno in `APERTE.md` e `AMBIENTE.md`**: le due misure su `max_rows`, le due
-   cose non viste di Slack (che un messaggio **arrivi**, e la distribuzione pubblica della app
-   Verdict), e la e2e che nomina una fixture nel sitemap e cade solo in CI.
-6. ⚠️ **Francese, spagnolo e tedesco non rivisti da madrelingua** (ADR 0008, prima del lancio): le
-   parole nuove di questo giro sono tante.
-7. **I due debiti di sempre**: `APERTE.md` e il diario. ⚠️ **Credito basso: non spendere senza chiedere.**
+### Cosa e' stato fatto oggi, per non rifarlo
+
+Chiuse **#174**, **#176**, **#65** e **#206**, col motivo nel commento. Scritto l'**ADR 0011**, con una
+nota di superamento appesa agli ADR **0004**, **0007**, **0009** e **0010**, che restano. Puliti
+**`CLAUDE.md`** (non dice piu' "SaaS") e **`GLOSSARY.md`**: via Piano, Prova di Pro, Cancellazione
+dell'account, Lista d'attesa e Iscrizione, **Sviluppatore** senza autenticazione, **Seguire** in `verdict.json`.
+
+### Cosa resta a te
+
+1. ⚠️ **Le PR #207 e #208 erano gia' mergiate** (2026-11-09, 21:43) e l'handoff di ieri non lo
+   diceva: la lista d'attesa e' in produzione, la landing chiede un indirizzo e il callback cancella
+   gli account appena nati. La smonta la **#219**, dove un passo e' tuo: **guardare se qualcuno si e'
+   iscritto** prima di cancellare la tabella. Da cancellare i rami `185-dizionario-al-client`,
+   `198-confine-free-pro`, `206-schema-lista-attesa`, `206-lista-attesa`; il `main` locale e' indietro.
+2. **La #185** resta aperta e valida: le 121 righe di prosa stanno su una pagina che diventa statica,
+   quindi il peso e' lo stesso. ⚠️ Il suo testo va ancora corretto (la misura della prosa nei props
+   del client component), ed e' nel diario di novembre.
+3. ⚠️ **Non e' stato scritto codice**: nessuna delle tredici issue e' cominciata.
+4. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit e gli
+   header di sicurezza **diventano irrilevanti** su un sito statico senza rotte: non spendere tempo la'.
+5. **Ambiente spento**: nessun server in ascolto, `db:stop` con backup, la 3000 libera.
+   ⚠️ **Credito basso: non spendere senza chiedere.**

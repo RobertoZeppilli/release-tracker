@@ -16,8 +16,28 @@ storia, **si sposta parola per parola** in cima al file del suo mese, con un tit
 si aggiunge la riga qui sotto. Niente riassunti: un riassunto è dove si perde la ragione per cui una
 cosa era stata decisa.
 
+### Novembre 2026 (`docs/handoff/2026-11.md`)
+
+- Il ventinovesimo giro: la lista d'attesa e la porta chiusa (#206), 2026-11-09
+  - ⚠️ **Giro annullato il 2026-11-10** dalla svolta open source (ADR 0011). Le PR #207 e #208 erano
+    pero' gia' mergiate: la lista d'attesa e' in produzione e la smonta la #219. Resta per il
+    ragionamento sulle pagine pubbliche e per la misura sulla #185, che non e' stata rifatta.
+- Il ventottesimo giro: il dizionario intero su ogni pagina (#204, PR #205), 2026-11-09
+  - Come era lo stato a merge appena fatto, e la verifica in produzione del 2026-11-09
+- Le tre cose imparate nel ventottesimo giro, misurando il payload (2026-11-06)
+  - ⚠️ Il testo di una issue non è una misura: la #185 diceva tre cose e nessuna reggeva
+  - ⚠️ Una stringa nel payload è invisibile a un locator: un test di peso legge i byte
+  - ⚠️ Una chiave si traduce dove vive il suo letterale, o `clientDictionary` la lascia sul server
+- Stato del ventiseiesimo giro: audit di sicurezza, un buco trovato e chiuso (2026-11-03)
+  - ⚠️ `grant update` sulla tabella intera: la colonna, non la tabella, e la prova si fa sul database
+  - ⚠️ Il service role non ha la RLS a filtrargli la lettura: un `maybeSingle` senza `eq` legge la riga di tutti
+  - ⚠️ `deploy-database.yml` applica le migrazioni sei secondi dopo il merge: l'ordine fra schema e codice non si sceglie
+
 ### Ottobre 2026 (`docs/handoff/2026-10.md`)
 
+- Stato del venticinquesimo giro: Settings in due zone, e il primo dialog dell'app (2026-10-29)
+  - ⚠️ Il `Trigger` di Radix salta il suo handler quando il figlio ha fermato il default: un link dentro o naviga via o non apre niente
+  - ⚠️ Una Server Action non revalida da sola, e sotto `[locale]` il pattern della rotta non è `/settings`
 - Stato del ventitreesimo giro: le cinque lingue fuori dal sitemap, e il 404 in cache misurato (2026-10-28)
   - ⚠️ Spegnere `hreflang` nel solo sitemap non basta: Google crawla gli URL che il `<head>` nomina
   - ⚠️ Un 404 sotto `/technologies` finisce in cache per un anno, e una entry per lingua

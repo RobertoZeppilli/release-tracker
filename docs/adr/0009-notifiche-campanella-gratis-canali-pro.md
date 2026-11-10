@@ -142,3 +142,22 @@ del dopo, non parti del confine che si paga.
 lingue che l'interfaccia usa già (`prova di Pro`, `Pro trial`, `essai Pro`, `prueba de Pro`,
 `Pro-Testzeit`): la cosa esisteva nel codice e nei dizionari ma non aveva una riga nel glossario, e
 una regola di dominio senza nome si reinventa. La voce **Piano** porta il rimando a questa tabella.
+
+---
+
+⚠️ **Precisato dall'ADR [0011](./0011-open-source-una-copia-per-persona.md) il 2026-11-10, quando Verdict è diventato open source.** Cade **tutta
+la parte economica**: senza Piano non c'è niente di Pro, quindi la campanella, Slack, Discord e i
+webhook sono aperti a chiunque, e la tabella del confine Free/Pro in coda a questo ADR non descrive
+più nulla. Cade anche il legame tecnico con l'autenticazione: la riga delle Notifiche non pende più da
+`auth.users`, perché gli account non esistono.
+
+**Resta** la forma del dominio, che era la parte difficile: una Notifica è di uno Sviluppatore e di un
+evento, con Visto, canale e lingua suoi. Su una copia installata lo Sviluppatore è uno, quindi la
+regola si legge come una riga per evento.
+
+⚠️ **Quello che cambia davvero è quando una Notifica raggiunge qualcuno.** Non c'è più un cron nostro
+che lavora di notte: la campanella e il Digest esistono mentre l'app gira e diventano il riepilogo di
+cosa è cambiato da quando hai guardato l'ultima volta. Per essere avvisati ad app chiusa c'è un
+workflow che si copia nel proprio repository, con la propria chiave e il proprio webhook (#218).
+**L'email esce dall'MVP**: mandarla vorrebbe dire un servizio di invio, cioè una spesa, e la issue
+#173 va riscritta tenendo il Digest e lasciando andare il canale email.

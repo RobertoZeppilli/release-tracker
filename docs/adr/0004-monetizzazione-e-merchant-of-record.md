@@ -20,3 +20,14 @@ vera e diventa una scadenza**: al lancio i pagamenti sono già attivi, perché i
 una **prova di 30 giorni per Sviluppatore** che parte dalla prima accensione di un canale e alla
 scadenza li spegne, senza diritti acquisiti. Una prova che scade senza niente da comprare sarebbe una
 funzione spenta, quindi Lemon Squeezy è una fetta obbligatoria del lancio e non più una cosa del dopo.
+
+---
+
+⚠️ **Superato dall'ADR [0011](./0011-open-source-una-copia-per-persona.md) il 2026-11-10: Verdict non si vende.** L'app diventa open source e
+gira sul computer di chi la usa, quindi non esistono più un Piano, un confine Free/Pro, una Prova di
+Pro né un Merchant of Record: Lemon Squeezy non entra mai e la issue #174 è chiusa. Il criterio che
+questo ADR aveva fissato, però, non è stato smentito ed è anzi la ragione per cui la svolta regge:
+ciò che costa zero per persona aggiuntiva resta gratis, e le Sintesi e le pagine pubbliche erano
+appunto quello. Quello che cade è la metà a pagamento, perché non c'era nessuna funzione il cui costo
+marginale valesse un abbonamento. Resta vero anche il resto del ragionamento sull'IVA: non si applica
+più perché non si incassa niente, non perché fosse sbagliato.

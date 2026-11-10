@@ -84,3 +84,21 @@ callback invece è dinamica, e si apre all'ora esatta.
 
 ⚠️ Finché la porta è chiusa, `pnpm dev:login` resta il modo di avere un account nuovo in locale,
 perché lo sviluppo non passa dal callback di GitHub.
+
+---
+
+⚠️ **Superato dall'ADR [0011](./0011-open-source-una-copia-per-persona.md) il 2026-11-10, un giorno dopo essere stato scritto, e mai andato in
+produzione.** La Lista d'attesa serviva a raccogliere indirizzi fino a un lancio a pagamento che non
+ci sarà: Verdict diventa open source e si scarica, quindi non c'è niente da attendere e nessuna porta
+da chiudere.
+
+⚠️ **Ma questo ADR è andato in produzione.** Le PR #207 e #208 sono state mergiate il **2026-11-09
+alle 21:43**, poche ore prima della svolta, quindi la tabella `waitlist_signups`, il modulo `waitlist`
+e la porta chiusa nel callback **esistono davvero** e vanno smontati: lo fa la issue **#219**, la prima
+della catena open source. La issue #206 è chiusa.
+
+Due cose scritte qui restano vere e vale la pena rileggerle: **le pagine pubbliche sono il solo canale
+che porta qualcuno qui**, ed è il motivo per cui la vetrina resta in piedi come sito statico (#215); e
+**l'argomento che convince è una dimostrazione, non una promessa**, che adesso è il comando da copiare
+e la Dashboard dimostrativa sulla landing. La data del **20 gennaio 2027** sopravvive anche lei, ma
+come giorno dell'annuncio e non del lancio: il pacchetto va su npm appena funziona.
