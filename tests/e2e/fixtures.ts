@@ -458,20 +458,3 @@ export async function releaseIdFor(technologyId: string, version: string): Promi
   if (error) throw error;
   return IdRowSchema.parse(data).id;
 }
-
-// The Waitlist (ADR 0010). No client is granted anything on that table, so the only reader of it in
-// a test is the service role, as it is in the app: the form writes through a Server Action.
-export async function waitlistLocale(email: string): Promise<string | null> {
-  const { data, error } = await serviceClient()
-    .from("waitlist_signups")
-    .select("locale")
-    .eq("email", email)
-    .maybeSingle();
-  if (error) throw error;
-  return data === null ? null : z.object({ locale: z.string() }).parse(data).locale;
-}
-
-export async function removeWaitlistSignup(email: string): Promise<void> {
-  const { error } = await serviceClient().from("waitlist_signups").delete().eq("email", email);
-  if (error) throw error;
-}

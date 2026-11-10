@@ -16,7 +16,6 @@ import { settings } from "./settings";
 import { shell } from "./shell";
 import { stack } from "./stack";
 import { terms } from "./terms";
-import { waitlist } from "./waitlist";
 import { summary } from "./summary";
 
 // Italian, one namespace per file, the same files English has. Typed as the whole dictionary and
@@ -41,5 +40,4 @@ export const IT: MessageDictionary = {
   ...stack,
   ...summary,
   ...terms,
-  ...waitlist,
 };

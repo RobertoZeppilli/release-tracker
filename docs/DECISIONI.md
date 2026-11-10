@@ -45,35 +45,32 @@ perché un dominio è una spesa: il nome del prodotto non dipende dal dominio es
 resta dov'è. Esiste un pacchetto npm `verdict` e un utente GitHub `Verdict`: nessuno dei due
 interferisce, perché qui non si pubblica un pacchetto e il repository sta sotto l'account personale.
 
-### Il lancio: 20 gennaio 2027, e la lista d'attesa
+### Il 20 gennaio 2027 è un annuncio, non un lancio
 
-**La data del lancio è mercoledì 20 gennaio 2027**, decisa dall'utente il 2026-11-09, ed e'
-scritta **in chiaro** sulla landing. Una data precisa è una promessa, e una promessa è ciò che fa
-lasciare l'email: "presto" non lo fa. Da qui a quel giorno l'app si finisce con calma, e la landing
-raccoglie indirizzi invece di mostrare una porta aperta su un prodotto che non vende ancora niente.
+**La data resta, quello che ci succede no.** Mercoledì 20 gennaio 2027 era il giorno in cui Verdict
+cominciava a vendere, deciso dall'utente il 2026-11-09. Dal 2026-11-10 non c'è niente da vendere
+(ADR [0011](./adr/0011-open-source-una-copia-per-persona.md)): quel mercoledì è il giorno in cui il
+progetto si annuncia, col repository pubblico e il comando da copiare. La data sta scritta qui e in
+nessun altro posto. Non è nel codice e non è su nessuna pagina, così si sposta di una settimana senza
+che si rompa niente: era una costante (`LAUNCH_AT`) perché la landing la prometteva a chi lasciava un
+indirizzo, e nessuno lascia più un indirizzo.
 
-**Le pagine Tecnologia restano pubbliche e indicizzate.** Nascondere `/technologies/*` dietro un
-"coming soon" butterebbe l'indicizzazione dei 2.275 indirizzi del sitemap (#192), cioè il solo
-canale che porta qualcuno alla **Lista d'attesa**: una landing isolata senza traffico raccoglie zero
-email. La waitlist converte **perché** il visitatore vede prima un verdetto vero, quindi la parte
-che vende resta aperta e si chiude solo la parte che non è finita.
+**Le pagine Tecnologia restano pubbliche e indicizzate**, e la ragione è cambiata. Prima erano il
+canale che portava qualcuno alla Lista d'attesa. Adesso i 2.275 indirizzi del sitemap (#192) sono il
+progetto da portfolio dell'utente, e il solo modo in cui si arriva qui senza sapere che questa app
+esiste. La #215 li congela in un sito statico, che non legge più nessun database.
 
-⚠️ **Quello che si chiude è la nascita di un account, e si chiude nel callback OAuth**, non su
-`/login`: con GitHub il provider del login e quello della registrazione sono lo stesso, quindi non
-esiste una rotta "signup" da spegnere. Chi arriva senza avere già un account viene rimandato alla
-landing con la data e il campo email; gli **Sviluppatori** che esistono già entrano come prima e la
-**Dashboard** non si tocca. Il perché di questa forma, e cosa la riapre, stanno nell'ADR
-[0010](./adr/0010-lista-attesa-e-porta-chiusa.md).
-
-**Nessuna email viene spedita prima del lancio.** La **Lista d'attesa** è una tabella e un campo:
-costo zero, nessun servizio nuovo, niente da configurare. Il solo messaggio parte il 20 gennaio
-2027, e quello è il punto in cui questa decisione incrocia la #173, che porta il canale email e la
-disiscrizione.
+⚠️ **Via la lista d'attesa e la porta chiusa nel callback.** Erano andate in produzione il 2026-11-09
+alle 21:43, poche ore prima della svolta: la landing chiedeva un indirizzo e il callback OAuth
+cancellava gli account appena nati. Le ha smontate la **#219**, e la tabella `waitlist_signups` era
+vuota il giorno in cui si è cancellata. L'ADR [0010](./adr/0010-lista-attesa-e-porta-chiusa.md)
+resta, con la sua nota di superamento: è il perché di un codice che qualcuno potrebbe ritrovare nella
+storia di `main`.
 
 ⚠️ **Le visite non sono domanda.** Al 2026-11-09 il sito prende molte visite da Singapore e ha due
 Sviluppatori: `ap-southeast-1` è una regione di data center, quindi quel traffico va letto come
-crawler finché qualcosa non prova il contrario. La **Lista d'attesa** esiste anche per questo: un
-indirizzo lasciato da una persona è il primo numero che non si può confondere con un bot.
+crawler finché qualcosa non prova il contrario. L'indirizzo lasciato da una persona doveva essere il
+primo numero non confondibile con un bot, e quel numero adesso non c'è.
 
 ## Modello del dominio
 

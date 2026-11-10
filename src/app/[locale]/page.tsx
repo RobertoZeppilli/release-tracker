@@ -7,8 +7,6 @@ import { readCatalogDirectory } from "@/modules/catalog/server";
 import { SPECIMEN } from "@/modules/landing";
 import { Arrivals, Bench, ClosingBlock, HeadingBlock, ProofPanel, ShortSpecimens, VocabularyLegend } from "@/modules/landing/ui";
 import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
-import { doorClosed } from "@/modules/waitlist";
-import { WaitlistBlock } from "@/modules/waitlist/ui";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslator();
@@ -38,11 +36,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LandingPage() {
   const catalog = await readCatalogDirectory();
   const t = await getTranslator();
-  const locale = await currentLocale();
-  // ⚠️ Read once, when the page is prerendered, which is what keeps this page a static document:
-  // the launch is a fixed date, so the only build that can read it wrong is one running on the
-  // morning of 20 January 2027, and that morning ships a deploy anyway (ADR 0010).
-  const closed = doorClosed(new Date());
 
   return (
     <>
@@ -55,9 +48,6 @@ export default async function LandingPage() {
           <HeadingBlock t={t} />
           <ProofPanel t={t} />
         </section>
-        {/* The Waitlist under the first screen and not at the foot of the page: whoever is going to
-            leave an address is convinced by the demonstration above it (ADR 0010). */}
-        {closed && <WaitlistBlock locale={locale} t={t} />}
         <Bench t={t} />
         <ShortSpecimens t={t} />
         <VocabularyLegend t={t} />
