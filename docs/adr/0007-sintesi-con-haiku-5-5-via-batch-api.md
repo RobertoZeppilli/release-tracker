@@ -109,3 +109,14 @@ il Catalogo nel frattempo era cresciuto e le Note vere sono più lunghe di quant
 assumesse. **La media misurata è $0,00096 per Sintesi** (9.648 token in ingresso e 1.906 in uscita),
 contro i $0,00066 proiettati. È la prima misura su dati veri col modello nuovo, e sostituisce la
 stima ovunque.
+
+---
+
+⚠️ **La Batch API è stata sostituita dalla Messages API il 2026-11-10, ADR [0011](./0011-open-source-una-copia-per-persona.md)** (issue #212). Il
+modello **resta Haiku 5.5** e resta tutto il resto di questo ADR: il prompt, le versioni tracciate in
+`summaries.model` e `summaries.prompt_version`, le misure di costo qui sotto, le Note giudicabili.
+Cambia solo il canale. I batch costavano la metà e rispondevano fino a 24 ore dopo, che era il patto
+giusto quando un cron notturno generava per tutti; su un'app che gira sul computer di una persona, chi
+clicca Aggiorna non aspetta un giorno, e lo sconto del 50% su frazioni di centesimo non compra quella
+attesa. ⚠️ **Le misure di costo per Sintesi qui sotto valgono ancora come ordine di grandezza ma non
+alla lettera**: erano prese sul prezzo dei batch, quindi il costo reale per Sintesi è circa il doppio.

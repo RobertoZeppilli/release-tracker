@@ -348,3 +348,18 @@ potrebbe misurare se stessa e restare ferma per sempre.
 ⚠️ **Quello che resta sulla pagina Tecnologia sono i ~120.000 byte di markup delle righe**, cioe' il
 contenuto vero. Scenderebbe solo mostrando meno righe, che e' una scelta di prodotto e non uno
 spreco: e' quello che la #185 chiamava "il taglio a dieci righe".
+
+### Verificato in produzione dopo il merge (2026-11-09, `main` a `2c67051`)
+
+La frase di `privacy` non e' piu' in nessuna pagina che non sia la sua. HTML + risposta RSC,
+compressi, con la procedura di sopra:
+
+| Pagina | Unita' prima | Unita' dopo | HTML gz | RSC gz |
+| --- | --: | --: | --- | --- |
+| `/technologies/angular` | 8 | **6** | 36.415 -> 25.895 | 29.119 -> 18.999 |
+| `/login` | — | **2** | 8.308 | 6.632 |
+| `/privacy` | — | **3** | 12.273 | 8.661 |
+| `/` | — | **5** | 21.469 | 13.067 |
+
+⚠️ **Due unita' su otto sono il 25% delle scritture della pagina Tecnologia**, e il taglio vale su
+**tutte** le pagine, non su questa: e' la prima leva di peso che non chiede una scelta di prodotto.

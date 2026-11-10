@@ -327,11 +327,12 @@ dimezzato dalla Batch API, pochi centesimi a giro. **Nessun lancio senza avvisar
    picker il danno sarebbe silenzioso: solo `latestStableRelease` lo legge, e sceglierebbe la Release
    piu' recente sbagliata.
 
-### ⚠️ Slack, le due cose non viste
+### Slack, la cosa che restava
 
-1. **La prova che manca**, l'unica cosa di Slack non vista: un messaggio che **arriva** da un invio
-   nostro. In `/settings` c'e' "Slack is connected" e il canale giusto; il bottone del messaggio di
-   prova non e' mai stato premuto con un webhook vero. Nel canale di prova restano **webhook orfani**
-   da ripulire in Incoming Webhooks.
+1. ✅ **Vista il 2026-11-03**: le Notifiche sono **arrivate su Slack e nella campanella** da un giro
+   vero di produzione, riferito dall'utente. Era l'ultima cosa del canale mai osservata da un capo
+   all'altro, quindi il giro `deliverSlack` e' provato in vita e non solo in CI: il webhook preso
+   dall'OAuth, il messaggio composto, l'invio, la riga in `notification_deliveries`. Nel canale di
+   prova restano **webhook orfani** da ripulire in Incoming Webhooks.
 2. **Mai verificato se la app Verdict ha la distribuzione pubblica attiva** (Manage Distribution).
    Senza, "Add to Slack" funziona solo dal tuo spazio e per chiunque altro e' un errore di Slack.

@@ -97,7 +97,9 @@ La scelta di uno sviluppatore di vedere nella propria dashboard le **Release** d
 **Tecnologia ritirata** già seguita resta seguita finché lo sviluppatore non smette, e da quel momento
 non si può più seguire. Il comando per **Seguire** non compare mai su una **Tecnologia ritirata** che
 lo sviluppatore non segue, in nessuna schermata: offrirebbe un'azione che il database rifiuta. Le
-**Tecnologie ritirate** seguite contano nel limite del **Piano**.
+**Seguire** e' una voce in `verdict.json`, non una riga in una tabella: quel file e' l'autorita'
+e il database lo rispecchia, cosi' le **Tecnologie** seguite si portano su un altro computer
+copiando un file. Non c'e' nessun limite al numero di **Tecnologie** che si possono **Seguire**.
 _Evitare_: iscriversi, abbonarsi, preferito.
 
 **Versione in uso**:
@@ -337,58 +339,15 @@ dice quante sono. Le _Digest_ non si riassumono e
 non entrano in questo conto.
 _Evitare_: migration path, diff di versioni, upgrade guide.
 
-## Account e piani
+## Chi usa Verdict
 
 **Sviluppatore**:
-Una persona autenticata che **Segue** delle **Tecnologie** e ha una **Dashboard**. Chi legge le
-pagine pubbliche senza login è un **Visitatore**.
-_Evitare_: utente (ambiguo tra i due), user, cliente.
-
-**Piano**:
-Il livello di servizio di uno **Sviluppatore**: _Free_ o _Pro_ (in futuro _Team_, legato a un
-gruppo e non alla singola persona). Il _Free_ permette di **Seguire** al massimo 10 **Tecnologie**
-(ritirate comprese), limite imposto dal database: l'interfaccia lo anticipa ma non è l'autorità;
-le **Sintesi** e le pagine pubbliche non dipendono mai dal **Piano**. Il confine intero fra _Free_ e
-_Pro_, voce per voce e con quello che accade alla fine della **Prova di Pro**, sta nella tabella in
-coda all'ADR [0009](docs/adr/0009-notifiche-campanella-gratis-canali-pro.md) e si legge solo lì.
-⚠️ Le **Tecnologie** seguite oltre la decima da chi scende da _Pro_ a _Free_ **restano** e smettono
-di notificare: il limite vale per **aggiungerne**, non per togliere quelle che ci sono.
-_Evitare_: abbonamento (è il rapporto col provider di pagamento), tier, licenza.
-
-**Prova di Pro**:
-I 30 giorni in cui uno **Sviluppatore** usa i **Canali di notifica** esterni senza pagare. Parte
-**dalla prima accensione** di uno di quei canali e non dalla registrazione, e apre **quelli e
-nient'altro**: non sblocca le **Tecnologie** illimitate, così nessuno supera il limite del **Piano**
-senza aver pagato. Alla scadenza senza _Pro_ i canali esterni si spengono per tutti, senza diritti
-acquisiti, la campanella resta e **niente di salvato viene cancellato**, webhook compreso.
-_Evitare_: trial (resta il nome in codice), periodo di grazia (non c'è), demo.
-
-**Cancellazione dell'account**:
-La fine del rapporto, decisa dallo **Sviluppatore** e immediata: spariscono l'account, i **Follow**
-con le **Versioni in uso** dichiarate sopra, la riga del **Piano** e la sessione nel browser. Non
-c'è copia da cui tornare indietro e non c'è finestra per ripensarci. Due cose non spariscono, e
-vanno dette invece che nascoste: le pagine pubbliche di **Release** e **Tecnologie**, che non
-contengono niente di una persona, e l'autorizzazione che GitHub tiene da parte sua, che solo GitHub
-può revocare. Firmare di nuovo fa un account nuovo e vuoto, non quello di prima.
-_Evitare_: disattivazione, sospensione, chiusura (promettono un ritorno che non c'è).
-
-**Lista d'attesa**:
-L'elenco degli indirizzi email lasciati prima del lancio da chi vuole essere avvisato il giorno in
-cui Verdict apre. Una riga dell'elenco è una **Iscrizione**. Non è un account e non diventa un
-account da sé: il giorno del lancio parte un solo messaggio, e chi vuole entrare firma con GitHub
-come chiunque altro. Esiste perché il lancio ha una data (`docs/DECISIONI.md`, "Il lancio: 20
-gennaio 2027") e fino a quel giorno un account nuovo non nasce (ADR
-[0010](./docs/adr/0010-lista-attesa-e-porta-chiusa.md)).
-_Evitare_: newsletter (non è un invio periodico), early access (non dà nessun accesso in
-anticipo), lead, contatto.
-
-**Iscrizione**:
-Una riga della **Lista d'attesa**: un indirizzo email normalizzato, la lingua in cui chi lo ha
-lasciato stava leggendo, il giorno in cui lo ha lasciato e da quale pagina. Un indirizzo vale **una
-sola** Iscrizione: chiederla due volte non crea niente e il lettore legge che c'è già. Non porta
-un nome, perché un nome non serve a mandare un messaggio e sarebbe un dato in piu' da custodire.
-_Evitare_: iscritto (è la persona, non la riga), signup (resta il nome in codice), registrazione
-(quella fa un account).
+La persona che ha installato Verdict, **Segue** delle **Tecnologie** e ha una **Dashboard**. Non c'e'
+account e non c'e' autenticazione: una copia installata e' di uno **Sviluppatore** solo, e il suo
+stato sta in `verdict.json` sul suo disco (ADR
+[0011](./docs/adr/0011-open-source-una-copia-per-persona.md)). Chi legge le pagine pubbliche della
+vetrina e' un **Visitatore**.
+_Evitare_: utente (ambiguo tra i due), user, cliente, account (non esiste).
 
 ## Nomi in codice e interfaccia
 
@@ -427,8 +386,6 @@ la tabella per cercarle.
 | Seguire | suivre | seguir | folgen · verfolgt |
 | Notifica | notification | notificación | Benachrichtigung |
 | Digest settimanale | digest hebdomadaire | resumen semanal | wöchentlicher Digest |
-| Prova di Pro | essai Pro | prueba de Pro | Pro-Testzeit |
-| Lista d'attesa | liste d'attente | lista de espera | Warteliste |
 
 ⚠️ Due verbi in tedesco per `follow`, e la grammatica è quello che li divide: `folgen` regge il
 dativo, quindi è il verbo di ogni frase e di ogni pulsante, ma non forma participio attributivo né
@@ -469,15 +426,12 @@ passivo personale, e `gefolgte Technologien` non è tedesco. Quelle posizioni le
 | Cammino di upgrade | `UpgradePath` | parametro `?from=<version>` |
 | Sviluppatore | `Developer` | |
 | Visitatore | `Visitor` | |
-| Notifica | `Notification` | tabella `notifications`, una per Sviluppatore e per evento; `on delete cascade` su `auth.users`; conservata 90 giorni |
-| Canale di notifica | `NotificationChannel` | `in_app` · `slack` · `email`; `in_app` gratis, gli altri Pro |
+| Notifica | `Notification` | tabella `notifications`, una per evento; conservata 90 giorni. ⚠️ Ha due forme da riscrivere nella #218: la campanella mentre l'app gira, e il workflow che avvisa ad app chiusa |
+| Canale di notifica | `NotificationChannel` | `in_app` · `slack` · `email`; nessuno a pagamento, l'email fuori dall'MVP (#218) |
 | Visto | `seenAt` | sulla Notifica, non sulla Release: il contatore conta le Notifiche con `seen_at` nullo |
 | Lingua preferita | `preferredLocale` | nelle impostazioni delle Notifiche, per email e Slack che non hanno un URL; manca, vale `en` |
 | Consegna | `NotificationDelivery` | tabella `notification_deliveries`, una riga per Notifica e canale con esito, errore e istante |
 | Webhook Slack | `slackWebhookUrl` | segreto in `notification_secrets`, tabella senza grant per il client; si rilegge solo l'indizio `slackWebhookHint` (host e ultime quattro cifre) |
-| Piano | `Plan` | `free` · `pro` · `team` |
-| Prova di Pro | `externalTrialStartedAt` | colonna `notification_settings.external_trial_started_at`, scritta dal service role; 30 giorni, solo i canali esterni; UI en: "Pro trial" |
-| Cancellazione dell'account | `delete account` | la pagina `/account` |
 | Prodotto | `Verdict` | mai tradotto, mai con l'articolo |
 
 ## Ambiguità risolte
