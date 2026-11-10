@@ -6,9 +6,9 @@ Anthropic. Non si vende, non ha account: deciso il 2026-11-10, **ADR 0011**.
 Parla con l'utente **in italiano**.
 
 ⚠️ **La conversione e' in corso e il codice non ci e' ancora arrivato**: Supabase, il login e
-il Piano sono ancora nel repository, e le issue dalla **#219** alla **#216** li smontano in quest'ordine
-(#219 → #209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #215 → #216). Finche' una issue non
-e' chiusa, i comandi e lo schema qui sotto valgono come sono scritti.
+il Piano sono ancora nel repository, e tredici issue li smontano in quest'ordine: #219 → #215 →
+#209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216. Finche' una
+issue non e' chiusa, i comandi e lo schema qui sotto valgono come sono scritti.
 
 ## Leggi prima
 

@@ -48,19 +48,19 @@ per volta. Licenza **MIT**, README e CONTRIBUTING in inglese; glossario, documen
 restano in italiano. Le cinque lingue restano, e la revisione di francese, spagnolo e tedesco diventa
 il primo contributo che si chiede.
 
-### Le undici issue, nell'ordine in cui `main` resta sano
+### Le tredici issue, nell'ordine in cui il sito pubblico non si rompe mai
 
-⚠️ **#219** via la lista d'attesa, che e' in produzione (sotto) → **#209** via il Piano e `plans`
-diventa `follows` → **#210** via il login → **#211** SQLite al posto
-di Supabase (la piu' grossa: 59 file) → **#212** Sintesi con la Messages API → **#213** Rilevamento su
-richiesta → **#217** lo stato in `verdict.json` → **#214** il comando `npx verdict-tracker` → **#218**
-il workflow che avvisa ad app chiusa → **#215** la vetrina statica (⚠️ `ready-for-human`: dentro c'e'
-la cancellazione delle chiavi su Vercel e del progetto Supabase) → **#216** aprire ai contributi.
-Ogni issue porta i suoi criteri di accettazione e il suo "Blocked by".
+#219 → #215 → #209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216. Ogni issue porta i suoi criteri di accettazione e il suo "Blocked by".
 
-⚠️ **Una porta a senso unico, dentro la #211**: il progetto Supabase si cancella **solo dopo** che i
-suoi dati sono dentro il file distribuito e verificati. La' ci sono le Sintesi gia' pagate, e si
-ricomprano se si spegne prima.
+⚠️ **La #215 sta seconda, e non e' un dettaglio di gusto**: il sito e' il progetto da portfolio
+dell'utente, e la #211 toglie Supabase mettendo un file sul disco, che su Vercel fra due richieste non
+esiste. Fatta statica subito, mentre Supabase e' ancora in piedi e serve i dati in build, la produzione
+diventa solo file e **nessuna issue sul codice locale la puo' piu' rompere**. Le scritture ISR vanno a
+zero da subito. Il contenuto nuovo della landing e' la **#221**, lo spegnimento di Supabase e delle
+chiavi la **#222** (`ready-for-human`, porta a senso unico).
+
+⚠️ **La porta a senso unico e' la #222**: Supabase si cancella **solo dopo** che i suoi dati sono nel
+file distribuito e verificati. La' ci sono le Sintesi gia' pagate, e si ricomprano se si spegne prima.
 
 ### Le decisioni che sembreranno strane a chi legge dopo
 
@@ -92,7 +92,7 @@ dell'account, Lista d'attesa e Iscrizione, **Sviluppatore** senza autenticazione
 2. **La #185** resta aperta e valida: le 121 righe di prosa stanno su una pagina che diventa statica,
    quindi il peso e' lo stesso. ⚠️ Il suo testo va ancora corretto (la misura della prosa nei props
    del client component), ed e' nel diario di novembre.
-3. ⚠️ **Non e' stato scritto codice**: nessuna delle undici issue e' cominciata.
+3. ⚠️ **Non e' stato scritto codice**: nessuna delle tredici issue e' cominciata.
 4. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit e gli
    header di sicurezza **diventano irrilevanti** su un sito statico senza rotte: non spendere tempo la'.
 5. **Ambiente spento**: nessun server in ascolto, `db:stop` con backup, la 3000 libera.

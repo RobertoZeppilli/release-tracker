@@ -6,8 +6,13 @@ Anthropic. La ragione non è tecnica ed è giusto che resti scritta: dare una ma
 sviluppatori, e farsi conoscere come sviluppatore. Il prezzo è il fatturato, che era ipotetico; il
 guadagno è la reputazione e il fatto che qualcuno lo usi davvero.
 
-Questo ADR fissa la forma nuova. Il lavoro sta nelle issue dalla **#219** alla **#216**, in
-quest'ordine: #219 → #209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #215 → #216.
+Questo ADR fissa la forma nuova. Il lavoro sta in tredici issue, in quest'ordine:
+#219 → #215 → #209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216.
+
+⚠️ **La #215 viene seconda perché il sito pubblico non deve rompersi un giorno solo**: è il progetto
+da portfolio di chi lo scrive. La #211 toglie Supabase e mette un file sul disco, che su Vercel non
+esiste fra due richieste; reso statico prima, mentre il database è ancora in piedi e serve i dati in
+fase di build, il sito diventa solo file e smette di dipendere da qualunque cosa succeda dopo.
 
 ⚠️ La prima della catena, la **#219**, esiste per un incidente di tempi: la Lista d'attesa dell'ADR
 [0010](./0010-lista-attesa-e-porta-chiusa.md) è stata mergiata in `main` la sera del 2026-11-09,
