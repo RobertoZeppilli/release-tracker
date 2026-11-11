@@ -5,7 +5,8 @@ segue, e di come vengono smistate nella sua dashboard.
 
 **Verdict** è il nome del prodotto, deciso il 2026-10-08 (`docs/DECISIONI.md`, "Il nome: Verdict").
 Si scrive con la maiuscola, senza articolo e senza traduzione: "Verdict mostra", non "il Verdict".
-`release-tracker` resta soltanto il nome del repository e della cartella di lavoro.
+Il repository si chiama **verdict-tracker** dal 2026-11-11, come il comando `npx verdict-tracker`;
+`release-tracker` resta soltanto il nome della cartella di lavoro in locale.
 
 ## Release
 

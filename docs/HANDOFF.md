@@ -1,9 +1,9 @@
-# Handoff, release-tracker: implementazione delle issue
+# Handoff, verdict-tracker: implementazione delle issue
 
 Parla con l'utente **in italiano**. Progetto in `C:\Users\rober\progetti\release-tracker`, repository
-git con remote **pubblico** su **https://github.com/RobertoZeppilli/release-tracker** (branch `main`, `gh`
+git con remote **pubblico** su **https://github.com/RobertoZeppilli/verdict-tracker** (branch `main`, `gh`
 autenticato). Next.js 16 + Tailwind 4 + Vitest; comandi in `CLAUDE.md`.
-Produzione: **https://release-tracker-drab.vercel.app** (diventa una vetrina statica, #215).
+Produzione: **https://verdict-tracker.vercel.app**, una **vetrina statica** senza server (#215).
 ⚠️ **Dal 2026-11-10 il prodotto non si vende**: open source e self-hosted, ADR 0011.
 
 ## Questo file sta sotto le 100 righe, per scelta dell'utente (2026-10-10)
@@ -29,71 +29,71 @@ riga in `INDICE.md`. Niente riassunti: un riassunto è dove si perde la ragione 
 stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 ## Stato
 
-**Da dove ripartire (trentesimo giro, 2026-11-10): Verdict non si vende piu'.** L'utente ha deciso
-oggi che l'app diventa **open source**, si scarica con `npx verdict-tracker` e gira sul computer di
-chi la usa con la sua chiave Anthropic. Le ragioni sono sue e stanno scritte nell'**ADR 0011**: dare
-una mano alla comunita' degli sviluppatori, e farsi conoscere come sviluppatore. **Niente codice e'
-stato scritto oggi**: la sessione ha deciso, aperto dieci issue e aggiornato i documenti.
+**Da dove ripartire (trentaduesimo giro, 2026-11-11): la vetrina è statica, e la produzione non ha
+più un server.** PR #225 mergiata (`55ecebc`), deploy di produzione verde. Da qui lo stesso sorgente
+costruisce due cose: `pnpm build` è l'app che si installa, `pnpm build:static` è la vetrina pubblica,
+solo file, ed è quello che Vercel serve. **Nessuna issue sul codice locale può più rompere la
+produzione**, che era la ragione di mettere la #215 davanti a tutte.
 
-### Cosa cambia, in una riga per cosa
+### Com'è fatta la vetrina, e perché così
 
-Via il Piano, i pagamenti e **l'autenticazione** (una copia e' di una persona sola). Via **Supabase**:
-il database diventa un file SQLite in `~/.verdict/`, letto con `node:sqlite`, che sta dentro Node 24.
-Le Sintesi passano dalla **Messages API** invece dei batch, Haiku 5.5 resta. Il Rilevamento parte
-quando apri la Dashboard se i dati sono vecchi, o col bottone. Lo stato personale (Tecnologie seguite
-e Versioni in uso) sta in **`verdict.json`**, non nel database, cosi' si copia su un altro computer.
-Le pagine pubbliche restano indicizzate come **sito statico senza nessuna variabile d'ambiente**, e
-cosi' **le scritture ISR vanno a zero**: con `revalidate = false` le faceva il deploy, 2.275 pagine
-per volta. Licenza **MIT**, README e CONTRIBUTING in inglese; glossario, documenti interni e issue
-restano in italiano. Le cinque lingue restano, e la revisione di francese, spagnolo e tedesco diventa
-il primo contributo che si chiede.
+`output: "export"` è globale: rifiuta una Server Action o un route handler **ovunque** sotto
+`src/app`, anche su una pagina che non viene esportata. Le rotte non pubbliche non si possono
+cancellare, perché l'app con il server è quella che si installa. Quindi `scripts/build-static.mts`
+copia il sorgente in `.static-build/`, aggancia `node_modules` con una junction, taglia le rotte
+elencate e costruisce da lì. ⚠️ **Se un percorso dell'elenco non esiste più lo script si ferma e lo
+dice**, invece di costruire: una rotta che si sposta in silenzio è una Server Action che rientra
+nell'albero, e l'errore che produce arriva pagine lontano dalla sua causa. Le prossime issue spostano
+rotte: quando lo script si lamenta, l'elenco `PRIVATE_ROUTES` va aggiornato, non aggirato.
 
-### Le tredici issue, nell'ordine in cui il sito pubblico non si rompe mai
+Il resto, in numeri misurati l'11: 107 Tecnologie e 1.981 Release in cinque lingue fanno **10.476
+documenti** e 62.854 file, 2,0 GB; 6,3 minuti di generazione con sette worker, più 69 secondi di
+compilazione a caldo e 3,4 minuti a freddo (la cache di Turbopack resta in `.static-build/`).
+**Nessun indirizzo è cambiato**: l'inglese che l'export scrive sotto `en/` lo risale alla radice lo
+script, e il 308 da `/en/*` lo dichiara `vercel.json` al posto del proxy.
 
-#219 → #215 → #209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216. Ogni issue porta i suoi criteri di accettazione e il suo "Blocked by".
+### Verificato in produzione, e l'unica cosa che resta da guardare
 
-⚠️ **La #215 sta seconda, e non e' un dettaglio di gusto**: il sito e' il progetto da portfolio
-dell'utente, e la #211 toglie Supabase mettendo un file sul disco, che su Vercel fra due richieste non
-esiste. Fatta statica subito, mentre Supabase e' ancora in piedi e serve i dati in build, la produzione
-diventa solo file e **nessuna issue sul codice locale la puo' piu' rompere**. Le scritture ISR vanno a
-zero da subito. Il contenuto nuovo della landing e' la **#221**, lo spegnimento di Supabase e delle
-chiavi la **#222** (`ready-for-human`, porta a senso unico).
+200 su landing, Tecnologia, Release e le stesse in italiano, sitemap e robots; 308 da `/en/faq`;
+**404 su `/login`, `/dashboard` e `/technologies`**, che su un sito di soli file non esistono. Il 404
+vestito è rimasto: la rotta catch-all esporta il suo documento a `_404` e lo script lo mette al posto
+del 404 nudo di Next.
 
-⚠️ **La porta a senso unico e' la #222**: Supabase si cancella **solo dopo** che i suoi dati sono nel
-file distribuito e verificati. La' ci sono le Sintesi gia' pagate, e si ricomprano se si spegne prima.
+⚠️ **Le scritture ISR a zero si leggono sul pannello di Vercel dopo due deploy**: è l'unico criterio
+di accettazione della #215 che non si poteva chiudere dal codice. Vale la pena guardarlo, perché era
+la spesa che la #215 doveva togliere.
 
-### Le decisioni che sembreranno strane a chi legge dopo
+⚠️ **In produzione il Rilevamento è fermo da adesso.** Il cron giornaliero è uscito da `vercel.json`,
+perché `/api/jobs/detection` su un sito statico non esiste, e i dati della vetrina restano a quelli
+dell'ultimo deploy finché la #211 e la #213 non portano il Rilevamento in locale. È l'ADR 0011, non
+una perdita, e sta scritto anche nel commento sulla #215.
 
-- **La chiave Anthropic e' obbligatoria** anche se la Action della vetrina potrebbe servire le Sintesi
-  a tutti gratis. Considerata e scartata il 2026-11-10: un'app che vive perche' il suo autore continua
-  a pagare muore quando lui smette. Il file iniziale porta le Sintesi gia' fatte, quindi la prima
-  apertura e' piena; la chiave serve dalle Release nuove.
-- **Le Notifiche hanno due forme**: campanella e Digest mentre l'app gira, e il workflow nel
-  repository di chi usa l'app per essere avvisati ad app chiusa. L'email esce dall'MVP, quindi la
-  **#173 va riscritta** tenendo il Digest.
-- **La #69 (import da `package.json`) cambia peso**: su un'app che gira dentro la cartella del tuo
-  progetto non e' una comodita', e' il modo naturale di iniziare. Scrive in `verdict.json` (#217).
-  L'utente non l'ha ancora messa in coda alla catena: va proposta.
+Noto e lasciato lì: in `404.html` il selettore della lingua punta cinque volte a sé stesso, quindi
+chi è sul 404 e cambia lingua resta sul 404. Riscrivere quelle stringhe nell'HTML no: nello stesso
+file c'è il payload RSC, e una sostituzione che cambia la lunghezza lo corrompe.
 
-### Cosa e' stato fatto oggi, per non rifarlo
+### Le undici issue che restano
 
-Chiuse **#174**, **#176**, **#65** e **#206**, col motivo nel commento. Scritto l'**ADR 0011**, con una
-nota di superamento appesa agli ADR **0004**, **0007**, **0009** e **0010**, che restano. Puliti
-**`CLAUDE.md`** (non dice piu' "SaaS") e **`GLOSSARY.md`**: via Piano, Prova di Pro, Cancellazione
-dell'account, Lista d'attesa e Iscrizione, **Sviluppatore** senza autenticazione, **Seguire** in `verdict.json`.
+#209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216. Tutte
+`ready-for-agent` tranne la **#222**, che è `ready-for-human` ed è una porta a senso unico.
 
 ### Cosa resta a te
 
-1. ⚠️ **Le PR #207 e #208 erano gia' mergiate** (2026-11-09, 21:43) e l'handoff di ieri non lo
-   diceva: la lista d'attesa e' in produzione, la landing chiede un indirizzo e il callback cancella
-   gli account appena nati. La smonta la **#219**, dove un passo e' tuo: **guardare se qualcuno si e'
-   iscritto** prima di cancellare la tabella. Da cancellare i rami `185-dizionario-al-client`,
-   `198-confine-free-pro`, `206-schema-lista-attesa`, `206-lista-attesa`; il `main` locale e' indietro.
-2. **La #185** resta aperta e valida: le 121 righe di prosa stanno su una pagina che diventa statica,
-   quindi il peso e' lo stesso. ⚠️ Il suo testo va ancora corretto (la misura della prosa nei props
-   del client component), ed e' nel diario di novembre.
-3. ⚠️ **Non e' stato scritto codice**: nessuna delle tredici issue e' cominciata.
-4. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit e gli
-   header di sicurezza **diventano irrilevanti** su un sito statico senza rotte: non spendere tempo la'.
-5. **Ambiente spento**: nessun server in ascolto, `db:stop` con backup, la 3000 libera.
-   ⚠️ **Credito basso: non spendere senza chiedere.**
+1. ⚠️ **Il ramo `209-filtro-deploy` ora si può cancellare**, e con lui l'unica cosa che restava da
+   recuperare a mano. La #215 ha messo `supabase/migrations/` nel filtro dell'Ignored Build Step,
+   che era metà di quel commit mai entrato (`7e40fd7`). L'altra metà, `scripts/`, **non deve
+   entrare**: la build della vetrina *è* uno script, quindi uno script è esattamente una cosa che
+   cambia il sito. La ragione per cui quel commit lo escludeva è spiegata dentro
+   `scripts/vercel-ignore-build.mjs`, e non vale più.
+2. **La #185** resta valida: la pagina è statica, ma le 121 righe di prosa pesano uguale.
+   ⚠️ Il suo testo va ancora corretto, e la misura che lo smentisce è nel diario di novembre.
+3. ⚠️ **`package.json` dice ancora `"name": "release-tracker"`**, e va cambiato nella **#214**, che
+   è quella che pubblica. ⚠️ `verdict-tracker` su npm era libero l'11 novembre e resta libero fino
+   al giorno in cui qualcuno lo pubblica: è una ragione per non far aspettare la #214.
+4. ⚠️ **Gli e2e si lanciano con `E2E_PORT=3100 pnpm test:e2e`** (sulla 3000 vive `ai-intake-agent`,
+   il perché in `AMBIENTE.md`). L'11 novembre erano 305 su 310: i cinque falliti passano da soli,
+   erano timeout da carico.
+5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit e gli
+   header di sicurezza adesso **sono irrilevanti**.
+6. **Ambiente**: Supabase locale **acceso**, avviato con
+   `pnpm exec supabase start -x studio,inbucket`. ⚠️ **Credito basso: non spendere senza chiedere.**

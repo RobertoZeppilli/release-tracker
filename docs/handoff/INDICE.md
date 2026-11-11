@@ -18,6 +18,14 @@ cosa era stata decisa.
 
 ### Novembre 2026 (`docs/handoff/2026-11.md`)
 
+- Il trentunesimo giro: la #219 fatta, e il repository che ha cambiato nome, 2026-11-10/11
+  - La lista d'attesa smontata dal codice (PR #223) e la tabella cancellata (PR #224)
+  - ⚠️ `gh repo rename`: il vecchio indirizzo risponde 301, Vercel non ha perso l'aggancio
+  - ⚠️ Il dominio nuovo non è arrivato nelle pagine da solo: `NEXT_PUBLIC_SITE_URL` è build time
+- Il trentesimo giro: la svolta open source scritta nei documenti, 2026-11-10
+  - Le tredici issue decise in un giorno, senza scrivere codice, e il perché di ognuna
+  - ⚠️ La #215 spostata seconda perché la #211 mette un file sul disco, che su Vercel non esiste
+  - ⚠️ Chiave Anthropic obbligatoria, niente account, niente pagamenti: le ragioni stanno nell'ADR 0011
 - Il ventinovesimo giro: la lista d'attesa e la porta chiusa (#206), 2026-11-09
   - ⚠️ **Giro annullato il 2026-11-10** dalla svolta open source (ADR 0011). Le PR #207 e #208 erano
     pero' gia' mergiate: la lista d'attesa e' in produzione e la smonta la #219. Resta per il

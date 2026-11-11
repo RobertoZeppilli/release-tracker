@@ -5,10 +5,13 @@ Sintesi con l'AI. Gira sul computer di chi la usa (`npx verdict-tracker`), con l
 Anthropic. Non si vende, non ha account: deciso il 2026-11-10, **ADR 0011**.
 Parla con l'utente **in italiano**.
 
-⚠️ **La conversione e' in corso e il codice non ci e' ancora arrivato**: Supabase, il login e
-il Piano sono ancora nel repository, e tredici issue li smontano in quest'ordine: #219 → #215 →
-#209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216. Finche' una
-issue non e' chiusa, i comandi e lo schema qui sotto valgono come sono scritti.
+⚠️ **La conversione e' in corso**: Supabase, il login e il Piano sono ancora nel repository, e
+undici issue li smontano in quest'ordine: #209 → #210 → #211 → #212 → #213 → #217 → #214 → #218 →
+#221 → #222 → #216. Finche' una issue non e' chiusa, i comandi e lo schema qui sotto valgono come
+sono scritti.
+⚠️ **La produzione e' una vetrina statica** dalla #215: `pnpm build` resta l'app che si installa,
+`pnpm build:static` costruisce il sito che Vercel serve, e in produzione il Rilevamento e' fermo
+finche' la #211 e la #213 non lo portano in locale.
 
 ## Leggi prima
 
@@ -52,6 +55,7 @@ issue non e' chiusa, i comandi e lo schema qui sotto valgono come sono scritti.
 ## Comandi
 
 - `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm typecheck` · `pnpm test` (Vitest, unitari).
+- `pnpm build:static`: la vetrina pubblica in `out/` (copia potata in `.static-build/`, ~10 min).
 - Database (serve Docker Desktop attivo): `pnpm db:start` · `pnpm db:reset` · `pnpm db:stop`;
   nuova migrazione con `pnpm exec supabase migration new <nome>`.
 - `pnpm test:integration` (Vitest su Supabase locale) · `pnpm test:e2e` (Playwright).

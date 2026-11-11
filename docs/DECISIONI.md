@@ -12,9 +12,9 @@ Release che contano.
 
 - Interfaccia, **Sintesi** e codice in **inglese**. Il glossario è in italiano con una tabella di
   nomi inglesi canonici.
-- Il prodotto si chiama **Verdict**. Deciso il 2026-10-08, chiudendo la #26. `release-tracker`
-  resta il nome del repository e della cartella, e non va più letto come un nome provvisorio del
-  prodotto.
+- Il prodotto si chiama **Verdict**. Deciso il 2026-10-08, chiudendo la #26. Il repository si chiama
+  **verdict-tracker** dal 2026-11-11, come il comando che lo installa: `release-tracker` resta il
+  nome della cartella di lavoro in locale, e non va più letto come un nome provvisorio del prodotto.
 
 ### Il nome: Verdict
 
@@ -253,4 +253,4 @@ di `package.json` resta qui finché la #69 non è decisa.
   l'indirizzo di contatto definitivo, che fino ad allora è la casella personale in `src/lib/contact.ts`.
 
 Il design dell'MVP è chiuso: fanno fede `DESIGN.md` e i mock approvati in `design/mocks/`. PRD
-pubblicato come issue [#1](https://github.com/RobertoZeppilli/release-tracker/issues/1).
+pubblicato come issue [#1](https://github.com/RobertoZeppilli/verdict-tracker/issues/1).

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { type Locale, localeAlternates, localePath } from "@/modules/i18n";
 
 // The product's name (docs/DECISIONI.md). Without the article and without the colon the Brand Mark
-// carries: `release-tracker` is only the name of the repository.
+// carries: the repository is `verdict-tracker`, which is the name of the command, not of the product.
 const SITE_NAME = "Verdict";
 
 export type PageMeta = {

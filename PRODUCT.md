@@ -52,7 +52,8 @@ grounded only in the release notes.
 - Summary states: pending, processing, ready, unavailable, skipped, failed.
 - Retired Technologies stay readable.
 - Sign-in: GitHub only. UI and Summaries in English.
-- Product name: **Verdict** (decided 2026-10-08). `release-tracker` is only the repository name.
+- Product name: **Verdict** (decided 2026-10-08). The repository is `verdict-tracker`, renamed
+  2026-11-11 to match the `npx verdict-tracker` command.
 
 ## Brand Commitments
 

@@ -24,6 +24,16 @@ non stato: si aprono quando servono.
   (rispondeva 404 alle rotte nuove e faceva sembrare rotto il codice), e tre di un altro progetto sulle
   3005-3007. Sono stati chiusi tutti: regola dell'utente, sempre lo stesso server.
   `.env.local` contiene i valori del Supabase locale; `pnpm catalog:sync` in locale dopo `set -a; . ./.env.local`.
+- ⚠️ **Gli e2e vogliono una porta loro: `E2E_PORT=3100 pnpm test:e2e`** (la variabile esiste in
+  `playwright.config.ts` dalla PR #223, e senza di lei il default resta 3000). `reuseExistingServer`
+  si fida di qualunque cosa risponda sulla porta e **non sa distinguere questa app da un'altra**: il
+  2026-11-10 il dev server di `ai-intake-agent` si è ripreso la 3000 a run avviato, e la suite ha
+  interrogato quell'altra app per nove minuti, 17 test passati e 66 mai partiti, senza un messaggio
+  che lo dicesse. Le asserzioni sui canonical e sul sitemap continuano a dire `localhost:3000` anche
+  dalla 3100, perché leggono `NEXT_PUBLIC_SITE_URL` da `.env.local` e non la porta vera.
+  ⚠️ A server freddo 6 test cadono sulla prima compilazione delle rotte in dev (`toHaveURL` scade in
+  5 secondi, e `/api/jobs/detection` risponde 500 invece di 401) e passano tutti a caldo: in CI non
+  succede, perché là gira `pnpm start` sul build di produzione.
 - **Heredoc della shell di Claude: le sequenze con la barra rovesciata vengono mangiate** anche con
   `<<'EOF'`. Una classe di caratteri come quella dei controlli nelle regex arriva nel file con una barra
   in meno e il test fallisce con un errore incomprensibile. Per file con barre rovesciate usare gli
@@ -44,6 +54,24 @@ non stato: si aprono quando servono.
   `rm -rf .next`, riavviare. Prima di giudicare la tipografia di una schermata, controllare questo.
 - Python su Windows: scrivere i file con `encoding='utf-8'` (il default cp1252 ha troncato un file).
 - `pnpm-workspace.yaml`: `esbuild: false` in `allowBuilds` (il binario arriva dalle dipendenze opzionali).
+
+## ⚠️ Una `NEXT_PUBLIC_*` cambia solo con un deploy, e il 2026-11-11 l'ha dimostrato
+
+Spostato qui da `../HANDOFF.md` parola per parola, perché è ambiente e non stato.
+
+⚠️ **`NEXT_PUBLIC_SITE_URL` è una variabile `NEXT_PUBLIC_*`, quindi finisce nel bundle a build
+time.** L'utente ha cambiato il dominio in `verdict-tracker.vercel.app` e per un po' la produzione ha
+servito pagine nuove che dichiaravano `canonical` sul dominio vecchio, con 3.678 indirizzi del
+sitemap e la riga `Sitemap:` di `robots.txt` a dire il nome di prima. Cambiare la variabile non
+sposta niente: serve un **deploy**. L'ha prodotto il merge della #224, e adesso canonical, robots e
+sitemap dicono tutti e tre il dominio nuovo, misurato con `curl`. Il dominio vecchio redirige col
+**308**, permanente, e conserva il percorso: `/technologies/react` arriva alla sua pagina.
+
+**Come si verifica**, in tre `curl` che non costano niente:
+`curl -s <sito>/ | grep -o '<link rel="canonical" href="[^"]*"'`,
+`curl -s <sito>/robots.txt | grep -i '^sitemap'` e
+`curl -s <sito>/sitemap.xml | grep -c '<dominio vecchio>'`. Il terzo è quello che conta: contava
+3.678 indirizzi col nome di prima e zero col nome nuovo, e dopo il deploy esattamente il contrario.
 
 ## Come si guardano e si misurano i mock
 
