@@ -20,8 +20,6 @@ export const privacy = {
   "privacy.held.follows.why": "which ones, and the day each was followed",
   "privacy.held.versions.label": "versions declared",
   "privacy.held.versions.why": "the version you say you are on, and the day you said it",
-  "privacy.held.plan.label": "plan",
-  "privacy.held.plan.why": "Free, for every account",
   // The three rows the Notifications brought (ADR 0009, issue #171). The retention is said in
   // `privacy.keep.notifications`, which is the one row with a clock of its own.
   "privacy.held.notifications.label": "notifications",
@@ -57,7 +55,7 @@ export const privacy = {
 
   "privacy.keep.title": "how long, and how to end it",
   "privacy.keep.body":
-    "Everything above is kept while the account exists. Deleting the account on the {account} removes it at once: the account row goes, and the follows, the declared versions and the plan go with it, because they are keyed to it and deleted with it. There is no grace period, no archive of ours, and nothing to undo it with.",
+    "Everything above is kept while the account exists. Deleting the account on the {account} removes it at once: the account row goes, and the follows and the declared versions go with it, because they are keyed to it and deleted with it. There is no grace period, no archive of ours, and nothing to undo it with.",
   "privacy.keep.notifications":
     "The notifications are the one row with a clock of its own: each is deleted 90 days after it was written, seen or not, and nothing of it is kept after that.",
   "privacy.keep.after":

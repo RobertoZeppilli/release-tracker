@@ -2,8 +2,7 @@ import type { MessageDictionary } from "../index";
 
 // The terms, in Spanish. Every claim here is one the code makes true (issue #132), so a translation
 // that softens one of them makes the page say something the app does not do: the sentences are
-// deliberately flat, and Spanish keeps them flat. The follow limit is a gap and never a digit,
-// because the Plan is what decides it.
+// deliberately flat, and Spanish keeps them flat.
 export const terms = {
   "terms.lede":
     "Qué es el servicio, a qué te obliga y qué no promete. Es corto porque el producto es pequeño, y nada de lo que sigue describe algo que la app no haga.",
@@ -16,9 +15,6 @@ export const terms = {
   "terms.catalog.body":
     "El catálogo lo elegimos y lo mantenemos nosotros. No hay formulario para añadir una tecnología ni cola detrás de uno: una tecnología entra cuando podemos seguir sus releases como es debido, y puede retirarse cuando ya no podemos. Una tecnología retirada sigue consultable, y sigue siendo tuya si la seguías.",
 
-  "terms.plan.title": "el plan",
-  "terms.plan.body":
-    "Hay un solo plan, Free. Sigue hasta {limit} tecnologías y no cuesta nada. La app nunca pide datos de pago, y no hay nada que cancelar.",
 
   "terms.summaries.title": "las síntesis se generan, y pueden equivocarse",
   "terms.summaries.body":

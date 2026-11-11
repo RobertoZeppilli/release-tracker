@@ -5,7 +5,7 @@ import type { MessageDictionary } from "../index";
 // What is **not** here is the product's grammar: `verdict:`, `warning:`, `help:`, `breaking[n]:`,
 // `note:`, `release-notes:n` and the four Significance names are identical in every language
 // (ADR 0008). The figures are not here either: they come from `SPECIMEN`, from the Catalog
-// directory and from the Plan, so the sentences name them as gaps.
+// directory, so the sentences name them as gaps.
 export const landing = {
   "landing.claim": "Verstehen vor dem Upgrade.",
   // `{breaking}` is the counted phrase below, put in a `strong`, and `{propTypes}` is a `code`:
@@ -76,12 +76,9 @@ export const landing = {
     "Eine Beta oder ein Release Candidate. Nur die erste preview einer neuen major wird zusammengefasst, und Canaries, Nightlies und Alphas sind hier überhaupt keine Releases.",
 
   // The close, and the counter-position beside it.
-  "landing.close.claim": {
-    one: "Folge der einen Technologie, die über deine Woche entscheidet.",
-    other: "Folge den {count} Technologien, die über deine Woche entscheiden.",
-  },
-  "landing.close.plan":
-    "Der kostenlose Plan folgt bis zu {limit} Technologien aus einem von Hand gepflegten Katalog von {size}. Die Anmeldung läuft über GitHub, und die Release-Seiten bleiben ohne sie lesbar.",
+  "landing.close.claim": "Folge den Technologien, die über deine Woche entscheiden.",
+  "landing.close.catalog":
+    "Ein von Hand gepflegter Katalog mit {size} Technologien. Die Anmeldung läuft über GitHub, und die Release-Seiten bleiben ohne sie lesbar.",
   "landing.close.browse": {
     one: "die eine Technologie durchsehen",
     other: "alle {count} Technologien durchsehen",

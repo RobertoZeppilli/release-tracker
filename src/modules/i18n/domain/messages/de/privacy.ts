@@ -25,8 +25,6 @@ export const privacy = {
   "privacy.held.follows.why": "welche, und der Tag, an dem du jeder gefolgt bist",
   "privacy.held.versions.label": "angegebene versionen",
   "privacy.held.versions.why": "die Version, die du einsetzt, und der Tag, an dem du es gesagt hast",
-  "privacy.held.plan.label": "plan",
-  "privacy.held.plan.why": "Free, für jeden Account",
   "privacy.held.notifications.label": "benachrichtigungen",
   "privacy.held.notifications.why":
     "von welchem Release du erfahren hast, der Tag, an dem sie geschrieben wurde, und ob du sie gesehen hast",
@@ -63,7 +61,7 @@ export const privacy = {
 
   "privacy.keep.title": "wie lange, und wie man es beendet",
   "privacy.keep.body":
-    "Alles von oben wird gespeichert, solange der Account existiert. Den Account auf der {account} zu löschen nimmt es sofort weg: die Zeile des Accounts geht, und die Folgen, die angegebenen Versionen und der Plan gehen mit ihr, weil sie an sie geschlüsselt sind und mit ihr gelöscht werden. Es gibt keine Schonfrist, kein Archiv bei uns und nichts, womit man es zurücknimmt.",
+    "Alles von oben wird gespeichert, solange der Account existiert. Den Account auf der {account} zu löschen nimmt es sofort weg: die Zeile des Accounts geht, und die Folgen und die angegebenen Versionen gehen mit ihr, weil sie an sie geschlüsselt sind und mit ihr gelöscht werden. Es gibt keine Schonfrist, kein Archiv bei uns und nichts, womit man es zurücknimmt.",
   "privacy.keep.notifications":
     "Die Benachrichtigungen sind die eine Zeile mit einer eigenen Uhr: jede wird 90 Tage nach dem Schreiben gelöscht, gesehen oder nicht, und danach bleibt nichts von ihr.",
   "privacy.keep.after":

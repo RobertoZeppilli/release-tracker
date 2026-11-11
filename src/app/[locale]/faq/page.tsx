@@ -3,7 +3,6 @@ import { Filled, LocaleLink as Link } from "@/modules/i18n/ui";
 import { AccountLink, DocumentPage, DocumentSection } from "@/components/document-page";
 import { pageMetadata } from "@/lib/metadata";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
-import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslator();
@@ -73,23 +72,17 @@ export default async function FaqPage() {
         </Question>
       </DocumentSection>
 
-      {/* The three places ADR 0009 asks the Free/Pro line to be said are the `Pro` mark in
-          `/settings`, the line of days left beside it, and these two questions. */}
+      {/* The Free/Pro line ADR 0009 asked to be said here, and the question about the ten
+          Technologies in the section below, left with the Plan (issue #209, ADR 0011). */}
       <DocumentSection title={t("faq.section.notifications")}>
         <Question question={t("faq.notify.q")}>
           <p>{t("faq.notify.a")}</p>
-        </Question>
-        <Question question={t("faq.pro.q")}>
-          <p>{t("faq.pro.a", { limit: FREE_FOLLOW_LIMIT })}</p>
         </Question>
       </DocumentSection>
 
       <DocumentSection title={t("faq.section.account")}>
         <Question question={t("faq.scope.q")}>
           <p>{t("faq.scope.a")}</p>
-        </Question>
-        <Question question={t("faq.limit.q", { limit: FREE_FOLLOW_LIMIT })}>
-          <p>{t("faq.limit.a")}</p>
         </Question>
         <Question question={t("faq.delete.q")}>
           <p>

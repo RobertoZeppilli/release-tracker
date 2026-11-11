@@ -32,8 +32,6 @@ export const dashboard = {
   "dashboard.totals.since": "versione dichiarata più vecchia",
   "dashboard.barNote":
     "la barra è la distanza dalla versione che hai dichiarato, non un punteggio",
-  "dashboard.quota.followed": "{count} di {limit} seguite",
-  "dashboard.quota.swap": "smetti di seguirne una per seguirne un'altra",
   "dashboard.stream.title": "cosa è successo · ultimi {days} giorni",
   "dashboard.stream.count": {
     one: ", {count} release",
@@ -60,6 +58,11 @@ export const dashboard = {
     other: "{count} release digest",
   },
   "dashboard.digest.noAction": "nessun intervento necessario",
+  "dashboard.followed": {
+    one: "{count} seguita",
+    many: "{count} seguite",
+    other: "{count} seguite",
+  },
   "dashboard.empty.none": "non segui ancora nessuna tecnologia",
   "dashboard.empty.some": {
     one: "segui {count} tecnologia",
@@ -67,7 +70,7 @@ export const dashboard = {
     other: "segui {count} tecnologie",
   },
   "dashboard.empty.what":
-    "Segui gli strumenti del tuo stack. Questa pagina mostra poi, per ognuno, le release che contano degli ultimi {days} giorni e se aggiornare richiede un intervento. Il piano Free ne segue fino a {limit}.",
+    "Segui gli strumenti del tuo stack. Questa pagina mostra poi, per ognuno, le release che contano degli ultimi {days} giorni e se aggiornare richiede un intervento.",
   "dashboard.empty.open": "Apri la Dashboard",
   "dashboard.empty.catalog": "nel catalogo ({count})",
   "dashboard.empty.browse": {

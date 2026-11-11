@@ -33,12 +33,6 @@ export function FollowRejectionNote({
 }
 
 function message(rejection: FollowRejection, t: Translator): string {
-  if (rejection === "limit") {
-    // It says what happened and the way out, and it does not recount the quota: the figure is in
-    // the Stack Panel on `/technologies` and in the Limit Note everywhere else (DESIGN.md, Row
-    // Error Line).
-    return t("stack.rejected.limit");
-  }
   if (rejection === "retired") return t("stack.rejected.retired");
   return t("stack.rejected.failed");
 }

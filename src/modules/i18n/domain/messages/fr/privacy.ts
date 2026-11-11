@@ -23,8 +23,6 @@ export const privacy = {
   "privacy.held.follows.why": "lesquelles, et le jour où chacune a été suivie",
   "privacy.held.versions.label": "versions déclarées",
   "privacy.held.versions.why": "la version que vous dites utiliser, et le jour où vous l’avez dite",
-  "privacy.held.plan.label": "plan",
-  "privacy.held.plan.why": "Free, pour chaque compte",
   "privacy.held.notifications.label": "notifications",
   "privacy.held.notifications.why":
     "de quelle release vous avez été averti, le jour où elle a été écrite, et si vous l’avez vue",
@@ -61,7 +59,7 @@ export const privacy = {
 
   "privacy.keep.title": "combien de temps, et comment y mettre fin",
   "privacy.keep.body":
-    "Tout ce qui est au-dessus est conservé tant que le compte existe. Supprimer le compte sur la {account} l’enlève aussitôt : la ligne du compte part, et les suivis, les versions déclarées et le plan partent avec elle, parce qu’ils y sont rattachés et supprimés avec elle. Il n’y a pas de délai de grâce, pas d’archive de notre côté, et rien pour revenir en arrière.",
+    "Tout ce qui est au-dessus est conservé tant que le compte existe. Supprimer le compte sur la {account} l’enlève aussitôt : la ligne du compte part, et les suivis et les versions déclarées partent avec elle, parce qu’ils y sont rattachés et supprimés avec elle. Il n’y a pas de délai de grâce, pas d’archive de notre côté, et rien pour revenir en arrière.",
   "privacy.keep.notifications":
     "Les notifications sont la seule ligne avec une horloge à elle : chacune est supprimée 90 jours après avoir été écrite, vue ou non, et il n’en reste rien ensuite.",
   "privacy.keep.after":

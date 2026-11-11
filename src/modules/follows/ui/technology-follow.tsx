@@ -11,7 +11,6 @@ import { SkeletonBox } from "@/components/waiting";
 import { FollowRejectionNote } from "./follow-rejection-note";
 import { FOLLOW_LINK_CLASS, FollowToggle } from "./follow-toggle";
 import { useFollows } from "./follows-provider";
-import { FollowToggleLimitNote } from "./limit-note";
 
 const ERROR_ID = "follow-error";
 // Pushed to the end of the header line, and left where it falls under 640px, as in the mock. The
@@ -99,7 +98,6 @@ function FollowControl({ technologyId, name, retired }: { technologyId: string; 
       <span className={PLACE}>
         <FollowToggle technologyId={technologyId} name={name} errorId={rejection ? ERROR_ID : undefined} />
       </span>
-      <FollowToggleLimitNote technologyId={technologyId} counted className={NOTE} />
       {rejection && <FollowRejectionNote id={ERROR_ID} rejection={rejection} className={NOTE} />}
     </>
   );

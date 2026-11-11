@@ -29,48 +29,50 @@ riga in `INDICE.md`. Niente riassunti: un riassunto è dove si perde la ragione 
 stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 ## Stato
 
-**Da dove ripartire (trentaduesimo giro, 2026-11-11): la vetrina è statica, e la produzione non ha
-più un server.** PR #225 mergiata (`55ecebc`), deploy di produzione verde. Da qui lo stesso sorgente
-costruisce due cose: `pnpm build` è l'app che si installa, `pnpm build:static` è la vetrina pubblica,
-solo file, ed è quello che Vercel serve. **Nessuna issue sul codice locale può più rompere la
-produzione**, che era la ragione di mettere la #215 davanti a tutte.
+**Da dove ripartire (trentatreesimo giro, 2026-11-11): la #209 e' aperta in PR #228, e vuole una
+seconda PR per chiudersi.** Il ramo `209-via-il-piano` e' pushato: 136 file, +468 -1482. Dentro c'e'
+tutto il codice della issue (il modulo `plans` rinominato `follows`, via limite, quota, Limit Note,
+muro del gruppo, trial e segno `Pro`, le cinque lingue, i test e `DECISIONI.md`, `PRODUCT.md`,
+`DESIGN.md`). ⚠️ **La migrazione non e' dentro**, ed e' una scelta, non una dimenticanza.
 
-### Com'è fatta la vetrina, e perché così
+### Perche' qui il codice va prima dello schema
 
-`output: "export"` è globale: rifiuta una Server Action o un route handler **ovunque** sotto
-`src/app`, anche su una pagina che non viene esportata. Le rotte non pubbliche non si possono
-cancellare, perché l'app con il server è quella che si installa. Quindi `scripts/build-static.mts`
-copia il sorgente in `.static-build/`, aggancia `node_modules` con una junction, taglia le rotte
-elencate e costruisce da lì. ⚠️ **Se un percorso dell'elenco non esiste più lo script si ferma e lo
-dice**, invece di costruire: una rotta che si sposta in silenzio è una Server Action che rientra
-nell'albero, e l'errore che produce arriva pagine lontano dalla sua causa. Le prossime issue spostano
-rotte: quando lo script si lamenta, l'elenco `PRIVATE_ROUTES` va aggiornato, non aggirato.
+La regola "schema prima, codice dopo" vale per le migrazioni che **aggiungono**, perche' i preview
+girano sul database di produzione. Una che **cancella** si rovescia: la CI applica le migrazioni da
+zero e poi gira integration ed e2e, quindi una PR di sola migrazione sarebbe rossa su due check
+obbligatori su due. E' l'ordine della lista d'attesa: #223 il codice, #224 la tabella.
 
-Il resto, in numeri misurati l'11: 107 Tecnologie e 1.981 Release in cinque lingue fanno **10.476
-documenti** e 62.854 file, 2,0 GB; 6,3 minuti di generazione con sette worker, più 69 secondi di
-compilazione a caldo e 3,4 minuti a freddo (la cache di Turbopack resta in `.static-build/`).
-**Nessun indirizzo è cambiato**: l'inglese che l'export scrive sotto `en/` lo risale alla radice lo
-script, e il 308 da `/en/*` lo dichiara `vercel.json` al posto del proxy.
+⚠️ **La migrazione e' gia' scritta e parcheggiata fuori dal ramo**, in
+`C:/Users/rober/AppData/Local/Temp/claude/0621240ac62cc06f/fb916036-67e8-454b-8ae4-9425f73aad32/scratchpad/drop_plans.sql`.
+Va rimessa in `supabase/migrations/` con un timestamp nuovo: `enforce_follow_rules()` riscritta col
+solo controllo `FRTRD` (via il lock e il ramo Free), poi `drop trigger on_auth_user_created`, `drop
+function create_free_plan()`, `drop table public.plans`, `drop type public.plan`, `alter table
+notification_settings drop column external_trial_started_at`. Se il file non c'e' piu' (la cartella
+muore con la sessione) si riscrive dal diff della PR #228.
 
-### Verificato in produzione, e l'unica cosa che resta da guardare
+### Cosa manca alla #209
 
-200 su landing, Tecnologia, Release e le stesse in italiano, sitemap e robots; 308 da `/en/faq`;
-**404 su `/login`, `/dashboard` e `/technologies`**, che su un sito di soli file non esistono. Il 404
-vestito è rimasto: la rotta catch-all esporta il suo documento a `_404` e lo script lo mette al posto
-del 404 nudo di Next.
+1. **La PR 2**: la migrazione sopra, piu' il test di integrazione che prova che **seguire piu' di
+   dieci Tecnologie funziona**, che e' un criterio di accettazione e nella PR 1 non si puo' scrivere
+   perche' il trigger e' ancora al suo posto.
+2. **Chiudere la #174** (Lemon Squeezy) spiegando perche': non c'e' niente da comprare, ADR 0011.
+3. ⚠️ Finche' la migrazione non e' applicata l'undicesimo Follow e' rifiutato con un codice che
+   il codice non conosce piu': la riga dice "non salvata, riprova". E' la finestra fra i due deploy.
 
-⚠️ **Le scritture ISR a zero si leggono sul pannello di Vercel dopo due deploy**: è l'unico criterio
-di accettazione della #215 che non si poteva chiudere dal codice. Vale la pena guardarlo, perché era
-la spesa che la #215 doveva togliere.
+Verde in locale sul ramo: lint, typecheck, `pnpm test` (776), build, `i18n:client-keys --check`,
+`pnpm test:integration` (96) e la suite e2e intera, 301 su 306. ⚠️ **I falliti in locale sono
+timeout da carico** (`toHaveURL` a 5s contro una navigazione che il dev server compila al volo):
+girati da soli passano. Un secondo commit ha corretto cinque e2e che leggevano ancora la quota del
+Piano in file che la issue non nomina.
 
-⚠️ **In produzione il Rilevamento è fermo da adesso.** Il cron giornaliero è uscito da `vercel.json`,
-perché `/api/jobs/detection` su un sito statico non esiste, e i dati della vetrina restano a quelli
-dell'ultimo deploy finché la #211 e la #213 non portano il Rilevamento in locale. È l'ADR 0011, non
-una perdita, e sta scritto anche nel commento sulla #215.
+⚠️ **In produzione il Rilevamento e' fermo.** Il cron giornaliero e' uscito da `vercel.json`, perche'
+`/api/jobs/detection` su un sito statico non esiste, e i dati della vetrina restano a quelli
+dell'ultimo deploy finche' la #211 e la #213 non portano il Rilevamento in locale. E' l'ADR 0011, non
+una perdita.
 
-Noto e lasciato lì: in `404.html` il selettore della lingua punta cinque volte a sé stesso, quindi
-chi è sul 404 e cambia lingua resta sul 404. Riscrivere quelle stringhe nell'HTML no: nello stesso
-file c'è il payload RSC, e una sostituzione che cambia la lunghezza lo corrompe.
+⚠️ **La CI di `main` sul commit `6e0eea2` e' rossa per il DNS del runner**, non per il codice:
+e' caduta `playwright install --with-deps`, il job `check` e' verde e nessun test e' fallito. Si
+risolve con `gh run rerun 43033974945 --failed`, non fatto.
 
 ### Le undici issue che restano
 
@@ -79,20 +81,19 @@ file c'è il payload RSC, e una sostituzione che cambia la lunghezza lo corrompe
 
 ### Cosa resta a te
 
-1. ⚠️ **Il ramo `209-filtro-deploy` ora si può cancellare**, e con lui l'unica cosa che restava da
-   recuperare a mano. La #215 ha messo `supabase/migrations/` nel filtro dell'Ignored Build Step,
+1. ⚠️ **Due rami si possono cancellare**, `209-filtro-deploy` e `215-vetrina-statica`, e con il
+   primo l'unica cosa che restava da recuperare a mano. La #215 ha messo `supabase/migrations/` nel filtro dell'Ignored Build Step,
    che era metà di quel commit mai entrato (`7e40fd7`). L'altra metà, `scripts/`, **non deve
    entrare**: la build della vetrina *è* uno script, quindi uno script è esattamente una cosa che
    cambia il sito. La ragione per cui quel commit lo escludeva è spiegata dentro
    `scripts/vercel-ignore-build.mjs`, e non vale più.
-2. **La #185** resta valida: la pagina è statica, ma le 121 righe di prosa pesano uguale.
-   ⚠️ Il suo testo va ancora corretto, e la misura che lo smentisce è nel diario di novembre.
+2. **La #185** resta valida: la pagina è statica, ma le 121 righe di prosa pesano uguale. ⚠️ Il suo
+   testo va ancora corretto, e la misura che lo smentisce è nel diario di novembre.
 3. ⚠️ **`package.json` dice ancora `"name": "release-tracker"`**, e va cambiato nella **#214**, che
    è quella che pubblica. ⚠️ `verdict-tracker` su npm era libero l'11 novembre e resta libero fino
    al giorno in cui qualcuno lo pubblica: è una ragione per non far aspettare la #214.
 4. ⚠️ **Gli e2e si lanciano con `E2E_PORT=3100 pnpm test:e2e`** (sulla 3000 vive `ai-intake-agent`,
-   il perché in `AMBIENTE.md`). L'11 novembre erano 305 su 310: i cinque falliti passano da soli,
-   erano timeout da carico.
+   il perché in `AMBIENTE.md`); i falliti da carico passano rilanciati da soli.
 5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit e gli
    header di sicurezza adesso **sono irrilevanti**.
 6. **Ambiente**: Supabase locale **acceso**, avviato con

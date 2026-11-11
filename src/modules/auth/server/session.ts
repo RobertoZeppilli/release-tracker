@@ -3,7 +3,7 @@ import { createRequestClient } from "@/lib/supabase-request";
 import { identityFrom, type Identity } from "../domain/identity";
 import { loginPath } from "../domain/redirect";
 
-// Only the identity: name, avatar and Plan belong to the pages that need them.
+// Only the identity: the name and the avatar belong to the pages that need them.
 export type Developer = { id: string; email: string | null };
 
 // `getUser` revalidates the token with Supabase; the cookie alone is not proof of a session.

@@ -22,7 +22,7 @@ export const page = {
     "Ce que Verdict suit, à quoi sert un compte, et jusqu’où une synthèse générée peut être crue.",
   "page.terms.title": "Conditions d’utilisation",
   "page.terms.description":
-    "Ce qu’est Verdict, ce que tient le plan gratuit, et pourquoi une synthèse générée montre toujours la ligne dont elle a été lue.",
+    "Ce qu’est Verdict, ce que veut dire un catalogue tenu à la main, et pourquoi une synthèse générée montre toujours la ligne dont elle a été lue.",
   "page.privacy.title": "Confidentialité",
   "page.privacy.description":
     "Tout ce que Verdict conserve d’un développeur, qui y touche, et pourquoi aucune donnée personnelle n’entre jamais dans un prompt.",

@@ -5,16 +5,12 @@ import {
   followWritten,
   forgetRender,
   type FixtureDeveloper,
-  type FixtureFillers,
   type FixtureTechnology,
   retireTechnology,
   seedDeveloper,
-  seedFillers,
   seedTechnology,
   wired,
 } from "./fixtures";
-
-const FREE_LIMIT = 10;
 
 let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
@@ -22,18 +18,16 @@ let technology: FixtureTechnology;
 // retirement is refused by the trigger: the order of the two cases is the opposite of each other.
 let leaving: FixtureTechnology;
 let gone: FixtureTechnology;
-let fillers: FixtureFillers;
 
 test.beforeAll(async () => {
   const release = [
     { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false },
   ] as const;
-  [developer, technology, leaving, gone, fillers] = await Promise.all([
+  [developer, technology, leaving, gone] = await Promise.all([
     seedDeveloper(),
     seedTechnology([...release]),
     seedTechnology([...release]),
     seedTechnology([...release], { retired: true }),
-    seedFillers(FREE_LIMIT),
   ]);
 });
 
@@ -43,7 +37,6 @@ test.afterAll(async () => {
     technology.remove(),
     leaving.remove(),
     gone.remove(),
-    fillers.remove(),
   ]);
 });
 
@@ -121,8 +114,7 @@ test.describe("a Developer", () => {
 
   // WCAG 1.4.11: the border is the only thing identifying this button, so every state has to keep one
   // that passes. `rule` measured 1.33:1 and was the one control border in the system outside the
-  // rule; what drops between off and on is the text. The limit state counts too, because it stays
-  // focusable and is therefore still a control.
+  // rule; what drops between off and on is the text.
   test("keeps the border that identifies it in every state", async ({ page }) => {
     await page.goto(path());
     const strong = await page.evaluate(() =>
@@ -146,31 +138,8 @@ test.describe("a Developer", () => {
 
     await followWritten(toggle(page, "Unfollow"));
     await developer.clearFollows();
-    await addFollows(developer.id, fillers.ids);
     await page.reload();
-    expect(await border(toggle(page, "Follow")), "the limit state").toBe(expected);
-  });
-
-  test("at ten of ten the Follow is blocked, still reachable, and says why", async ({ page }) => {
-    await addFollows(developer.id, fillers.ids);
-    await page.goto(path());
-
-    const blocked = toggle(page, "Follow");
-    await expect(blocked).toHaveAttribute("aria-disabled", "true");
-    await expect(blocked).toHaveAttribute("aria-describedby", /limit-note/);
-
-    const note = page.locator("#limit-note");
-    await expect(note).toBeVisible();
-    await expect(note).toContainText("unfollow one to follow another");
-    // Nothing about a paid Plan: the remedy is in the Developer's hands.
-    await expect(note).not.toContainText(/pro/i);
-
-    // Blocked, not disabled: the keyboard still gets there and the note is read with it.
-    await blocked.focus();
-    await expect(blocked).toBeFocused();
-    // `force` because Playwright refuses to click an `aria-disabled` button, which is the point.
-    await blocked.click({ force: true });
-    await expect(blocked).toHaveAttribute("aria-pressed", "false");
+    expect(await border(toggle(page, "Follow")), "the off state after a reload").toBe(expected);
   });
 
   test("can only unfollow a retired Technology, and the page says so", async ({ page }) => {

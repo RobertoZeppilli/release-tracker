@@ -26,7 +26,7 @@ test.afterAll(async () => {
   await developer.remove();
 });
 
-test("the dialog says what Slack will ask, and the trial it does not start", async ({ page }) => {
+test("the dialog says what Slack will ask, and nothing else", async ({ page }) => {
   const response = await page.request.post("/api/test/session", {
     data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
   });
@@ -43,10 +43,9 @@ test("the dialog says what Slack will ask, and the trial it does not start", asy
   await button.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByText("Add Verdict to Slack")).toBeVisible();
-  await expect(dialog.getByText("which workspace Verdict is added to")).toBeVisible();
-  await expect(dialog.getByText("which channel the messages land in")).toBeVisible();
-  // The sentence that matters: the trial does not start here, and the dialog has to say so.
-  await expect(dialog.getByText("The 30 day trial of Slack starts the first time")).toBeVisible();
+  // One sentence, and the dialog has nothing else to say: the thirty day trial it used to explain
+  // left with the Plan (issue #209).
+  await expect(dialog.getByText("Slack asks for a workspace and a channel.")).toBeVisible();
   await expect(dialog.getByRole("link", { name: "continue to Slack" })).toHaveAttribute(
     "href",
     "/slack/install?locale=en",

@@ -1,12 +1,12 @@
 "use client";
 
-import { CircleX, Info } from "lucide-react";
+import { CircleX } from "lucide-react";
 import { useTranslator } from "@/modules/i18n/ui";
-import { groupFollowError, groupWallFor, groupWallNote, wallNow } from "../domain/group-follow";
+import { groupFollowError } from "../domain/group-follow";
 import { useCatalogSelection } from "./catalog-selection";
 import { useFollows } from "./follows-provider";
 
-const GROUP_WALL_ID = "group-wall";
+const GROUP_ERROR_ID = "group-error";
 
 // DESIGN.md, Selection Bar: one line under the Catalog's head, sticky inside the column, with no
 // fill and no border. It is the head staying put, not a surface arriving: a selection made at the
@@ -18,11 +18,10 @@ export function SelectionBar() {
   const chosen = selection.selected.length;
   if (!selection.on || chosen === 0) return null;
 
-  const wall = groupWallFor(chosen, follows.count);
   // A refusal belongs to the group, so the bar says it: a group has no row to carry it, the way a
-  // single Follow does. The figure is taken from the follows as they stand now and not from what
-  // the page believed before the press, because the press is refused exactly when the two differ:
-  // another session filled the Plan, and the provider has re-read it by the time this is drawn.
+  // single Follow does. It is the only line here now -- the note that named the room left on the
+  // Free Plan before the press, and the wall that greyed the button out, went with the Plan
+  // (issue #209, ADR 0011).
   const refusal = follows.groupRejection;
 
   return (
@@ -40,14 +39,11 @@ export function SelectionBar() {
         <button
           type="button"
           aria-busy={follows.followingMany || undefined}
-          aria-disabled={wall !== null || undefined}
-          aria-describedby={wall || refusal ? GROUP_WALL_ID : undefined}
+          aria-describedby={refusal ? GROUP_ERROR_ID : undefined}
           onClick={() => {
-            if (!wall && !follows.followingMany) follows.followMany(selection.selected);
+            if (!follows.followingMany) follows.followMany(selection.selected);
           }}
-          className={`inline-flex h-[34px] items-center rounded-md border border-rule-strong px-3 font-sans text-body ${
-            wall ? "cursor-not-allowed text-text-faint" : "text-text hover:bg-raised hover:border-text-faint"
-          }`}
+          className="inline-flex h-[34px] items-center rounded-md border border-rule-strong px-3 font-sans text-body text-text hover:border-text-faint hover:bg-raised"
         >
           {t("stack.selection.follow", { count: chosen })}
         </button>
@@ -59,20 +55,13 @@ export function SelectionBar() {
           {t("stack.selection.clear")}
         </button>
       </p>
-      {/* The wall is named before it is hit and inked only when the database says so, which is the
-          pair the single Follow already has (DESIGN.md, Limit Note and Row Error Line). */}
-      {refusal ? (
-        <p id={GROUP_WALL_ID} className="mt-2 font-mono text-diagnostic text-breaking">
+      {/* Inked only when the database says so, which is what an error line is for (DESIGN.md, Row
+          Error Line). */}
+      {refusal && (
+        <p id={GROUP_ERROR_ID} className="mt-2 font-mono text-diagnostic text-breaking">
           <CircleX aria-hidden strokeWidth={1.75} className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-          error: {groupFollowError(refusal, wallNow(chosen, follows.count), t)}
+          error: {groupFollowError(refusal, t)}
         </p>
-      ) : (
-        wall && (
-          <p id={GROUP_WALL_ID} className="mt-2 font-mono text-diagnostic text-text-muted" role="status">
-            <Info aria-hidden className="mr-[0.35em] inline size-[0.95em] align-[-0.12em]" />
-            note: {groupWallNote(wall, t)}
-          </p>
-        )
       )}
     </div>
   );

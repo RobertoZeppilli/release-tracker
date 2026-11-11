@@ -15,12 +15,12 @@ export const settings = {
   "settings.language.interface": "interface language",
   "settings.language.note":
     "The language is part of the address, so a page can be shared in the language it was read in. Release notes and summaries stay in their original language.",
-  // The Notifications section (issue #171, ADR 0009). `featured`, `notable`, `Pro`, `slack` and the
+  // The Notifications section (issue #171). `featured`, `notable`, `slack` and the
   // bell's own words are the product's grammar and stay English in all five languages; the names of
   // the glossary are translated inside the sentences, as everywhere else (ADR 0008).
   "settings.notifications.title": "Notifications",
   "settings.notifications.intro":
-    "Which releases reach you, and where. The bell is free for good; Slack is Pro.",
+    "Which releases reach you, and where.",
   "settings.notifications.bell.title": "the bell",
   "settings.notifications.featured.label": "featured releases",
   "settings.notifications.featured.off":
@@ -35,16 +35,6 @@ export const settings = {
     "Not saved. The switch is back the way the database holds it, so what you see is what you have: press it again.",
   "settings.notifications.digest":
     "The weekly digest brings its own switch, on the day the digest itself arrives.",
-  "settings.notifications.pro": "Pro",
-  // Not a plural: the trial is thirty days for everyone, and the figure is in the sentence so that
-  // the number lives in one place in the code (`EXTERNAL_TRIAL_DAYS`) rather than in five languages.
-  "settings.notifications.trial.start": "start the 30 day Pro trial",
-  "settings.notifications.trial.note": "30 days, free. After them Slack needs Pro; the bell stays free.",
-  "settings.notifications.trial.left": {
-    one: "One day left of the Pro trial.",
-    other: "{count} days left of the Pro trial.",
-  },
-  "settings.notifications.trial.ended": "The Pro trial has ended. Slack needs Pro; the bell stays free.",
   "settings.notifications.switch.slack": "{name} on Slack",
   "settings.notifications.slack.title": "slack",
   "settings.notifications.slack.connect": "Add to Slack",

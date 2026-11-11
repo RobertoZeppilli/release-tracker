@@ -19,8 +19,8 @@ const SLOT = "max-sm:hidden";
 // step already followed. The header cannot branch on the viewer anyway, since the session arrives
 // after the first paint and a header that changed shape when it arrived would remount the page.
 // Where the page sits is no longer in the bar: that is `PageBreadcrumb`, at the top of the content.
-// `quota` arrives as an element, not as a component: the header shows what a signed-in page hands
-// it and never learns what a Plan is, so the public pages simply pass nothing.
+// The quota used to arrive here as an element, so the header never had to learn what a Plan was. It
+// left with the Plan (issue #209), and the bar is the wordmark, the sections and the actions.
 // The bar takes no width of its own any more: every page of the app shares the one container, so
 // the wordmark sits over the first letter of what it opens without being told where that is
 // (DESIGN.md, Layout, "The bar's container is the page's container").
@@ -31,13 +31,7 @@ const SLOT = "max-sm:hidden";
 // exists for exactly this (`LocaleProvider`). Nothing is lost: the bar, every link in it and the
 // theme toggle were already client components, and what was rendered on the server here was the
 // skip link and one `ul`.
-export function SiteHeader({
-  section,
-  quota,
-}: {
-  section?: NavItem;
-  quota?: React.ReactNode;
-}) {
+export function SiteHeader({ section }: { section?: NavItem }) {
   const t = useTranslator();
 
   return (
@@ -60,7 +54,7 @@ export function SiteHeader({
           `top` computed `auto`, and the header's box was at -1200 after a 1200px scroll. `[0px]` is
           the idiom the code already used for this in `site-header-bar.tsx`. */}
       <header className="sticky top-[0px] z-20 border-b border-rule bg-ground">
-        <SiteHeaderBar quota={quota} section={section}>
+        <SiteHeaderBar section={section}>
           <nav aria-label={t("shell.sections")} className={SLOT}>
             <ul className="flex gap-4 font-mono text-label text-text-muted">
               {NAV.map((item) => (

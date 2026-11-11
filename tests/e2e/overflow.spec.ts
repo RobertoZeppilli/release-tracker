@@ -193,12 +193,13 @@ test("the release notes keep scrolling for themselves", async ({ page }) => {
 });
 
 // The bar is **one 56px row at every width**. It was three on every common phone once, 153px
-// measured at 375 and 390, then two: 56px plus a 40px strip holding the sections, with the quota
-// coming down to share that strip below 430px (issue #47, #119). The strip is gone, because the
-// sections moved into the account on a phone and took their 40px with them: 96px held on a 667px
-// screen was a seventh of it spent on furniture. What the suite now guards is that the row it left
-// behind holds the wordmark, the quota and the actions without growing and without overflowing,
-// down to 320px, which is the narrowest width measured here.
+// measured at 375 and 390, then two: 56px plus a 40px strip holding the sections, with the Free
+// Plan's quota coming down to share that strip below 430px (issue #47, #119). The strip is gone,
+// because the sections moved into the account on a phone and took their 40px with them: 96px held
+// on a 667px screen was a seventh of it spent on furniture, and the quota is gone with the Plan
+// itself (issue #209). What the suite now guards is that the row they left behind holds the wordmark
+// and the actions without growing and without overflowing, down to 320px, which is the narrowest
+// width measured here.
 test.describe("the top bar is one row on a phone", () => {
   const ONE_ROW = 56 + 1; // the rule under the bar belongs to the header too
 
@@ -214,17 +215,10 @@ test.describe("the top bar is one row on a phone", () => {
   }
 
   for (const width of [320, 375, 390, 414, 429, 430, 639]) {
-    test(`is at most ${ONE_ROW}px at ${width}px, with the quota in it`, async ({ page }) => {
+    test(`is at most ${ONE_ROW}px at ${width}px`, async ({ page }) => {
       await dashboardAt(page, width);
       const header = await page.locator("header").boundingBox();
       expect(header?.height, "the header is one row").toBeLessThanOrEqual(ONE_ROW);
-
-      // The quota is what used to force the second row, so it is what this measures: it is in the
-      // bar, on the line, not under it.
-      // The Standing list carries a name of its own on this page, so the quota is asked for by name.
-      const quota = await page.getByLabel("Followed technologies", { exact: true }).boundingBox();
-      expect(quota, "the quota").not.toBeNull();
-      expect(quota?.y, "the quota is in the bar").toBeLessThan(56);
 
       const { scrollWidth, clientWidth } = await page.evaluate(() => ({
         scrollWidth: document.documentElement.scrollWidth,

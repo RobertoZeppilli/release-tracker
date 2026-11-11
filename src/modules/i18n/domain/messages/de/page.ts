@@ -22,7 +22,7 @@ export const page = {
     "Was Verdict verfolgt, wozu ein Account da ist, und wie weit man einer generierten Zusammenfassung trauen kann.",
   "page.terms.title": "Nutzungsbedingungen",
   "page.terms.description":
-    "Was Verdict ist, was der kostenlose Plan hält, und warum eine generierte Zusammenfassung immer die Zeile zeigt, aus der sie gelesen wurde.",
+    "Was Verdict ist, was ein von Hand gepflegter Katalog bedeutet, und warum eine generierte Zusammenfassung immer die Zeile zeigt, aus der sie gelesen wurde.",
   "page.privacy.title": "Datenschutz",
   "page.privacy.description":
     "Alles, was Verdict über einen Entwickler speichert, wer es berührt, und warum nie persönliche Daten in einen Prompt kommen.",

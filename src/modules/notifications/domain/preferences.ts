@@ -2,16 +2,16 @@ import type { NotificationChannel, NotificationEvent } from "./events";
 
 export type Preference = { event: NotificationEvent; channel: NotificationChannel; enabled: boolean };
 
-// The declared starting point, which is what a missing row means: the bell is on, because it costs
-// nothing and is free for good (ADR 0009), and the external channels stay off until a Developer
-// switches one on, because switching one on is what starts their 30 day trial.
+// The declared starting point, which is what a missing row means: the bell is on, because a
+// Notification already exists by the time this is asked, and the external channels stay off until a
+// Developer switches one on -- each of them leaves the app and reaches an address.
 export function enabledByDefault(channel: NotificationChannel): boolean {
   return !isExternal(channel);
 }
 
 export const CHANNELS = ["in_app", "slack", "email"] as const satisfies readonly NotificationChannel[];
 
-// The two channels the 30 day trial is about, and the two that are Pro (ADR 0009): the bell has no
+// The two channels that leave the app, as against the bell, which does not: the bell has no
 // marginal cost per reader, a webhook call and a piece of mail have one.
 export const EXTERNAL_CHANNELS = ["slack", "email"] as const satisfies readonly NotificationChannel[];
 

@@ -5,7 +5,7 @@ import { createRequestClient } from "@/lib/supabase-request";
 import { requireAccount } from "@/modules/auth/server";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { LocalePicker } from "@/modules/i18n/ui";
-import { slackOutcomeKey, trialOf } from "@/modules/notifications";
+import { slackOutcomeKey } from "@/modules/notifications";
 import { readNotificationSettings } from "@/modules/notifications/server";
 import { NotificationSettings, PreferredLocaleSection } from "@/modules/notifications/ui";
 
@@ -68,10 +68,8 @@ export default async function SettingsPage({
         </section>
         <NotificationSettings
           preferences={settings.preferences}
-          trial={trialOf(settings.externalTrialStartedAt, new Date())}
           slackHint={settings.slackHint}
           slackOauth={slackApp() !== null}
-          devPreview={process.env.NODE_ENV !== "production"}
           slackOutcome={slackOutcomeKey(typeof slack === "string" ? slack : null)}
           locale={await currentLocale()}
           t={t}

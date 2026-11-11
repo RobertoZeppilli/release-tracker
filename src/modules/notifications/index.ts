@@ -28,4 +28,3 @@ export {
 export { authorizeUrl, channelHint } from "./domain/slack-oauth";
 export { slackOutcomeKey } from "./domain/slack-outcome";
 export { buildState, readState, type Signer } from "./domain/slack-state";
-export { EXTERNAL_TRIAL_DAYS, type Trial, trialOf } from "./domain/trial";

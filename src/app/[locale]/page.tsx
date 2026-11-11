@@ -6,7 +6,6 @@ import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { readCatalogDirectory } from "@/modules/catalog/server";
 import { SPECIMEN } from "@/modules/landing";
 import { Arrivals, Bench, ClosingBlock, HeadingBlock, ProofPanel, ShortSpecimens, VocabularyLegend } from "@/modules/landing/ui";
-import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslator();
@@ -51,7 +50,7 @@ export default async function LandingPage() {
         <Bench t={t} />
         <ShortSpecimens t={t} />
         <VocabularyLegend t={t} />
-        <ClosingBlock catalogSize={catalog.length} followLimit={FREE_FOLLOW_LIMIT} t={t} />
+        <ClosingBlock catalogSize={catalog.length} t={t} />
         <Arrivals />
         <p className="mt-8 flex flex-wrap gap-4 border-t border-rule pt-4 font-mono text-meta text-text-faint">
           <span>verdict:</span>

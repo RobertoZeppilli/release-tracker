@@ -54,8 +54,8 @@ export async function writeFollow(
   if (error) throw new FollowRejectedError(followRejectionFor(error.code), error.message);
 }
 
-// Several follows in one statement, which is what makes the Plan's limit a rule about the group:
-// the trigger runs for each row, so a row over the limit raises inside the statement and Postgres
+// Several follows in one statement, which is what makes a refusal a fact about the group: the
+// trigger runs for each row, so one retired Technology raises inside the statement and Postgres
 // takes the whole insert back. Nothing is followed halfway, and the browser gets the one SQLSTATE.
 export async function writeFollows(developerId: string, technologyIds: string[]): Promise<void> {
   const { error } = await createSessionClient()

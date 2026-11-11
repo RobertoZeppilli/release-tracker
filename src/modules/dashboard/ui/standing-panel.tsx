@@ -3,7 +3,6 @@ import { SeverityLabel } from "@/modules/releases/ui";
 import type { Standing } from "../domain/standing";
 import type { Verdict } from "./dashboard-copy";
 import { totalsRows } from "./dashboard-copy";
-import { StandingQuotaNote } from "./quota-note";
 
 // DESIGN.md, Standing Panel: the head of the Standing column, on the one raised surface the system
 // has. It holds the verdict and the totals of the list under it, as figures in a column instead of
@@ -53,7 +52,6 @@ export function StandingPanel({
           mistake for a score (DESIGN.md, The Standing Panel). It goes only where the bar goes. */}
       <div className="font-mono text-label text-text-faint">
         {standing.scale !== null && <p className="mt-3">{t("dashboard.barNote")}</p>}
-        <StandingQuotaNote />
       </div>
     </div>
   );

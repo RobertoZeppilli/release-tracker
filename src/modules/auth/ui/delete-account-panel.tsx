@@ -54,7 +54,6 @@ export function DeleteAccountPanel({
           t("account.delete.item.account"),
           t("account.delete.item.follows", { count: followed }),
           t("account.delete.item.declared", { count: declared }),
-          t("account.delete.item.plan"),
           t("account.delete.item.session"),
         ].map((line) => (
           <li key={line} className="flex gap-2 border-t border-rule py-2 first:border-t-0 first:pt-0">

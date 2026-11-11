@@ -3,7 +3,6 @@ import type { MessageDictionary } from "../index";
 // I termini, in italiano. Ogni affermazione è una che il codice rende vera (issue #132), quindi la
 // traduzione è tenuta piatta come l'inglese: una frase italiana più morbida prometterebbe qualcosa
 // che l'app non fa, ed è l'unico modo in cui questa pagina può sbagliare.
-// `Free` resta `Free`: è il nome del Piano (GLOSSARY.md), non l'aggettivo.
 export const terms = {
   "terms.lede":
     "Cos'è il servizio, a cosa ti impegna e cosa non promette. È corto perché il prodotto è piccolo, e qui sotto non c'è niente che descriva una cosa che l'app non fa.",
@@ -16,9 +15,6 @@ export const terms = {
   "terms.catalog.body":
     "Il catalogo lo scegliamo e lo manteniamo noi. Non c'è un modulo per aggiungerci una tecnologia e non c'è una coda dietro: una tecnologia entra quando riusciamo a seguire le sue release come si deve, e può essere ritirata quando non ci riusciamo più. Una tecnologia ritirata resta leggibile, e resta tua se la seguivi.",
 
-  "terms.plan.title": "il piano",
-  "terms.plan.body":
-    "C'è un piano solo, Free. Segue fino a {limit} tecnologie e non costa niente. L'app non chiede mai dati di pagamento, e non c'è niente da disdire.",
 
   "terms.summaries.title": "le sintesi sono generate, e possono sbagliare",
   "terms.summaries.body":

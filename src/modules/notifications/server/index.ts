@@ -15,7 +15,6 @@ export {
   slackStateSigner,
 } from "./slack-oauth";
 export {
-  startExternalTrial,
   writePreference,
   writePreferredLocale,
   writeSlackWebhook,

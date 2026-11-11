@@ -9,9 +9,7 @@ export const account = {
   "account.held.noEmail": "nessun indirizzo email",
   "account.held.handle": "nome github",
   "account.held.none": "nessuno",
-  "account.held.plan": "piano",
   "account.held.followed": "seguite",
-  "account.held.quota": "{count} di {limit}",
   "account.held.declared": "versioni dichiarate",
   "account.delete.title": "elimina questo account",
   "account.delete.intro":
@@ -28,7 +26,6 @@ export const account = {
     many: "{count} versioni in uso dichiarate",
     other: "{count} versioni in uso dichiarate",
   },
-  "account.delete.item.plan": "il piano su cui sta l'account",
   "account.delete.item.session": "la sessione in questo browser",
   "account.delete.note":
     "Accedere di nuovo fa un account nuovo e vuoto, non quello di prima. GitHub tiene da parte sua il registro dell'autorizzazione che gli hai dato, ed è l'unica cosa che questo pulsante non raggiunge: {revoke}.",

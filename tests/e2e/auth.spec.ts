@@ -31,7 +31,7 @@ test.describe("a Visitor", () => {
     // The Dashboard shows no email: what says the Developer is in are the signed-in controls.
     await openAccount(page);
     await expect(page.getByRole("button", { name: "sign out" })).toBeVisible();
-    await expect(page.getByLabel("Followed technologies")).toBeVisible();
+    await expect(page.getByRole("link", { name: "account" })).toBeVisible();
   });
 
   test("is sent to the login from the technologies page", async ({ page }) => {

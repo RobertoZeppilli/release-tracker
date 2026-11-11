@@ -26,39 +26,10 @@ export async function writePreference(
 }
 
 export async function writePreferredLocale(db: SupabaseClient, userId: string, locale: Locale): Promise<void> {
-  // ⚠️ `external_trial_started_at` is not named here, so a save of the language never starts or
-  // moves the trial: only switching an external channel on may do that (ADR 0009, #172 and #173).
   const { error } = await db
     .from("notification_settings")
     .upsert(
       { user_id: userId, preferred_locale: locale, updated_at: new Date().toISOString() },
-      { onConflict: "user_id" },
-    );
-  if (error) throw error;
-}
-
-// ⚠️ The 30 day trial starts at the **first** switch of an external channel, never at sign-up
-// (ADR 0009), so this is read before it is written: a second switch must not push the end date
-// forward, which is what a plain upsert of `now()` would do every time.
-//
-// ⚠️ **The service role, not the Developer's client**, since the audit of 2026-11-02: the column is
-// the gate of the external channels and the delivery job reads it, so it is no longer granted to a
-// client, which could otherwise reopen its own thirty days with one statement and skip the guard
-// above. The identity still comes from the request cookies in the Server Action.
-// ⚠️ And because the service role bypasses RLS, the row is named here: without `eq` this read would
-// be every Developer's row and `maybeSingle` would refuse the lot of them.
-export async function startExternalTrial(db: SupabaseClient, userId: string, now: Date): Promise<void> {
-  const existing = await db
-    .from("notification_settings")
-    .select("external_trial_started_at")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (existing.error) throw existing.error;
-  if (existing.data?.external_trial_started_at) return;
-  const { error } = await db
-    .from("notification_settings")
-    .upsert(
-      { user_id: userId, external_trial_started_at: now.toISOString(), updated_at: now.toISOString() },
       { onConflict: "user_id" },
     );
   if (error) throw error;
