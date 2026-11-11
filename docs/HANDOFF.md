@@ -29,11 +29,11 @@ riga in `INDICE.md`. Niente riassunti: un riassunto è dove si perde la ragione 
 stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 ## Stato
 
-**Da dove ripartire (trentatreesimo giro, 2026-11-11): la #209 e' aperta in PR #228, e vuole una
-seconda PR per chiudersi.** Il ramo `209-via-il-piano` e' pushato: 136 file, +468 -1482. Dentro c'e'
-tutto il codice della issue (il modulo `plans` rinominato `follows`, via limite, quota, Limit Note,
-muro del gruppo, trial e segno `Pro`, le cinque lingue, i test e `DECISIONI.md`, `PRODUCT.md`,
-`DESIGN.md`). ⚠️ **La migrazione non e' dentro**, ed e' una scelta, non una dimenticanza.
+**Da dove ripartire (trentatreesimo giro, 2026-11-11): il codice della #209 e' dentro `main`, e
+manca una seconda PR per chiuderla.** La PR #228 e' mergiata, squash `1ab44ca`: 136 file, +468
+-1482, con il modulo `plans` rinominato `follows`, via limite, quota, Limit Note, muro del gruppo,
+trial e segno `Pro`, le cinque lingue, i test e `DECISIONI.md`, `PRODUCT.md`, `DESIGN.md`.
+⚠️ **La migrazione non era dentro**, ed e' una scelta, non una dimenticanza.
 
 ### Perche' qui il codice va prima dello schema
 
@@ -42,28 +42,28 @@ girano sul database di produzione. Una che **cancella** si rovescia: la CI appli
 zero e poi gira integration ed e2e, quindi una PR di sola migrazione sarebbe rossa su due check
 obbligatori su due. E' l'ordine della lista d'attesa: #223 il codice, #224 la tabella.
 
-⚠️ **La migrazione e' gia' scritta e parcheggiata fuori dal ramo**, in
-`C:/Users/rober/AppData/Local/Temp/claude/0621240ac62cc06f/fb916036-67e8-454b-8ae4-9425f73aad32/scratchpad/drop_plans.sql`.
-Va rimessa in `supabase/migrations/` con un timestamp nuovo: `enforce_follow_rules()` riscritta col
-solo controllo `FRTRD` (via il lock e il ramo Free), poi `drop trigger on_auth_user_created`, `drop
-function create_free_plan()`, `drop table public.plans`, `drop type public.plan`, `alter table
-notification_settings drop column external_trial_started_at`. Se il file non c'e' piu' (la cartella
-muore con la sessione) si riscrive dal diff della PR #228.
+⚠️ **La migrazione e' gia' scritta, in `docs/pending/drop_plans.sql`.** Sta la' e non in
+`supabase/migrations/` perche' la CI non la applichi prima del tempo. Va spostata in
+`supabase/migrations/` con un timestamp nuovo, e la copia parcheggiata va cancellata nello stesso
+commit. Dentro c'e' `enforce_follow_rules()` riscritta col solo controllo `FRTRD` (via il lock e il
+ramo Free), poi `drop trigger on_auth_user_created`, `drop function create_free_plan()`, `drop table
+public.plans`, `drop type public.plan`, `alter table notification_settings drop column
+external_trial_started_at`.
 
 ### Cosa manca alla #209
 
 1. **La PR 2**: la migrazione sopra, piu' il test di integrazione che prova che **seguire piu' di
-   dieci Tecnologie funziona**, che e' un criterio di accettazione e nella PR 1 non si puo' scrivere
-   perche' il trigger e' ancora al suo posto.
+   dieci Tecnologie funziona**, che e' un criterio di accettazione e nella PR 1 non si poteva
+   scrivere perche' il trigger era ancora al suo posto.
 2. **Chiudere la #174** (Lemon Squeezy) spiegando perche': non c'e' niente da comprare, ADR 0011.
 3. ⚠️ Finche' la migrazione non e' applicata l'undicesimo Follow e' rifiutato con un codice che
    il codice non conosce piu': la riga dice "non salvata, riprova". E' la finestra fra i due deploy.
 
-Verde in locale sul ramo: lint, typecheck, `pnpm test` (776), build, `i18n:client-keys --check`,
-`pnpm test:integration` (96) e la suite e2e intera, 301 su 306. ⚠️ **I falliti in locale sono
-timeout da carico** (`toHaveURL` a 5s contro una navigazione che il dev server compila al volo):
-girati da soli passano. Un secondo commit ha corretto cinque e2e che leggevano ancora la quota del
-Piano in file che la issue non nomina.
+La CI della #228 era verde su tutto, `check` e `integration`. In locale: lint, typecheck, `pnpm
+test` (776), build, `i18n:client-keys --check`, `pnpm test:integration` (96) e la suite e2e intera,
+301 su 306. ⚠️ **I falliti in locale sono timeout da carico** (`toHaveURL` a 5s contro una
+navigazione che il dev server compila al volo): girati da soli passano. Un secondo commit ha
+corretto cinque e2e che leggevano ancora la quota del Piano in file che la issue non nomina.
 
 ⚠️ **In produzione il Rilevamento e' fermo.** Il cron giornaliero e' uscito da `vercel.json`, perche'
 `/api/jobs/detection` su un sito statico non esiste, e i dati della vetrina restano a quelli
