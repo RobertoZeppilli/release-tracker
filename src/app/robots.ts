@@ -2,6 +2,10 @@ import type { MetadataRoute } from "next";
 import { env } from "@/env";
 import { LOCALES, localePath } from "@/modules/i18n";
 
+// The file is the same from one deploy to the next, and a static export demands that it be said
+// out loud: without it `output: "export"` refuses the route rather than writing it (issue #215).
+export const dynamic = "force-static";
+
 // `/technologies$` and not `/technologies`: a plain prefix would shut out every Technology page
 // under it. The `$` anchor is not in the original standard, but Google and Bing both read it, and
 // the pages behind the login carry `robots: { index: false }` of their own as well.

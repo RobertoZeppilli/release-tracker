@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { type ReactNode, useCallback, useRef, useState } from "react";
 import { loginPath } from "@/modules/auth";
 import { type Developer, useSession } from "@/modules/auth/ui";
+import { STATIC_SITE } from "@/lib/static-site";
 import { NotificationBell } from "@/modules/notifications/ui";
 import { useSheet } from "./sheet";
 import { NAV, type NavItem } from "./site-nav";
@@ -27,21 +28,55 @@ const QUOTA = "ml-auto flex h-[56px] items-center";
 const ITEM =
   "flex min-h-[44px] items-center border-b border-rule px-4 font-mono text-body text-text-muted no-underline hover:bg-sunken hover:text-text sm:min-h-[24px] sm:border-0 sm:px-3 sm:text-label";
 
+// The one row the bar is, at every width, and the wordmark that opens it. Both shapes of the bar
+// read them from here, so the showcase cannot drift a pixel from the app (DESIGN.md, Layout).
+const ROW =
+  "relative mx-auto flex h-[56px] max-w-content items-center gap-x-3 px-4 sm:gap-x-5 sm:px-5";
+const WORDMARK =
+  "flex h-[56px] shrink-0 items-center font-mono text-[16px] tracking-[-0.02em] whitespace-nowrap no-underline [font-variant-ligatures:none]";
+const ACTIONS = "flex h-[56px] shrink-0 items-center gap-3 whitespace-nowrap sm:gap-4";
+
+// DESIGN.md, Brand Mark: `verdict:` with the colon, in `text`, never in a severity ink. The colon is
+// the opening of a sentence the app finishes.
+function Wordmark() {
+  return (
+    <Link href="/" className={WORDMARK}>
+      verdict:
+    </Link>
+  );
+}
+
+// The two bars this repository builds (issue #215). `STATIC_SITE` is a build constant, so the branch
+// is settled before the browser sees it and the half that is not taken is dropped from the bundle;
+// each half holds its own hooks, unconditionally.
+export function SiteHeaderBar(props: BarProps) {
+  return STATIC_SITE ? <ShowcaseBar /> : <AppBar {...props} />;
+}
+
+// The showcase keeps the wordmark and the theme toggle, and nothing else that was in the bar.
+// ⚠️ Not a tidying-up: on a site that is only files `/dashboard`, `/technologies` and `/login` do
+// not exist, so the sections row, the sign-in and the account would each be a 404 in the top bar of
+// every page. Both sections are behind sign-in and the showcase has no account at all (ADR 0011).
+function ShowcaseBar() {
+  return (
+    <div className={ROW}>
+      <Wordmark />
+      <div className={`${ACTIONS} ml-auto`}>
+        <ThemeToggle />
+      </div>
+    </div>
+  );
+}
+
+type BarProps = { children: ReactNode; quota?: ReactNode; section?: NavItem };
+
 // The account panel holds what belongs to the viewer rather than to the page: who is signed in and
 // the way out. Below 640px it holds the two destinations as well, because that is where they live on
 // a phone (see `SLOT` in `site-header.tsx`): the row in the bar is `display: none` there and these
 // rows are `display: none` above it, so the page never has two `dashboard` links and a screen reader
 // never meets two copies of the same navigation. The theme toggle stays in the bar: the public pages
 // are readable signed out, and a visitor has no panel to find it in.
-export function SiteHeaderBar({
-  children,
-  quota,
-  section,
-}: {
-  children: ReactNode;
-  quota?: ReactNode;
-  section?: NavItem;
-}) {
+function AppBar({ children, quota, section }: BarProps) {
   const session = useSession();
   const t = useTranslator();
   const [open, setOpen] = useState(false);
@@ -64,23 +99,16 @@ export function SiteHeaderBar({
       // is the wordmark, the quota and the actions, and at 320px those three plus two 24px gaps
       // come to within a couple of pixels of the screen: the row cannot wrap any more, so what it
       // would do instead is overflow. 12px leaves it 25px of slack at the narrowest width measured.
-      className="relative mx-auto flex h-[56px] max-w-content items-center gap-x-3 px-4 sm:gap-x-5 sm:px-5"
+      className={ROW}
     >
-      <Link
-        href="/"
-        className="flex h-[56px] shrink-0 items-center font-mono text-[16px] tracking-[-0.02em] whitespace-nowrap no-underline [font-variant-ligatures:none]"
-      >
-        {/* DESIGN.md, Brand Mark: `verdict:` with the colon, in `text`, never in a severity ink.
-            The colon is the opening of a sentence the app finishes. */}
-        verdict:
-      </Link>
+      <Wordmark />
       {children}
       {quota && <span className={QUOTA}>{quota}</span>}
       {/* ⚠️ 12px between the actions below 640px and 16px above, measured: with the bell in the row
             the Dashboard at 320px in German overflowed the screen by 7px, and the group's own gaps
             are what the bar had left to give. It is the same step the row outside it already takes
             (`gap-x-3 sm:gap-x-5`). */}
-      <div className={`flex h-[56px] shrink-0 items-center gap-3 whitespace-nowrap sm:gap-4 ${quota ? "" : "ml-auto"}`}>
+      <div className={`${ACTIONS} ${quota ? "" : "ml-auto"}`}>
         {/* No answer is offered until the session is known: a wrong state for an instant would put
             the login in front of someone already signed in. What the box does instead of waiting
             empty is wear the shape of what is coming (DESIGN.md, The Waiting Rule, the skeleton).

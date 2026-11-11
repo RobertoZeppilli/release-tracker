@@ -18,8 +18,18 @@ import { execFileSync } from "node:child_process";
 // forzato: tutti i casi in cui `git` non sa rispondere finiscono con un deploy, non con un silenzio.
 
 // Quello che non entra nel sito costruito. Tutto il resto, incluso un file di configurazione o un
-// test, vale un deploy: `src/` non è l'unica cosa che cambia il risultato di `pnpm build`.
-const IGNORED = [/^docs\//, /^design\//, /\.md$/, /^LICENSE$/];
+// test, vale un deploy: `src/` non è l'unica cosa che cambia il risultato della build.
+//
+// ⚠️ `supabase/migrations/` non è un'eccezione di comodo: le migrazioni arrivano in produzione dal
+// workflow `deploy-database.yml`, che gira sul push a `main` e non passa da Vercel. Una PR di solo
+// schema faceva quindi un deploy per un sito identico byte per byte. `migrations.test.ts` e
+// `config.toml` restano fuori dall'elenco, cioè continuano a valere un deploy.
+// ⚠️ `scripts/` **non** è nell'elenco, e dal 2026-11-11 non può esserlo: la build della vetrina è
+// `scripts/build-static.mts` (`buildCommand` in `vercel.json`, issue #215), quindi uno script è
+// esattamente una cosa che cambia il sito costruito. Prima di allora `pnpm build` era `next build`
+// senza hook e niente sotto `src/` importava uno script: la ragione di escluderli era vera e non
+// lo è più.
+const IGNORED = [/^docs\//, /^design\//, /\.md$/, /^LICENSE$/, /^supabase\/migrations\//];
 
 const BUILD = 1;
 const SKIP = 0;

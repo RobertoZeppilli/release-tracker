@@ -1,5 +1,6 @@
 import { HelpPointer } from "@/components/help-pointer";
 import { type Translator } from "@/modules/i18n";
+import { STATIC_SITE } from "@/lib/static-site";
 import { EntryAction } from "./entry-action";
 import { LandingNote } from "./landing-note";
 
@@ -31,7 +32,11 @@ export function ClosingBlock({
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-4">
           <EntryAction />
-          <HelpPointer href="/technologies">{t("landing.close.browse", { count: catalogSize })}</HelpPointer>
+          {/* The Catalog is behind sign-in, so it is not one of the pages the showcase exports and
+              this pointer would be a 404 there (issue #215). */}
+          {!STATIC_SITE && (
+            <HelpPointer href="/technologies">{t("landing.close.browse", { count: catalogSize })}</HelpPointer>
+          )}
         </div>
       </div>
       <LandingNote claim={t("landing.close.note.claim")} flush>

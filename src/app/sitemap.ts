@@ -9,6 +9,13 @@ import { listSitemapPages } from "@/modules/releases/server";
 // under on-demand revalidation, in case a page is ever added without going through it.
 export const revalidate = 86400;
 
+// ⚠️ A literal and not a branch on `STATIC_SITE`: Next parses this field out of the source and
+// refuses anything it cannot read as a static string. It is here for the showcase, where
+// `output: "export"` writes no route that has not declared itself static, and it changes nothing in
+// the app with the server: this sitemap reads no dynamic API, so it was already prerendered per
+// deploy and revalidated by the two above (issue #215).
+export const dynamic = "force-static";
+
 const STATIC_PAGES = ["/terms", "/privacy", "/attributions", "/faq", "/contact"] as const;
 
 // A sitemap with relative addresses is rejected: every entry is absolute.
