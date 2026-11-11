@@ -6,7 +6,6 @@ import {
   savedLocale,
   savedPreference,
   seedDeveloper,
-  setExternalTrial,
 } from "./fixtures";
 
 // The Notifications section of `/settings` (issue #171). Every switch is saved by a Server Action,
@@ -35,13 +34,6 @@ async function signIn(page: Page): Promise<void> {
   expect(response.status()).toBe(204);
 }
 
-// The thirty days opened from the outside, which is what the Slack zone is gated on. A test that
-// needs Slack is not a test about how a trial starts, and the press that starts one has a test of
-// its own below.
-async function openTrial(): Promise<void> {
-  await setExternalTrial(developer.id, new Date());
-}
-
 // By what it controls and not by its glyph: `[x]` and `[ ]` are the same control in two states, and
 // the name is the thing under test.
 function featuredSwitch(page: Page) {
@@ -57,7 +49,7 @@ test("the bell starts on for both events, which is the declared starting point",
     "aria-checked",
     "true",
   );
-  // Nothing was saved to make them look on: a missing row is the starting point (ADR 0009).
+  // Nothing was saved to make them look on: a missing row is the starting point (`enabledByDefault`).
   expect(await savedPreference(developer.id, "featured_release", "in_app")).toBeNull();
 });
 
@@ -103,33 +95,13 @@ test("the switch is reached and pressed by keyboard alone", async ({ page }) => 
   }).toPass();
 });
 
-test("the line of the trial comes from the database, and is true on the last day", async ({ page }) => {
+test("Slack is a heading of its own, with the two switches that belong to it", async ({ page }) => {
   await signIn(page);
   await page.goto("/settings");
-  // Not opened yet: there is nothing to count, so nothing is printed and the press is what is there
-  // instead. The page used to carry a paragraph here (2026-10-28).
-  await expect(page.getByRole("button", { name: "start the 30 day Pro trial" })).toBeVisible();
-  await expect(page.getByText("left of the Pro trial")).toHaveCount(0);
 
-  const day = 24 * 60 * 60 * 1000;
-  await setExternalTrial(developer.id, new Date(Date.now() - 29 * day));
-  await page.reload();
-  await expect(page.getByText("One day left of the Pro trial.")).toBeVisible();
-
-  await setExternalTrial(developer.id, new Date(Date.now() - 30 * day));
-  await page.reload();
-  await expect(page.getByText("The Pro trial has ended.")).toBeVisible();
-});
-
-test("Slack carries the Pro mark on its own heading, and is the one that can be switched on", async ({ page }) => {
-  await signIn(page);
-  // Slack is behind an open trial, so the trial is opened here: in CI this file runs on the
-  // production build, where the press is the only other door (#194).
-  await openTrial();
-  await page.goto("/settings");
-
-  const heading = page.getByRole("heading", { level: 3, name: "slack Pro" });
-  await expect(heading).toContainText("Pro");
+  // The heading carries nothing beside the channel's name: the `Pro` mark left with the Plan
+  // (issue #209), and so did the thirty days the whole zone used to be gated on.
+  await expect(page.getByRole("heading", { level: 3, name: "slack", exact: true })).toBeVisible();
   // Four: the two bell switches and the two Slack ones (#172). The email has none, because a switch
   // for a channel that sends nothing would be a promise, and #173 brings its own.
   await expect(page.getByRole("checkbox")).toHaveCount(4);
@@ -139,9 +111,6 @@ test("Slack carries the Pro mark on its own heading, and is the one that can be 
 
 test("the Slack webhook is read back as a hint, never as the URL", async ({ page }) => {
   await signIn(page);
-  // Slack is behind an open trial, so the trial is opened here: in CI this file runs on the
-  // production build, where the press is the only other door (#194).
-  await openTrial();
   await page.goto("/settings");
 
   const field = page.getByLabel("incoming webhook URL");
@@ -162,9 +131,6 @@ test("the Slack webhook is read back as a hint, never as the URL", async ({ page
 
 test("a webhook that is not Slack's is refused, and says why", async ({ page }) => {
   await signIn(page);
-  // Slack is behind an open trial, so the trial is opened here: in CI this file runs on the
-  // production build, where the press is the only other door (#194).
-  await openTrial();
   await page.goto("/settings");
 
   await page.getByLabel("incoming webhook URL").fill("https://hooks.slack.com.example.test/services/T0");
@@ -179,9 +145,6 @@ test("a webhook that is not Slack's is refused, and says why", async ({ page }) 
 
 test("the language of slack is saved, and is not the language of the site", async ({ page }) => {
   await signIn(page);
-  // Slack is behind an open trial, so the trial is opened here: in CI this file runs on the
-  // production build, where the press is the only other door (#194).
-  await openTrial();
   await page.goto("/settings");
 
   // The channel comes first: the choice appears with it, and that appearing is part of the test.
@@ -240,9 +203,6 @@ test("the German page keeps its switches at 320px", async ({ page }) => {
 // field still the way in, and the install route saying so instead of leading nowhere.
 test("without the Slack app's credentials there is no button, and the install route says so", async ({ page }) => {
   await signIn(page);
-  // Slack is behind an open trial, so the trial is opened here: in CI this file runs on the
-  // production build, where the press is the only other door (#194).
-  await openTrial();
   await page.goto("/settings");
   await expect(page.getByRole("link", { name: "Add to Slack" })).toHaveCount(0);
   // The field is not hidden by the button existing elsewhere: it is the other way in, and here the
@@ -258,9 +218,6 @@ test("without the Slack app's credentials there is no button, and the install ro
 // `state` the server never signed is refused, and nothing is written for anybody.
 test("a return with a state that was not signed here is refused", async ({ page }) => {
   await signIn(page);
-  // Slack is behind an open trial, so the trial is opened here: in CI this file runs on the
-  // production build, where the press is the only other door (#194).
-  await openTrial();
   await page.goto("/slack/callback?code=whatever&state=forged.signature");
   await expect(page).toHaveURL(/\/settings\?slack=(denied|unavailable)/);
   await expect(page.getByText("No webhook yet")).toBeVisible();
@@ -303,26 +260,4 @@ test("at 390px the page does not scroll sideways", async ({ page }) => {
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
   );
   expect(overflows).toBe(false);
-});
-
-// The press that opens the thirty days (2026-10-28). It is the only door to Slack in production
-// until Pro can be bought (#174), so what is asserted is both halves: the row in the database, and
-// Slack appearing because of it.
-// ⚠️ Run locally with `pnpm dev` this says less than it does in CI: in development the whole of
-// Slack is drawn with no trial open, on purpose, so the appearing is only really proved on the
-// production build, which is what the CI runs.
-test("the press opens the trial, and Slack is there because of it", async ({ page }) => {
-  await signIn(page);
-  await page.goto("/settings");
-
-  const press = page.getByRole("button", { name: "start the 30 day Pro trial" });
-  await expect(press).toBeVisible();
-  // What it costs, said where it starts and not inside the dialog of "Add to Slack".
-  await expect(page.getByText("30 days, free. After them Slack needs Pro")).toBeVisible();
-  await press.click();
-
-  // The countdown is the proof the row was written: the page is rendered again from the database.
-  await expect(page.getByText("30 days left of the Pro trial.")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 3, name: "slack Pro" })).toBeVisible();
-  await expect(press).toHaveCount(0);
 });

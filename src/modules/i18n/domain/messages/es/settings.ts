@@ -8,12 +8,12 @@ export const settings = {
   "settings.language.interface": "idioma de la interfaz",
   "settings.language.note":
     "El idioma es parte de la dirección, así una página se puede compartir en el idioma en que se leyó. Las notas de la versión y las síntesis siguen en su idioma original.",
-  // La sección de las Notificaciones (issue #171, ADR 0009). `featured`, `notable`, `digest` y `Pro`
+  // La sección de las Notificaciones (issue #171). `featured`, `notable` y `digest`
   // son la gramática del producto y siguen en inglés; los nombres del glosario se traducen dentro de
   // las frases (ADR 0008).
   "settings.notifications.title": "Notificaciones",
   "settings.notifications.intro":
-    "Qué release te llegan, y por dónde. La campana es gratis para siempre; Slack es Pro.",
+    "Qué release te llegan, y por dónde.",
   "settings.notifications.bell.title": "la campana",
   "settings.notifications.featured.label": "release featured",
   "settings.notifications.featured.off":
@@ -26,15 +26,6 @@ export const settings = {
     "No se guardó. El interruptor volvió a como lo tiene la base de datos, así que lo que ves es lo que tienes: púlsalo otra vez.",
   "settings.notifications.digest":
     "El resumen semanal traerá su propio interruptor, el día en que llegue el resumen mismo.",
-  "settings.notifications.pro": "Pro",
-  "settings.notifications.trial.start": "empezar la prueba de 30 días de Pro",
-  "settings.notifications.trial.note": "30 días, gratis. Después, Slack pide Pro; la campana sigue gratis.",
-  "settings.notifications.trial.left": {
-    one: "Queda un día de prueba de Pro.",
-    many: "Quedan {count} días de prueba de Pro.",
-    other: "Quedan {count} días de prueba de Pro.",
-  },
-  "settings.notifications.trial.ended": "La prueba de Pro ha terminado. Slack pide Pro; la campana sigue gratis.",
   "settings.notifications.switch.slack": "{name} en Slack",
   "settings.notifications.slack.title": "slack",
   "settings.notifications.slack.connect": "Add to Slack",

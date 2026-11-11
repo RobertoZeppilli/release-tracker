@@ -8,15 +8,12 @@ import {
   declareCurrentVersion,
   e2eAuthSecret,
   type FixtureDeveloper,
-  type FixtureFillers,
   type FixtureTechnology,
   releaseIdFor,
+  retireTechnology,
   seedDeveloper,
-  seedFillers,
   seedTechnology,
 } from "./fixtures";
-
-const FREE_LIMIT = 10;
 
 // The audit of the acceptance criteria of issue #23: every page, in both themes, checked by axe
 // against WCAG 2.2 AA, then the keyboard walked through each flow. What axe cannot see is checked
@@ -33,13 +30,10 @@ function daysAgo(days: number): Date {
 
 let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
-// Empty Technologies, only there to fill the Free limit so a refused follow can be reached.
-let fillers: FixtureFillers;
 
 test.beforeAll(async () => {
-  [developer, fillers, technology] = await Promise.all([
+  [developer, technology] = await Promise.all([
     seedDeveloper(),
-    seedFillers(FREE_LIMIT),
     // One Technology rich enough to fill every part of the pages: a breaking Summary with a citation
     // to underline, a safe one, a preview and a digest release to fold.
     seedTechnology([
@@ -80,7 +74,7 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   await developer.clearFollows();
   await clearNotifications(developer.id);
-  await Promise.all([developer.remove(), technology.remove(), fillers.remove()]);
+  await Promise.all([developer.remove(), technology.remove()]);
 });
 
 async function signIn(page: Page): Promise<void> {
@@ -197,16 +191,19 @@ for (const theme of THEMES) {
     test("technologies, with a follow the database refused", async ({ page }) => {
       await signIn(page);
       await developer.clearFollows();
-      await addFollows(developer.id, fillers.ids.slice(0, FREE_LIMIT - 1));
+      // A Technology the page offers and the database then refuses. It leaves the Catalog between
+      // the paint and the press, which is the one refusal left now that the ten of the Free Plan
+      // are gone (issue #209), so it is seeded here and retired under this page.
+      const leaving = await seedTechnology([]);
       await page.goto("/technologies");
-      const follow = page.getByRole("button", { name: `Follow ${technology.name}` });
+      const follow = page.getByRole("button", { name: `Follow ${leaving.name}` });
       await expect(follow).toBeVisible();
 
-      // The tenth follow arrives from another session, so this page still believes there is room.
-      await addFollows(developer.id, fillers.ids.slice(FREE_LIMIT - 1));
+      await retireTechnology(leaving.id);
       await follow.click();
-      await expect(page.locator(`#err-${technology.slug}`)).toBeVisible();
+      await expect(page.locator(`#err-${leaving.slug}`)).toBeVisible();
       await scan(page, theme);
+      await leaving.remove();
     });
 
     test("technologies, with the picker toggles", async ({ page }) => {

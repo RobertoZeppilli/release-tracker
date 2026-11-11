@@ -5,7 +5,7 @@
 // What is **not** here is the product's grammar: `verdict:`, `warning:`, `help:`, `breaking[n]:`,
 // `note:`, `release-notes:n` and the four Significance names are identical in every language
 // (ADR 0008), so they stay literals in the components. The figures are not here either: they come
-// from `SPECIMEN`, from the Catalog directory and from the Plan, so the sentences name them as gaps
+// from `SPECIMEN` and from the Catalog directory, so the sentences name them as gaps
 // and no language can retype one wrong.
 export const landing = {
   // The first screen. The claim is the page's display line and carries the full stop, which the
@@ -81,12 +81,9 @@ export const landing = {
     "A beta or a release candidate. Only the first preview of a new major is summarized, and canaries, nightlies and alphas are not releases here at all.",
 
   // The close, and the counter-position beside it.
-  "landing.close.claim": {
-    one: "Follow the one technology that decides your week.",
-    other: "Follow the {count} technologies that decide your week.",
-  },
-  "landing.close.plan":
-    "The free plan follows up to {limit} technologies from a curated catalog of {size}. Sign-in is GitHub, and the release pages stay readable without it.",
+  "landing.close.claim": "Follow the technologies that decide your week.",
+  "landing.close.catalog":
+    "A curated catalog of {size} technologies. Sign-in is GitHub, and the release pages stay readable without it.",
   "landing.close.browse": {
     one: "browse the one technology",
     other: "browse all {count} technologies",

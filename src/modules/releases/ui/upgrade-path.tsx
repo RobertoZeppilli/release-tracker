@@ -42,7 +42,7 @@ type Props = {
   // go with the panel and the verdict, and the right column names its own ordering (DESIGN.md,
   // Technology, the split).
   head?: ReactNode;
-  // The Version in use row of the panel, passed as an element: declaring one belongs to the `plans`
+  // The Version in use row of the panel, passed as an element: declaring one belongs to the `follows`
   // module, and the Upgrade Path has no reason to know what following is. It renders nothing for a
   // Visitor, which is every reader of the cached page until the session is known.
   declaration?: ReactNode;

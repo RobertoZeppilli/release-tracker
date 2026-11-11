@@ -8,12 +8,12 @@ export const settings = {
   "settings.language.interface": "sprache der oberfläche",
   "settings.language.note":
     "Die Sprache ist Teil der Adresse, also lässt sich eine Seite in der Sprache teilen, in der sie gelesen wurde. Release Notes und Zusammenfassungen bleiben in ihrer Originalsprache.",
-  // Der Abschnitt der Benachrichtigungen (Issue #171, ADR 0009). `featured`, `notable`, `digest` und
-  // `Pro` sind die Grammatik des Produkts und bleiben englisch; die Namen des Glossars werden in den
+  // Der Abschnitt der Benachrichtigungen (Issue #171). `featured`, `notable` und `digest`
+  // sind die Grammatik des Produkts und bleiben englisch; die Namen des Glossars werden in den
   // Sätzen übersetzt (ADR 0008).
   "settings.notifications.title": "Benachrichtigungen",
   "settings.notifications.intro":
-    "Welche Releases dich erreichen, und wo. Die Glocke ist für immer gratis; Slack ist Pro.",
+    "Welche Releases dich erreichen, und wo.",
   "settings.notifications.bell.title": "die glocke",
   "settings.notifications.featured.label": "featured Releases",
   "settings.notifications.featured.off":
@@ -26,14 +26,6 @@ export const settings = {
     "Nicht gespeichert. Der Schalter steht wieder so, wie die Datenbank ihn hält, also ist das Gezeigte das Vorhandene: drücke ihn noch einmal.",
   "settings.notifications.digest":
     "Der wöchentliche Digest bringt seinen eigenen Schalter mit, an dem Tag, an dem der Digest selbst kommt.",
-  "settings.notifications.pro": "Pro",
-  "settings.notifications.trial.start": "die 30 Tage Pro-Testzeit starten",
-  "settings.notifications.trial.note": "30 Tage, gratis. Danach braucht Slack Pro; die Glocke bleibt gratis.",
-  "settings.notifications.trial.left": {
-    one: "Es bleibt ein Tag Pro-Testzeit.",
-    other: "Es bleiben {count} Tage Pro-Testzeit.",
-  },
-  "settings.notifications.trial.ended": "Die Pro-Testzeit ist vorbei. Slack braucht Pro; die Glocke bleibt gratis.",
   "settings.notifications.switch.slack": "{name} auf Slack",
   "settings.notifications.slack.title": "slack",
   "settings.notifications.slack.connect": "Add to Slack",

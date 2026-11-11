@@ -15,14 +15,14 @@ import {
 } from "./supabase";
 
 const PERMISSION_DENIED = "42501";
-// The two rules the trigger of `follow_limits` imposes, as PostgREST forwards them.
-const LIMIT_REACHED = "FLIMT";
+// The one rule the trigger of `follow_limits` still imposes, as PostgREST forwards it: the ten of
+// the Free Plan left with the Plan (issue #209, ADR 0011), and its own `FLIMT` leaves with the
+// trigger in the migration that follows this code.
 const RETIRED = "FRTRD";
 // The three rules the trigger of `current_version` imposes.
 const MALFORMED = "FVMAL";
 const NOT_OLDER = "FVNEW";
 const NO_STABLE = "FVNST";
-const FREE_LIMIT = 10;
 
 const FollowRowsSchema = z.array(z.object({ user_id: z.uuid() }));
 
@@ -92,16 +92,6 @@ describe("follows", () => {
   });
 });
 
-describe("plans", () => {
-  it("start on Free and are visible only to their Developer", async () => {
-    const own = await alice.client.from("plans").select("user_id, plan");
-    expect(own.data).toEqual([{ user_id: alice.id, plan: "free" }]);
-
-    const other = await bob.client.from("plans").select("user_id").eq("user_id", alice.id);
-    expect(other.data).toEqual([]);
-  });
-});
-
 // Following several Technologies at once is one statement, not N (issue #126): what the page can
 // promise about the group is whatever Postgres does with a trigger that raises halfway through it.
 describe("a group of follows in one statement", () => {
@@ -109,7 +99,7 @@ describe("a group of follows in one statement", () => {
   let erin: Developer;
 
   beforeAll(async () => {
-    [catalog, erin] = await Promise.all([seedCatalog(FREE_LIMIT + 2), createDeveloper()]);
+    [catalog, erin] = await Promise.all([seedCatalog(5), createDeveloper()]);
   });
 
   afterAll(async () => {
@@ -138,15 +128,9 @@ describe("a group of follows in one statement", () => {
     expect(await followedByErin()).toBe(3);
   });
 
-  it("refuses the group that breaks the limit, and follows none of it", async () => {
-    // Three are followed, so ten more is seven over the wall. The trigger raises on the eighth row
-    // of the statement, and the statement is what Postgres takes back: this is the whole reason the
-    // page can say `none followed` instead of counting which ones made it (DESIGN.md, Selection Bar).
-    const { error } = await followAll(catalog.technologyIds.slice(3, 13));
-    expect(error?.code).toBe(LIMIT_REACHED);
-    expect(await followedByErin()).toBe(3);
-  });
-
+  // The statement is what Postgres takes back when the trigger raises halfway through it, which is
+  // the whole reason the page can say `none followed` instead of counting which ones made it
+  // (DESIGN.md, Selection Bar).
   it("refuses a group holding a retired Technology, and follows none of it", async () => {
     const [, , , fourth, fifth] = catalog.technologyIds;
     await retire(fifth);
@@ -161,7 +145,7 @@ describe("the follow rules the database imposes", () => {
   let carol: Developer;
 
   beforeAll(async () => {
-    [catalog, carol] = await Promise.all([seedCatalog(FREE_LIMIT + 1), createDeveloper()]);
+    [catalog, carol] = await Promise.all([seedCatalog(3), createDeveloper()]);
   });
 
   afterAll(async () => {
@@ -173,24 +157,15 @@ describe("the follow rules the database imposes", () => {
     return carol.client.from("follows").insert({ user_id: carol.id, technology_id: technologyId });
   }
 
-  it("refuse the eleventh Technology, and count a retired one among the ten", async () => {
-    const [retired, ...rest] = catalog.technologyIds;
-    for (const technologyId of catalog.technologyIds.slice(0, FREE_LIMIT)) {
-      const { error } = await follow(technologyId);
-      expect(error).toBeNull();
-    }
+  it("refuse a Technology let go after it was retired, which is all a retired follow can do", async () => {
+    const [retired] = catalog.technologyIds;
+    expect((await follow(retired)).error).toBeNull();
 
     // It leaves the Catalog while it is followed: the only way a retired follow can exist.
     await retire(retired);
-    const eleventh = rest[FREE_LIMIT - 1];
-    expect((await follow(eleventh)).error?.code).toBe(LIMIT_REACHED);
-
-    // Room again once the retired one is let go, which is all a retired follow can do.
     const { error: removed } = await carol.client.from("follows").delete().eq("technology_id", retired);
     expect(removed).toBeNull();
-    expect((await follow(eleventh)).error).toBeNull();
 
-    // And it cannot come back, even below the limit.
     expect((await follow(retired)).error?.code).toBe(RETIRED);
   });
 

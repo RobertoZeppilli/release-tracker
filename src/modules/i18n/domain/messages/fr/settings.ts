@@ -8,12 +8,12 @@ export const settings = {
   "settings.language.interface": "langue de l'interface",
   "settings.language.note":
     "La langue fait partie de l’adresse, donc une page peut être partagée dans la langue où elle a été lue. Les notes de version et les synthèses restent dans leur langue d’origine.",
-  // La section des Notifications (issue #171, ADR 0009). `featured`, `notable`, `digest` et `Pro`
+  // La section des Notifications (issue #171). `featured`, `notable` et `digest`
   // sont la grammaire du produit et restent en anglais ; les noms du glossaire se traduisent dans
   // les phrases (ADR 0008).
   "settings.notifications.title": "Notifications",
   "settings.notifications.intro":
-    "Quelles release vous parviennent, et où. La cloche est gratuite pour toujours ; Slack est Pro.",
+    "Quelles release vous parviennent, et où.",
   "settings.notifications.bell.title": "la cloche",
   "settings.notifications.featured.label": "release featured",
   "settings.notifications.featured.off":
@@ -26,15 +26,6 @@ export const settings = {
     "Non enregistré. L’interrupteur est revenu à ce que la base de données contient, donc ce que vous voyez est ce que vous avez : appuyez de nouveau.",
   "settings.notifications.digest":
     "Le digest hebdomadaire apportera son propre interrupteur, le jour où le digest lui-même arrivera.",
-  "settings.notifications.pro": "Pro",
-  "settings.notifications.trial.start": "démarrer l’essai Pro de 30 jours",
-  "settings.notifications.trial.note": "30 jours, gratuits. Ensuite, Slack demande Pro ; la cloche reste gratuite.",
-  "settings.notifications.trial.left": {
-    one: "Il reste un jour d’essai Pro.",
-    many: "Il reste {count} jours d’essai Pro.",
-    other: "Il reste {count} jours d’essai Pro.",
-  },
-  "settings.notifications.trial.ended": "L’essai Pro est terminé. Slack demande Pro ; la cloche reste gratuite.",
   "settings.notifications.switch.slack": "{name} sur Slack",
   "settings.notifications.slack.title": "slack",
   "settings.notifications.slack.connect": "Add to Slack",

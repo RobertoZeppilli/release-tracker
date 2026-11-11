@@ -25,7 +25,7 @@ export const page = {
     "What Verdict follows, what an account is for, and how far a generated summary can be trusted.",
   "page.terms.title": "Terms of service",
   "page.terms.description":
-    "What Verdict is, what the free plan holds, and why a generated summary always shows the line it was read from.",
+    "What Verdict is, what a curated catalog means, and why a generated summary always shows the line it was read from.",
   "page.privacy.title": "Privacy",
   "page.privacy.description":
     "Everything Verdict holds about a developer, who touches it, and why no personal data ever enters a prompt.",

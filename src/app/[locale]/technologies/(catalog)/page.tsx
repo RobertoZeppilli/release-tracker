@@ -4,9 +4,9 @@ import { SiteHeader } from "@/components/site-header";
 import { createRequestClient } from "@/lib/supabase-request";
 import { requireDeveloper } from "@/modules/auth/server";
 import { getTranslator } from "@/modules/i18n/server";
-import { splitPicker } from "@/modules/plans";
-import { listPickerTechnologies, readFollows } from "@/modules/plans/server";
-import { FollowsProvider, TechnologiesPage } from "@/modules/plans/ui";
+import { splitPicker } from "@/modules/follows";
+import { listPickerTechnologies, readFollows } from "@/modules/follows/server";
+import { FollowsProvider, TechnologiesPage } from "@/modules/follows/ui";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslator();

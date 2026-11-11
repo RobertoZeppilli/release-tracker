@@ -3,16 +3,15 @@ import type { MessageDictionary } from "../index";
 // What a Developer follows, in Italian. The Categories and the two layouts are **values** written in
 // the address and in the stored preference, so they are not in the dictionary at all (ADR 0008);
 // `category` as the word the reader reads is `Genere`, which is the glossary's name for it
-// (GLOSSARY.md). `piano free` keeps `Free`, which is the name of a Plan.
+// (GLOSSARY.md).
 export const stack = {
   "stack.title": "cosa segui, per nome",
   "stack.figure.followed": "seguite",
-  "stack.figure.left": "ancora libere sul tuo piano free",
   "stack.seeDashboard": "vedile sulla tua Dashboard",
   "stack.empty": "ancora niente. segui qualcosa dal catalogo e arriva qui.",
   "stack.retired.title": "ritirate, ancora tue",
   "stack.retired.note":
-    "non sono più nel catalogo e non ricevono nuove release. Le release passate restano consultabili, contano ancora nel tuo limite di {limit}, e una volta lasciate andare non si possono seguire di nuovo.",
+    "non sono più nel catalogo e non ricevono nuove release. Le release passate restano consultabili, e una volta lasciate andare non si possono seguire di nuovo.",
   "stack.row.lastVersion": "ultima {version}",
   "stack.row.gone": "lasciata andare, per sempre",
   "stack.row.unfollow": "smetti di seguire",
@@ -24,31 +23,12 @@ export const stack = {
   "stack.followName": "Segui {name}",
   "stack.unfollowName": "Smetti di seguire {name}",
   "stack.selectName": "Seleziona {name}",
-  "stack.quota.label": "Tecnologie seguite",
-  "stack.quota.short": "{count} seguite",
-  "stack.quota.followed": "{count} di {limit} seguite",
-  "stack.quota.swap": "smetti di seguirne una per seguirne un'altra",
-  "stack.limit.full":
-    "il tuo piano free è pieno. lasciane andare una tra quelle che segui per seguirne un'altra.",
-  "stack.rejected.limit":
-    "non seguita. il tuo piano free si è riempito in un'altra sessione, quindi lasciane andare una per seguirne un'altra.",
   "stack.rejected.retired":
     "non seguita · ha lasciato il catalogo · una tecnologia ritirata non si può seguire di nuovo",
   "stack.rejected.failed": "non salvata · la modifica non è arrivata al database · riprova",
   "stack.selection.count": "{count} selezionate",
   "stack.selection.follow": "Segui {count}",
   "stack.selection.clear": "svuota",
-  "stack.wall.full": {
-    one: "il tuo piano free è pieno, e {count} è selezionata.",
-    many: "il tuo piano free è pieno, e {count} sono selezionate.",
-    other: "il tuo piano free è pieno, e {count} sono selezionate.",
-  },
-  "stack.wall.room": {
-    one: "il tuo piano free ha posto per altre {room}, e {count} è selezionata.",
-    many: "il tuo piano free ha posto per altre {room}, e {count} sono selezionate.",
-    other: "il tuo piano free ha posto per altre {room}, e {count} sono selezionate.",
-  },
-  "stack.group.limit": "nessuna seguita. {wall}",
   "stack.group.retired":
     "nessuna seguita. una di loro ha lasciato il catalogo, quindi togliala dalla selezione.",
   "stack.group.failed":

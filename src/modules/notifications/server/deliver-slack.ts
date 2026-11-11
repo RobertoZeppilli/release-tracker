@@ -34,18 +34,12 @@ const CandidateSchema = z.array(
 const SecretSchema = z.array(z.object({ user_id: z.uuid(), slack_webhook_url: z.string() }));
 
 const SettingsSchema = z.array(
-  z.object({
-    user_id: z.uuid(),
-    preferred_locale: localeSchema,
-    external_trial_started_at: z.iso.datetime({ offset: true }).nullable(),
-  }),
+  z.object({ user_id: z.uuid(), preferred_locale: localeSchema }),
 );
 
 const PreferenceSchema = z.array(
   z.object({ user_id: z.uuid(), event: NotificationEventSchema, channel: NotificationChannelSchema, enabled: z.boolean() }),
 );
-
-const PlanSchema = z.array(z.object({ user_id: z.uuid(), plan: z.enum(["free", "pro", "team"]) }));
 
 export type DeliverReport = { pending: number; sent: number; failed: number };
 
@@ -91,7 +85,7 @@ export async function deliverSlack(
   if (pending.length === 0) return { pending: 0, sent: 0, failed: 0 };
 
   const recipients = await readRecipients(db, [...new Set(pending.map((one) => one.userId))]);
-  const sends = planSlackSends(withUrls(pending, recipients, siteUrl), recipients, now);
+  const sends = planSlackSends(withUrls(pending, recipients, siteUrl), recipients);
 
   let sent = 0;
   let failed = 0;
@@ -133,10 +127,10 @@ function withUrls(
 
 async function readRecipients(db: SupabaseClient, userIds: readonly string[]): Promise<SlackRecipient[]> {
   // The webhooks first, from the table a client cannot read: whoever has none cannot be sent to, and
-  // reading their settings, Plan and preferences would be three queries for nothing.
+  // reading their settings and preferences would be two queries for nothing.
   //
-  // One row per Developer, and `userIds` is at most `MAX_PER_RUN`, so this and the two reads keyed
-  // the same way stay under the page without asking for one (issue #190).
+  // One row per Developer, and `userIds` is at most `MAX_PER_RUN`, so this and the read keyed the
+  // same way stay under the page without asking for one (issue #190).
   const secrets = await db
     .from("notification_secrets")
     .select("user_id, slack_webhook_url")
@@ -149,34 +143,30 @@ async function readRecipients(db: SupabaseClient, userIds: readonly string[]): P
   const ids = [...webhooks.keys()];
   const settings = await db
     .from("notification_settings")
-    .select("user_id, preferred_locale, external_trial_started_at")
+    .select("user_id, preferred_locale")
     .in("user_id", ids);
   if (settings.error) throw settings.error;
   const rows = SettingsSchema.parse(settings.data);
-  const [preferences, plans] = await Promise.all([
-    // The one read here that does not hold one row per Developer: three events by three channels is
-    // up to nine, so five hundred Developers are four thousand five hundred rows (issue #190).
-    selectAllRows((from, to) =>
-      db
-        .from("notification_preferences")
-        .select("user_id, event, channel, enabled")
-        .in("user_id", ids)
-        // The primary key, the only order over these rows without ties.
-        .order("user_id")
-        .order("event")
-        .order("channel")
-        .range(from, to),
-    ),
-    db.from("plans").select("user_id, plan").in("user_id", ids),
-  ]);
-  if (plans.error) throw plans.error;
+  // The one read here that does not hold one row per Developer: three events by three channels is
+  // up to nine, so five hundred Developers are four thousand five hundred rows (issue #190).
+  // The Plan was read beside it until issue #209, to tell a paid Developer from one inside the
+  // trial. Slack is part of the one level of service now, so a webhook is the whole question.
+  const preferences = await selectAllRows((from, to) =>
+    db
+      .from("notification_preferences")
+      .select("user_id, event, channel, enabled")
+      .in("user_id", ids)
+      // The primary key, the only order over these rows without ties.
+      .order("user_id")
+      .order("event")
+      .order("channel")
+      .range(from, to),
+  );
 
   const byUser = new Map<string, Preference[]>();
   for (const row of PreferenceSchema.parse(preferences)) {
     byUser.set(row.user_id, [...(byUser.get(row.user_id) ?? []), { event: row.event, channel: row.channel, enabled: row.enabled }]);
   }
-  const paid = new Map(PlanSchema.parse(plans.data).map((row) => [row.user_id, row.plan !== "free"]));
-
   // Keyed by the webhooks and not by the settings: a Developer who saved a webhook before ever
   // touching `/settings` has no settings row, and the declared starting point is what holds then.
   return ids.map((userId) => {
@@ -185,8 +175,6 @@ async function readRecipients(db: SupabaseClient, userIds: readonly string[]): P
       userId,
       webhookUrl: webhooks.get(userId) ?? "",
       locale: row?.preferred_locale ?? DEFAULT_LOCALE,
-      pro: paid.get(userId) ?? false,
-      trialStartedAt: row?.external_trial_started_at ? new Date(row.external_trial_started_at) : null,
       preferences: byUser.get(userId) ?? [],
     };
   });

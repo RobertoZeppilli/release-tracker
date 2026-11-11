@@ -31,8 +31,6 @@ export const dashboard = {
   "dashboard.totals.since": "version déclarée la plus ancienne",
   "dashboard.barNote":
     "la barre est la distance depuis la version que vous avez déclarée, pas une note",
-  "dashboard.quota.followed": "{count} sur {limit} suivies",
-  "dashboard.quota.swap": "laissez-en une pour en suivre une autre",
   "dashboard.stream.title": "ce qui s’est passé · {days} derniers jours",
   // The count is a second span after the title, which is why the comma is inside the message.
   "dashboard.stream.count": {
@@ -61,6 +59,11 @@ export const dashboard = {
     other: "{count} releases digest",
   },
   "dashboard.digest.noAction": "aucune action nécessaire",
+  "dashboard.followed": {
+    one: "{count} suivie",
+    many: "{count} suivies",
+    other: "{count} suivies",
+  },
   "dashboard.empty.none": "vous ne suivez encore aucune technologie",
   "dashboard.empty.some": {
     one: "vous suivez {count} technologie",
@@ -68,7 +71,7 @@ export const dashboard = {
     other: "vous suivez {count} technologies",
   },
   "dashboard.empty.what":
-    "Suivez les outils de votre stack. Cette page montre ensuite, pour chacun, les releases qui comptent des {days} derniers jours et si la mise à jour demande une action. Le plan Free suit jusqu’à {limit}.",
+    "Suivez les outils de votre stack. Cette page montre ensuite, pour chacun, les releases qui comptent des {days} derniers jours et si la mise à jour demande une action.",
   "dashboard.empty.open": "Ouvrir le dashboard",
   "dashboard.empty.catalog": "dans le catalogue ({count})",
   "dashboard.empty.browse": {

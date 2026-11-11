@@ -6,8 +6,7 @@ import { githubRevokeUrl } from "@/modules/auth";
 import { requireAccount } from "@/modules/auth/server";
 import { getTranslator } from "@/modules/i18n/server";
 import { DeleteAccountPanel, type DeletionError } from "@/modules/auth/ui";
-import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
-import { readFollows, readPlan } from "@/modules/plans/server";
+import { readFollows } from "@/modules/follows/server";
 
 // Behind the login and never indexed, so the whole of its metadata is the title in the page's own
 // language (ADR 0008).
@@ -32,18 +31,16 @@ export default async function AccountPage({ searchParams }: Props) {
   const account = await requireAccount("/account");
   const error = readError((await searchParams).error);
   const db = await createRequestClient();
-  const [follows, plan] = await Promise.all([readFollows(db), readPlan(db)]);
+  const follows = await readFollows(db);
   const declared = follows.filter((follow) => follow.currentVersion).length;
 
-  // The Plan is a value (`free` / `pro` / `team`), so it is printed as it is stored.
+  // The Plan was a line here until issue #209, printed as it was stored. There is one level of
+  // service now, so what is held is what was followed and what was declared: two counts, and no
+  // quota to read them against.
   const held: [string, string][] = [
     [t("account.held.signedIn"), account.email ?? t("account.held.noEmail")],
     [t("account.held.handle"), account.handle ?? t("account.held.none")],
-    [t("account.held.plan"), plan],
-    [
-      t("account.held.followed"),
-      t("account.held.quota", { count: follows.length, limit: FREE_FOLLOW_LIMIT }),
-    ],
+    [t("account.held.followed"), String(follows.length)],
     [t("account.held.declared"), String(declared)],
   ];
 

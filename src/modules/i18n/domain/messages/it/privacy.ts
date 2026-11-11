@@ -20,8 +20,6 @@ export const privacy = {
   "privacy.held.follows.why": "quali, e il giorno in cui hai cominciato a seguire ognuna",
   "privacy.held.versions.label": "versioni dichiarate",
   "privacy.held.versions.why": "la versione che dici di usare, e il giorno in cui l'hai detto",
-  "privacy.held.plan.label": "piano",
-  "privacy.held.plan.why": "Free, per ogni account",
   "privacy.held.notifications.label": "notifiche",
   "privacy.held.notifications.why":
     "di quale release ti abbiamo avvisato, il giorno in cui è stata scritta, e se l'hai vista",
@@ -56,7 +54,7 @@ export const privacy = {
 
   "privacy.keep.title": "per quanto, e come farla finire",
   "privacy.keep.body":
-    "Tutto quello che c'è qui sopra è tenuto finché l'account esiste. Cancellare l'account dalla {account} lo toglie subito: la riga dell'account va via, e con lei vanno le tecnologie seguite, le versioni dichiarate e il piano, perché sono indicizzate su di lei e cancellate con lei. Non c'è un periodo di grazia, non c'è un nostro archivio, e non c'è niente con cui tornare indietro.",
+    "Tutto quello che c'è qui sopra è tenuto finché l'account esiste. Cancellare l'account dalla {account} lo toglie subito: la riga dell'account va via, e con lei vanno le tecnologie seguite e le versioni dichiarate, perché sono indicizzate su di lei e cancellate con lei. Non c'è un periodo di grazia, non c'è un nostro archivio, e non c'è niente con cui tornare indietro.",
   "privacy.keep.notifications":
     "Le notifiche sono l'unica riga con un orologio suo: ognuna è cancellata 90 giorni dopo che è stata scritta, vista o no, e dopo non ne resta niente.",
   "privacy.keep.after":

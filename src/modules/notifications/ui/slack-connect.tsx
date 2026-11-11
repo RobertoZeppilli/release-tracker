@@ -7,8 +7,7 @@ import { useTranslator } from "@/modules/i18n/ui";
 import { VERSION_BUTTON_CLASS } from "@/modules/releases/ui";
 
 // "Add to Slack" (#188), and since #199 the dialog that opens first: the press used to leave for
-// Slack's consent screen without saying that Slack would ask for a workspace and a channel, nor
-// what the trial is.
+// Slack's consent screen without saying that Slack would ask for a workspace and a channel.
 //
 // ⚠️ No `client_id` and no URL of Slack's are built here: the link reaches **this server's** own
 // route, and the consent URL is assembled there. The rule of `CLAUDE.md` is that no external call
@@ -44,10 +43,9 @@ export function SlackConnect({ locale }: { locale: Locale }) {
       </p>
       <DialogContent>
         <DialogTitle>{t("settings.notifications.slack.dialog.title")}</DialogTitle>
-        {/* One sentence: what Slack will ask. The thirty days are declared where they start, which
-            is the press that opens the trial, not here -- by the time this dialog can be opened the
-            trial is already running. The page behind it stopped explaining the plan in paragraphs on
-            2026-10-28: the flow is the explanation, and a dialog is no place for a price list. */}
+        {/* One sentence: what Slack will ask, and nothing else. The thirty day trial this dialog
+            used to sit inside left with the Plan (issue #209), and the page behind it had already
+            stopped explaining a price in paragraphs on 2026-10-28: the flow is the explanation. */}
         <DialogDescription>{t("settings.notifications.slack.dialog.asks")}</DialogDescription>
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <a href={install} className={VERSION_BUTTON_CLASS}>

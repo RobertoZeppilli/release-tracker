@@ -16,7 +16,6 @@ import { CatalogSelectionProvider, useCatalogSelection } from "./catalog-selecti
 import { CategoryChips, LayoutChoice, SelectManyChoice, SortChoice } from "./catalog-controls";
 import { CatalogFilter } from "./catalog-filter";
 import { CatalogGroups } from "./catalog-groups";
-import { FollowToggleLimitNote } from "./limit-note";
 import { Note } from "./note-line";
 import { SelectionBar } from "./selection-bar";
 import { useViewPref } from "./view-prefs";
@@ -99,9 +98,6 @@ function CatalogBody({
       <CategoryChips category={category} onCategory={onCategory} />
       <SortChoice sort={sort} onSort={setSort} />
 
-      {/* The wall, where the next Follow would happen. It names the wall and does not recount it:
-          the number is in the panel across the split (DESIGN.md, Limit Note). */}
-      <FollowToggleLimitNote />
       <SelectionBar />
       <CatalogGroups rows={narrowed} query={query} sort={sort} layout={layout} />
 

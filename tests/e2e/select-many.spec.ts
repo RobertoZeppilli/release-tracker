@@ -1,45 +1,38 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
-  addFollows,
   arrived,
   e2eAuthSecret,
   type FixtureDeveloper,
-  type FixtureFillers,
   type FixtureTechnology,
+  retireTechnology,
   seedDeveloper,
-  seedFillers,
   seedTechnology,
 } from "./fixtures";
 
-const FREE_LIMIT = 10;
-
 let developer: FixtureDeveloper;
-// Three Technologies of this test's own, so a group can be built without touching the fillers that
-// fill the Plan up in the limit case.
+// Three Technologies of this test's own, so a group can be built out of rows no other case presses.
 let one: FixtureTechnology;
 let two: FixtureTechnology;
 let three: FixtureTechnology;
-let fillers: FixtureFillers;
 
 test.beforeAll(async () => {
   const release = [
     { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false },
   ] as const;
-  [developer, one, two, three, fillers] = await Promise.all([
+  [developer, one, two, three] = await Promise.all([
     seedDeveloper(),
     seedTechnology([...release]),
     seedTechnology([...release]),
     seedTechnology([...release]),
-    seedFillers(FREE_LIMIT),
   ]);
 });
 
 test.afterAll(async () => {
-  await Promise.all([developer.remove(), one.remove(), two.remove(), three.remove(), fillers.remove()]);
+  await Promise.all([developer.remove(), one.remove(), two.remove(), three.remove()]);
 });
 
-// Each case starts from a Developer following nothing: the cases fill the Plan to different
-// heights, and a leftover follow from the one before would move the wall under the next.
+// Each case starts from a Developer following nothing: a leftover follow from the case before would
+// put a row on the other side of the split.
 test.beforeEach(async () => {
   await developer.clearFollows();
 });
@@ -132,59 +125,27 @@ test.describe("following several Technologies at once", () => {
     await expect(stack(page).getByRole("link", { name: two.name, exact: true })).toBeVisible();
   });
 
-  test("a group over the free limit is refused as a group, and says how many fit", async ({ page }) => {
-    // Nine of ten taken from another session, so a group of three is two over the wall.
-    await addFollows(developer.id, fillers.ids.slice(0, FREE_LIMIT - 1));
+  test("a group the database refuses puts every row back and says why", async ({ page }) => {
+    // A fourth Technology, which leaves the Catalog while the page is open: the page cannot know,
+    // and Postgres takes the whole statement back, which is why the bar says `none followed`
+    // instead of counting which rows made it (issue #126, DESIGN.md, Selection Bar).
+    const leaving = await seedTechnology([]);
     await open(page);
     await selectMany(page).click();
     await mark(page, one).click();
     await mark(page, two).click();
-    await mark(page, three).click();
+    await mark(page, leaving).click();
 
-    const follow = page.getByRole("button", { name: "Follow 3", exact: true });
-    await expect(follow).toHaveAttribute("aria-disabled", "true");
-    await expect(page.getByText("your free plan has room for 1 more, and 3 are selected.")).toBeVisible();
+    await retireTechnology(leaving.id);
+    await page.getByRole("button", { name: "Follow 3", exact: true }).click();
 
-    // `force`, because the button is `aria-disabled` and Playwright will not drive a control that
-    // says it is not taking presses: the point of the case is that the press does nothing.
-    await follow.click({ force: true });
-    await expect(stack(page).getByRole("link", { name: one.name, exact: true })).toHaveCount(0);
-    await expect(mark(page, one)).toHaveAttribute("aria-checked", "true");
-
-    // Dropping two brings the group back inside the Plan, and the press goes through.
-    await mark(page, two).click();
-    await mark(page, three).click();
-    const single = page.getByRole("button", { name: "Follow 1", exact: true });
-    await expect(single).not.toHaveAttribute("aria-disabled", "true");
-    await single.click();
-    await expect(stack(page).getByRole("link", { name: one.name, exact: true })).toBeVisible();
-  });
-
-  test("a group the database refuses puts every row back and says the figure it learns", async ({ page }) => {
-    // Seven taken, so the page loads believing three more fit.
-    await addFollows(developer.id, fillers.ids.slice(0, 7));
-    await open(page);
-    await selectMany(page).click();
-    await mark(page, one).click();
-    await mark(page, two).click();
-    await mark(page, three).click();
-
-    const follow = page.getByRole("button", { name: "Follow 3", exact: true });
-    await expect(follow).not.toHaveAttribute("aria-disabled", "true");
-
-    // Another session fills two of the three places while the page is open: the page cannot know.
-    await addFollows(developer.id, fillers.ids.slice(7, 9));
-    await follow.click();
-
-    // None of the three arrived, all three came back, and the figure is the one the page learned
-    // from the database rather than the one it believed before the press.
     await expect(
-      page.getByText("error: none followed. your free plan has room for 1 more, and 3 are selected."),
+      page.getByText("error: none followed. one of them has left the catalog, so clear it from the selection."),
     ).toBeVisible();
     await expect(stack(page).getByRole("link", { name: one.name, exact: true })).toHaveCount(0);
     await expect(stack(page).getByRole("link", { name: two.name, exact: true })).toHaveCount(0);
-    await expect(stack(page).getByRole("link", { name: three.name, exact: true })).toHaveCount(0);
     await expect(mark(page, one)).toHaveAttribute("aria-checked", "true");
+    await leaving.remove();
   });
 
   test("the single Follow keeps working inside the mode, and leaves the selection alone", async ({ page }) => {

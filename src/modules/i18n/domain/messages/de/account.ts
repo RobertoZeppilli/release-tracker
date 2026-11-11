@@ -10,9 +10,7 @@ export const account = {
   "account.held.noEmail": "keine E-Mail-Adresse",
   "account.held.handle": "github-name",
   "account.held.none": "keine",
-  "account.held.plan": "plan",
   "account.held.followed": "verfolgt",
-  "account.held.quota": "{count} von {limit}",
   "account.held.declared": "angegebene versionen",
   "account.delete.title": "diesen Account löschen",
   "account.delete.intro":
@@ -27,7 +25,6 @@ export const account = {
     one: "{count} angegebene Version im Einsatz",
     other: "{count} angegebene Versionen im Einsatz",
   },
-  "account.delete.item.plan": "den Plan des Accounts",
   "account.delete.item.session": "die Session in diesem Browser",
   // `{revoke}` is a gap a link is put in (`Filled`), not a word.
   "account.delete.note":

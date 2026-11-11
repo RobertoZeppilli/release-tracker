@@ -13,8 +13,8 @@ import {
   windowLine,
 } from "@/modules/dashboard/ui";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
-import { listPickerTechnologies, readFollows } from "@/modules/plans/server";
-import { FollowQuota, FollowsProvider } from "@/modules/plans/ui";
+import { listPickerTechnologies, readFollows } from "@/modules/follows/server";
+import { FollowsProvider } from "@/modules/follows/ui";
 
 // A title in the page's own language, which is why it is a function and no longer a constant: the
 // page is behind the login and carries no canonical, so the whole of its metadata is the title.
@@ -37,8 +37,10 @@ const SPLIT = "grid max-w-content items-start gap-7 min-[1041px]:grid-cols-[minm
 const ONE_COLUMN = "max-w-content [&>*]:max-w-column";
 
 // Behind the login, so dynamic anyway: the window is read on the server and the page arrives whole.
-// The header lives inside the provider because the quota in the top bar is the same live count the
-// page shows, and the two must never disagree.
+// The header lives inside the provider because the quota in the top bar was the same live count the
+// page shows, and the two were never allowed to disagree. The quota left with the Plan (issue #209);
+// the header stays inside, where a control that needs the follows can be added without moving the
+// tree, and nothing in it reads them today.
 export default async function DashboardPage({ searchParams }: Props) {
   const developer = await requireDeveloper("/dashboard");
   const t = await getTranslator();
@@ -50,7 +52,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <FollowsProvider developerId={developer.id} follows={follows}>
-      <SiteHeader section="dashboard" quota={<FollowQuota />} />
+      <SiteHeader section="dashboard" />
       <main
         id="content"
         className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${empty ? ONE_COLUMN : SPLIT}`}

@@ -31,8 +31,6 @@ export const dashboard = {
   "dashboard.totals.since": "älteste angegebene Version",
   "dashboard.barNote":
     "der Balken ist der Abstand zur Version, die du angegeben hast, keine Note",
-  "dashboard.quota.followed": "{count} von {limit} verfolgt",
-  "dashboard.quota.swap": "lass eine los, um einer anderen zu folgen",
   "dashboard.stream.title": "was passiert ist · letzte {days} Tage",
   // The count is a second span after the title, which is why the comma is inside the message.
   "dashboard.stream.count": {
@@ -60,13 +58,17 @@ export const dashboard = {
   // Not `kein Eingriff nötig` again: that is the page verdict two screens above, and one sentence
   // said twice is one sentence to translate twice.
   "dashboard.digest.noAction": "nichts zu tun",
+  "dashboard.followed": {
+    one: "{count} verfolgt",
+    other: "{count} verfolgt",
+  },
   "dashboard.empty.none": "du folgst noch keiner Technologie",
   "dashboard.empty.some": {
     one: "du folgst {count} Technologie",
     other: "du folgst {count} Technologien",
   },
   "dashboard.empty.what":
-    "Folge den Werkzeugen in deinem Stack. Diese Seite zeigt dann für jedes die Releases, die zählen, aus den letzten {days} Tagen, und ob ein Upgrade einen Eingriff braucht. Der Free-Plan folgt bis zu {limit}.",
+    "Folge den Werkzeugen in deinem Stack. Diese Seite zeigt dann für jedes die Releases, die zählen, aus den letzten {days} Tagen, und ob ein Upgrade einen Eingriff braucht.",
   "dashboard.empty.open": "Dashboard öffnen",
   "dashboard.empty.catalog": "im Katalog ({count})",
   "dashboard.empty.browse": {

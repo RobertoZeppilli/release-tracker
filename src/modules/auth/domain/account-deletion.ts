@@ -1,5 +1,5 @@
 // The word a Developer types to delete their account. A deletion cannot be undone and the database
-// cascades it (`follows` and `plans` reference `auth.users (id) on delete cascade`), so the page
+// cascades it (`follows` references `auth.users (id) on delete cascade`), so the page
 // asks for a word rather than for a click: a confirm dialog is out of the question here (no native
 // dialog in this app) and a lone button is one misplaced press away from a deletion nobody meant.
 

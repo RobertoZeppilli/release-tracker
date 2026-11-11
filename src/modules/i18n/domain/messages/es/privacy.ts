@@ -23,8 +23,6 @@ export const privacy = {
   "privacy.held.follows.why": "cuáles, y el día en que empezaste a seguir cada una",
   "privacy.held.versions.label": "versiones declaradas",
   "privacy.held.versions.why": "la versión que dices usar, y el día en que lo dijiste",
-  "privacy.held.plan.label": "plan",
-  "privacy.held.plan.why": "Free, para todas las cuentas",
   "privacy.held.notifications.label": "notificaciones",
   "privacy.held.notifications.why":
     "de qué release te avisamos, el día en que se escribió, y si la has visto",
@@ -61,7 +59,7 @@ export const privacy = {
 
   "privacy.keep.title": "cuánto tiempo, y cómo terminarlo",
   "privacy.keep.body":
-    "Todo lo de arriba se guarda mientras exista la cuenta. Borrar la cuenta en la {account} lo quita al momento: la fila de la cuenta se va, y los seguimientos, las versiones declaradas y el plan se van con ella, porque están ligados a ella y se borran con ella. No hay periodo de gracia, ni archivo nuestro, ni nada con lo que deshacerlo.",
+    "Todo lo de arriba se guarda mientras exista la cuenta. Borrar la cuenta en la {account} lo quita al momento: la fila de la cuenta se va, y los seguimientos y las versiones declaradas se van con ella, porque están ligados a ella y se borran con ella. No hay periodo de gracia, ni archivo nuestro, ni nada con lo que deshacerlo.",
   "privacy.keep.notifications":
     "Las notificaciones son la única fila con un reloj propio: cada una se borra 90 días después de haberse escrito, vista o no, y después no queda nada de ella.",
   "privacy.keep.after":

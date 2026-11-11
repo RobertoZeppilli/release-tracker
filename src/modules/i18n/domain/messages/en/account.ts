@@ -8,9 +8,7 @@ export const account = {
   "account.held.noEmail": "no email address",
   "account.held.handle": "github name",
   "account.held.none": "none",
-  "account.held.plan": "plan",
   "account.held.followed": "followed",
-  "account.held.quota": "{count} of {limit}",
   "account.held.declared": "versions declared",
   // The deletion. It says what goes, by counting what is really there, so the list cannot drift
   // from the database the way a written one would (issue #132).
@@ -27,7 +25,6 @@ export const account = {
     one: "{count} declared version in use",
     other: "{count} declared versions in use",
   },
-  "account.delete.item.plan": "the plan the account is on",
   "account.delete.item.session": "the session in this browser",
   // `{revoke}` is a gap a link is put in (`Filled`), not a word: GitHub keeps its own record of the
   // authorisation, and it is the one thing this button cannot reach.

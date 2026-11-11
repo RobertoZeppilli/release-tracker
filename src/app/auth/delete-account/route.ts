@@ -10,8 +10,8 @@ import { confirmsDeletion } from "@/modules/auth";
 // The order of the three steps is the whole of it. The session is read **first**, from the request
 // cookies, so the id that gets deleted is the one the caller is signed in as and never one a form
 // could name. The word is checked **on the server** as well as in the field, because a form can be
-// posted without the page. Only then does the service role act, and `follows` and `plans` go with
-// the user: both reference `auth.users (id) on delete cascade`, so there is nothing left to sweep.
+// posted without the page. Only then does the service role act, and `follows` goes with the user:
+// it references `auth.users (id) on delete cascade`, so there is nothing left to sweep.
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createRequestClient();
   const { data, error } = await supabase.auth.getUser();

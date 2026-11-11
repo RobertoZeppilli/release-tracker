@@ -18,9 +18,10 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-// The list below is the database, read row by row (issue #132): `auth.users` for the identity,
-// `follows` for the technologies and the declared version, `plans` for the plan. Nothing is
-// described from memory, and anything added to those tables has to be added here too.
+// The list below is the database, read row by row (issue #132): `auth.users` for the identity and
+// `follows` for the technologies and the declared version. Nothing is described from memory, and
+// anything added to those tables has to be added here too. The `plans` row left with the Plan
+// (issue #209): there is one level of service, so there is nothing about it to hold.
 // ⚠️ It is a list of **keys** and not of strings now (issue #131): the label and the reason are two
 // messages per row, so a row added here without its two keys is a build error, and a row added
 // without its Italian is a failing dictionary test rather than an English line on an Italian page.
@@ -34,7 +35,6 @@ const HELD = [
   "github",
   "follows",
   "versions",
-  "plan",
   "notifications",
   "channels",
   "sendLocale",

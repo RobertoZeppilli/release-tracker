@@ -6,7 +6,6 @@ import type { Preference } from "../domain/preferences";
 
 const SettingsRowSchema = z.object({
   preferred_locale: localeSchema,
-  external_trial_started_at: z.iso.datetime({ offset: true }).nullable(),
   // The hint and never the URL: `slack_webhook_url` is not in the read grant of `authenticated`, so
   // naming it here would fail the query rather than return a secret (#172).
   slack_webhook_hint: z.string().nullable(),
@@ -18,9 +17,6 @@ const PreferenceRowSchema = z.array(
 
 export type NotificationSettings = {
   preferredLocale: Locale;
-  // Null is "no external channel was ever switched on", which is the whole trial still in hand, and
-  // not "the trial is over": `trialOf` is what turns the two into the lines `/settings` prints.
-  externalTrialStartedAt: Date | null;
   // Where the saved webhook points, as `webhookHint` writes it, or null when there is none.
   slackHint: string | null;
   // Only the rows actually saved. Everything absent is the declared starting point, which
@@ -38,7 +34,7 @@ export async function readNotificationSettings(db: SupabaseClient): Promise<Noti
   const [settings, preferences] = await Promise.all([
     db
       .from("notification_settings")
-      .select("preferred_locale, external_trial_started_at, slack_webhook_hint")
+      .select("preferred_locale, slack_webhook_hint")
       .maybeSingle(),
     // Unpaged: RLS leaves this Developer's rows, and three events by three channels is nine at the
     // very most (issue #190).
@@ -50,7 +46,6 @@ export async function readNotificationSettings(db: SupabaseClient): Promise<Noti
   const row = settings.data === null ? null : SettingsRowSchema.parse(settings.data);
   return {
     preferredLocale: row?.preferred_locale ?? DEFAULT_LOCALE,
-    externalTrialStartedAt: row?.external_trial_started_at ? new Date(row.external_trial_started_at) : null,
     slackHint: row?.slack_webhook_hint ?? null,
     preferences: PreferenceRowSchema.parse(preferences.data),
   };

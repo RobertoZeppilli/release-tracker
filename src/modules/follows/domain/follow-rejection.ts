@@ -1,11 +1,13 @@
 // A follow is written straight from the browser, so a refusal from the database arrives in the
-// mutation as it is (issue #18). The trigger of the `follow_limits` migration raises two SQLSTATEs
-// of its own, and the interface has a remedy for each; anything else (a lost connection, a session
-// that expired) is `unknown`, where the only remedy is to try again.
-export type FollowRejection = "limit" | "retired" | "unknown";
+// mutation as it is (issue #18). The trigger of the `follow_limits` migration raises one SQLSTATE of
+// its own, 'FRTRD' for a retired Technology, and the interface has a remedy for it; anything else (a
+// lost connection, a session that expired) is `unknown`, where the only remedy is to try again.
+//
+// 'FLIMT' was the other one, the ten Technologies of the Free Plan, and it left with the Plan
+// (issue #209, ADR 0011): there is no number to hit any more.
+export type FollowRejection = "retired" | "unknown";
 
 const BY_CODE: Record<string, FollowRejection> = {
-  FLIMT: "limit",
   FRTRD: "retired",
 };
 

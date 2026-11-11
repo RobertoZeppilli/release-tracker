@@ -33,23 +33,15 @@ export const faq = {
   "faq.prompt.a":
     "Nein. Die Zusammenfassungen schreibt ein Job auf dem Server, bevor irgendwer die Seite öffnet, und dieser Job weiß nichts über Accounts. Eine Zusammenfassung ist für jeden Leser derselbe Text. Der Rest davon steht in der {privacy}.",
 
-  "faq.section.notifications": "die Benachrichtigungen, gratis und Pro",
+  "faq.section.notifications": "die Benachrichtigungen",
   "faq.notify.q": "Wann benachrichtigt mich etwas?",
   "faq.notify.a":
-    "Wenn ein featured oder notable Release einer Technologie, der du folgst, seine Zusammenfassung hat. Die Glocke in der oberen Leiste ist für immer gratis, und sie ist der bisher einzige gebaute Kanal.",
-  "faq.pro.q": "Was ist Free und was ist Pro?",
-  "faq.pro.a":
-    "Free hält alles, was die Seite ist: jede Release-Seite, jede Zusammenfassung, {limit} verfolgte Technologien und die Glocke. Pro sind die externen Kanäle der Benachrichtigungen, Slack und E-Mail, mit einer Testzeit von 30 Tagen, die beim ersten Einschalten eines der beiden beginnt und nicht am Tag der Anmeldung. Endet die Testzeit ohne Pro, gehen diese zwei aus, für alle, und die Glocke bleibt.",
+    "Wenn ein featured oder notable Release einer Technologie, der du folgst, seine Zusammenfassung hat. Die Glocke in der oberen Leiste ist der bisher einzige gebaute Kanal.",
 
   "faq.section.account": "der Account",
   "faq.scope.q": "Was verlangt die Anmeldung mit GitHub?",
   "faq.scope.a":
     "Dein öffentliches Profil und deine E-Mail-Adresse. Keinen Zugriff auf irgendein Repository, privat oder öffentlich, und in deinen GitHub-Account wird nie etwas geschrieben.",
-  // `{limit}` and not `{count}`: the number comes from the Plan and the sentence has one form, so
-  // naming it `count` would hand it to the plural rules for nothing.
-  "faq.limit.q": "Warum {limit} Technologien?",
-  "faq.limit.a":
-    "Weil das ist, was der Free-Plan hält. Das ist ein Stack und kein Katalog: das Limit ist das, was das Dashboard eine Seite bleiben lässt, die man mit einem Blick liest.",
   "faq.delete.q": "Wie lösche ich meinen Account?",
   "faq.delete.a":
     "Auf der {account}. Du tippst ein Wort zur Bestätigung, und der Account geht sofort, mit den Technologien, denen du gefolgt bist, und den Versionen, die du angegeben hast. Es gibt keine Schonfrist und nichts, womit man es zurücknimmt.",

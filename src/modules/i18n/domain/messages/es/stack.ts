@@ -1,19 +1,18 @@
 import type { MessageDictionary } from "../index";
 
 // What a Developer follows, in Spanish: the Stack column, the Catalog column beside it, the Follow
-// and its refusals, the quota, and the Version in use.
+// and its refusals, and the Version in use.
 // ⚠️ The Categories (`language`, `framework`, `build tool`, …) and the two layouts (`rows`, `grid`)
 // are **values**, not words: they are written in the address and in the stored preference, so they
 // stay as they are in every language (ADR 0008).
 export const stack = {
   "stack.title": "lo que sigues, por nombre",
   "stack.figure.followed": "seguidas",
-  "stack.figure.left": "libres en tu plan Free",
   "stack.seeDashboard": "verlas en tu dashboard",
   "stack.empty": "nada todavía. sigue algo del catálogo y aparece aquí.",
   "stack.retired.title": "retiradas, aún tuyas",
   "stack.retired.note":
-    "ya no están en el catálogo y no reciben releases nuevas. Las releases pasadas siguen consultables, siguen contando para tus {limit}, y una vez dejadas no se pueden volver a seguir.",
+    "ya no están en el catálogo y no reciben releases nuevas. Las releases pasadas siguen consultables, y una vez dejadas no se pueden volver a seguir.",
   "stack.row.lastVersion": "última {version}",
   "stack.row.gone": "dejada, para siempre",
   "stack.row.unfollow": "dejar de seguir",
@@ -25,35 +24,15 @@ export const stack = {
   "stack.followName": "Seguir {name}",
   "stack.unfollowName": "Dejar de seguir {name}",
   "stack.selectName": "Seleccionar {name}",
-  // The quota, which the Dashboard prints too: one sentence, so one key, wherever it is read.
-  "stack.quota.label": "Tecnologías seguidas",
-  "stack.quota.short": "{count} seguidas",
-  "stack.quota.followed": "{count} de {limit} seguidas",
-  "stack.quota.swap": "deja una para seguir otra",
-  "stack.limit.full":
-    "tu plan Free está lleno. deja una de las que sigues para seguir otra.",
   // What the database refused, and the way out, which is the Developer's own in all three.
-  "stack.rejected.limit":
-    "no seguida. tu plan Free se llenó en otra sesión, así que deja una para seguir otra.",
   "stack.rejected.retired":
     "no seguida · ha salido del catálogo · una tecnología retirada no se puede volver a seguir",
   "stack.rejected.failed":
     "no guardada · el cambio no llegó a la base de datos · vuelve a probar",
-  // A group Follow. The wall is named before the press and inked only once the database says so.
+  // A group Follow, said once for the group: a group has no row to carry a refusal.
   "stack.selection.count": "{count} seleccionadas",
   "stack.selection.follow": "Seguir {count}",
   "stack.selection.clear": "limpiar",
-  "stack.wall.full": {
-    one: "tu plan Free está lleno, y hay {count} seleccionada.",
-    many: "tu plan Free está lleno, y hay {count} seleccionadas.",
-    other: "tu plan Free está lleno, y hay {count} seleccionadas.",
-  },
-  "stack.wall.room": {
-    one: "tu plan Free tiene sitio para {room} más, y hay {count} seleccionada.",
-    many: "tu plan Free tiene sitio para {room} más, y hay {count} seleccionadas.",
-    other: "tu plan Free tiene sitio para {room} más, y hay {count} seleccionadas.",
-  },
-  "stack.group.limit": "ninguna seguida. {wall}",
   "stack.group.retired":
     "ninguna seguida. una de ellas ha salido del catálogo, así que quítala de la selección.",
   "stack.group.failed":

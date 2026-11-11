@@ -31,8 +31,6 @@ export const dashboard = {
   "dashboard.totals.since": "oldest version declared",
   "dashboard.barNote":
     "the bar is the distance from the version you declared, not a score",
-  "dashboard.quota.followed": "{count} of {limit} followed",
-  "dashboard.quota.swap": "unfollow one to follow another",
   "dashboard.stream.title": "what happened · last {days} days",
   // The count is a second span after the title, which is why the comma is inside the message: in
   // another language the figure may not follow the title the way it does here.
@@ -63,13 +61,19 @@ export const dashboard = {
     other: "{count} digest releases",
   },
   "dashboard.digest.noAction": "no action needed",
+  // How many are followed, read out as it changes. It used to be `{count} of {limit}`, counted
+  // against the Free Plan; there is nothing to count it against any more (issue #209).
+  "dashboard.followed": {
+    one: "{count} followed",
+    other: "{count} followed",
+  },
   "dashboard.empty.none": "you follow no technologies yet",
   "dashboard.empty.some": {
     one: "you follow {count} technology",
     other: "you follow {count} technologies",
   },
   "dashboard.empty.what":
-    "Follow the tools in your stack. This page then shows, for each one, the releases that matter from the last {days} days and whether upgrading needs action. The Free plan follows up to {limit}.",
+    "Follow the tools in your stack. This page then shows, for each one, the releases that matter from the last {days} days and whether upgrading needs action.",
   "dashboard.empty.open": "Open dashboard",
   "dashboard.empty.catalog": "in the catalog ({count})",
   "dashboard.empty.browse": {

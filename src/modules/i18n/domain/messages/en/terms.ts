@@ -1,7 +1,6 @@
 // The terms, one namespace because it is one page. Every claim here is one the code makes true
 // (issue #132), so a translation that softens one of them makes the page say something the app does
 // not do: the sentences are deliberately flat, and a language should keep them flat.
-// The follow limit is a gap and never a digit, because the Plan is what decides it.
 export const terms = {
   "terms.lede":
     "What the service is, what it holds you to, and what it does not promise. It is short because the product is small, and nothing below describes something the app does not do.",
@@ -14,9 +13,6 @@ export const terms = {
   "terms.catalog.body":
     "The catalog is chosen and maintained by us. There is no form to add a technology to it and no queue behind one: a technology enters when we can follow its releases properly, and it can be retired when we no longer can. A retired technology stays readable, and it stays yours if you were following it.",
 
-  "terms.plan.title": "the plan",
-  "terms.plan.body":
-    "There is one plan, Free. It follows up to {limit} technologies and costs nothing. The app never asks for payment details, and there is nothing to cancel.",
 
   "terms.summaries.title": "the summaries are generated, and can be wrong",
   "terms.summaries.body":

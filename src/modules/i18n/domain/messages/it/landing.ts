@@ -65,13 +65,9 @@ export const landing = {
   "landing.words.preview":
     "Una beta o una release candidate. Solo la prima preview di una major nuova viene sintetizzata, e canary, nightly e alpha qui non sono release per niente.",
 
-  "landing.close.claim": {
-    one: "Segui l'unica tecnologia che decide la tua settimana.",
-    many: "Segui le {count} tecnologie che decidono la tua settimana.",
-    other: "Segui le {count} tecnologie che decidono la tua settimana.",
-  },
-  "landing.close.plan":
-    "Il piano free segue fino a {limit} tecnologie da un catalogo curato di {size}. Si accede con GitHub, e le pagine delle release restano leggibili senza.",
+  "landing.close.claim": "Segui le tecnologie che decidono la tua settimana.",
+  "landing.close.catalog":
+    "Un catalogo curato di {size} tecnologie. Si accede con GitHub, e le pagine delle release restano leggibili senza.",
   "landing.close.browse": {
     one: "sfoglia l'unica tecnologia",
     many: "sfoglia tutte le {count} tecnologie",

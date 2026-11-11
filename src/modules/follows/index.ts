@@ -4,7 +4,6 @@ export {
   declineFor,
   type Follow,
 } from "./domain/current-version";
-export { FREE_FOLLOW_LIMIT, freeFollowsLeft } from "./domain/follow-limit";
 export {
   CATALOG_LAYOUTS,
   CATALOG_SORTS,

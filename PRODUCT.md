@@ -46,7 +46,8 @@ grounded only in the release notes.
 ## Capabilities and Constraints
 
 - Domain vocabulary is binding: see `GLOSSARY.md` (English UI names table).
-- Curated Catalog only; Free plan follows at most 10 Technologies; Pro is post-MVP.
+- Curated Catalog only, and no limit on how many Technologies are followed: there is one level of
+  service and nothing is sold (ADR 0011).
 - Summaries: title, 3–5 key points, breaking changes (what changes, how to migrate), Action
   required. Never invented when release notes lack information.
 - Summary states: pending, processing, ready, unavailable, skipped, failed.

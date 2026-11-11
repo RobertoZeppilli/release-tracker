@@ -14,8 +14,8 @@ function sourceLabel(source: Source): string {
   }
 }
 
-// `follow` arrives as an element, not as a component: the Follow belongs to the `plans` module, and
-// the Catalog has no reason to know what following is.
+// `follow` arrives as an element, not as a component: the Follow belongs to the `follows` module,
+// and the Catalog has no reason to know what following is.
 export function TechnologyHeader({
   technology,
   latest,
@@ -35,7 +35,7 @@ export function TechnologyHeader({
           first line with the Follow at its end, and the facts drop under them, because the one-line
           row of the old full-width band wrapped three times in a column this narrow (DESIGN.md,
           Technology, the split). The Follow is placed by the grid itself, in the one cell the two
-          explicit items leave free, so the `plans` module never has to know what this layout is.
+          explicit items leave free, so the `follows` module never has to know what this layout is.
           Where the two columns become one it is the row it always was, the Follow at its end. */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3 split:grid split:grid-cols-[minmax(0,1fr)_auto]">
         <h1 className="flex min-w-0 items-center gap-2 font-sans text-headline font-semibold split:col-start-1 split:row-start-1">

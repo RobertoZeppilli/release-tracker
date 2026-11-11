@@ -22,7 +22,7 @@ export const page = {
     "Qué sigue Verdict, para qué sirve una cuenta, y hasta qué punto se puede confiar en una síntesis generada.",
   "page.terms.title": "Términos del servicio",
   "page.terms.description":
-    "Qué es Verdict, qué tiene el plan gratuito, y por qué una síntesis generada muestra siempre la línea de la que se leyó.",
+    "Qué es Verdict, qué significa un catálogo curado a mano, y por qué una síntesis generada muestra siempre la línea de la que se leyó.",
   "page.privacy.title": "Privacidad",
   "page.privacy.description":
     "Todo lo que Verdict guarda de un desarrollador, quién lo toca, y por qué ningún dato personal entra nunca en un prompt.",

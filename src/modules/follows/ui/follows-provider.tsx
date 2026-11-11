@@ -8,7 +8,6 @@ import {
   declineOf,
   type Follow,
 } from "../domain/current-version";
-import { FREE_FOLLOW_LIMIT } from "../domain/follow-limit";
 import { type FollowRejection, rejectionOf } from "../domain/follow-rejection";
 import { FOLLOWS_KEY, fetchFollows, writeCurrentVersion, writeFollow, writeFollows } from "./follows-store";
 
@@ -19,7 +18,6 @@ export type Follows = {
   // Space Rule). Nobody signed in has nothing to know, so there the answer is in hand at once.
   known: boolean;
   count: number;
-  atLimit: boolean;
   isFollowing: (technologyId: string) => boolean;
   toggle: (technologyId: string) => void;
   isPending: (technologyId: string) => boolean;
@@ -119,9 +117,9 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
       client.setQueryData(FOLLOWS_KEY, [...previous, ...added]);
       return { previous };
     },
-    // The group is put back, and then the follows are read again: a group is refused exactly when
-    // the page and the database disagree about how full the Plan is, so what the page believed is
-    // the one figure it must not go on to quote (DESIGN.md, Selection Bar).
+    // The group is put back, and then the follows are read again: a refusal means the page and the
+    // database disagree about what is followed, and the cache is the half of that pair worth
+    // throwing away (DESIGN.md, Selection Bar).
     onError: (_error, _variables, context) => {
       if (context) client.setQueryData(FOLLOWS_KEY, context.previous);
       void client.invalidateQueries({ queryKey: FOLLOWS_KEY });
@@ -150,7 +148,6 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
   const value: Follows = {
     known: developerId === null || isSuccess,
     count: following.size,
-    atLimit: following.size >= FREE_FOLLOW_LIMIT,
     isFollowing: (technologyId) => following.has(technologyId),
     // Nothing is written for somebody the browser has not identified: no control that could ask for
     // it is on the page, and a write would be refused anyway.

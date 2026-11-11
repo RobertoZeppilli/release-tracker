@@ -4,7 +4,6 @@ import { AccountLink, DocumentPage, DocumentSection } from "@/components/documen
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/metadata";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
-import { FREE_FOLLOW_LIMIT } from "@/modules/plans";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslator();
@@ -39,10 +38,6 @@ export default async function TermsPage() {
 
       <DocumentSection title={t("terms.catalog.title")}>
         <p>{t("terms.catalog.body")}</p>
-      </DocumentSection>
-
-      <DocumentSection title={t("terms.plan.title")}>
-        <p>{t("terms.plan.body", { limit: FREE_FOLLOW_LIMIT })}</p>
       </DocumentSection>
 
       <DocumentSection title={t("terms.summaries.title")}>

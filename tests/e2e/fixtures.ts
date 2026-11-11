@@ -154,8 +154,9 @@ export async function seedTechnology(
 
 export type FixtureFillers = { ids: string[]; remove: () => Promise<void> };
 
-// Technologies with nothing in them, only there to fill the Free limit: the picker shows a row for
-// each, and a name of their own keeps them out of the way of a filter looking for another fixture.
+// Technologies with nothing in them, only there to give the Catalog rows to press: the picker shows
+// a row for each, and a name of their own keeps them out of the way of a filter looking for another
+// fixture.
 export async function seedFillers(count: number): Promise<FixtureFillers> {
   const db = serviceClient();
   const rows = Array.from({ length: count }, () => {
@@ -395,16 +396,6 @@ export async function countUnseen(userId: string): Promise<number> {
 // The Release a fixture's Version was given, which a Notification has to point at.
 // The Notification settings of a Developer, written and read with the service role: what `/settings`
 // saved is proved against the database and not against the page that saved it (issue #171).
-export async function setExternalTrial(userId: string, startedAt: Date | null): Promise<void> {
-  const { error } = await serviceClient()
-    .from("notification_settings")
-    .upsert(
-      { user_id: userId, external_trial_started_at: startedAt?.toISOString() ?? null },
-      { onConflict: "user_id" },
-    );
-  if (error) throw error;
-}
-
 export async function clearNotificationSettings(userId: string): Promise<void> {
   const db = serviceClient();
   const settings = await db.from("notification_settings").delete().eq("user_id", userId);

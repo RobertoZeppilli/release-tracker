@@ -16,13 +16,6 @@ import { ThemeToggle } from "./theme-toggle";
 
 const PANEL_ID = "account-panel";
 
-// The quota sits at the right of the one row the bar has, at every width. It used to come down into
-// a 40px strip below 430px, because the wordmark, the sections and the actions did not fit on one
-// line there and the bar grew a third row; with the sections out of the bar on a phone the line has
-// room to spare, and the quota reads `N followed` under 640px anyway. A quota only ever reaches a
-// page behind sign-in.
-const QUOTA = "ml-auto flex h-[56px] items-center";
-
 // A line of the panel. On a phone it is a 44px row of the full-screen sheet, with a rule under it;
 // in the panel above 640px it is the compact 24px line the bar has room for.
 const ITEM =
@@ -68,7 +61,7 @@ function ShowcaseBar() {
   );
 }
 
-type BarProps = { children: ReactNode; quota?: ReactNode; section?: NavItem };
+type BarProps = { children: ReactNode; section?: NavItem };
 
 // The account panel holds what belongs to the viewer rather than to the page: who is signed in and
 // the way out. Below 640px it holds the two destinations as well, because that is where they live on
@@ -76,7 +69,7 @@ type BarProps = { children: ReactNode; quota?: ReactNode; section?: NavItem };
 // rows are `display: none` above it, so the page never has two `dashboard` links and a screen reader
 // never meets two copies of the same navigation. The theme toggle stays in the bar: the public pages
 // are readable signed out, and a visitor has no panel to find it in.
-function AppBar({ children, quota, section }: BarProps) {
+function AppBar({ children, section }: BarProps) {
   const session = useSession();
   const t = useTranslator();
   const [open, setOpen] = useState(false);
@@ -95,20 +88,20 @@ function AppBar({ children, quota, section }: BarProps) {
     <div
       ref={account}
       onKeyDown={onKeyDown}
-      // The gap is 12px below 640px and 24px above it. With the sections gone from the line the row
-      // is the wordmark, the quota and the actions, and at 320px those three plus two 24px gaps
-      // come to within a couple of pixels of the screen: the row cannot wrap any more, so what it
-      // would do instead is overflow. 12px leaves it 25px of slack at the narrowest width measured.
+      // The gap is 12px below 640px and 24px above it. It was measured when the row still carried
+      // the quota between the wordmark and the actions, where three items plus two 24px gaps came
+      // to within a couple of pixels of a 320px screen: the row cannot wrap, so what it would do
+      // instead is overflow. The quota left with the Plan (issue #209) and the measure stays, now
+      // with more slack than the 25px it was chosen for.
       className={ROW}
     >
       <Wordmark />
       {children}
-      {quota && <span className={QUOTA}>{quota}</span>}
       {/* ⚠️ 12px between the actions below 640px and 16px above, measured: with the bell in the row
             the Dashboard at 320px in German overflowed the screen by 7px, and the group's own gaps
             are what the bar had left to give. It is the same step the row outside it already takes
             (`gap-x-3 sm:gap-x-5`). */}
-      <div className={`${ACTIONS} ${quota ? "" : "ml-auto"}`}>
+      <div className={`${ACTIONS} ml-auto`}>
         {/* No answer is offered until the session is known: a wrong state for an instant would put
             the login in front of someone already signed in. What the box does instead of waiting
             empty is wear the shape of what is coming (DESIGN.md, The Waiting Rule, the skeleton).

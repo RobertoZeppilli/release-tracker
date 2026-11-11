@@ -3,13 +3,12 @@
 import { ColumnTitle } from "@/components/column-title";
 import { useTranslator } from "@/modules/i18n/ui";
 import { HelpPointer } from "@/components/help-pointer";
-import { FREE_FOLLOW_LIMIT, freeFollowsLeft } from "../domain/follow-limit";
 import type { PickerTechnology } from "../domain/picker";
 import { useFollows } from "./follows-provider";
 import { StackRow } from "./stack-row";
 
 // DESIGN.md, Stack Column: the left half of `/technologies`, and the answer to *what is in my
-// stack*. The panel names the column and counts the quota, then the list scrolls inside itself so
+// stack*. The panel names the column and counts what is in it, then the list scrolls inside itself so
 // the panel never leaves. The sticky column sits inside a plain grid item stretched to the row's
 // height, because a sticky grid item is not clamped by its own grid area.
 export function StackColumn({
@@ -66,15 +65,16 @@ function StackPanel() {
       <h2 id="stack-title" className="mb-3 font-mono text-column-verdict text-text">
         {t("stack.title")}
       </h2>
-      {/* The figures are the announcement: a press moves a row and the focus follows it, which tells
+      {/* The figure is the announcement: a press moves a row and the focus follows it, which tells
           the eye, and this tells the ear. The Status-scale line that used to carry it is gone, and
-          its job is not (DESIGN.md, Stack Panel). */}
+          its job is not (DESIGN.md, Stack Panel).
+          One figure and not two: `left on your free plan` counted down to a wall that no longer
+          exists (issue #209), and what is followed is the only fact left to state. */}
       <dl
         aria-live="polite"
         className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 font-mono text-label leading-[1.6] text-text-faint"
       >
         <Figure label={t("stack.figure.followed")} value={count} testId="follow-status" />
-        <Figure label={t("stack.figure.left")} value={freeFollowsLeft(count)} />
       </dl>
       {/* The one hue this page may carry, and it is the system's own: the navigational `-->` and
           its `help` label, not an accent (DESIGN.md, The Severity-Only Colour Rule). The sentence
@@ -111,7 +111,7 @@ function RetiredGroup({ rows }: { rows: PickerTechnology[] }) {
         {t("stack.retired.title")}
       </ColumnTitle>
       <p className="mb-3 font-mono text-label leading-[1.6] text-text-faint">
-        {t("stack.retired.note", { limit: FREE_FOLLOW_LIMIT })}
+        {t("stack.retired.note")}
       </p>
       <ul className="border-t border-rule">
         {rows.map((technology) => (

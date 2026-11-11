@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { DEFAULT_LOCALE } from "@/modules/i18n";
-import { EXTERNAL_TRIAL_DAYS, trialOf } from "@/modules/notifications";
 import {
   generateNotifications,
   pruneNotifications,
@@ -203,13 +202,10 @@ describe("the Notification settings a Developer saves", () => {
     const settings = await readNotificationSettings(alice.client);
     expect(settings).toEqual({
       preferredLocale: DEFAULT_LOCALE,
-      externalTrialStartedAt: null,
       // No webhook saved, which is what keeps the Slack switches of #172 sending nothing.
       slackHint: null,
       preferences: [],
     });
-    // Nothing saved is the whole trial still in hand, which is the line `/settings` prints.
-    expect(trialOf(settings.externalTrialStartedAt, new Date())).toEqual({ kind: "not-started" });
   });
 
   it("holds a switch across a reload, and the job obeys it", async () => {
@@ -247,57 +243,23 @@ describe("the Notification settings a Developer saves", () => {
     expect((await readNotificationSettings(alice.client)).preferredLocale).toBe("fr");
   });
 
-  it("never starts or moves the trial by saving a language", async () => {
-    const started = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString();
-    const seeded = await serviceClient()
-      .from("notification_settings")
-      .upsert({ user_id: alice.id, external_trial_started_at: started }, { onConflict: "user_id" });
-    if (seeded.error) throw seeded.error;
-
-    await writePreferredLocale(alice.client, alice.id, "es");
-
-    const settings = await readNotificationSettings(alice.client);
-    expect(settings.externalTrialStartedAt?.getTime()).toBe(new Date(started).getTime());
-    // The day of the last day: the line still says one day left rather than none (ADR 0009).
-    expect(trialOf(settings.externalTrialStartedAt, new Date())).toEqual({ kind: "running", daysLeft: 1 });
-    expect(EXTERNAL_TRIAL_DAYS).toBe(30);
-  });
-
   // ⚠️ The audit of 2026-11-02. `grant update` here was the whole table, and the policy only asks
-  // whose row it is, so the trial could reopen itself: `trialOf` reads this column in `/settings`
-  // and the delivery job reads it again to decide whether to send. `startExternalTrial` reads before
-  // it writes, but that guard is in the application and a statement does not go through it. What a
-  // client may change beside the trial is the language, and these three are what says so.
-  it("does not let a Developer reopen their own trial, which is the gate of the external channels", async () => {
-    const started = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString();
+  // whose row it is, so a client could write any column of its own row. What it may change is the
+  // language, and the hint is the proof: it is what `/settings` prints about the Slack channel, and
+  // only the application that saved the webhook may establish it.
+  it("does not let a Developer write the Slack hint of their own row", async () => {
     const seeded = await serviceClient()
       .from("notification_settings")
-      .upsert({ user_id: alice.id, external_trial_started_at: started }, { onConflict: "user_id" });
+      .upsert({ user_id: alice.id, preferred_locale: "en" }, { onConflict: "user_id" });
     if (seeded.error) throw seeded.error;
 
-    // The thirty days starting again, from the browser, with nothing but the publishable key.
-    const reopened = await alice.client
-      .from("notification_settings")
-      .update({ external_trial_started_at: new Date().toISOString() })
-      .eq("user_id", alice.id);
-    expect(reopened.error?.code).toBe(PERMISSION_DENIED);
-
-    // And spent stays spent: null reads as "never started", which is the same trial a second time.
-    const cleared = await alice.client
-      .from("notification_settings")
-      .update({ external_trial_started_at: null })
-      .eq("user_id", alice.id);
-    expect(cleared.error?.code).toBe(PERMISSION_DENIED);
-
-    // The hint goes with it: it is what the page prints about the channel, established by the app.
     const faked = await alice.client
       .from("notification_settings")
       .update({ slack_webhook_hint: "hooks.slack.com/…9999" })
       .eq("user_id", alice.id);
     expect(faked.error?.code).toBe(PERMISSION_DENIED);
 
-    const settings = await readNotificationSettings(alice.client);
-    expect(settings.externalTrialStartedAt?.getTime()).toBe(new Date(started).getTime());
+    expect((await readNotificationSettings(alice.client)).slackHint).toBeNull();
   });
 
   it("cannot save a preference or a language for another Developer", async () => {

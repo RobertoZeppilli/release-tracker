@@ -11,7 +11,7 @@ import { createPublicClient } from "@/lib/supabase";
 import { technologyMeta } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
 import { TechnologyHeader } from "@/modules/catalog/ui";
-import { CurrentVersionField, TechnologyFollow, TechnologyScope } from "@/modules/plans/ui";
+import { CurrentVersionField, TechnologyFollow, TechnologyScope } from "@/modules/follows/ui";
 import { defaultUpgradeStart, groupByMajor, recordedHistory } from "@/modules/releases";
 import { listReleases, listStaticPages } from "@/modules/releases/server";
 import { ReleaseList, UpgradePathBlock, UpgradePathView } from "@/modules/releases/ui";
@@ -79,7 +79,7 @@ export default async function TechnologyPage({ params }: Props) {
   // part of the cached render: the Visitor who never fills the form still lands on an Upgrade Path.
   const fallback = defaultUpgradeStart(releases);
   // The first row of the Upgrade Panel, composed here for the same reason the Follow is: declaring a
-  // Version in use belongs to `plans`, and the Upgrade Path takes it as an element.
+  // Version in use belongs to `follows`, and the Upgrade Path takes it as an element.
   const declaration = (
     <CurrentVersionField technologyId={technology.id} name={technology.name} latest={grouped.latest} />
   );

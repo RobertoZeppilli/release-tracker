@@ -12,8 +12,6 @@ import {
   seedTechnology,
 } from "./fixtures";
 
-const FREE_LIMIT = 10;
-
 let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 // Its own Technology, because retiring one is not undone.
@@ -28,7 +26,7 @@ test.beforeAll(async () => {
     seedDeveloper(),
     seedTechnology([...release]),
     seedTechnology([...release]),
-    seedFillers(FREE_LIMIT),
+    seedFillers(3),
   ]);
 });
 
@@ -63,7 +61,7 @@ function retired(page: Page): Locator {
   return page.getByRole("region", { name: "retired, still yours" });
 }
 
-// The quota is counted once on this page, in the panel at the head of the left column.
+// How many are followed, counted once on this page, in the panel at the head of the left column.
 function followed(page: Page): Locator {
   return page.getByTestId("follow-status");
 }
@@ -271,56 +269,29 @@ test("the ordering and the layout are remembered, and stay out of the address", 
   await expect(group(page, "latest release first")).toBeVisible();
 });
 
-test("at ten of ten the other toggles are blocked, still reachable, and say why", async ({ page }) => {
-  await addFollows(developer.id, fillers.ids);
-  await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(String(FREE_LIMIT));
-
-  const note = page.locator("#limit-note");
-  await expect(note).toBeVisible();
-  await expect(note).toContainText("let one go in what you follow to follow another");
-  // It names the wall and does not recount it: the figure is in the panel across the split.
-  await expect(note).not.toContainText(/\d/);
-  // Nothing about a paid Plan: the remedy is in the Developer's hands.
-  await expect(note).not.toContainText(/pro/i);
-
-  const blocked = toggle(page, "Follow");
-  await expect(blocked).toHaveAttribute("aria-disabled", "true");
-  await expect(blocked).toHaveAttribute("aria-describedby", /limit-note/);
-  // Blocked, not disabled: the keyboard still gets there and the note is read with it.
-  await blocked.focus();
-  await expect(blocked).toBeFocused();
-  // `force` because Playwright refuses to click an `aria-disabled` button, which is the point.
-  await blocked.click({ force: true });
-  await expect(blocked).toHaveAttribute("aria-pressed", "false");
-  await expect(followed(page)).toHaveText(String(FREE_LIMIT));
-
-  // Room again: the note goes with the block, and the way out of a follow is in the stack.
-  await stack(page).getByRole("button", { name: /^Unfollow / }).first().click();
-  await expect(followed(page)).toHaveText(String(FREE_LIMIT - 1));
-  await expect(note).toBeHidden();
-  await expect(blocked).not.toHaveAttribute("aria-disabled", "true");
-});
-
 test("a follow the database refuses puts the row back and says what to do", async ({ page }) => {
-  await addFollows(developer.id, fillers.ids.slice(0, FREE_LIMIT - 1));
+  // Its own Technology, because retiring one is not undone. It leaves the Catalog after the page is
+  // painted, so the page still offers the Follow that the database then refuses: the ten of the Free
+  // Plan were the other refusal, and they left with the Plan (issue #209).
+  const going = await seedTechnology([]);
   await page.goto("/technologies");
-  await expect(followed(page)).toHaveText(String(FREE_LIMIT - 1));
+  const follow = page.getByRole("button", { name: `Follow ${going.name}`, exact: true });
+  await expect(follow).toBeVisible();
 
-  // The tenth arrives from another session, so this page still believes there is room.
-  await addFollows(developer.id, fillers.ids.slice(FREE_LIMIT - 1));
-  await toggle(page, "Follow").click();
+  await retireTechnology(going.id);
+  await follow.click();
 
-  const error = page.locator(`#err-${technology.slug}`);
+  const error = page.locator(`#err-${going.slug}`);
   await expect(error).toBeVisible();
   await expect(error).toContainText("not followed");
-  await expect(error).toContainText("let one go to follow another");
+  await expect(error).toContainText("has left the catalog");
   await expect(error).not.toContainText(/pro/i);
 
-  const back = toggle(page, "Follow");
+  const back = page.getByRole("button", { name: `Follow ${going.name}`, exact: true });
   await expect(back).toHaveAttribute("aria-pressed", "false");
-  await expect(back).toHaveAttribute("aria-describedby", new RegExp(`err-${technology.slug}`));
-  await expect(followed(page)).toHaveText(String(FREE_LIMIT - 1));
+  await expect(back).toHaveAttribute("aria-describedby", new RegExp(`err-${going.slug}`));
+  await expect(followed(page)).toHaveText("0");
+  await going.remove();
 });
 
 test("a retired Technology closes the stack, can only be let go, and the row says so", async ({ page }) => {
@@ -329,7 +300,7 @@ test("a retired Technology closes the stack, can only be let go, and the row say
   await page.goto("/technologies");
 
   // It is in the left column, because being followed is the only reason it is shown at all.
-  await expect(retired(page)).toContainText(`they still count toward your ${FREE_LIMIT}`);
+  await expect(retired(page)).toContainText("no longer in the catalog and getting no new releases");
   const row = retired(page).getByRole("listitem").filter({ hasText: leaving.name });
   await expect(row).toContainText("last");
 
