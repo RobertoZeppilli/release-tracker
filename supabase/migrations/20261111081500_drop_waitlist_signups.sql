@@ -1,0 +1,11 @@
+-- The Waitlist is gone (issue #219, ADR 0011). It was created on 2026-11-09 for a launch that was
+-- going to sell something, and the day after that Verdict became open source: there is nothing to
+-- wait for and nobody to keep out.
+--
+-- ⚠️ The table was empty when it was dropped, checked by the user before this migration was written.
+-- Had it held a single address, that address would have been a person who asked to be told, and what
+-- to tell them is not something a migration decides.
+--
+-- The code that wrote here is already gone: this migration is applied after the deploy that removed
+-- it, so nothing in production inserts into a table that no longer exists.
+drop table public.waitlist_signups;
