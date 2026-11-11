@@ -14,8 +14,14 @@ name: Cletus
 on:
   workflow_dispatch:
     inputs:
+      modo:
+        description: "handoff = leggi docs/HANDOFF.md e continua. issue = prendi dalla coda."
+        required: false
+        default: handoff
+        type: choice
+        options: [handoff, issue]
       issue:
-        description: "Numero della issue. Vuoto = scegli tu da quale partire."
+        description: "Numero della issue. Solo in modo issue; vuoto = scegli tu."
         required: false
         type: string
       nota:
@@ -80,18 +86,34 @@ jobs:
             CLAUDE.md, e docs/agents/ per sapere dove stanno le issue.
 
             Repo: ${{ github.repository }}
+            Modo di questo giro: ${{ github.event_name == 'issues' && 'issue' || inputs.modo }}
             Issue indicata: ${{ inputs.issue }}${{ github.event.issue.number }}
             Nota di Roberto: ${{ inputs.nota }}
 
-            Se la issue indicata e' vuota, scegli tu da quale partire tra quelle aperte con
-            etichetta ready-for-agent. Preferisci quella che non ha blocchi aperti, tocca meno
-            file e sblocca piu' lavoro a valle. Appena scelta, scrivi un commento sulla issue
-            che dice in tre righe: quale hai scelto, perche' lei e non le altre, e quali
-            verrebbero dopo. Poi lavoraci.
+            Segui la sezione del modo di questo giro e ignora l'altra.
 
-            Una issue sola, fino in fondo. Branch, test prima del codice dove c'e' logica,
-            esegui test e build, auto-review del diff, e apri la pull request con l'output dei
-            test incollato, le decisioni prese e quello che hai lasciato fuori.
+            MODO handoff
+            E' il modo normale, quello che Roberto usa da riga di comando. Leggi
+            docs/HANDOFF.md e capisci da solo qual e' il passo successivo: il file dice dove
+            si era arrivati e qual e' la prossima mossa. Non chiedere quale task fare, il file
+            e' la risposta. Scrivi il passo che hai scelto in una issue nuova o in un commento
+            su quella pertinente, in tre righe: cosa fai, perche' e' il prossimo, e cosa viene
+            dopo. Poi fallo. Se docs/HANDOFF.md non esiste o e' muto sul prossimo passo,
+            passa al modo issue e dillo nel messaggio finale. Se il passo successivo e' una
+            decisione che spetta a Roberto, non prenderla: scrivi la domanda e fermati.
+
+            MODO issue
+            Lavori sulla issue indicata. Se e' vuota, scegli tu tra quelle aperte con etichetta
+            ready-for-agent: preferisci quella che non ha blocchi aperti, tocca meno file e
+            sblocca piu' lavoro a valle. Appena scelta, scrivi un commento sulla issue che dice
+            in tre righe quale hai scelto, perche' lei e non le altre, e quali verrebbero dopo.
+
+            In entrambi i modi: una cosa sola, fino in fondo. Branch, test prima del codice dove
+            c'e' logica, esegui test e build, auto-review del diff, e apri la pull request con
+            l'output dei test incollato, le decisioni prese e quello che hai lasciato fuori.
+            Alla fine aggiorna docs/HANDOFF.md: dove sei arrivato, qual e' la prossima mossa, e
+            cosa hai scoperto che non sta nel codice. E' il file da cui ripartira' il prossimo
+            giro, quindi se lo lasci vecchio hai rotto il flusso per te stesso.
 
             Non fare merge. Non fare deploy. Non toccare segreti. Non cancellare niente. Se la
             issue e' ambigua, non indovinare: scrivi la domanda precisa come commento, apri la
