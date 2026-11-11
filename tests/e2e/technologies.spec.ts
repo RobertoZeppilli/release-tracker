@@ -361,8 +361,10 @@ test("a filtered address that matches nothing says so, like typing it does", asy
 test("the filter answers to `/`, and leaves the key alone to whoever is typing", async ({ page }) => {
   await page.goto("/technologies");
   const field = filter(page);
-  // The `h1` is `sr-only`, so somewhere else on the page is the panel: static text, nothing to press.
-  const elsewhere = page.getByText("left on your free plan");
+  // The `h1` is `sr-only`, so somewhere else on the page is the panel: static text, nothing to
+  // press. It was the panel's second figure until the Free Plan left (issue #209), so now it is
+  // the title the panel opens with.
+  const elsewhere = page.getByText("what you follow, by name");
   await expect(field).toHaveAttribute("aria-keyshortcuts", "/");
 
   // From anywhere on the page, the key lands in the field and nothing is typed into it.

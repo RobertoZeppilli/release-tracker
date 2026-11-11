@@ -105,7 +105,6 @@ test("says what needs action and shows the breaking changes", async ({ page }) =
   await expect(standingRow(page, breaking.name)).toContainText("1 needs action");
   await expect(page.getByText("action required · 1 breaking change")).toBeVisible();
   await expect(page.getByText("The default export is gone")).toBeVisible();
-  await expect(page.getByLabel("Followed technologies", { exact: true })).toContainText("1");
 });
 
 test("says nothing needs action when every featured Release is safe", async ({ page }) => {
@@ -194,14 +193,15 @@ test("offers the Catalog when the Developer follows nothing, and follows from th
   await page.goto("/dashboard");
 
   await expect(page.getByText("you follow no technologies yet")).toBeVisible();
-  await expect(page.getByLabel("Followed technologies", { exact: true })).toContainText("0");
+  // The count is in the empty page's own prose now: the bar gave its own up with the Plan (#209).
+  await expect(page.getByText("0 followed")).toBeVisible();
   // DESIGN.md, Empty State: the split arrives with the first follow, and the way on with it.
   await expect(page.getByRole("button", { name: "Open dashboard" })).toHaveCount(0);
 
   // Whichever Technology the shortlist happens to open with: the point is that following works
   // here exactly as it does on /technologies, and that the page then has a stack to show.
   await page.getByRole("button", { name: /^Follow / }).first().click();
-  await expect(page.getByLabel("Followed technologies", { exact: true })).toContainText("1");
+  await expect(page.getByText("1 followed")).toBeVisible();
 
   await page.getByRole("button", { name: "Open dashboard" }).click();
   await expect(page.getByText("you follow no technologies yet")).toBeHidden();

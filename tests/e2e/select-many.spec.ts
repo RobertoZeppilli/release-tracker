@@ -96,7 +96,7 @@ test.describe("following several Technologies at once", () => {
     }).toPass();
   });
 
-  test("a group the plan has room for is followed in one press", async ({ page }) => {
+  test("a group is followed in one press, and the selection empties with it", async ({ page }) => {
     await open(page);
     await selectMany(page).click();
     await mark(page, one).click();

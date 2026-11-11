@@ -81,7 +81,9 @@ test.describe("the account page", () => {
 
     await expect(page.getByRole("heading", { name: "Account", level: 1 })).toBeVisible();
     await expect(page.getByText(developer.email)).toBeVisible();
-    await expect(page.getByText("1 of 10")).toBeVisible();
+    // The row is the count alone: the Free Plan it used to be read against is gone (issue #209),
+    // so what the page holds is `followed 1`, by its own label and not by a quota.
+    await expect(page.locator("dl div").filter({ hasText: "followed" })).toContainText("1");
     // The list of what goes names the same two numbers the page read above it.
     await expect(page.getByText("1 followed technology")).toBeVisible();
     await expect(page.getByText("1 declared version in use")).toBeVisible();
