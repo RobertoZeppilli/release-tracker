@@ -5,6 +5,7 @@ import { PageBreadcrumb, technologiesCrumb } from "@/components/breadcrumb";
 import { ColumnTitle } from "@/components/column-title";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
+import { STATIC_SITE } from "@/lib/static-site";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { createPublicClient } from "@/lib/supabase";
 import { technologyMeta } from "@/modules/catalog";
@@ -12,7 +13,7 @@ import { getTechnology } from "@/modules/catalog/server";
 import { TechnologyHeader } from "@/modules/catalog/ui";
 import { CurrentVersionField, TechnologyFollow, TechnologyScope } from "@/modules/plans/ui";
 import { defaultUpgradeStart, groupByMajor, recordedHistory } from "@/modules/releases";
-import { listReleases } from "@/modules/releases/server";
+import { listReleases, listStaticPages } from "@/modules/releases/server";
 import { ReleaseList, UpgradePathBlock, UpgradePathView } from "@/modules/releases/ui";
 
 // ISR with no expiry: no page is built ahead (the build has no database), each is rendered on its
@@ -29,8 +30,12 @@ export const revalidate = false;
 const SPLIT =
   "grid max-w-content items-start gap-7 split:grid-cols-[minmax(0,360px)_minmax(0,1fr)] split:gap-8";
 
-export function generateStaticParams(): { slug: string }[] {
-  return [];
+// Nothing is built ahead in the app with the server, for the reason above. The showcase build is the
+// other half of that sentence: it has no server to render a page on first visit, so it enumerates
+// every Technology and writes the page out (issue #215).
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  if (!STATIC_SITE) return [];
+  return (await listStaticPages(createPublicClient())).technologies;
 }
 
 type Props = { params: Promise<{ slug: string }> };

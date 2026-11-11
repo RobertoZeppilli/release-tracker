@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Filled, LocaleLink as Link } from "@/modules/i18n/ui";
-import { DocumentPage, DocumentSection } from "@/components/document-page";
+import { AccountLink, DocumentPage, DocumentSection } from "@/components/document-page";
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/metadata";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
@@ -51,9 +51,7 @@ export default async function ContactPage() {
             text={t("contact.noNeed.delete.body")}
             nodes={{
               account: (
-                <Link href="/account" className="text-link">
-                  {t("doc.link.account")}
-                </Link>
+                <AccountLink label={t("doc.link.account")} />
               ),
             }}
           />

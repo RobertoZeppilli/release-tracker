@@ -52,7 +52,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Applies every migration from scratch; services the tests do not use are skipped.
-      - run: pnpm exec supabase start -x studio,postgres-meta,imgproxy
+      - run: pnpm exec supabase start -x studio,postgres-meta,imgproxy,inbucket
       - run: pnpm test:integration
       # The app is built and tested end to end against the local stack, with the real Catalog synced.
       - name: Point the app at local Supabase

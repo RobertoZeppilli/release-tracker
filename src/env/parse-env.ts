@@ -13,6 +13,13 @@ const EnvSchema = z.object({
     (value) => (value === "" ? undefined : value),
     z.string().min(1).optional(),
   ),
+  // `1` while the public showcase is being built (issue #215), unset for the app with the server.
+  // Declared here because every variable is declared here; it is read from `src/lib/static-site.ts`
+  // instead of from `env`, and that file says why.
+  NEXT_PUBLIC_STATIC_SITE: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.literal("1").optional(),
+  ),
 });
 
 // Server-only: never read these from a module that can reach the client bundle.

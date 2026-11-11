@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useTranslator } from "@/modules/i18n/ui";
+import { STATIC_SITE } from "@/lib/static-site";
 import { loginPath } from "@/modules/auth";
 import { useSession } from "@/modules/auth/ui";
 import { SkeletonBox } from "@/components/waiting";
@@ -28,7 +29,18 @@ const RESERVED = `${PLACE} h-[34px] w-[95px] rounded-md`;
 // Toggle, limit and refusal included, because both come from the same provider, which the page's
 // `TechnologyScope` holds. Nothing shows until the session is known, rather than a Follow that might
 // be wrong.
-export function TechnologyFollow({ technologyId, name, retired }: { technologyId: string; name: string; retired: boolean }) {
+type Props = { technologyId: string; name: string; retired: boolean };
+
+// ⚠️ The showcase has no Follow at all: it has no account to hold one, and the login this would
+// offer a Visitor does not exist on a site that is only files (issue #215, ADR 0011). `STATIC_SITE`
+// is a build constant, so what is dropped is dropped before the browser sees it, and the control
+// below keeps its hooks unconditional.
+export function TechnologyFollow(props: Props) {
+  if (STATIC_SITE) return null;
+  return <SessionFollow {...props} />;
+}
+
+function SessionFollow({ technologyId, name, retired }: Props) {
   const t = useTranslator();
   const session = useSession();
   const pathname = usePathname();

@@ -1,6 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["fra1"],
+  "framework": null,
+  "buildCommand": "pnpm build:static",
+  "outputDirectory": "out",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
-  "crons": [{ "path": "/api/jobs/detection", "schedule": "0 2 * * *" }]
+  "redirects": [
+    { "source": "/en", "destination": "/", "permanent": true },
+    { "source": "/en/:path*", "destination": "/:path*", "permanent": true }
+  ]
 }

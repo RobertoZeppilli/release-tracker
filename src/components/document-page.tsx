@@ -1,6 +1,21 @@
 import type { ReactNode } from "react";
+import { STATIC_SITE } from "@/lib/static-site";
 import { getTranslator } from "@/modules/i18n/server";
+import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { SiteHeader } from "./site-header";
+
+// The account page, named in a sentence by all five documents, and the one link of theirs that the
+// showcase cannot carry: the page is the app's and is not exported, so a reader clicking it would
+// get a 404 (issue #215). The sentence stays as it is and the name stops being a link. What rewrites
+// these documents is #210, where the account stops existing at all.
+export function AccountLink({ label }: { label: string }) {
+  if (STATIC_SITE) return label;
+  return (
+    <Link href="/account" className="text-link">
+      {label}
+    </Link>
+  );
+}
 
 // The five pages that say what the product is (terms, privacy, attributions, faq, contact) share
 // one shape, so they share one component: the same container the rest of the app uses, the

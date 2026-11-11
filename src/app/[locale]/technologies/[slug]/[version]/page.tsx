@@ -6,6 +6,7 @@ import { PageBreadcrumb, technologiesCrumb } from "@/components/breadcrumb";
 import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { pageMetadata } from "@/lib/metadata";
+import { STATIC_SITE } from "@/lib/static-site";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { createPublicClient } from "@/lib/supabase";
 import type { Translator } from "@/modules/i18n";
@@ -13,7 +14,7 @@ import { githubRepo, type StoredTechnology } from "@/modules/catalog";
 import { getTechnology } from "@/modules/catalog/server";
 import { RetiredNote } from "@/modules/catalog/ui";
 import { noteLines, releaseMeta, releasePath, versionFromPath } from "@/modules/releases";
-import { getRelease } from "@/modules/releases/server";
+import { getRelease, listStaticPages } from "@/modules/releases/server";
 import { type ExternalSource, OriginalLanguageNote, ReleaseHeader, ReleaseNotesSource, SummaryStatusBlock } from "@/modules/releases/ui";
 import { CitationProvider, SummaryView } from "@/modules/summaries/ui";
 
@@ -22,8 +23,13 @@ import { CitationProvider, SummaryView } from "@/modules/summaries/ui";
 // expiry rewrote every crawled page up to 24 times a day, and the cache holds thousands of them.
 export const revalidate = false;
 
-export function generateStaticParams(): { slug: string; version: string }[] {
-  return [];
+// As on the Technology page: nothing ahead in the app with the server, every recorded Release in the
+// showcase build, which has no server to render one on first visit (issue #215). The Version is
+// returned as it is stored, which is also the segment `releasePath` writes: `encodeURIComponent` of
+// a Version is the Version itself, and `versionFromPath` decodes the segment the router hands back.
+export async function generateStaticParams(): Promise<{ slug: string; version: string }[]> {
+  if (!STATIC_SITE) return [];
+  return (await listStaticPages(createPublicClient())).releases;
 }
 
 type Props = { params: Promise<{ slug: string; version: string }> };

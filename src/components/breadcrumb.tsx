@@ -1,3 +1,4 @@
+import { STATIC_SITE } from "@/lib/static-site";
 import type { Translator } from "@/modules/i18n";
 import { getTranslator } from "@/modules/i18n/server";
 import { LocaleLink as Link } from "@/modules/i18n/ui";
@@ -10,8 +11,12 @@ export type PathItem = string | { label: string; href: string };
 // It takes `t` instead of holding a key, so the breadcrumb itself stays what it was: the other steps
 // are slugs and versions, which are names and are never translated, and a component that translated
 // some of its items and not others would have to be told which (ADR 0008).
-export function technologiesCrumb(t: Translator): { label: string; href: string } {
-  return { label: t("shell.nav.technologies"), href: "/technologies" };
+// ⚠️ On the showcase it is a step and not a link: the Catalog is behind sign-in, so it is not one of
+// the exported pages, and the link would be a 404 on the Technology and Release page of every
+// Technology (issue #215). What the step says, where the page sits, it still says.
+export function technologiesCrumb(t: Translator): PathItem {
+  const label = t("shell.nav.technologies");
+  return STATIC_SITE ? label : { label, href: "/technologies" };
 }
 
 // Where the page sits, at the top of the page it describes. It used to share the top bar's slot with

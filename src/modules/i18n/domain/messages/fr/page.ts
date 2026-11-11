@@ -44,6 +44,8 @@ export const page = {
   "page.notFound.claim": "aucune page à cette adresse",
   "page.notFound.body":
     "Rien ne s’est mal passé. Cette adresse ne nomme aucune technologie du catalogue, ou nomme une version sans release propre : le catalogue est tenu à la main, et une release a une page dès qu’elle est détectée.",
+  // The way out of a 404 on the showcase, where the catalog is not a page (issue #215).
+  "page.notFound.home": "retour à la page d'accueil",
   "page.browseCatalog": "parcourir le catalogue",
   "page.error.claim": "cette page n’a pas pu être chargée",
   "page.error.body":
