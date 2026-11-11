@@ -18,6 +18,7 @@ cosa era stata decisa.
 
 ### Novembre 2026 (`docs/handoff/2026-11.md`)
 
+- Il trentaduesimo giro: la vetrina statica, e la produzione senza server, 2026-11-11
 - Il trentunesimo giro: la #219 fatta, e il repository che ha cambiato nome, 2026-11-10/11
   - La lista d'attesa smontata dal codice (PR #223) e la tabella cancellata (PR #224)
   - ⚠️ `gh repo rename`: il vecchio indirizzo risponde 301, Vercel non ha perso l'aggancio
