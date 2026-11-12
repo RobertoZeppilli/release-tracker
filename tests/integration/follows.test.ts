@@ -139,9 +139,9 @@ describe("a group of follows in one statement", () => {
   });
 });
 
-// There is one level of service, so there is no number of Technologies a Developer may not pass
-// (issue #209, ADR 0011). Eleven is the proof, because ten was the wall: the Free Plan refused the
-// eleventh with 'FLIMT' until the trigger lost that half of its body.
+// One level of service, so nothing counts how many Technologies a Developer follows (issue #209,
+// ADR 0011). Eleven is the proof, because ten was the wall: the Free Plan refused the eleventh with
+// 'FLIMT' until the trigger lost that half of its body.
 describe("more than ten follows", () => {
   let catalog: Catalog;
   let frank: Developer;
