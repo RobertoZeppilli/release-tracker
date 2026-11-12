@@ -92,8 +92,9 @@ messi in `.gitignore` perché non tornino.
    non sono regressioni: l'`integration` dopo un `catalog:sync`, e gli e2e della sitemap senza
    buttare `.next`. Il perché e l'ordine giusto stanno in `AMBIENTE.md`, spostati lì da questo giro.
 4. **Due cose per la #214**, che è quella che pubblica: ⚠️ `package.json` dice ancora
-   `"name": "release-tracker"`, e ⚠️ **il runner ha Node 22, dove `node:sqlite` c'è ma stampa
-   `ExperimentalWarning`** mentre la #211 dice Node 24 — tutto gira, ma nessun `engines` lo impone.
-   **La #185** resta valida, col suo testo ancora da correggere.
+   `"name": "release-tracker"`, e ⚠️ **non ha nessun `engines`**. La CI si salva da sé perché
+   `ci.yml` fissa `node-version: 24`, ma `node:sqlite` su Node 22 gira stampando
+   `ExperimentalWarning`, e chi installa l'app non legge `ci.yml`. **La #185** resta valida, col suo
+   testo ancora da correggere.
 5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ In produzione il Rilevamento è
    fermo dalla #215. ⚠️ **Credito basso: non spendere senza chiedere.**
