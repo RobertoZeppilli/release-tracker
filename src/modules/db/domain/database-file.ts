@@ -6,7 +6,10 @@ export type DatabaseLocation = {
   platform: NodeJS.Platform;
   home: string;
   env: Partial<Record<string, string>>;
-  /** Only read to resolve a relative `VERDICT_DATA_DIR`; defaults to the root of the volume. */
+  /**
+   * Only read to resolve a relative `VERDICT_DATA_DIR`. Left out, a relative one comes back
+   * relative, for whoever calls to resolve: `defaultDatabaseFile` always passes it.
+   */
   cwd?: string;
 };
 

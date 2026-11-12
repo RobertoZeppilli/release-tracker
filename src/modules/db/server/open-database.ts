@@ -7,7 +7,7 @@ import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 
 import { databaseFile } from "../domain/database-file";
-import { planMigrations } from "../domain/plan-migrations";
+import { MigrationOrderError, planMigrations } from "../domain/plan-migrations";
 
 export type Database = DatabaseSync;
 
@@ -59,33 +59,49 @@ function migrate(database: Database, directory: string): void {
   );
 
   const available = readdirSync(directory).filter((name) => name.endsWith(".sql"));
-  const applied = database
-    .prepare("select name from schema_migrations")
-    .all()
-    .map((row) => String(row.name));
 
-  for (const name of planMigrations(available, applied)) {
-    const statements = readFileSync(join(directory, name), "utf8");
-    // One transaction per migration, so a file that fails half way leaves the schema where it was
-    // and the next start tries the same file again instead of a database nobody can name a version
-    // for. ⚠️ `exec` cannot run inside a prepared statement, hence the explicit begin/commit.
-    database.exec("begin");
-    try {
-      database.exec(statements);
-      database
-        .prepare("insert into schema_migrations (name, applied_at) values (?, ?)")
-        .run(name, new Date().toISOString());
-      database.exec("commit");
-    } catch (error) {
-      // A full disk, an I/O error or a lost lock roll the transaction back by themselves, and then
-      // `rollback` throws "no transaction is active" -- which would replace the sentence that says
-      // what actually went wrong with one about bookkeeping. The schema is already where it was.
-      try {
-        database.exec("rollback");
-      } catch {}
-      throw new Error(`migration ${name} failed: ${error instanceof Error ? error.message : String(error)}`, {
-        cause: error,
-      });
+  // ⚠️ `immediate`, and the version table read **inside** it. Two processes start on this file at
+  // once -- `next dev` and a job run with `tsx` is the ordinary case -- and a plain `begin` takes a
+  // read snapshot: both read an empty `schema_migrations`, both decide to apply the same file, and
+  // the second one dies either on `table technologies already exists` or on `database is locked`,
+  // which `busy_timeout` cannot save because a snapshot cannot be upgraded to a write. `immediate`
+  // asks for the write lock at `begin`, so the second process waits there and then reads a version
+  // table that already says what the first one did.
+  //
+  // One transaction for the whole run, not one per file: a failure half way leaves the schema where
+  // it was, which is what the next start needs to try again, and whether that start re-runs one
+  // file or four changes nothing it can see. ⚠️ `exec` cannot run inside a prepared statement,
+  // hence the explicit begin/commit.
+  database.exec("begin immediate");
+  let running: string | undefined;
+  try {
+    const applied = database
+      .prepare("select name from schema_migrations")
+      .all()
+      .map((row) => String(row.name));
+    const insert = database.prepare("insert into schema_migrations (name, applied_at) values (?, ?)");
+
+    for (const name of planMigrations(available, applied)) {
+      running = name;
+      database.exec(readFileSync(join(directory, name), "utf8"));
+      insert.run(name, new Date().toISOString());
     }
+    database.exec("commit");
+  } catch (error) {
+    // A full disk, an I/O error or a lost lock roll the transaction back by themselves, and then
+    // `rollback` throws "no transaction is active" -- which would replace the sentence that says
+    // what actually went wrong with one about bookkeeping. The schema is already where it was.
+    try {
+      database.exec("rollback");
+    } catch {
+      // Nothing to undo: see above.
+    }
+    // This one already says what is wrong and what to do about it, and it is not a file that
+    // failed: wrapping it would bury the only sentence worth reading.
+    if (error instanceof MigrationOrderError) throw error;
+    const where = running === undefined ? "the data file" : `migration ${running}`;
+    throw new Error(`${where} failed: ${error instanceof Error ? error.message : String(error)}`, {
+      cause: error,
+    });
   }
 }

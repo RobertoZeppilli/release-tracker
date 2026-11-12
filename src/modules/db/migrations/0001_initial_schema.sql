@@ -13,12 +13,13 @@
 --   * Row level security, policies, grants and the `anon`/`authenticated`/`service_role` roles. They
 --     answered "whose row is this" and "may this client touch it". An installed copy belongs to one
 --     person and talks to a file, so neither question has a second answer (issue #210, ADR 0011).
---   * `enforce_current_version`, the trigger that validated the Version in use. It needs to parse a
---     SemVer and compare it with the latest stable Release, and SQLite has neither the regex nor the
---     array comparison Postgres did it with. ⚠️ **That rule now has no home**: it moves into the
---     write function for `follows`, with the rest of the layer that replaces `supabase-js`, and
---     until it does a Version in use is only checked by the interface. The two columns keep the one
---     constraint SQLite can state, that they are true or null together.
+--   * `enforce_current_version`, the trigger that validated the Version in use, and `is_semver`
+--     under it. It needs to parse a SemVer and compare it with the latest stable Release, and SQLite
+--     has neither the regex nor the array comparison Postgres did it with. ⚠️ **That rule now has
+--     no home**: it moves into the write function for `follows`, with the rest of the layer that
+--     replaces `supabase-js`, and until it does nothing checks that a Version in use is not newer
+--     than the latest stable Release. The two columns keep the two constraints SQLite can state:
+--     true or null together, and the shape `glob` can describe.
 --   * `claim_pending_summaries`, which took each pending Summary exactly once under `skip locked`.
 --     One process writes this file, so the fence it provided is the write lock SQLite already takes.
 --
@@ -138,6 +139,12 @@ create table follows (
   -- rule are not checked here; see the note at the top of this file.
   current_version text,
   current_version_declared_at text,
+  -- ⚠️ **Looser than `is_semver` was**, which was a regex: SQLite has `glob` and nothing else, so
+  -- this states the shape -- three parts, each starting with a digit -- and says nothing about
+  -- leading zeros or what a prerelease may hold. It still refuses `not-a-version` and `1.x`, which
+  -- is what a constraint is here for; the whole rule goes in the write function with the rest.
+  constraint follows_current_version_shape
+    check (current_version is null or current_version glob '[0-9]*.[0-9]*.[0-9]*'),
   constraint follows_current_version_declared_at
     check ((current_version is null) = (current_version_declared_at is null))
 );
@@ -147,6 +154,18 @@ create table follows (
 -- what remains is the retired Technology. 'FRTRD' is the code the interface already reads.
 create trigger follows_refuse_retired
 before insert on follows
+for each row
+when (select retired from technologies where id = new.technology_id)
+begin
+  select raise(abort, 'FRTRD: a retired Technology cannot be followed');
+end;
+
+-- ⚠️ The same rule on the way in through the side door. In Postgres the update was guarded by a
+-- grant on one column (`grant update (current_version)`), whose comment said exactly why: a wider
+-- grant would let an update move `technology_id` and walk past a trigger that only watches inserts.
+-- SQLite has no grants, so the trigger has to watch the update itself.
+create trigger follows_refuse_retired_on_update
+before update of technology_id on follows
 for each row
 when (select retired from technologies where id = new.technology_id)
 begin

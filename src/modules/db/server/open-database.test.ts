@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 
+import { MigrationOrderError } from "../domain/plan-migrations";
 import { type Database, openDatabase } from "./open-database";
 
 let directory: string;
@@ -96,13 +97,34 @@ describe("openDatabase", () => {
 
     expect(() => open(migrations)).toThrow(/0002_broken\.sql/);
 
+    // Nothing at all was applied: one transaction covers the run, so the good file went back with
+    // the broken one and the next start has a clean slate to try again from.
+    const none = join(directory, "none");
+    mkdirSync(none);
+    const after = openDatabase({ file, migrations: none });
+    expect(tableNames(after)).toEqual(["schema_migrations"]);
+    after.close();
+
     rmSync(join(migrations, "0002_broken.sql"));
     const database = open(migrations);
     expect(tableNames(database)).toContain("fine");
-    // The table the broken file created before its error went back with the transaction.
     expect(tableNames(database)).not.toContain("half");
     expect(applied(database)).toEqual(["0001_fine.sql"]);
     database.close();
+  });
+
+  // `planMigrations` is the only thing that can tell the reader to go and install another build, so
+  // its sentence has to come out whole instead of inside one about a file that failed.
+  it("hands the migration-order error on as it is", () => {
+    const migrations = join(directory, "migrations");
+    mkdirSync(migrations);
+    writeFileSync(join(migrations, "0001_fine.sql"), "create table fine (a text);");
+    const first = open(migrations);
+    first.prepare("insert into schema_migrations values ('0002_from_the_future.sql', '')").run();
+    first.close();
+
+    expect(() => open(migrations)).toThrow(MigrationOrderError);
+    expect(() => open(migrations)).toThrow(/0002_from_the_future\.sql/);
   });
 });
 
@@ -167,12 +189,42 @@ describe("the schema of the first migration", () => {
     database.close();
   });
 
+  // The grant on one column that stopped this in Postgres has no equivalent here, so the trigger
+  // has to watch the update as well as the insert.
+  it("refuses to move a follow onto a retired Technology", () => {
+    const database = open();
+    seedRelease(database);
+    database
+      .prepare(
+        "insert into technologies (id, slug, name, classification_strategy, category, retired) values (?, ?, ?, ?, ?, 1)",
+      )
+      .run("gone", "bower", "Bower", "semver", "build tool");
+    database.prepare("insert into follows (technology_id) values ('t1')").run();
+
+    expect(() => database.prepare("update follows set technology_id = 'gone'").run()).toThrow(/FRTRD/);
+    database.close();
+  });
+
   it("keeps the Version in use and the day it was declared true or null together", () => {
     const database = open();
     seedRelease(database);
     expect(() =>
       database.prepare("insert into follows (technology_id, current_version) values (?, ?)").run("t1", "16.0.0"),
     ).toThrow(/constraint/i);
+    database.close();
+  });
+
+  it("refuses a Version in use that is not shaped like one", () => {
+    const database = open();
+    seedRelease(database);
+    const declare = database.prepare(
+      "insert into follows (technology_id, current_version, current_version_declared_at) values ('t1', ?, ?)",
+    );
+    expect(() => declare.run("not-a-version", "2026-11-12T00:00:00.000Z")).toThrow(/constraint/i);
+    expect(() => declare.run("16.x", "2026-11-12T00:00:00.000Z")).toThrow(/constraint/i);
+
+    declare.run("16.3.5-canary.1", "2026-11-12T00:00:00.000Z");
+    expect(database.prepare("select count(*) as n from follows").get()).toMatchObject({ n: 1 });
     database.close();
   });
 
