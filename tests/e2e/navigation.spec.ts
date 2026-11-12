@@ -113,6 +113,23 @@ test("the menu takes the whole screen at 390px, and gives it back", async ({ pag
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe("hidden");
 });
 
+// Turning the phone on its side while the menu is up. Both the sheet and the button that opens it
+// are the phone's alone, so above 640px they stop being rendered: what must not stay behind is the
+// locked `body` scroll, which would leave a page that does not scroll and nothing to close.
+test("the menu goes when the screen grows past the width it belongs to", async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto("/dashboard");
+
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(page.locator("#menu-panel")).toBeVisible();
+
+  await page.setViewportSize({ width: 844, height: PHONE.width });
+  await expect(page.locator("#menu-panel")).toBeHidden();
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.body).overflow))
+    .not.toBe("hidden");
+});
+
 // On a phone the sections are the menu's, and there is still exactly one copy of each link on the
 // page: the row in the bar is `display: none` at this width and these rows are above it, so a screen
 // reader never meets the same navigation twice (the objection that kept them out of the panel in

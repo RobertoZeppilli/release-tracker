@@ -2,10 +2,10 @@
 
 import { Menu, X } from "lucide-react";
 import { LocaleLink as Link, useTranslator } from "@/modules/i18n/ui";
-import { type ReactNode, useCallback, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { STATIC_SITE } from "@/lib/static-site";
 import { NotificationBell } from "@/modules/notifications/ui";
-import { useSheet } from "./sheet";
+import { PHONE, useSheet } from "./sheet";
 import { NAV, type NavItem } from "./site-nav";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -81,6 +81,21 @@ function AppBar({ children, section }: BarProps) {
   // The bar is the frame: a pointer inside it does not close the panel, and the panel hangs from it
   // so it lands on the page's own gutter rather than on the button (DESIGN.md, Account panel).
   const { frame, panel, onKeyDown } = useSheet(open, close);
+
+  // ⚠️ This panel is the phone's alone, and so is the button that opens it: above 640px both are
+  // `display: none`, while `open` would stay true and take the sheet's locked `body` scroll with
+  // it, leaving a page that does not scroll and nothing on the screen to close. Turning a phone on
+  // its side is enough to get there, so the width closes the panel the way the button does. The
+  // Account panel it replaced had a shape at both widths and needed none of this.
+  useEffect(() => {
+    if (!open) return;
+    const phone = window.matchMedia(PHONE);
+    function onChange() {
+      if (!phone.matches) setOpen(false);
+    }
+    phone.addEventListener("change", onChange);
+    return () => phone.removeEventListener("change", onChange);
+  }, [open]);
 
   return (
     <div
