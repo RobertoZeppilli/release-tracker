@@ -18,6 +18,9 @@ cosa era stata decisa.
 
 ### Novembre 2026 (`docs/handoff/2026-11.md`)
 
+- Il trentaquattresimo giro: la #209 finita, e la tabella del Piano che aspetta il merge, 2026-11-12
+  - ⚠️ `deploy-database.yml` fa `supabase db push` a ogni push su `main`: il merge cancella in produzione
+  - ⚠️ Gli e2e su un database resettato danno 13 falliti: è il Catalogo vuoto, serve `catalog:sync`
 - Il trentatreesimo giro: il codice della #209 in `main`, e la migrazione ancora parcheggiata, 2026-11-11
 - Il trentaduesimo giro: la vetrina statica, e la produzione senza server, 2026-11-11
 - Il trentunesimo giro: la #219 fatta, e il repository che ha cambiato nome, 2026-11-10/11
