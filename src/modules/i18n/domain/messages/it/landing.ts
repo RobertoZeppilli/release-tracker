@@ -82,6 +82,5 @@ export const landing = {
 
   // `Continua con GitHub` è il pulsante della pagina di accesso (`account.login.button`); questo è
   // l'invito della landing, ed è il motivo per cui i due sono diversi. `Dashboard` resta Dashboard.
-  "landing.entry.visitor": "Accedi con GitHub",
   "landing.entry.developer": "Vai alla tua Dashboard",
 } as const;

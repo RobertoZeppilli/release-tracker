@@ -1,38 +1,22 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   clearNotificationSettings,
-  e2eAuthSecret,
-  type FixtureDeveloper,
   savedLocale,
   savedPreference,
-  seedDeveloper,
 } from "./fixtures";
 
 // The Notifications section of `/settings` (issue #171). Every switch is saved by a Server Action,
 // so what is asserted is twofold: what the page shows after a press, and what the database holds
 // underneath it. A press that only moved the mark would be a switch that lies.
 
-let developer: FixtureDeveloper;
-
-test.beforeAll(async () => {
-  developer = await seedDeveloper();
-});
-
 test.afterAll(async () => {
-  await clearNotificationSettings(developer.id);
-  await developer.remove();
+  await clearNotificationSettings();
 });
 
 test.beforeEach(async () => {
-  await clearNotificationSettings(developer.id);
+  await clearNotificationSettings();
 });
 
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 // By what it controls and not by its glyph: `[x]` and `[ ]` are the same control in two states, and
 // the name is the thing under test.
@@ -41,7 +25,6 @@ function featuredSwitch(page: Page) {
 }
 
 test("the bell starts on for both events, which is the declared starting point", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
 
   await expect(featuredSwitch(page)).toHaveAttribute("aria-checked", "true");
@@ -50,17 +33,16 @@ test("the bell starts on for both events, which is the declared starting point",
     "true",
   );
   // Nothing was saved to make them look on: a missing row is the starting point (`enabledByDefault`).
-  expect(await savedPreference(developer.id, "featured_release", "in_app")).toBeNull();
+  expect(await savedPreference("featured_release", "in_app")).toBeNull();
 });
 
 test("a press is saved on the server and holds across a reload", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
   await featuredSwitch(page).click();
 
   await expect(featuredSwitch(page)).toHaveAttribute("aria-checked", "false");
   await expect(async () => {
-    expect(await savedPreference(developer.id, "featured_release", "in_app")).toBe(false);
+    expect(await savedPreference("featured_release", "in_app")).toBe(false);
   }).toPass();
 
   // The reload is the test: the mark is drawn from the database on the server, not kept in a script.
@@ -74,7 +56,7 @@ test("a press is saved on the server and holds across a reload", async ({ page }
   await featuredSwitch(page).click();
   await expect(featuredSwitch(page)).toHaveAttribute("aria-checked", "true");
   await expect(async () => {
-    expect(await savedPreference(developer.id, "featured_release", "in_app")).toBe(true);
+    expect(await savedPreference("featured_release", "in_app")).toBe(true);
   }).toPass();
 
   await page.reload();
@@ -82,7 +64,6 @@ test("a press is saved on the server and holds across a reload", async ({ page }
 });
 
 test("the switch is reached and pressed by keyboard alone", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
 
   await featuredSwitch(page).focus();
@@ -91,12 +72,11 @@ test("the switch is reached and pressed by keyboard alone", async ({ page }) => 
 
   await expect(featuredSwitch(page)).toHaveAttribute("aria-checked", "false");
   await expect(async () => {
-    expect(await savedPreference(developer.id, "featured_release", "in_app")).toBe(false);
+    expect(await savedPreference("featured_release", "in_app")).toBe(false);
   }).toPass();
 });
 
 test("Slack is a heading of its own, with the two switches that belong to it", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
 
   // The heading carries nothing beside the channel's name: the `Pro` mark left with the Plan
@@ -110,7 +90,6 @@ test("Slack is a heading of its own, with the two switches that belong to it", a
 });
 
 test("the Slack webhook is read back as a hint, never as the URL", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
 
   const field = page.getByLabel("incoming webhook URL");
@@ -130,7 +109,6 @@ test("the Slack webhook is read back as a hint, never as the URL", async ({ page
 });
 
 test("a webhook that is not Slack's is refused, and says why", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
 
   await page.getByLabel("incoming webhook URL").fill("https://hooks.slack.com.example.test/services/T0");
@@ -144,7 +122,6 @@ test("a webhook that is not Slack's is refused, and says why", async ({ page }) 
 });
 
 test("the language of slack is saved, and is not the language of the site", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
 
   // The channel comes first: the choice appears with it, and that appearing is part of the test.
@@ -159,7 +136,7 @@ test("the language of slack is saved, and is not the language of the site", asyn
     "true",
   );
   await expect(async () => {
-    expect(await savedLocale(developer.id)).toBe("de");
+    expect(await savedLocale()).toBe("de");
   }).toPass();
 
   // The site is still English: the language of the page is the one in the address (ADR 0008).
@@ -175,7 +152,6 @@ test("the language of slack is saved, and is not the language of the site", asyn
 
 test("the German page keeps its switches at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 900 });
-  await signIn(page);
   await page.goto("/de/settings");
 
   const german = page.getByRole("checkbox", { name: "featured Releases an der Glocke" });
@@ -202,7 +178,6 @@ test("the German page keeps its switches at 320px", async ({ page }) => {
 // state the tests and development run in, which is the credentials unset: no button, the webhook
 // field still the way in, and the install route saying so instead of leading nowhere.
 test("without the Slack app's credentials there is no button, and the install route says so", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
   await expect(page.getByRole("link", { name: "Add to Slack" })).toHaveCount(0);
   // The field is not hidden by the button existing elsewhere: it is the other way in, and here the
@@ -217,7 +192,6 @@ test("without the Slack app's credentials there is no button, and the install ro
 // The forged return Slack warns about, which is the half of the round that does not need Slack: a
 // `state` the server never signed is refused, and nothing is written for anybody.
 test("a return with a state that was not signed here is refused", async ({ page }) => {
-  await signIn(page);
   await page.goto("/slack/callback?code=whatever&state=forged.signature");
   await expect(page).toHaveURL(/\/settings\?slack=(denied|unavailable)/);
   await expect(page.getByText("No webhook yet")).toBeVisible();
@@ -227,7 +201,6 @@ test("a return with a state that was not signed here is refused", async ({ page 
 // zone, `h3` inside, and nothing below that. A heading level is assistive reading (WCAG 2.2 AA,
 // 1.3.1), so a fourth level creeping back in is a regression a test should catch.
 test("the page is two zones, with headings that stop at the third level", async ({ page }) => {
-  await signIn(page);
   await page.goto("/settings");
 
   // Scoped to `main`: the foot of every page carries headings of its own, the language picker
@@ -252,7 +225,6 @@ test("the page is two zones, with headings that stop at the third level", async 
 
 test("at 390px the page does not scroll sideways", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
-  await signIn(page);
   await page.goto("/settings");
 
   await expect(page.getByRole("heading", { level: 2, name: "Notifications" })).toBeVisible();

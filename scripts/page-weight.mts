@@ -1,5 +1,5 @@
 import { writeFileSync } from "node:fs";
-import { chromium, type BrowserContext } from "@playwright/test";
+import { chromium } from "@playwright/test";
 
 // The before/after measure the #142 asks for: what a page costs on a cold first visit, on a
 // production build. Run it against `next start`, never against `pnpm dev`: the dev server ships
@@ -8,15 +8,18 @@ import { chromium, type BrowserContext } from "@playwright/test";
 // A fresh context per page is the point. Shared chunks are free on the second page of a visit and
 // expensive on the first, and the first is the one that decides whether the app feels slow.
 
-type Route = { path: string; auth: boolean };
+// ⚠️ No `auth` flag any more: every page of the app is reachable on a cold first visit, because
+// there is nothing to sign into (issue #210, ADR 0011). The dev sign-in this script used to post to
+// went with it, and `/login` is not a page.
+type Route = { path: string };
 
 const ROUTES: readonly Route[] = [
-  { path: "/", auth: false },
-  { path: "/login", auth: false },
-  { path: "/dashboard", auth: true },
-  { path: "/technologies", auth: true },
-  { path: "/technologies/next", auth: true },
-  { path: "/technologies/next/16.3.0", auth: true },
+  { path: "/" },
+  { path: "/dashboard" },
+  { path: "/technologies" },
+  { path: "/settings" },
+  { path: "/technologies/next" },
+  { path: "/technologies/next/16.3.0" },
 ];
 
 type Measure = {
@@ -33,23 +36,10 @@ const BASE = process.env.WEIGHT_BASE_URL ?? "http://localhost:3000";
 const VIEWPORT = { width: 1440, height: 900 };
 const kb = (bytes: number): number => Number((bytes / 1024).toFixed(1));
 
-// The dev sign-in route answers 404 unless both DEV_LOGIN_ variables are set, which is the whole
-// reason it can be used here: it exists only where this measure is meant to run.
-async function signIn(context: BrowserContext, next: string): Promise<void> {
-  const response = await context.request.post(`${BASE}/auth/dev-sign-in`, {
-    form: { next },
-    maxRedirects: 0,
-  });
-  if (response.status() !== 303) {
-    throw new Error(`dev sign-in for ${next} answered ${response.status()}, expected 303`);
-  }
-}
-
 async function measure(route: Route): Promise<Measure> {
   const browser = await chromium.launch();
   try {
     const context = await browser.newContext({ viewport: VIEWPORT });
-    if (route.auth) await signIn(context, route.path);
 
     const page = await context.newPage();
     const byType = new Map<string, number>();

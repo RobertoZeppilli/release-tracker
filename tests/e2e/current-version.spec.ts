@@ -1,21 +1,17 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
-  e2eAuthSecret,
+  clearFollows,
   followWritten,
-  type FixtureDeveloper,
   type FixtureTechnology,
-  seedDeveloper,
   seedTechnology,
 } from "./fixtures";
 
-let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 
 const TODAY = /\d{4}-\d{2}-\d{2}/;
 
 test.beforeAll(async () => {
-  [developer, technology] = await Promise.all([
-    seedDeveloper(),
+  [technology] = await Promise.all([
     seedTechnology([
       { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "First.", actionRequired: false },
       { version: "1.1.0", significance: "notable", origin: "imported", status: "ready", notes: "Breaking.", actionRequired: true },
@@ -27,16 +23,10 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   // A followed Technology cannot be deleted, so the follows go first.
-  await developer.clearFollows();
-  await Promise.all([developer.remove(), technology.remove()]);
+  await clearFollows();
+  await technology.remove();
 });
 
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 function field(page: Page) {
   return page.getByLabel("Version in use", { exact: true });
@@ -63,9 +53,8 @@ async function declare(page: Page, version: string): Promise<void> {
 }
 
 test.describe("the Version in use", () => {
-  test.beforeEach(async ({ page }) => {
-    await developer.clearFollows();
-    await signIn(page);
+  test.beforeEach(async () => {
+    await clearFollows();
   });
 
   test("is declared from the Technology page and becomes the start of the Upgrade Path", async ({ page }) => {

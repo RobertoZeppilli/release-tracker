@@ -1,4 +1,3 @@
-import { account } from "./account";
 import { attributions } from "./attributions";
 import { catalog } from "./catalog";
 import { contact } from "./contact";
@@ -21,7 +20,6 @@ import { summary } from "./summary";
 // namespaces stay the unit a page can be given on its own.
 export const EN = {
   ...shell,
-  ...account,
   ...attributions,
   ...catalog,
   ...contact,

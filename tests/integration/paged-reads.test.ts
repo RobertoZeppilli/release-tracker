@@ -5,7 +5,7 @@ import { generateNotifications } from "@/modules/notifications/server";
 import { collectSummaryBatches } from "@/modules/summaries/server";
 import { PAGE_ROWS } from "@/lib/supabase-rows";
 import { fakeSummaryBatches } from "./fake-summary-batches";
-import { createDeveloper, deleteDeveloper, type Developer, serviceClient } from "./supabase";
+import { clearFollows, serviceClient } from "./supabase";
 
 // Issue #190: PostgREST answers a `select` with at most `max_rows` rows and says nothing about the
 // ones it left out, so an unpaged read over a growing table is a lie that passes every test written
@@ -21,7 +21,6 @@ const IdRowSchema = z.array(z.object({ id: z.uuid() }));
 
 let technologyId: string;
 let releaseIds: string[];
-let alice: Developer;
 
 function slices<T>(items: readonly T[]): T[][] {
   const parts: T[][] = [];
@@ -29,8 +28,8 @@ function slices<T>(items: readonly T[]): T[][] {
   return parts;
 }
 
-// One Technology with more Releases than the page, each with a settled Summary, followed by one
-// Developer: the shape in which every Release earns exactly one Notification.
+// One Technology with more Releases than the page, each with a settled Summary, and followed: the
+// shape in which every Release earns exactly one Notification.
 beforeAll(async () => {
   const db = serviceClient();
   const slug = `paged-${randomUUID()}`;
@@ -72,16 +71,17 @@ beforeAll(async () => {
     if (summaries.error) throw summaries.error;
   }
 
-  alice = await createDeveloper();
-  const follow = await db.from("follows").insert({ user_id: alice.id, technology_id: technologyId });
+  const follow = await db.from("follows").insert({ technology_id: technologyId });
   if (follow.error) throw follow.error;
 }, 180_000);
 
 afterAll(async () => {
   const db = serviceClient();
   // Before the Releases: a Notification points at one, and a Summary shares its primary key.
-  const notifications = await db.from("notifications").delete().eq("user_id", alice.id);
-  if (notifications.error) throw notifications.error;
+  for (const part of slices(releaseIds)) {
+    const { error } = await db.from("notifications").delete().in("release_id", part);
+    if (error) throw error;
+  }
   for (const part of slices(releaseIds)) {
     const summaries = await db.from("summaries").delete().in("release_id", part);
     if (summaries.error) throw summaries.error;
@@ -94,7 +94,7 @@ afterAll(async () => {
     const { error } = await db.from(table).delete().eq(column, technologyId);
     if (error) throw error;
   }
-  await deleteDeveloper(alice);
+  await clearFollows();
 }, 180_000);
 
 describe("a read that outgrew the page", () => {
@@ -106,11 +106,10 @@ describe("a read that outgrew the page", () => {
 
     const { count, error } = await serviceClient()
       .from("notifications")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", alice.id);
+      .select("id", { count: "exact", head: true });
     if (error) throw error;
     // The whole point: unpaged this is PAGE_ROWS, and which Releases were left out depends on the
-    // order of their random ids, so the one the Developer was waiting for is lost by chance.
+    // order of their random ids, so the one that was waited for is lost by chance.
     expect(count).toBe(ROWS);
   }, 180_000);
 

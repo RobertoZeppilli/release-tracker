@@ -1,20 +1,17 @@
 import type { ReactNode } from "react";
-import { STATIC_SITE } from "@/lib/static-site";
 import { getTranslator } from "@/modules/i18n/server";
-import { LocaleLink as Link } from "@/modules/i18n/ui";
 import { SiteHeader } from "./site-header";
 
-// The account page, named in a sentence by all five documents, and the one link of theirs that the
-// showcase cannot carry: the page is the app's and is not exported, so a reader clicking it would
-// get a 404 (issue #215). The sentence stays as it is and the name stops being a link. What rewrites
-// these documents is #210, where the account stops existing at all.
+// The account page, named in a sentence by all five documents. On the showcase it was never a link,
+// because the page is the app's and is not exported (issue #215); since issue #210 it is not a link
+// anywhere, because there is no account and no page to point at, and a link to `/account` would be
+// a 404 in the installed app too.
+// ⚠️ **The sentences around it still describe an account**: deleting it, signing in with GitHub,
+// what is kept while it exists. The name stops being a link here so that nothing on the page is
+// broken, but the five documents want a rewrite of their own, which is prose in five languages and
+// not a line of code.
 export function AccountLink({ label }: { label: string }) {
-  if (STATIC_SITE) return label;
-  return (
-    <Link href="/account" className="text-link">
-      {label}
-    </Link>
-  );
+  return label;
 }
 
 // The five pages that say what the product is (terms, privacy, attributions, faq, contact) share

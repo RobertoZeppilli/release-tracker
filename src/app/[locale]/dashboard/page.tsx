@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { createRequestClient } from "@/lib/supabase-request";
-import { requireDeveloper } from "@/modules/auth/server";
 import { buildDashboard, type Dashboard } from "@/modules/dashboard";
 import { readDashboard } from "@/modules/dashboard/server";
 import {
@@ -17,7 +16,7 @@ import { listPickerTechnologies, readFollows } from "@/modules/follows/server";
 import { FollowsProvider } from "@/modules/follows/ui";
 
 // A title in the page's own language, which is why it is a function and no longer a constant: the
-// page is behind the login and carries no canonical, so the whole of its metadata is the title.
+// page carries no canonical and is never indexed, so the whole of its metadata is the title.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslator();
   return { title: t("page.dashboard.title"), robots: { index: false } };
@@ -36,13 +35,12 @@ const SPLIT = "grid max-w-content items-start gap-7 min-[1041px]:grid-cols-[minm
 // "The bar's container is the page's container").
 const ONE_COLUMN = "max-w-content [&>*]:max-w-column";
 
-// Behind the login, so dynamic anyway: the window is read on the server and the page arrives whole.
+// Dynamic: the window is read on the server and the page arrives whole.
 // The header lives inside the provider because the quota in the top bar was the same live count the
 // page shows, and the two were never allowed to disagree. The quota left with the Plan (issue #209);
 // the header stays inside, where a control that needs the follows can be added without moving the
 // tree, and nothing in it reads them today.
 export default async function DashboardPage({ searchParams }: Props) {
-  const developer = await requireDeveloper("/dashboard");
   const t = await getTranslator();
   const openWeeks = readOpenWeeks((await searchParams)[WEEK_PARAM]);
   const db = await createRequestClient();
@@ -51,7 +49,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   const empty = followed.length === 0;
 
   return (
-    <FollowsProvider developerId={developer.id} follows={follows}>
+    <FollowsProvider follows={follows}>
       <SiteHeader section="dashboard" />
       <main
         id="content"

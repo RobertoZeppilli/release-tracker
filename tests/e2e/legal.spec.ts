@@ -38,14 +38,13 @@ for (const { path, heading } of PAGES) {
 }
 
 // The foot is in the layout, so the three pages below are three different shapes of page: one
-// prerendered, one behind nothing but with a form, and one that renders the root again on the
-// client. 390px is in the list because the criterion says "from every page, at 390px included,
+// prerendered, one dynamic, and one that renders the root again on the client. 390px is in the list because the criterion says "from every page, at 390px included,
 // with nothing to open".
 for (const width of [1280, 390]) {
   test(`every page reaches all five from the foot at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
 
-    for (const path of ["/", "/login", "/no-such-page"]) {
+    for (const path of ["/", "/settings", "/no-such-page"]) {
       await page.goto(path);
       const foot = page.locator("footer");
       for (const label of FOOT_LINKS) {
@@ -176,27 +175,10 @@ test("the foot carries the wordmark, and it opens the landing", async ({ page })
 });
 
 test("a page whose path is one step opens on its heading, with no breadcrumb over it", async ({ page }) => {
-  for (const path of ["/login", "/terms", "/faq"]) {
+  for (const path of ["/settings", "/terms", "/faq"]) {
     await page.goto(path);
     await expect(page.getByRole("navigation", { name: "Breadcrumb" })).toHaveCount(0);
   }
-});
-
-test("the sign-in points at the terms before the button that signs", async ({ page }) => {
-  await page.goto("/login");
-
-  const terms = page.getByRole("main").getByRole("link", { name: "terms", exact: true });
-  const button = page.getByRole("button", { name: "Continue with GitHub" });
-  await expect(terms).toBeVisible();
-  await expect(button).toBeVisible();
-
-  // Before it in the document, which is what a reader meets first and what a screen reader reads
-  // first: a link under the button would be a condition shown after the click that accepts it.
-  const order = await terms.evaluate(
-    (node, other) => node.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING,
-    await button.elementHandle(),
-  );
-  expect(order).toBeTruthy();
 });
 
 test("the sitemap lists the five pages", async ({ request }) => {

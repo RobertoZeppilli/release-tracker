@@ -1,5 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
-import { e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDeveloper, seedTechnology } from "./fixtures";
+import { expect, test } from "@playwright/test";
+import { type FixtureTechnology, seedTechnology } from "./fixtures";
 
 // The guard of issue #63: no page is a dead end. Below 640px the navigation used to be hidden, so a
 // phone reading a Release page had the wordmark and nothing else. The checks below walk the way out
@@ -9,24 +9,16 @@ import { e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDevel
 const PHONE = { width: 390, height: 844 };
 
 let technology: FixtureTechnology;
-let developer: FixtureDeveloper;
 
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 test.beforeAll(async () => {
-  developer = await seedDeveloper();
-  technology = await seedTechnology([
+    technology = await seedTechnology([
     { version: "2.0.0", significance: "featured", origin: "detected", status: "ready", notes: "# 2.0.0\n\nThe default export is gone.", actionRequired: true },
   ]);
 });
 
 test.afterAll(async () => {
-  await Promise.all([technology.remove(), developer.remove()]);
+  await technology.remove();
 });
 
 test("at 390px a Release page climbs to its Technology and on to the Catalog", async ({ page }) => {
@@ -39,24 +31,22 @@ test("at 390px a Release page climbs to its Technology and on to the Catalog", a
   await breadcrumb.getByRole("link", { name: technology.slug }).click();
   await expect(page.getByRole("heading", { level: 1, name: technology.name })).toBeVisible();
 
-  // `/technologies` is behind sign-in, and the step is a link all the same: it says where the page
-  // sits, and a visitor is sent to sign in with this page as the destination.
+  // The last step is the Catalog itself, which the login used to stand in front of (issue #210).
   await page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "technologies" }).click();
-  await expect(page).toHaveURL(`/login?next=${encodeURIComponent("/technologies")}`);
+  await expect(page).toHaveURL("/technologies");
 });
 
 // The bar carries no sections on a phone and does not grow a strip for them: they are lines of the
-// account instead. For a viewer with no account the way out of a public page is not the bar's job
-// either, and it is not missing: the breadcrumb sits in the content and climbs to the Technology and
-// on to the Catalog, which is what the test above walks. Both destinations are behind sign-in
-// anyway, so a link to them in a visitor's bar only ever bounced off it.
+// menu instead. The way out of a public page is not the bar's job either, and it is not missing:
+// the breadcrumb sits in the content and climbs to the Technology and on to the Catalog, which is
+// what the test above walks.
 test("at 390px the bar holds no sections, and the page never gets wider than the phone", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto(`/technologies/${technology.slug}/2.0.0`);
 
   await expect(page.getByRole("navigation", { name: "Sections" })).toBeHidden();
   await expect(page.getByRole("navigation", { name: "Breadcrumb" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "sign in" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Menu" })).toBeVisible();
 
   const header = await page.locator("header").boundingBox();
   expect(header?.height, "the bar is one row").toBeLessThanOrEqual(57);
@@ -99,66 +89,59 @@ test("the breadcrumb is in the content, below the header, on a Release page", as
   expect(crumb.y, "and above the page title").toBeLessThan(heading.y);
 });
 
-// The one surface on the page that floats, and it was the one missing the only vertical edge the page
-// has: `right-0` aligns to the positioning box, which carries the gutter as padding, so the panel hung
-// 24px past it. A direct relative of the zero-spacing trap, paid for three times now.
-test("the account panel is right-aligned to the page's own gutter", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await signIn(page);
-  await page.goto("/dashboard");
-
-  await page.getByRole("button", { name: /^Account/ }).click();
-  const panel = await page.locator("#account-panel").boundingBox();
-  // The gutter is padding, not an edge, so it has to be taken off `main`: the content column ends
-  // where the padding begins, and that is the line the panel owes its right edge to.
-  const gutter = await page.locator("main").evaluate((node) => {
-    const box = node.getBoundingClientRect();
-    return box.right - Number.parseFloat(getComputedStyle(node).paddingRight);
-  });
-  expect(panel, "the account panel").not.toBeNull();
-  expect(Math.round((panel?.x ?? 0) + (panel?.width ?? 0)), "the right edge of the panel").toBe(
-    Math.round(gutter),
-  );
-});
-
-// On a phone the account is the page while it is open: a panel the size of a business card over a
+// On a phone the menu is the page while it is open: a panel the size of a business card over a
 // page the reader cannot use is worse than taking the screen and giving it back.
-test("the account takes the whole screen at 390px, and gives it back", async ({ page }) => {
+test("the menu takes the whole screen at 390px, and gives it back", async ({ page }) => {
   await page.setViewportSize(PHONE);
-  await signIn(page);
   await page.goto("/dashboard");
 
-  const account = page.getByRole("button", { name: /^Account/ });
-  await account.click();
-  const sheet = page.locator("#account-panel");
+  const menu = page.getByRole("button", { name: "Menu" });
+  await menu.click();
+  const sheet = page.locator("#menu-panel");
   const box = await sheet.boundingBox();
   expect(box?.width).toBe(PHONE.width);
   expect(box?.height).toBe(PHONE.height);
   // The page behind it must not scroll under the sheet.
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe("hidden");
-  // The way out sits at the bottom edge, under the thumb.
-  const out = await page.getByRole("button", { name: "sign out" }).boundingBox();
+  // The preferences sit at the bottom edge, under the thumb, where the way out used to be.
+  const out = await page.getByRole("link", { name: "settings" }).boundingBox();
   expect(out?.y).toBeGreaterThan(PHONE.height / 2);
 
   await page.keyboard.press("Escape");
   await expect(sheet).toBeHidden();
-  await expect(account).toBeFocused();
+  await expect(menu).toBeFocused();
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe("hidden");
 });
 
-// On a phone the sections are the account's, and there is still exactly one copy of each link on the
+// Turning the phone on its side while the menu is up. Both the sheet and the button that opens it
+// are the phone's alone, so above 640px they stop being rendered: what must not stay behind is the
+// locked `body` scroll, which would leave a page that does not scroll and nothing to close.
+test("the menu goes when the screen grows past the width it belongs to", async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto("/dashboard");
+
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(page.locator("#menu-panel")).toBeVisible();
+
+  await page.setViewportSize({ width: 844, height: PHONE.width });
+  await expect(page.locator("#menu-panel")).toBeHidden();
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.body).overflow))
+    .not.toBe("hidden");
+});
+
+// On a phone the sections are the menu's, and there is still exactly one copy of each link on the
 // page: the row in the bar is `display: none` at this width and these rows are above it, so a screen
 // reader never meets the same navigation twice (the objection that kept them out of the panel in
 // issue #119, answered by the breakpoint instead of by leaving them in the open).
-test("at 390px the sections are in the account, one copy of each", async ({ page }) => {
+test("at 390px the sections are in the menu, one copy of each", async ({ page }) => {
   await page.setViewportSize(PHONE);
-  await signIn(page);
   await page.goto("/dashboard");
 
   await expect(page.getByRole("link", { name: "technologies", exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: /^Account/ }).click();
-  const panel = page.locator("#account-panel");
+  await page.getByRole("button", { name: "Menu" }).click();
+  const panel = page.locator("#menu-panel");
   await expect(panel.getByRole("link", { name: "technologies", exact: true })).toBeVisible();
   // The page it is on says so, and says it in the one place the links now are.
   await expect(panel.getByRole("link", { name: "dashboard", exact: true })).toHaveAttribute("aria-current", "page");
@@ -170,22 +153,20 @@ test("at 390px the sections are in the account, one copy of each", async ({ page
   await expect(panel).toBeHidden();
 });
 
-// Above 640px the account holds none of them: there the row in the bar is the copy, and a second
-// `dashboard` in the panel would be the duplicate issue #119 removed.
-test("above 640px the account holds no sections", async ({ page }) => {
+// Above 640px there is no menu at all: the sections are the row in the bar and the preferences a
+// word beside the bell, so a panel would be a press to reach a link that already fits.
+test("above 640px there is no menu, and the settings are a word in the bar", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await signIn(page);
   await page.goto("/dashboard");
 
-  await page.getByRole("button", { name: /^Account/ }).click();
-  await expect(page.locator("#account-panel").getByRole("link", { name: "dashboard", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Menu" })).toBeHidden();
+  await expect(page.getByRole("banner").getByRole("link", { name: "settings" })).toBeVisible();
   await expect(page.getByRole("link", { name: "dashboard", exact: true })).toHaveCount(1);
 });
 
 // The token specimen that used to stand in for the landing had a header of its own with no links
 // at all: from there the app was unreachable. Above 640px the sections are in its bar; on a phone
-// they are not, and what leads into the app is the page's own entry action, which is the one thing
-// on the landing allowed to answer the unknown session with a guess (DESIGN.md, The Bench).
+// they are not, and what leads into the app is the page's own entry action (DESIGN.md, The Bench).
 test("the home page offers both sections above 640px", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");
@@ -201,34 +182,28 @@ test("the home page leads into the app at 390px, through its own action", async 
   await page.goto("/");
 
   await expect(page.getByRole("navigation", { name: "Sections" })).toBeHidden();
-  const entry = page.getByRole("link", { name: /Sign in with GitHub|Go to your dashboard/ });
+  const entry = page.getByRole("link", { name: "Go to your dashboard" });
   await expect(entry.first()).toBeVisible();
 });
 
-// Above 640px the panel is the one surface that floats over the page, and it has to hand the
-// keyboard what it opened. It used to focus its first `a, button`, which is the sheet's
-// `Close account`: at this width that row is `display: none`, `.focus()` on it does nothing, and the
-// focus stayed on the trigger with the next Tab landing on the theme toggle, which sits in the bar
-// and is not part of the panel. Since issue #132 the first visible line is `account`, with
-// `sign out` under it (before that it was `sign out`, the only line the panel had).
-test("the account panel hands the keyboard its first visible line, above 640px", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await signIn(page);
+// The sheet has to hand the keyboard what it opened, and give it back when it closes: it used to
+// focus its first `a, button` whether or not that row was rendered at the current width, which
+// left the focus on the trigger with the next Tab landing on the theme toggle, outside the panel.
+test("the menu hands the keyboard its first line, and takes it back", async ({ page }) => {
+  await page.setViewportSize(PHONE);
   await page.goto("/dashboard");
 
-  const account = page.getByRole("button", { name: /^Account/ });
-  await account.focus();
+  const menu = page.getByRole("button", { name: "Menu" });
+  await menu.focus();
   await page.keyboard.press("Enter");
 
-  const panel = page.locator("#account-panel");
+  const panel = page.locator("#menu-panel");
   await expect(panel).toBeVisible();
-  // The close button of the phone sheet is in the DOM and must not be what the focus goes to.
-  await expect(page.getByRole("button", { name: "Close account" })).toBeHidden();
-  await expect(panel.getByRole("link", { name: "account" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Close menu" })).toBeFocused();
 
   await page.keyboard.press("Escape");
   await expect(panel).toBeHidden();
-  await expect(account).toBeFocused();
+  await expect(menu).toBeFocused();
 });
 
 // DESIGN.md, Layout: the bar stays on the screen, on every page. The destinations are what a reader

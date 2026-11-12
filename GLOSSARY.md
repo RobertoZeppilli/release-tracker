@@ -444,8 +444,9 @@ passivo personale, e `gefolgte Technologien` non è tedesco. Quelle posizioni le
 - "Novità" era il nome di una sezione (`Latest`) e ora è solo un valore di **Rilevanza**,
   `notable`: la **Dashboard** non ha più sezioni per **Rilevanza**. Non usare `new` né come valore
   né come sezione, e non reintrodurre `Spotlight`, `Latest` o `Previews`.
-- "Utente" copriva sia lo **Sviluppatore** sia il **Visitatore**. In codice `user` indica solo
-  l'identità di autenticazione.
+- "Utente" copriva sia lo **Sviluppatore** sia il **Visitatore**. In codice `user` non indica più
+  niente: dalla #210 non c'è autenticazione, e `user_id` è uscito da ogni tabella. Un identificatore
+  nuovo che lo reintroduce sta descrivendo qualcosa che il prodotto non ha.
 - "MAJOR / MINOR / PATCH" nella specifica iniziale indicavano l'importanza. L'importanza è la
   **Rilevanza**; major/minor/patch descrivono solo la forma della **Versione** e non sempre
   coincidono (TypeScript, Python, librerie 0.x).

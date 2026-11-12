@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Translator } from "@/modules/i18n";
 import { useTranslator } from "@/modules/i18n/ui";
 import { SkeletonBox } from "@/components/waiting";
-import { useSession } from "@/modules/auth/ui";
+import { STATIC_SITE } from "@/lib/static-site";
 import { compareVersions, parseVersion } from "@/modules/releases";
 import {
   invalidMessage,
@@ -37,18 +37,17 @@ function message(decline: Decline, version: string, latest: string | null, t: Tr
   return invalidMessage(decline, version, latest, t);
 }
 
-// The row is there only for a Developer who follows this Technology, a retired one included, and
-// only once the follows have answered: until then `isFollowing` is false for every Technology, which
-// is not a first state but no state at all (see `TechnologyFollow`). **A Visitor still gets nothing
-// reserved**, and that half of the old decision stands: for them the row never arrives, and a hole
-// kept open for the commonest reader of the page is worse than the row landing when it is known.
-// What changed on 2026-10-14 is the other half: a Developer whose follows have not answered now sees
-// the wait rather than nothing, because for them the row is coming (DESIGN.md, The Reserved Space
-// Rule, and The Waiting Rule).
+// The row is there only for whoever follows this Technology, a retired one included, and only once
+// the follows have answered: until then `isFollowing` is false for every Technology, which is not a
+// first state but no state at all (see `TechnologyFollow`). While they are on their way the wait is
+// shown rather than nothing, because the row is coming (DESIGN.md, The Reserved Space Rule, and The
+// Waiting Rule).
+// ⚠️ **Nothing at all on the showcase**, which has no follows to read and no database to declare a
+// Version to (issue #215): there the row never arrives, and a hole kept open for the commonest
+// reader of the page would be worse than no row.
 export function CurrentVersionField({ technologyId, name, latest }: { technologyId: string; name: string; latest: string | null }) {
-  const session = useSession();
   const follows = useFollows();
-  if (session.state !== "developer") return null;
+  if (STATIC_SITE) return null;
   if (!follows.known) {
     return (
       // The row is a grid the width of the panel, so the skeleton takes the width too and the

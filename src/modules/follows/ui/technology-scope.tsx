@@ -1,22 +1,20 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useSession } from "@/modules/auth/ui";
 import { UpgradeStartProvider } from "@/modules/releases/ui";
 import { FollowsProvider, useFollows } from "./follows-provider";
 
-// The Technology page is cached (ISR), so nothing personal arrives from the server: who is looking is
-// read here, and the whole page is wrapped so the Follow in the header and the Upgrade Path lower down
-// read the same follows.
+// The Technology page is cached (ISR), so nothing personal arrives from the server: the follows are
+// read here, in the browser, and the whole page is wrapped so the Follow in the header and the
+// Upgrade Path lower down read the same ones.
 //
-// The wrapping never changes shape, only whom it is for: the session arrives after the first paint,
-// and a provider that appeared at that moment would take the whole page down and build it again,
-// closing every open release note with it. A Visitor gets the same shape with nobody in it.
+// The wrapping never changes shape. It used to be the session that could arrive after the first
+// paint, and a provider that appeared at that moment would have taken the whole page down and built
+// it again, closing every open release note with it; there is no session to wait for since issue
+// #210, and the shape stays single for the showcase, where the provider holds nothing (#215).
 export function TechnologyScope({ technologyId, children }: { technologyId: string; children: ReactNode }) {
-  const session = useSession();
-
   return (
-    <FollowsProvider developerId={session.state === "developer" ? session.developerId : null}>
+    <FollowsProvider>
       <DeclaredStart technologyId={technologyId}>{children}</DeclaredStart>
     </FollowsProvider>
   );

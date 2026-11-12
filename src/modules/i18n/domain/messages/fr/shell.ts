@@ -9,15 +9,9 @@ export const shell = {
   "shell.sections": "Sections",
   "shell.nav.dashboard": "dashboard",
   "shell.nav.technologies": "technologies",
-  "shell.signIn": "se connecter",
-  "shell.signOut": "se déconnecter",
-  "shell.account": "compte",
   "shell.settings": "paramètres",
-  "shell.account.open": "Compte",
-  "shell.account.openAs": "Compte, connecté en tant que {handle}",
-  // Not `fermer le compte`: a button that closes a panel must not be read as the one that ends the
-  // account.
-  "shell.account.close": "Fermer le panneau du compte",
+  "shell.menu.open": "Menu",
+  "shell.menu.close": "Fermer le menu",
   "shell.breadcrumb": "Fil d’Ariane",
   "shell.backToTop": "Retour en haut",
   "shell.theme.toDark": "Passer au thème sombre",

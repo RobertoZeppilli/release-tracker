@@ -14,18 +14,19 @@ const PANEL_ID = "notification-panel";
 // button's accessible name and in the panel, which are the two places it can be said in full.
 const MOST = 9;
 
-// A line of the panel, the account panel's own measures: 44px on a phone, a 24px line above 640px.
+// A line of the panel: 44px on a phone, a 24px line above 640px.
 const ITEM =
   "flex min-h-[44px] w-full items-center px-4 font-mono text-body text-text-muted hover:bg-sunken hover:text-text sm:min-h-[24px] sm:px-3 sm:text-label";
 
-// The bell, and the panel that hangs from it. Rendered only for a signed-in Developer: a visitor has
-// no Notifications, and a control that opens on nothing is the No Dead End Rule read backwards
-// (issue #170). The number is read in the browser, so the public pages stay static (ADR 0009).
-export function NotificationBell({ developerId }: { developerId: string }) {
+// The bell, and the panel that hangs from it. It is in the bar of the installed app and nowhere
+// else: the showcase has no Notifications to open on, and since the login left (issue #210) there
+// is nobody to tell apart in the app, so it is there from the first paint instead of waiting for a
+// session. The number is read in the browser, so the public pages stay static (ADR 0009).
+export function NotificationBell() {
   const t = useTranslator();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
-  const { unseen, items, counted, listed, open: load, see, seeEverything } = useNotifications(developerId);
+  const { unseen, items, counted, listed, open: load, see, seeEverything } = useNotifications();
 
   const close = useCallback(() => {
     setOpen(false);

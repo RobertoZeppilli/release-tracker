@@ -10,8 +10,9 @@ import {
 } from "../domain/current-version";
 import { FollowRejectedError, followRejectionFor } from "../domain/follow-rejection";
 
-// Follows are the one thing a Developer writes, and RLS limits every row to `user_id = auth.uid()`:
-// the browser talks to the database directly, so a rejection (issue #18) arrives as it is.
+// Follows are the one thing a Developer writes, and the browser talks to the database directly, so
+// a rejection (issue #18) arrives as it is. No row carries whose it is any more: an installed copy
+// belongs to one person, so every follow in the table is theirs (issue #210, ADR 0011).
 export const FOLLOWS_KEY = ["follows"] as const;
 
 const DeclarationSchema = z.object({
@@ -31,7 +32,8 @@ function declarationOf(row: z.infer<typeof DeclarationSchema>): CurrentVersion |
     : null;
 }
 
-// Unpaged, as `readFollows` is: RLS leaves one Developer's rows, bounded by the Catalog (issue #190).
+// Unpaged, as `readFollows` is: the table holds one person's follows, bounded by the Catalog, which
+// is sixty Technologies (issue #190).
 export async function fetchFollows(): Promise<Follow[]> {
   const { data, error } = await createSessionClient().from("follows").select(COLUMNS);
   if (error) throw new Error(error.message);
@@ -41,14 +43,10 @@ export async function fetchFollows(): Promise<Follow[]> {
     .map((row) => ({ technologyId: row.technology_id, currentVersion: declarationOf(row) }));
 }
 
-export async function writeFollow(
-  developerId: string,
-  technologyId: string,
-  follow: boolean,
-): Promise<void> {
+export async function writeFollow(technologyId: string, follow: boolean): Promise<void> {
   const follows = createSessionClient().from("follows");
   const { error } = follow
-    ? await follows.insert({ user_id: developerId, technology_id: technologyId })
+    ? await follows.insert({ technology_id: technologyId })
     : await follows.delete().eq("technology_id", technologyId);
   // The code carries which rule the database refused; the message is for the console, not the page.
   if (error) throw new FollowRejectedError(followRejectionFor(error.code), error.message);
@@ -57,10 +55,10 @@ export async function writeFollow(
 // Several follows in one statement, which is what makes a refusal a fact about the group: the
 // trigger runs for each row, so one retired Technology raises inside the statement and Postgres
 // takes the whole insert back. Nothing is followed halfway, and the browser gets the one SQLSTATE.
-export async function writeFollows(developerId: string, technologyIds: string[]): Promise<void> {
+export async function writeFollows(technologyIds: string[]): Promise<void> {
   const { error } = await createSessionClient()
     .from("follows")
-    .insert(technologyIds.map((technologyId) => ({ user_id: developerId, technology_id: technologyId })));
+    .insert(technologyIds.map((technologyId) => ({ technology_id: technologyId })));
   if (error) throw new FollowRejectedError(followRejectionFor(error.code), error.message);
 }
 

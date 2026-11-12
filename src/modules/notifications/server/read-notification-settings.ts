@@ -6,8 +6,8 @@ import type { Preference } from "../domain/preferences";
 
 const SettingsRowSchema = z.object({
   preferred_locale: localeSchema,
-  // The hint and never the URL: `slack_webhook_url` is not in the read grant of `authenticated`, so
-  // naming it here would fail the query rather than return a secret (#172).
+  // The hint and never the URL: `slack_webhook_url` lives in a table `anon` is granted nothing on,
+  // so naming it here would fail the query rather than return a secret (#172).
   slack_webhook_hint: z.string().nullable(),
 });
 
@@ -24,11 +24,11 @@ export type NotificationSettings = {
   preferences: Preference[];
 };
 
-// Read with the Developer's own client, as `readFollows` is: RLS returns their two rows and nobody
-// else's, so neither query carries a `user_id` and neither can be pointed at another Developer.
+// Read with the browser's own client, as `readFollows` is: both tables hold the settings of the one
+// person this copy is installed for (issue #210, ADR 0011), so neither query names anybody.
 //
-// ⚠️ A missing `notification_settings` row is the normal state of a Developer who has never touched
-// their settings: no trigger creates one (see the migration of #169), so this returns the declared
+// ⚠️ A missing `notification_settings` row is the normal state of a copy whose settings have never
+// been touched: no trigger creates one (see the migration of #169), so this returns the declared
 // starting point instead of treating the absence as an error.
 export async function readNotificationSettings(db: SupabaseClient): Promise<NotificationSettings> {
   const [settings, preferences] = await Promise.all([
@@ -36,8 +36,7 @@ export async function readNotificationSettings(db: SupabaseClient): Promise<Noti
       .from("notification_settings")
       .select("preferred_locale, slack_webhook_hint")
       .maybeSingle(),
-    // Unpaged: RLS leaves this Developer's rows, and three events by three channels is nine at the
-    // very most (issue #190).
+    // Unpaged: three events by three channels is nine rows at the very most (issue #190).
     db.from("notification_preferences").select("event, channel, enabled"),
   ]);
   if (settings.error) throw settings.error;

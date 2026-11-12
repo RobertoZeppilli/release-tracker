@@ -10,10 +10,6 @@ export const page = {
     "Verdict segue le release delle tecnologie del tuo stack e dà a ognuna un verdetto solo: se ti chiede qualcosa, cosa si rompe e come migrare, e ogni affermazione punta alla riga delle note di rilascio da cui è stata letta.",
   "page.dashboard.title": "Dashboard",
   "page.technologies.title": "Tecnologie",
-  "page.account.title": "Account",
-  "page.login.title": "Accedi",
-  "page.login.description":
-    "Accedi con GitHub per seguire le tecnologie e vedere la tua Dashboard.",
   // Le cinque pagine documento. Il titolo dice la parola con cui il piede chiama la pagina, non un
   // sinonimo: `attribuzioni` e non `riconoscimenti`, perché chi clicca `attribuzioni` deve arrivare
   // su una pagina che si chiama così. `Termini di servizio` è la forma lunga di `termini`, che nel

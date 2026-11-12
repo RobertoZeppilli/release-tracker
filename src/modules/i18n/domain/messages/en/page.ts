@@ -13,10 +13,6 @@ export const page = {
     "Verdict follows the releases of the technologies in your stack and gives each one a single verdict: whether it asks something of you, what breaks, and how to migrate, with every claim pointing at the line of the release notes it was read from.",
   "page.dashboard.title": "Dashboard",
   "page.technologies.title": "Technologies",
-  "page.account.title": "Account",
-  "page.login.title": "Sign in",
-  "page.login.description":
-    "Sign in with GitHub to follow technologies and see your dashboard.",
   // The five document pages. Their title is read twice, as the tab and as the heading of the page
   // itself, so it is one key and not two: a heading that drifts from its tab is a page that answers
   // to two names.

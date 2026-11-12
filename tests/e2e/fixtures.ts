@@ -192,24 +192,27 @@ export async function followWritten(toggle: Locator): Promise<void> {
   await expect(toggle).not.toHaveAttribute("aria-busy", "true");
 }
 
-// A follow written from outside the browser: what another session of the same Developer would do.
-export async function addFollows(userId: string, technologyIds: readonly string[]): Promise<void> {
-  const rows = technologyIds.map((technology_id) => ({ user_id: userId, technology_id }));
+// A follow written from outside the browser: what a second tab would leave behind.
+export async function addFollows(technologyIds: readonly string[]): Promise<void> {
+  const rows = technologyIds.map((technology_id) => ({ technology_id }));
   const { error } = await serviceClient().from("follows").insert(rows);
+  if (error) throw error;
+}
+
+// ⚠️ **One table for the whole suite.** Since issue #210 a follow belongs to the installed copy and
+// not to an account, so there is no Developer of its own to isolate a test any more: a test that
+// writes follows clears them, or it hands the next one its leftovers.
+export async function clearFollows(): Promise<void> {
+  const { error } = await serviceClient().from("follows").delete().not("technology_id", "is", null);
   if (error) throw error;
 }
 
 // A Version in use declared from outside the browser. The trigger still runs under the service role,
 // so the day of the declaration is written the same way a Developer's own press would write it.
-export async function declareCurrentVersion(
-  userId: string,
-  technologyId: string,
-  version: string,
-): Promise<void> {
+export async function declareCurrentVersion(technologyId: string, version: string): Promise<void> {
   const { error } = await serviceClient()
     .from("follows")
     .update({ current_version: version })
-    .eq("user_id", userId)
     .eq("technology_id", technologyId);
   if (error) throw error;
 }
@@ -221,40 +224,6 @@ export async function retireTechnology(technologyId: string): Promise<void> {
     .update({ retired: true })
     .eq("id", technologyId);
   if (error) throw error;
-}
-
-export type FixtureDeveloper = {
-  id: string;
-  email: string;
-  password: string;
-  clearFollows: () => Promise<void>;
-  remove: () => Promise<void>;
-};
-
-// The end-to-end tests never go through GitHub: Playwright cannot drive the OAuth consent. A test
-// Developer signs in with a password through /api/test/session, the route guarded by E2E_AUTH_SECRET.
-export async function seedDeveloper(): Promise<FixtureDeveloper> {
-  const db = serviceClient();
-  const email = `e2e-${randomUUID().slice(0, 8)}@example.test`;
-  const password = randomUUID();
-  const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true });
-  if (error) throw error;
-  const id = data.user.id;
-
-  return {
-    id,
-    email,
-    password,
-    // Follows outlive a test: a suite that shares one Developer starts each test from none.
-    clearFollows: async () => {
-      const { error: cleared } = await db.from("follows").delete().eq("user_id", id);
-      if (cleared) throw cleared;
-    },
-    remove: async () => {
-      const { error: removed } = await db.auth.admin.deleteUser(id);
-      if (removed) throw removed;
-    },
-  };
 }
 
 // The app reads the secret from .env.local, which the Playwright process does not load.
@@ -345,20 +314,11 @@ export async function boxOf(locator: Locator): Promise<{ width: number; height: 
   return box;
 }
 
-// Whether the account is still there, asked of the auth schema itself: the only way to prove that a
-// deletion went through, since the app's own pages can only say that nobody is signed in.
-export async function developerExists(id: string): Promise<boolean> {
-  const { data, error } = await serviceClient().auth.admin.getUserById(id);
-  return !error && Boolean(data.user);
-}
-
-// Read with the service role, so it counts the rows that are there and not the rows RLS would show a
-// Developer who no longer exists.
-export async function countFollows(userId: string): Promise<number> {
+// Read with the service role: what the database holds, as opposed to what the page says about it.
+export async function countFollows(): Promise<number> {
   const { count, error } = await serviceClient()
     .from("follows")
-    .select("technology_id", { count: "exact", head: true })
-    .eq("user_id", userId);
+    .select("technology_id", { count: "exact", head: true });
   if (error) throw error;
   return count ?? 0;
 }
@@ -367,59 +327,52 @@ export async function countFollows(userId: string): Promise<number> {
 // bell's tests need rows without running the job: the job reads Releases, follows and preferences,
 // and what the panel is about is none of those.
 export async function addNotification(
-  userId: string,
   releaseId: string,
   event: "featured_release" | "notable_release" = "featured_release",
 ): Promise<void> {
-  const { error } = await serviceClient().from("notifications").insert({ user_id: userId, event, release_id: releaseId });
+  const { error } = await serviceClient().from("notifications").insert({ event, release_id: releaseId });
   if (error) throw error;
 }
 
-// Notifications outlive a test, like follows: a suite that shares one Developer starts from none.
-export async function clearNotifications(userId: string): Promise<void> {
-  const { error } = await serviceClient().from("notifications").delete().eq("user_id", userId);
+// Notifications outlive a test, like follows: a suite starts each test from none.
+export async function clearNotifications(): Promise<void> {
+  const { error } = await serviceClient().from("notifications").delete().not("id", "is", null);
   if (error) throw error;
 }
 
 // What the database holds, as opposed to what the bell says: the counter answers before the write
 // lands, so the proof that a press was written is a read with the service role.
-export async function countUnseen(userId: string): Promise<number> {
+export async function countUnseen(): Promise<number> {
   const { count, error } = await serviceClient()
     .from("notifications")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
     .is("seen_at", null);
   if (error) throw error;
   return count ?? 0;
 }
 
 // The Release a fixture's Version was given, which a Notification has to point at.
-// The Notification settings of a Developer, written and read with the service role: what `/settings`
-// saved is proved against the database and not against the page that saved it (issue #171).
-export async function clearNotificationSettings(userId: string): Promise<void> {
+// The Notification settings, written and read with the service role: what `/settings` saved is
+// proved against the database and not against the page that saved it (issue #171).
+export async function clearNotificationSettings(): Promise<void> {
   const db = serviceClient();
-  const settings = await db.from("notification_settings").delete().eq("user_id", userId);
+  const settings = await db.from("notification_settings").delete().not("singleton", "is", null);
   if (settings.error) throw settings.error;
-  const preferences = await db.from("notification_preferences").delete().eq("user_id", userId);
+  const preferences = await db.from("notification_preferences").delete().not("event", "is", null);
   if (preferences.error) throw preferences.error;
   // The Slack webhook lives in a table of its own, which no client may touch (#172): without this
   // line a webhook saved by one test would still be there for the next one.
-  const secrets = await db.from("notification_secrets").delete().eq("user_id", userId);
+  const secrets = await db.from("notification_secrets").delete().not("singleton", "is", null);
   if (secrets.error) throw secrets.error;
 }
 
 const PreferenceRowSchema = z.object({ enabled: z.boolean() });
 
-// Null when the Developer never saved that pair, which is the declared starting point and not "off".
-export async function savedPreference(
-  userId: string,
-  event: string,
-  channel: string,
-): Promise<boolean | null> {
+// Null when that pair was never saved, which is the declared starting point and not "off".
+export async function savedPreference(event: string, channel: string): Promise<boolean | null> {
   const { data, error } = await serviceClient()
     .from("notification_preferences")
     .select("enabled")
-    .eq("user_id", userId)
     .eq("event", event)
     .eq("channel", channel)
     .maybeSingle();
@@ -429,11 +382,10 @@ export async function savedPreference(
 
 const LocaleRowSchema = z.object({ preferred_locale: z.string() });
 
-export async function savedLocale(userId: string): Promise<string | null> {
+export async function savedLocale(): Promise<string | null> {
   const { data, error } = await serviceClient()
     .from("notification_settings")
     .select("preferred_locale")
-    .eq("user_id", userId)
     .maybeSingle();
   if (error) throw error;
   return data === null ? null : LocaleRowSchema.parse(data).preferred_locale;

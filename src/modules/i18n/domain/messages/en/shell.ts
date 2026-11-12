@@ -1,5 +1,5 @@
-// The strings of the frame every page is read inside: the bar, the account panel, the breadcrumb and
-// the foot. They are written in English because English is where the strings are born and every
+// The strings of the frame every page is read inside: the bar, the menu panel it opens, the
+// breadcrumb and the foot. They are written in English because English is where the strings are born and every
 // other language is a translation of this file (ADR 0008).
 // ⚠️ The names of the glossary are here too, with their English value, and a translation keeps them
 // in English rather than leaving them out: `Dashboard` and `Technology` are names, not text
@@ -10,15 +10,11 @@ export const shell = {
   "shell.sections": "Sections",
   "shell.nav.dashboard": "dashboard",
   "shell.nav.technologies": "technologies",
-  "shell.signIn": "sign in",
-  "shell.signOut": "sign out",
-  "shell.account": "account",
   "shell.settings": "settings",
-  // The accessible name of the button that opens the panel, in its two cases: a handle is who the
-  // reader is signed in as, and without one the button is still the account.
-  "shell.account.open": "Account",
-  "shell.account.openAs": "Account, signed in as {handle}",
-  "shell.account.close": "Close account",
+  // The accessible name of the button that opens the panel. It is the menu now, not the account:
+  // what the panel holds is the way to the other sections and to the settings (issue #210).
+  "shell.menu.open": "Menu",
+  "shell.menu.close": "Close menu",
   "shell.breadcrumb": "Breadcrumb",
   "shell.backToTop": "Back to top",
   "shell.theme.toDark": "Switch to dark theme",

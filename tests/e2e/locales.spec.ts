@@ -43,12 +43,13 @@ test("a segment that is not a language is a 404, not a fall back to English", as
 });
 
 // The rewrite that puts the language in the path is the one place where a query string could be
-// dropped, and `?next=` on the login is where it would hurt: six E2E fell on it once.
+// dropped, and the Catalog's filters are where it would hurt: six E2E fell on it once. `?next=` on
+// the login was the first of them, and it left with the login (issue #210).
 test("the query survives the rewrite that puts the language in the path", async ({ page }) => {
-  await page.goto("/login?next=%2Fdashboard");
-  await expect(page).toHaveURL("/login?next=%2Fdashboard");
-  await page.goto("/it/login?next=%2Fit%2Fdashboard");
-  await expect(page).toHaveURL("/it/login?next=%2Fit%2Fdashboard");
+  await page.goto("/technologies?category=library");
+  await expect(page).toHaveURL("/technologies?category=library");
+  await page.goto("/it/technologies?category=library");
+  await expect(page).toHaveURL("/it/technologies?category=library");
 });
 
 test("a page names its address in every language, and English as the default", async ({ page }) => {
@@ -115,9 +116,9 @@ test("a Release page declares no translations of itself, and still names itself 
 });
 
 // The picker, which is what makes the five languages a choice instead of five addresses. ADR 0008
-// puts it in the foot for the reason the No Dead End Rule gives: a visitor, on a public page, at
-// phone width, with no account to find it in.
-test("a visitor reaches the picker in the foot at 390px and changes language with it", async ({ page }) => {
+// puts it in the foot for the reason the No Dead End Rule gives: a reader, on a public page, at
+// phone width, with nothing to open to find it.
+test("the picker is in the foot at 390px, and changes language from there", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/faq");
   const picker = page.locator("footer").getByRole("navigation", { name: "language" });
@@ -138,9 +139,9 @@ test("a visitor reaches the picker in the foot at 390px and changes language wit
 // The picker writes the query onto the anchor as it is clicked, because `usePathname` has not got it
 // and `useSearchParams` in the foot of the root layout would cost the ISR of all 70 pages.
 test("changing language keeps the query the reader was looking at", async ({ page }) => {
-  await page.goto("/login?next=%2Fdashboard");
+  await page.goto("/technologies?category=library");
   await page.locator("footer").getByRole("navigation", { name: "language" }).getByRole("link", { name: "Deutsch" }).click();
-  await expect(page).toHaveURL("/de/login?next=%2Fdashboard");
+  await expect(page).toHaveURL("/de/technologies?category=library");
 });
 
 // Nothing in the interface says what language it is in; a Release page in another language says that

@@ -12,6 +12,14 @@ const baseURL = `http://localhost:${port}`;
 export default defineConfig({
   testDir: "tests/e2e",
   forbidOnly: isCI,
+  // ⚠️ **Un worker solo, dalla #210.** Follows e Notifications appartenevano a uno Sviluppatore, e
+  // ogni file ne seminava uno suo: era quello a isolare due file in parallelo. Adesso le righe sono
+  // una tabella sola per la copia installata, e il numero sulla campanella le conta tutte, quindi
+  // due file insieme si cancellano le righe a vicenda e il conteggio di uno è la somma di due. Non
+  // basta restringere il `clear` alla Tecnologia del test: il numero resta globale. Misurato il
+  // 2026-11-12: la suite intera ci mette 2,9 minuti in serie, gli stessi di prima in parallelo,
+  // perché il tempo se ne va ad aspettare le pagine e non a calcolare.
+  workers: 1,
   retries: isCI ? 2 : 0,
   reporter: isCI ? "github" : "list",
   use: {

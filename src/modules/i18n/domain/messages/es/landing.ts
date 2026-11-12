@@ -95,6 +95,5 @@ export const landing = {
 
   // The entry action, in its two faces. `Continuar con GitHub` is the login page's own button
   // (`account.login.button`) and this is the landing's invitation, which is why the two differ.
-  "landing.entry.visitor": "Entrar con GitHub",
   "landing.entry.developer": "Ir a tu dashboard",
 } as const satisfies Partial<MessageDictionary>;

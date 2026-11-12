@@ -4,14 +4,12 @@ import {
   addFollows,
   addNotification,
   arrived,
+  clearFollows,
   clearNotifications,
   declareCurrentVersion,
-  e2eAuthSecret,
-  type FixtureDeveloper,
   type FixtureTechnology,
   releaseIdFor,
   retireTechnology,
-  seedDeveloper,
   seedTechnology,
 } from "./fixtures";
 
@@ -28,12 +26,10 @@ function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
 
-let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 
 test.beforeAll(async () => {
-  [developer, technology] = await Promise.all([
-    seedDeveloper(),
+  [technology] = await Promise.all([
     // One Technology rich enough to fill every part of the pages: a breaking Summary with a citation
     // to underline, a safe one, a preview and a digest release to fold.
     seedTechnology([
@@ -72,17 +68,10 @@ test.beforeAll(async () => {
 // ⚠️ The Notifications go before the Technology: `notifications.release_id` is a plain foreign key,
 // so a Release one of them points at cannot be deleted, and `remove` deletes the Releases.
 test.afterAll(async () => {
-  await developer.clearFollows();
-  await clearNotifications(developer.id);
-  await Promise.all([developer.remove(), technology.remove()]);
+  await clearFollows();
+  await clearNotifications();
+  await technology.remove();
 });
-
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 // The theme is stored, and the init script reads it before the first paint: the same path a
 // returning Developer takes, so nothing has to be toggled after the page is up.
@@ -90,8 +79,15 @@ async function useTheme(page: Page, theme: Theme): Promise<void> {
   await page.addInitScript((value) => window.localStorage.setItem("theme", value), theme);
 }
 
-async function scan(page: Page, theme: Theme): Promise<void> {
-  const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+// `within` narrows the scan to one region, and the only thing it is for is a panel that hangs over
+// the page: axe measures a target by the part of it that is still visible, so a link the open panel
+// covers is a 4px target for as long as the panel is up. That is the dropdown's doing and not the
+// row's, it depends on how tall the translated sentence above the list happens to be, and the page
+// under the panel is scanned whole anyway in the pass before the panel is opened.
+async function scan(page: Page, theme: Theme, within?: string): Promise<void> {
+  const builder = new AxeBuilder({ page }).withTags(TAGS);
+  if (within) builder.include(within);
+  const { violations } = await builder.analyze();
   const readable = violations.map((violation) => ({
     id: violation.id,
     impact: violation.impact,
@@ -112,11 +108,6 @@ for (const theme of THEMES) {
       await scan(page, theme);
     });
 
-    test("login", async ({ page }) => {
-      await page.goto("/login");
-      await scan(page, theme);
-    });
-
     // The five pages of issue #132, in one test: they are prose and they share one component, so
     // what axe has to see on each of them is the same thing seen five times.
     for (const path of ["/terms", "/privacy", "/attributions", "/faq", "/contact"]) {
@@ -126,31 +117,17 @@ for (const theme of THEMES) {
       });
     }
 
-    // The two states of the account page. Neither deletes anything: the Developer of this file is
-    // shared, and the refusal is exactly what a wrong word leaves on the screen.
-    test("the account page, and the error a wrong word leaves on it", async ({ page }) => {
-      await signIn(page);
-      await page.goto("/account");
-      await scan(page, theme);
-
-      await page.getByLabel(/type delete to confirm/).fill("nope");
-      await page.getByRole("button", { name: "Delete account" }).click();
-      await expect(page).toHaveURL("/account?error=confirm");
-      await scan(page, theme);
-    });
-
     // The bell's panel, open, which is the one part of the bar that holds a list (issue #170). It is
-    // scanned on the Dashboard because the bell only exists for a signed-in Developer, and the rows
-    // in it carry the three things axe has to weigh here: a name on the button that says how many,
-    // a Significance shape with a word beside it, and a control per row that is not a bare glyph.
+    // scanned on the Dashboard because that is where the bar carries the bell, and the rows in it
+    // carry the three things axe has to weigh here: a name on the button that says how many, a
+    // Significance shape with a word beside it, and a control per row that is not a bare glyph.
     test("the notification panel, open", async ({ page }) => {
       // No follow is written: a Notification is a row of its own and the bell reads it directly, so
       // nothing here touches the follows the rest of this file shares. Cleared first because the two
-      // themes run this twice, and one Notification per Developer and per Release is what the unique
-      // index allows (ADR 0009).
-      await clearNotifications(developer.id);
-      await addNotification(developer.id, await releaseIdFor(technology.id, "2.0.0"));
-      await signIn(page);
+      // themes run this twice, and one Notification per Release is what the unique index allows
+      // (ADR 0009).
+      await clearNotifications();
+      await addNotification(await releaseIdFor(technology.id, "2.0.0"));
       await page.goto("/dashboard");
       await arrived(page);
 
@@ -165,7 +142,6 @@ for (const theme of THEMES) {
     // links that each lead to this page in another language, so what axe has to find here is a
     // current one that says so (`aria-current`) and a heading over the set.
     test("the settings page", async ({ page }) => {
-      await signIn(page);
       await page.goto("/settings");
       await expect(page.getByRole("heading", { level: 1 })).toContainText("Settings");
       await scan(page, theme);
@@ -189,8 +165,7 @@ for (const theme of THEMES) {
     });
 
     test("technologies, with a follow the database refused", async ({ page }) => {
-      await signIn(page);
-      await developer.clearFollows();
+      await clearFollows();
       // A Technology the page offers and the database then refuses. It leaves the Catalog between
       // the paint and the press, which is the one refusal left now that the ten of the Free Plan
       // are gone (issue #209), so it is seeded here and retired under this page.
@@ -207,8 +182,7 @@ for (const theme of THEMES) {
     });
 
     test("technologies, with the picker toggles", async ({ page }) => {
-      await signIn(page);
-      await developer.clearFollows();
+      await clearFollows();
       await page.goto("/technologies");
       await expect(page.getByRole("button", { name: `Follow ${technology.name}` })).toBeVisible();
       await scan(page, theme);
@@ -236,10 +210,9 @@ for (const theme of THEMES) {
     });
 
     test("a technology page with a declared Version in use, and a refused one", async ({ page }) => {
-      await signIn(page);
-      await developer.clearFollows();
-      await addFollows(developer.id, [technology.id]);
-      await declareCurrentVersion(developer.id, technology.id, "1.9.0");
+      await clearFollows();
+      await addFollows([technology.id]);
+      await declareCurrentVersion(technology.id, "1.9.0");
       await page.goto(`/technologies/${technology.slug}`);
       await expect(page.locator("#current-version-note")).toHaveText(/declared \d{4}-\d{2}-\d{2}/);
       await scan(page, theme);
@@ -268,27 +241,24 @@ for (const theme of THEMES) {
     });
 
     test("the empty dashboard and its catalog picker", async ({ page }) => {
-      await signIn(page);
-      await developer.clearFollows();
+      await clearFollows();
       await page.goto("/dashboard");
       await expect(page.locator("#empty-status, #page-verdict").first()).toBeVisible();
       await scan(page, theme);
     });
 
     test("the dashboard with something that needs action", async ({ page }) => {
-      await signIn(page);
-      await developer.clearFollows();
-      await addFollows(developer.id, [technology.id]);
+      await clearFollows();
+      await addFollows([technology.id]);
       await page.goto("/dashboard");
       await expect(page.locator("#page-verdict")).toContainText("needs action");
       await scan(page, theme);
     });
 
     test("the dashboard with a Version in use", async ({ page }) => {
-      await signIn(page);
-      await developer.clearFollows();
-      await addFollows(developer.id, [technology.id]);
-      await declareCurrentVersion(developer.id, technology.id, "1.8.9");
+      await clearFollows();
+      await addFollows([technology.id]);
+      await declareCurrentVersion(technology.id, "1.8.9");
       await page.goto("/dashboard");
       // The declaration is read: the totals under the Standing name the day it was made.
       await expect(page.getByText(/oldest version declared/)).toBeVisible();
@@ -329,24 +299,23 @@ for (const locale of ["it", "fr", "es", "de"] as const) {
       await scan(page, "dark");
     });
 
-    // And the Dashboard, which is the one page behind the login whose verdict is a translated
-    // sentence inside a panel of a fixed width.
+    // And the Dashboard, the one page whose verdict is a translated sentence inside a panel of a
+    // fixed width.
     test("the dashboard with something that needs action", async ({ page }) => {
-      await signIn(page);
-      await developer.clearFollows();
-      await addFollows(developer.id, [technology.id]);
+      await clearFollows();
+      await addFollows([technology.id]);
       // The bell's panel is opened here, and this is where its four translations are audited: the
       // accessible name carries a number inside a translated sentence, which is the shape 2.5.3 is
       // broken by, and `mark all as seen` is a second control one language could give the same name.
-      await clearNotifications(developer.id);
-      await addNotification(developer.id, await releaseIdFor(technology.id, "2.0.0"));
+      await clearNotifications();
+      await addNotification(await releaseIdFor(technology.id, "2.0.0"));
       await page.goto(`/${locale}/dashboard`);
       await expect(page.locator("#page-verdict")).toBeVisible();
       await scan(page, "dark");
 
       await page.locator('button[aria-controls="notification-panel"]').click();
       await expect(page.locator("#notification-panel")).toBeVisible();
-      await scan(page, "dark");
+      await scan(page, "dark", "#notification-panel");
     });
   });
 }
@@ -357,21 +326,19 @@ for (const locale of ["it", "fr", "es", "de"] as const) {
 test.describe("target size in the top bar", () => {
   const MINIMUM = 24;
 
-  test("sign out is at least 24 by 24", async ({ page }) => {
-    await signIn(page);
+  test("the menu of the phone is at least 24 by 24", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/dashboard");
-    await page.getByRole("button", { name: /^Account/ }).click();
-    const box = await page.getByRole("button", { name: "sign out" }).boundingBox();
+    const box = await page.getByRole("button", { name: "Menu" }).boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(MINIMUM);
     expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
   });
 
-  // The bell grows when it has a number to print, so it is measured with one: the glyph alone is
-  // the 34px square the account button is, and the figure beside it only makes it wider.
+  // The bell grows when it has a number to print, so it is measured with one: the glyph alone is a
+  // 34px square, and the figure beside it only makes it wider.
   test("the bell and the control on a notification row are at least 24 by 24", async ({ page }) => {
-    await clearNotifications(developer.id);
-    await addNotification(developer.id, await releaseIdFor(technology.id, "2.0.0"));
-    await signIn(page);
+    await clearNotifications();
+    await addNotification(await releaseIdFor(technology.id, "2.0.0"));
     await page.goto("/dashboard");
     await arrived(page);
 
@@ -386,9 +353,9 @@ test.describe("target size in the top bar", () => {
     expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
   });
 
-  test("sign in is at least 24 by 24", async ({ page }) => {
+  test("settings is at least 24 by 24", async ({ page }) => {
     await page.goto("/technologies");
-    const box = await page.getByRole("link", { name: "sign in" }).boundingBox();
+    const box = await page.getByRole("link", { name: "settings" }).boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(MINIMUM);
     expect(box?.height).toBeGreaterThanOrEqual(MINIMUM);
   });
@@ -440,9 +407,8 @@ test.describe("target spacing in the lists", () => {
   });
 
   test("the Dashboard, where a version link sits beside a Technology name", async ({ page }) => {
-    await signIn(page);
-    await developer.clearFollows();
-    await addFollows(developer.id, [technology.id]);
+    await clearFollows();
+    await addFollows([technology.id]);
     await page.goto("/dashboard");
     await arrived(page);
     await expectSpaced(page, 2);
@@ -451,7 +417,6 @@ test.describe("target spacing in the lists", () => {
   // The Catalog splits its sections on the client once the follows answer, so the names arrive after
   // the first paint: the wait is for the list, not for the page.
   test("the Catalog, at 390px", async ({ page }) => {
-    await signIn(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/technologies");
     await page.locator('a[href^="/technologies/"]').first().waitFor();

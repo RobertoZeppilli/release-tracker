@@ -1,15 +1,11 @@
 "use client";
 
-import { Plus } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { useTranslator } from "@/modules/i18n/ui";
 import { STATIC_SITE } from "@/lib/static-site";
-import { loginPath } from "@/modules/auth";
-import { useSession } from "@/modules/auth/ui";
 import { SkeletonBox } from "@/components/waiting";
+import { useState } from "react";
 import { FollowRejectionNote } from "./follow-rejection-note";
-import { FOLLOW_LINK_CLASS, FollowToggle } from "./follow-toggle";
+import { FollowToggle } from "./follow-toggle";
 import { useFollows } from "./follows-provider";
 
 const ERROR_ID = "follow-error";
@@ -24,52 +20,27 @@ const NOTE = "mt-2 basis-full";
 // at 95px** and not guessed, because a box with no content would be 0 wide and reserve nothing.
 const RESERVED = `${PLACE} h-[34px] w-[95px] rounded-md`;
 
-// A Visitor is offered the login with this page as the way back; a Developer gets the picker's own
-// Toggle, limit and refusal included, because both come from the same provider, which the page's
-// `TechnologyScope` holds. Nothing shows until the session is known, rather than a Follow that might
-// be wrong.
 type Props = { technologyId: string; name: string; retired: boolean };
 
-// ⚠️ The showcase has no Follow at all: it has no account to hold one, and the login this would
-// offer a Visitor does not exist on a site that is only files (issue #215, ADR 0011). `STATIC_SITE`
-// is a build constant, so what is dropped is dropped before the browser sees it, and the control
-// below keeps its hooks unconditional.
+// The Follow of the Technology page. Whoever opens their own copy of the app gets the picker's own
+// Toggle, refusal included, because both come from the same provider, which the page's
+// `TechnologyScope` holds: there is one person per copy and nobody to offer a login to (issue #210,
+// ADR 0011).
+//
+// ⚠️ The showcase has no Follow at all: it is files alone, with no database to hold one (issue
+// #215). `STATIC_SITE` is a build constant, so what is dropped is dropped before the browser sees
+// it, and the control below keeps its hooks unconditional.
 export function TechnologyFollow(props: Props) {
   if (STATIC_SITE) return null;
-  return <SessionFollow {...props} />;
-}
-
-function SessionFollow({ technologyId, name, retired }: Props) {
-  const t = useTranslator();
-  const session = useSession();
-  const pathname = usePathname();
-
-  if (session.state === "unknown") return <ReservedBox />;
-
-  if (session.state === "visitor") {
-    // Nobody can follow a retired Technology, so the login would lead to a button that is not there.
-    if (retired) return null;
-    return (
-      <a
-        href={loginPath(pathname)}
-        aria-label={t("stack.followName", { name })}
-        className={`${FOLLOW_LINK_CLASS} ${PLACE}`}
-      >
-        <Plus aria-hidden className="size-4" />
-        {t("stack.follow")}
-      </a>
-    );
-  }
-
-  return <FollowControl technologyId={technologyId} name={name} retired={retired} />;
+  return <FollowControl {...props} />;
 }
 
 // The provider has no follows from the server here: the query loads them, and until it answers
 // `isFollowing` is false for every Technology. That is not the first state of the Toggle, it is no
 // state at all, and rendering it would put `Follow` on a Technology this Developer already follows.
-// So the reserved box waits instead, the same one the unknown session shows, and the control arrives
-// once it has something true to say. On `/technologies` the server hands the follows over, so the
-// provider starts knowing and no row there ever waits.
+// So the reserved box waits instead, and the control arrives once it has something true to say. On
+// `/technologies` the server hands the follows over, so the provider starts knowing and no row
+// there ever waits.
 function FollowControl({ technologyId, name, retired }: { technologyId: string; name: string; retired: boolean }) {
   const t = useTranslator();
   const follows = useFollows();

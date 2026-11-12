@@ -1,15 +1,12 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   arrived,
-  e2eAuthSecret,
-  type FixtureDeveloper,
+  clearFollows,
   type FixtureTechnology,
   retireTechnology,
-  seedDeveloper,
   seedTechnology,
 } from "./fixtures";
 
-let developer: FixtureDeveloper;
 // Three Technologies of this test's own, so a group can be built out of rows no other case presses.
 let one: FixtureTechnology;
 let two: FixtureTechnology;
@@ -19,8 +16,7 @@ test.beforeAll(async () => {
   const release = [
     { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false },
   ] as const;
-  [developer, one, two, three] = await Promise.all([
-    seedDeveloper(),
+  [one, two, three] = await Promise.all([
     seedTechnology([...release]),
     seedTechnology([...release]),
     seedTechnology([...release]),
@@ -28,24 +24,17 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  await Promise.all([developer.remove(), one.remove(), two.remove(), three.remove()]);
+  await Promise.all([one.remove(), two.remove(), three.remove()]);
 });
 
 // Each case starts from a Developer following nothing: a leftover follow from the case before would
 // put a row on the other side of the split.
 test.beforeEach(async () => {
-  await developer.clearFollows();
+await clearFollows();
 });
 
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 async function open(page: Page): Promise<void> {
-  await signIn(page);
   await page.goto("/technologies");
   await arrived(page);
 }
