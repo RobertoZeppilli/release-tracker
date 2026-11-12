@@ -17,26 +17,13 @@ export function serviceClient(): SupabaseClient {
   return createClient(API_URL, SECRET_KEY, options);
 }
 
-export type Developer = { id: string; client: SupabaseClient };
-
-export async function createDeveloper(): Promise<Developer> {
-  const email = `dev-${randomUUID()}@example.test`;
-  const password = randomUUID();
-  const { data, error } = await serviceClient().auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  });
-  if (error) throw error;
-
-  const client = anonClient();
-  const signIn = await client.auth.signInWithPassword({ email, password });
-  if (signIn.error) throw signIn.error;
-  return { id: data.user.id, client };
-}
-
-export async function deleteDeveloper(developer: Developer): Promise<void> {
-  const { error } = await serviceClient().auth.admin.deleteUser(developer.id);
+// ⚠️ **One reader and one table.** Until issue #210 every test made a Developer of its own and RLS
+// kept their rows apart; there is no account to make now, so `follows` and the three notification
+// tables are shared by the whole suite. Files do not interleave (`fileParallelism: false` in
+// `vitest.config.mts`), so what each file owes the next one is to leave the tables as it found
+// them: that is what `clearFollows` is for.
+export async function clearFollows(): Promise<void> {
+  const { error } = await serviceClient().from("follows").delete().not("technology_id", "is", null);
   if (error) throw error;
 }
 
