@@ -1,17 +1,19 @@
 # Il grilletto. Si copia in .github/workflows/cletus.yml del repo su cui Cletus deve lavorare,
 # e per essere lanciabile deve stare sul branch di default.
 #
-# Qui c'e' solo il "quando" e i permessi: la macchina vive in
-# RobertoZeppilli/Cletus/.github/workflows/cletus-lavora.yml, e questo file la chiama. Vuol dire
-# che turni, minuti, modello e prompt si cambiano nel repo Cletus e valgono subito ovunque, senza
-# una PR per progetto. Questo file invece non dovrebbe cambiare quasi mai.
+# Questo file dice "quando" e "con quali permessi". Il "come" lo scarica: regole, prompt, modello
+# e numero di turni vivono nel repo Cletus e si leggono a ogni giro, quindi si cambiano in un
+# posto solo e valgono subito ovunque. Questo file invece non dovrebbe cambiare quasi mai.
 #
-# NON va installato nel repo Cletus: quello e' l'officina del bot, non un cantiere. Il workflow
-# chiamato si rifiuta di partire la', e non e' una buona intenzione, e' un controllo.
+# Un reusable workflow sarebbe stato piu' pulito, ma GitHub lo consente solo fra repo privati, e
+# i cantieri sono pubblici: da un repo pubblico il workflow nel Cletus privato "non esiste" e il
+# dispatch risponde 422.
+#
+# NON va installato nel repo Cletus: quello e' l'officina del bot, non un cantiere.
 #
 # Serve nei secret del repo bersaglio:
 #   CLAUDE_CODE_OAUTH_TOKEN   da `claude setup-token`: i run usano l'abbonamento Pro
-#   CLETUS_PAT                per leggere le regole dal repo Cletus e per avvisare su Telegram
+#   CLETUS_PAT                per leggere le istruzioni dal repo Cletus e per avvisare su Telegram
 # E serve la Claude GitHub App installata sul repo.
 
 name: Cletus
@@ -20,7 +22,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "handoff = leggi docs/HANDOFF.md e continua. issue = prendi dalla coda."
+        description: "handoff = leggi l'handoff e continua. issue = prendi dalla coda."
         required: false
         default: handoff
         type: choice
@@ -36,18 +38,22 @@ on:
   issues:
     types: [labeled]
 
+# Un giro alla volta per repo: due agenti sullo stesso codice si pestano i piedi.
+concurrency:
+  group: cletus-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   lavora:
     # Su un repo pubblico chiunque apre una issue, quindi il cancello e' l'etichetta, che la
     # mette Roberto. L'action controlla da sola che chi ha scatenato il run abbia accesso in
     # scrittura e che non sia un bot.
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'ready-for-agent'
+      github.repository != 'RobertoZeppilli/Cletus' &&
+      (github.event_name == 'workflow_dispatch' || github.event.label.name == 'ready-for-agent')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
 
-    uses: RobertoZeppilli/Cletus/.github/workflows/cletus-lavora.yml@main
-
-    # I permessi restano qui: sono di questo repo, e vederli nel repo che li concede e' il punto.
     permissions:
       contents: write
       pull-requests: write
@@ -55,9 +61,95 @@ jobs:
       id-token: write
       actions: read
 
-    with:
-      modo: ${{ github.event_name == 'issues' && 'issue' || inputs.modo }}
-      issue: ${{ github.event_name == 'issues' && github.event.issue.number || inputs.issue }}
-      nota: ${{ inputs.nota }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    secrets: inherit
+      - name: Prendi le istruzioni di Cletus
+        id: istruzioni
+        env:
+          GH_TOKEN: ${{ secrets.CLETUS_PAT }}
+          REPO: ${{ github.repository }}
+          MODO: ${{ github.event_name == 'issues' && 'issue' || inputs.modo }}
+          ISSUE: ${{ github.event_name == 'issues' && github.event.issue.number || inputs.issue }}
+          NOTA: ${{ inputs.nota }}
+        run: |
+          set -euo pipefail
+
+          # Una sola fonte di verita': le istruzioni vivono nel repo Cletus e si leggono da la'.
+          prendi() {
+            gh api "repos/RobertoZeppilli/Cletus/contents/$1" --jq '.content' | base64 -d > "$2"
+          }
+          prendi agents/cletus.md REGOLE-CLETUS.md
+          prendi agents/stack.md REGOLE-STACK.md
+          prendi giro/configurazione.json giro-configurazione.json
+          prendi giro/prompt.md giro-prompt.md
+          wc -l REGOLE-CLETUS.md REGOLE-STACK.md giro-prompt.md
+
+          # I valori di questo giro entrano dall'ambiente e non dal template YAML: quello che
+          # scrive Roberto su Telegram non deve poter diventare sintassi.
+          python3 - >> "$GITHUB_OUTPUT" <<'PY'
+          import json, os
+
+          c = json.load(open("giro-configurazione.json", encoding="utf-8"))
+          p = open("giro-prompt.md", encoding="utf-8").read()
+          for chiave in ("REPO", "MODO", "ISSUE", "NOTA"):
+              p = p.replace("{{" + chiave + "}}", os.environ.get(chiave, "") or "")
+
+          print(f"modello={c['modello']}")
+          print(f"turni={c['turni']}")
+          print(f"strumenti={c['strumenti']}")
+          print("prompt<<FINE-DEL-PROMPT")
+          print(p)
+          print("FINE-DEL-PROMPT")
+          PY
+
+      - name: Lavora
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Il token del job, non il PAT di Roberto: vale solo su questo repo e scade a fine
+          # giro. Su un repo pubblico il testo delle issue lo scrive chiunque, quindi quello
+          # che l'agente ha in mano deve valere il meno possibile.
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: |
+            --model ${{ steps.istruzioni.outputs.modello }}
+            --max-turns ${{ steps.istruzioni.outputs.turni }}
+            --allowedTools "${{ steps.istruzioni.outputs.strumenti }}"
+          prompt: ${{ steps.istruzioni.outputs.prompt }}
+
+      - name: Spedisci l'avviso dell'agente
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.CLETUS_PAT }}
+        run: |
+          # Il PAT sta qui e non nell'ambiente dell'agente: lui scrive il messaggio, lo manda
+          # il runner. Una riga sola, perche' finisce in una notifica sul telefono.
+          [ -f AVVISO.md ] || exit 0
+          messaggio=$(head -c 400 AVVISO.md | tr '\n' ' ')
+          [ -n "$messaggio" ] || exit 0
+          gh workflow run avvisa.yml -R RobertoZeppilli/Cletus \
+            -f messaggio="$messaggio" -f tipo=bloccato \
+            -f url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f progetto="${{ github.repository }}"
+
+      - name: Avvisa Roberto
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.CLETUS_PAT }}
+          ESITO: ${{ job.status }}
+          CORSA: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Avvisa il runner, non l'agente: cosi' il messaggio arriva anche quando l'agente
+          # muore a meta', che e' il caso in cui serve davvero saperlo.
+          case "$ESITO" in
+            success) messaggio="Giro finito su ${{ github.repository }}. Guarda se c'e' una PR nuova."; tipo=pr ;;
+            cancelled) messaggio="Giro annullato su ${{ github.repository }}."; tipo=info ;;
+            *) messaggio="Giro fallito su ${{ github.repository }}. Il log dice perche'."; tipo=rotto ;;
+          esac
+
+          gh workflow run avvisa.yml -R RobertoZeppilli/Cletus \
+            -f messaggio="$messaggio" -f tipo="$tipo" -f url="$CORSA" \
+            -f progetto="${{ github.repository }}"
