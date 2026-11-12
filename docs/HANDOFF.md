@@ -88,10 +88,9 @@ messi in `.gitignore` perché non tornino.
    #221 è la landing, la #216 i contributi. Serve una issue sua, e il testo lo decidi tu.
 2. ⚠️ **Quello che la migrazione della #210 ha aperto in produzione fino alla #222**: il dettaglio è
    nel diario di novembre, sotto il trentaseiesimo giro, e vale parola per parola.
-3. ⚠️ **Gli e2e non si leggono senza il Catalogo** (`pnpm catalog:sync` prima di `pnpm build`, con
-   `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY` esportati **a mano**: quello script non legge
-   `.env.local`); lo stesso per `pnpm build:static`. ⚠️ In locale si lanciano con
-   `E2E_PORT=3100 pnpm test:e2e`.
+3. ⚠️ **Le suite in locale vogliono un ordine preciso**, e girarle nell'altro verso dà due rossi che
+   non sono regressioni: l'`integration` dopo un `catalog:sync`, e gli e2e della sitemap senza
+   buttare `.next`. Il perché e l'ordine giusto stanno in `AMBIENTE.md`, spostati lì da questo giro.
 4. **La #185** resta valida, col suo testo ancora da correggere. ⚠️ **`package.json` dice ancora
    `"name": "release-tracker"`**, da cambiare nella **#214**.
 5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ In produzione il Rilevamento è
