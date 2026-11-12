@@ -26,53 +26,40 @@ sospensione è finita, ma vale sempre la regola di chiedere prima di passare a u
 **Come si tiene.** Lo stato nuovo si scrive qui sotto; quando quello di prima diventa storia, **si
 sposta parola per parola** in cima al file del suo mese, con un titolo `##` proprio, e si aggiunge la
 riga in `INDICE.md`. Niente riassunti: un riassunto è dove si perde la ragione per cui una cosa era
-stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.## Stato
+stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
-**Da dove ripartire (trentaseiesimo giro, 2026-11-12): la #210 è fatta e aspetta il merge nella PR
-#235.** Branch `210-via-il-login`. Non c'è più login: via `src/modules/auth`, `/login`, `/auth/*`,
-`/account`, `/api/test/session`, `use-session`, `pnpm dev:login`, `images.remotePatterns` e le cinque
-`account.*`; `20261112140000_drop_user_id.sql` toglie `user_id` da `follows` e dalle quattro
-`notification_*`, con le policy RLS e i grant per utente.
+## Stato
 
-### ⚠️ La migrazione sta nella **stessa** PR del codice, al contrario della #219 e della #209
+**Da dove ripartire (trentasettesimo giro, 2026-11-12): la #210 è finita e verde, e la PR #235 è
+pronta da guardare.** Branch `210-via-il-login`, non più in bozza. Il giro prima si era fermato a
+metà per il limite d'uso, con `integration` rosso; questo giro ha fatto passare tutto e ha girato le
+suite **sul runner**, con Supabase locale, Catalogo sincronizzato e build di produzione: `lint` e
+`typecheck` puliti, `test` 755/755, `test:integration` 92/92, `test:e2e` 281 passati e 1 saltato
+(`slack-dialog`, che si salta da sé senza le credenziali Slack), `build` e `i18n:client-keys` verdi.
 
-La issue chiedeva una PR a sé, e la casa lo aveva già fatto due volte (#223 → #224, #228 → #231). Il
-commento in testa a `20261112072500_drop_plans.sql` dice perché lì si poteva e qui no: la CI applica
-le migrazioni da zero e **poi** gira `integration` ed `e2e` su ogni PR, quindi le due metà non possono
-discordare sullo stesso commit. *Smettere di usare* una tabella è sicuro in entrambi gli ordini;
-*togliere la colonna che ogni scrittura porta* non lo è in nessuno dei due. **Se preferisci lo split,
-è da rifare a mano e una delle due check resta rossa.**
+⚠️ **I check della CI su quei commit sono in `action_required`**: i workflow aperti da
+`github-actions` aspettano la tua approvazione, quindi sulla PR non si sono ancora riaccesi. Vanno
+approvati prima del merge — l'output nel corpo della PR è il mio, non il loro.
 
-### ⚠️ Quello che la migrazione apre in produzione, fino alla #222
+### Le quattro cose rotte che il giro ha trovato, e che nel codice non si vedevano
 
-Il browser parla con Postgres direttamente (`follows-store`, la campanella) e senza sessione è
-`anon`. I grant nuovi fanno funzionare la copia installata — **e lasciano anche chiunque abbia la
-chiave publishable, che viaggia in chiaro, leggere e scrivere quelle cinque tabelle sul progetto di
-produzione**. La vetrina non le legge dalla #215 e la #211 porta i dati su un file: è una ragione per
-non far aspettare la #222. Catalogo, Release, Note e Sintesi restano in sola lettura;
-`notification_secrets` e `notification_deliveries` restano chiuse due volte (RLS **e** grant).
-
-### ⚠️ La migrazione non cancella niente, e può fermare il deploy
-
-Se in produzione esistono follow di più di un account, o più di una riga di impostazioni, le
-`add primary key` falliscono su chiave duplicata e `deploy-database.yml` diventa rosso: quale riga
-sopravvive non è una decisione da prendere in silenzio dentro una migrazione.
-
-### Cosa cambia nell'interfaccia
-
-Il pannello account della barra diventa **il menu del telefono**: sotto i 640px apre sezioni e
-`settings`, sopra non esiste e `settings` è una parola accanto alla campanella (chiavi nuove
-`shell.menu.open/close` in cinque lingue). La landing ha una faccia sola (`entryFace`) e
-`STATIC_SITE` è quello che resta del "non so chi legge" nei provider dei Follow.
-
-### Due cose che la issue chiedeva e che non ho fatto
-
-1. **`E2E_AUTH_SECRET` resta**, col suo nome: non è il login, è la guardia di
-   `/api/test/revalidate` e `/test/throw`, e toglierla le lascerebbe rispondere in produzione.
-   Rinominarla costa una riga di `.github/workflows/ci.yml`, e ⚠️ **il token di Cletus non può
-   toccare i workflow**: provato, respinto dal remoto (`refusing to allow a GitHub App…`).
-2. **La prosa di `/faq`, `/terms` e `/privacy` parla ancora di account**: è testo per persone, e la
-   #216 e la #221 ci passano sopra comunque.
+1. **`a11y.spec.ts` aveva due test «the settings page»**: Playwright si ferma in **fase di
+   raccolta** su un titolo duplicato, quindi non girava *niente*, non solo quel file. Quello di
+   troppo era il vecchio test dell'account rinominato.
+2. ⚠️ **Gli e2e adesso vogliono un worker solo** (`playwright.config.ts`, `workers: 1`). Follows e
+   Notifications appartenevano a uno Sviluppatore e ogni file ne seminava uno suo: era **quello** a
+   isolare due file in parallelo. Ora le righe sono una tabella sola e il numero sulla campanella le
+   conta tutte, quindi due file insieme si cancellano le righe a vicenda. Restringere i `clear` alla
+   Tecnologia del test non basta: il conteggio resta globale. Misurato: 2,9 minuti in serie, **gli
+   stessi** di prima in parallelo — il tempo se ne va ad aspettare le pagine.
+3. ⚠️ **Con la tendina delle Notifiche aperta, axe misura quello che resta scoperto.** Il link di
+   versione della prima riga finisce sotto il pannello e ne restano 4px su 50: `target-size`,
+   `serious`. Si vedeva solo in spagnolo perché il verdetto tradotto è più alto e spinge la riga
+   proprio lì. La seconda scansione di quel test ora guarda `#notification-panel`, che è quello che
+   deve auditare; la pagina intera la guarda il passaggio prima che il pannello si apra.
+4. **Il menu del telefono non tornava indietro**: pannello e bottone sono `sm:hidden`, sopra i 640px
+   sparivano tutti e due con `open` ancora vero, e lo scorrimento del `body` restava bloccato senza
+   niente da premere. Basta girare il telefono. Corretto, con un e2e in `navigation.spec.ts`.
 
 ### La prossima mossa
 
@@ -80,21 +67,30 @@ Il pannello account della barra diventa **il menu del telefono**: sotto i 640px 
 0011 e la più grossa (59 file leggono i dati con `supabase-js`). Poi #212 → #213 → #217 → #214 →
 #218 → #221 → #222 → #216, con la **#222** `ready-for-human` e una porta a senso unico.
 
+⚠️ **Prima serve una decisione tua**: i cinque documenti parlano ancora di account — `terms` nomina
+l'accesso con GitHub, `privacy` e `faq` spiegano come si cancella l'account, `contact` dice che è un
+bottone. Il nome ha smesso di essere un link (puntava a `/account`, 404 anche nell'app installata),
+ma il testo è prosa in cinque lingue, legale due volte su cinque, e **nessuna issue aperta la
+copre**: la #221 è la landing, la #216 i contributi. Serve una issue sua, e il testo lo decidi tu.
+
+### Le due deviazioni dalla issue #210, da confermare al merge
+
+1. **La migrazione sta nella stessa PR del codice.** La CI applica le migrazioni da zero e **poi**
+   gira `integration` ed `e2e` sullo stesso commit: *smettere di usare* una tabella è sicuro in
+   entrambi gli ordini (#219, #209), *togliere la colonna che ogni scrittura porta* non lo è.
+2. **`E2E_AUTH_SECRET` resta**: non è il login, è la guardia di `/api/test/revalidate` e
+   `/test/throw`. ⚠️ Rinominarla costa una riga di `ci.yml`, e **il token di Cletus non può toccare i
+   workflow**: provato, respinto dal remoto.
+
 ### Cosa resta a te
 
-1. ⚠️ **Gli e2e non si leggono senza il Catalogo.** Su un database appena resettato la suite dà 13
-   falliti — Tecnologia, sitemap, spaziatura delle liste — e non è una regressione: è il Catalogo
-   vuoto. La CI fa `pnpm catalog:sync` **prima** di `pnpm build`, e in locale va fatto uguale.
-   ⚠️ `catalog:sync` legge `process.env` diretto: vuole `NEXT_PUBLIC_SUPABASE_URL` e
-   `SUPABASE_SECRET_KEY` esportati a mano. ⚠️ Lo stesso per `pnpm build:static`: col Catalogo vuoto
-   `generateStaticParams` torna vuoto e `output: "export"` rifiuta la build.
-2. **La #185** resta valida: la pagina è statica, ma le 121 righe di prosa pesano uguale. ⚠️ Il suo
-   testo va ancora corretto, e la misura che lo smentisce è nel diario di novembre.
-3. ⚠️ **`package.json` dice ancora `"name": "release-tracker"`**, da cambiare nella **#214**, che è
-   quella che pubblica; `verdict-tracker` su npm era libero l'11 novembre.
-4. ⚠️ **Gli e2e si lanciano con `E2E_PORT=3100 pnpm test:e2e`** (`AMBIENTE.md`); i falliti da carico
-   passano rilanciati da soli. ⚠️ **In produzione il Rilevamento è fermo** dalla #215 (`APERTE.md`).
-5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit sono
-   **irrilevanti**, e i due su `/api/test/session` e `/auth/dev-sign-in` non hanno più un indirizzo.
-6. **Ambiente**: Supabase locale **acceso**, avviato con
-   `pnpm exec supabase start -x studio,inbucket`. ⚠️ **Credito basso: non spendere senza chiedere.**
+1. ⚠️ **Quello che la migrazione apre in produzione fino alla #222**, e ⚠️ **le `add primary key`
+   che possono fermare il deploy** se ci sono follow di più account: il dettaglio è nel diario di
+   novembre, sotto il trentaseiesimo giro, e vale parola per parola.
+2. ⚠️ **Gli e2e non si leggono senza il Catalogo** (`pnpm catalog:sync` prima di `pnpm build`, con
+   `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY` esportati a mano); lo stesso per
+   `pnpm build:static`. ⚠️ In locale si lanciano con `E2E_PORT=3100 pnpm test:e2e`.
+3. **La #185** resta valida, col suo testo ancora da correggere. ⚠️ **`package.json` dice ancora
+   `"name": "release-tracker"`**, da cambiare nella **#214**, che è quella che pubblica.
+4. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ In produzione il Rilevamento è
+   fermo dalla #215. ⚠️ **Credito basso: non spendere senza chiedere.**
