@@ -5,11 +5,12 @@ Sintesi con l'AI. Gira sul computer di chi la usa (`npx verdict-tracker`), con l
 Anthropic. Non si vende, non ha account: deciso il 2026-11-10, **ADR 0011**.
 Parla con l'utente **in italiano**.
 
-⚠️ **La conversione e' in corso**: Supabase e il login sono ancora nel repository, e dieci issue li
-smontano in quest'ordine: #210 → #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216.
+⚠️ **La conversione e' in corso**: Supabase e' ancora nel repository, e nove issue lo smontano in
+quest'ordine: #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216.
 Finche' una issue non e' chiusa, i comandi e lo schema qui sotto valgono come sono scritti.
 Il Piano non c'e' piu': la #209 e' chiusa il 2026-11-12, e `public.plans` e' cancellata anche in
-produzione.
+produzione. Il login non c'e' piu': la #210 e' chiusa il 2026-11-12, non ci sono account e lo
+Sviluppatore e' uno solo.
 ⚠️ **La produzione e' una vetrina statica** dalla #215: `pnpm build` resta l'app che si installa,
 `pnpm build:static` costruisce il sito che Vercel serve, e in produzione il Rilevamento e' fermo
 finche' la #211 e la #213 non lo portano in locale.
