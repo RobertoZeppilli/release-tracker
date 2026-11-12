@@ -15,9 +15,8 @@ import {
 } from "./supabase";
 
 const PERMISSION_DENIED = "42501";
-// The one rule the trigger of `follow_limits` still imposes, as PostgREST forwards it: the ten of
-// the Free Plan left with the Plan (issue #209, ADR 0011), and its own `FLIMT` leaves with the
-// trigger in the migration that follows this code.
+// The only rule the trigger imposes, as PostgREST forwards it: the ten of the Free Plan left with
+// the Plan and with its own `FLIMT` (issue #209, ADR 0011).
 const RETIRED = "FRTRD";
 // The three rules the trigger of `current_version` imposes.
 const MALFORMED = "FVMAL";
@@ -137,6 +136,59 @@ describe("a group of follows in one statement", () => {
     const { error } = await followAll([fourth, fifth]);
     expect(error?.code).toBe(RETIRED);
     expect(await followedByErin()).toBe(3);
+  });
+});
+
+// There is one level of service, so there is no number of Technologies a Developer may not pass
+// (issue #209, ADR 0011). Eleven is the proof, because ten was the wall: the Free Plan refused the
+// eleventh with 'FLIMT' until the trigger lost that half of its body.
+describe("more than ten follows", () => {
+  let catalog: Catalog;
+  let frank: Developer;
+  let grace: Developer;
+
+  beforeAll(async () => {
+    [catalog, frank, grace] = await Promise.all([
+      seedCatalog(11),
+      createDeveloper(),
+      createDeveloper(),
+    ]);
+  });
+
+  afterAll(async () => {
+    await Promise.all([deleteDeveloper(frank), deleteDeveloper(grace)]);
+    await catalog.remove();
+  });
+
+  async function countFollowedBy(userId: string) {
+    const { data, error } = await serviceClient()
+      .from("follows")
+      .select("user_id")
+      .eq("user_id", userId);
+    if (error) throw error;
+    return FollowRowsSchema.parse(data).length;
+  }
+
+  it("are written one at a time, with the eleventh like the first", async () => {
+    for (const technology_id of catalog.technologyIds) {
+      const { error } = await frank.client
+        .from("follows")
+        .insert({ user_id: frank.id, technology_id });
+      expect(error).toBeNull();
+    }
+    expect(await countFollowedBy(frank.id)).toBe(11);
+  });
+
+  // The group is one statement (issue #126), which is where the limit used to take the whole group
+  // down: the eleventh row raised, so the ten before it were taken back too.
+  it("are written as one group, in one statement", async () => {
+    const { error } = await grace.client
+      .from("follows")
+      .insert(
+        catalog.technologyIds.map((technology_id) => ({ user_id: grace.id, technology_id })),
+      );
+    expect(error).toBeNull();
+    expect(await countFollowedBy(grace.id)).toBe(11);
   });
 });
 

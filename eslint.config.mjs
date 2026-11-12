@@ -4,7 +4,7 @@ import nextTs from "eslint-config-next/typescript";
 import { noMessageKeyInClient } from "./eslint/no-message-key-in-client.mjs";
 import { noServerImportInClient } from "./eslint/no-server-import-in-client.mjs";
 
-const MODULES = "auth|catalog|releases|detection|summaries|dashboard|plans|i18n";
+const MODULES = "auth|catalog|releases|detection|summaries|dashboard|follows|i18n";
 
 // ADR 0006: a module is imported only through its domain index (`@/modules/x`), its UI index
 // (`@/modules/x/ui`) or, on the server, its server index (`@/modules/x/server`).
