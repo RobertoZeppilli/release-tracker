@@ -1,0 +1,6 @@
+{
+  "_": "Come gira Cletus. Il workflow nel repo bersaglio scarica questo file a ogni giro, quindi cambiare un numero qui vale subito ovunque, senza aprire una PR su ogni progetto.",
+  "modello": "claude-opus-5",
+  "turni": 400,
+  "strumenti": "Read,Edit,Write,Glob,Grep,Bash"
+}

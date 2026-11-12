@@ -40,6 +40,8 @@ describe("planMigrations", () => {
   });
 
   it("names every file it refuses, not just the first", () => {
-    expect(() => planMigrations([ONE, TWO, THREE], [THREE])).toThrow(/0001_initial_schema\.sql.*0002_second\.sql/s);
+    expect(() => planMigrations([ONE, TWO, THREE], [THREE])).toThrow(
+      /0001_initial_schema\.sql[\s\S]*0002_second\.sql/,
+    );
   });
 });
