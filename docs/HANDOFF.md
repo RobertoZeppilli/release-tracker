@@ -37,8 +37,11 @@ con una tabella di versione, e lo schema tradotto nel dialetto SQLite. **I 59 fi
 `supabase-js` non sono toccati**: sono la fetta dopo.
 
 Suite girate **sul runner**, con Supabase locale (serve ancora, finché il codice legge da lì):
-`lint` e `typecheck` puliti, `test` 782/782, `test:integration` 92/92, `build` e `i18n:client-keys`
-verdi. L'esito degli `e2e` sta nel corpo della PR.
+`lint` e `typecheck` puliti, `test` 785/785, `test:integration` 92/92, `build` e `i18n:client-keys`
+verdi, `test:e2e` 279 passati e 1 saltato (`slack-dialog`, che si salta da sé senza le credenziali
+Slack). ⚠️ **Ma due e2e del menu sono flaky**, e vengono dalla #210, non da questa PR: il clic
+arriva prima dell'idratazione, il retry le salva e in CI non si vedono. Il dettaglio in
+`AMBIENTE.md`.
 
 ### Le tre cose che il giro ha scoperto, e che nel codice non si vedono
 
@@ -58,9 +61,10 @@ verdi. L'esito degli `e2e` sta nel corpo della PR.
    i tre ruoli non hanno più una seconda risposta da dare (#210). `claim_pending_summaries` era un
    recinto che adesso è il lock di scrittura di SQLite. Ma **`enforce_current_version` è scomparso**:
    voleva una regex SemVer e un confronto fra array, e SQLite non ha né l'una né l'altro. **Finché
-   la fetta dopo non lo rimette nella funzione di scrittura dei `follows`, la Versione in uso la
-   controlla solo l'interfaccia.** Lo schema tiene solo il vincolo che sa dire: le due colonne vere
-   o nulle insieme.
+   la fetta dopo non lo rimette nella funzione di scrittura dei `follows`, nessuno controlla che la
+   Versione in uso non sia più nuova dell'ultima Release stabile.** Lo schema tiene i due vincoli
+   che sa dire: le due colonne vere o nulle insieme, e la forma che `glob` sa descrivere, più larga
+   di `is_semver` ma abbastanza da rifiutare `not-a-version` e `16.x`.
 
 ⚠️ **Il runner ha Node 22, e `node:sqlite` c'è ma stampa `ExperimentalWarning`**: la issue dice
 Node 24. Tutto gira, ma in `package.json` non c'è nessun `engines` che lo imponga — da decidere
