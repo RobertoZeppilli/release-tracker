@@ -16,6 +16,11 @@ const staticSite = process.env.NEXT_PUBLIC_STATIC_SITE === "1";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // The migrations are `.sql` files read from the disk at startup (issue #211), and nothing imports
+  // them, so the trace that decides what ships with a build would leave them behind: the app would
+  // start on an installed copy and find no schema. Traced against every route because the one that
+  // opens the data file is not decided yet.
+  outputFileTracingIncludes: { "/**/*": ["./src/modules/db/migrations/**/*.sql"] },
   // ⚠️ No `remotePatterns`: the one remote image this app ever loaded was the GitHub picture in the
   // account button, and the account left with the login (issue #210, ADR 0011). Every image the
   // product draws now comes from the repository itself, so nothing has to be allowed in.

@@ -30,67 +30,71 @@ stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.
 
 ## Stato
 
-**Da dove ripartire (trentasettesimo giro, 2026-11-12): la #210 è finita e verde, e la PR #235 è
-pronta da guardare.** Branch `210-via-il-login`, non più in bozza. Il giro prima si era fermato a
-metà per il limite d'uso, con `integration` rosso; questo giro ha fatto passare tutto e ha girato le
-suite **sul runner**, con Supabase locale, Catalogo sincronizzato e build di produzione: `lint` e
-`typecheck` puliti, `test` 755/755, `test:integration` 92/92, `test:e2e` 281 passati e 1 saltato
-(`slack-dialog`, che si salta da sé senza le credenziali Slack), `build` e `i18n:client-keys` verdi.
+**Da dove ripartire (trentottesimo giro, 2026-11-12): la prima fetta della #211 è finita e verde, e
+la PR è pronta da guardare.** Branch `211-sqlite-fondamenta`, che il giro prima si era fermato a
+metà. Dentro c'è `src/modules/db`: dove vive il file dei dati, il runner che applica le migrazioni
+con una tabella di versione, e lo schema tradotto nel dialetto SQLite. **I 59 file che leggono via
+`supabase-js` non sono toccati**: sono la fetta dopo.
 
-⚠️ **I check della CI su quei commit sono in `action_required`**: i workflow aperti da
-`github-actions` aspettano la tua approvazione, quindi sulla PR non si sono ancora riaccesi. Vanno
-approvati prima del merge — l'output nel corpo della PR è il mio, non il loro.
+Suite girate **sul runner**, con Supabase locale (serve ancora, finché il codice legge da lì):
+`lint` e `typecheck` puliti, `test` 785/785, `test:integration` 92/92, `build` e `i18n:client-keys`
+verdi, `test:e2e` 279 passati e 1 saltato (`slack-dialog`, che si salta da sé senza le credenziali
+Slack). ⚠️ **Ma due e2e del menu sono flaky**, e vengono dalla #210, non da questa PR: il clic
+arriva prima dell'idratazione, il retry le salva e in CI non si vedono. Il dettaglio in
+`AMBIENTE.md`.
 
-### Le quattro cose rotte che il giro ha trovato, e che nel codice non si vedevano
+### Le tre cose che il giro ha scoperto, e che nel codice non si vedono
 
-1. **`a11y.spec.ts` aveva due test «the settings page»**: Playwright si ferma in **fase di
-   raccolta** su un titolo duplicato, quindi non girava *niente*, non solo quel file. Quello di
-   troppo era il vecchio test dell'account rinominato.
-2. ⚠️ **Gli e2e adesso vogliono un worker solo** (`playwright.config.ts`, `workers: 1`). Follows e
-   Notifications appartenevano a uno Sviluppatore e ogni file ne seminava uno suo: era **quello** a
-   isolare due file in parallelo. Ora le righe sono una tabella sola e il numero sulla campanella le
-   conta tutte, quindi due file insieme si cancellano le righe a vicenda. Restringere i `clear` alla
-   Tecnologia del test non basta: il conteggio resta globale. Misurato: 2,9 minuti in serie, **gli
-   stessi** di prima in parallelo — il tempo se ne va ad aspettare le pagine.
-3. ⚠️ **Con la tendina delle Notifiche aperta, axe misura quello che resta scoperto.** Il link di
-   versione della prima riga finisce sotto il pannello e ne restano 4px su 50: `target-size`,
-   `serious`. Si vedeva solo in spagnolo perché il verdetto tradotto è più alto e spinge la riga
-   proprio lì. La seconda scansione di quel test ora guarda `#notification-panel`, che è quello che
-   deve auditare; la pagina intera la guarda il passaggio prima che il pannello si apra.
-4. **Il menu del telefono non tornava indietro**: pannello e bottone sono `sm:hidden`, sopra i 640px
-   sparivano tutti e due con `open` ancora vero, e lo scorrimento del `body` restava bloccato senza
-   niente da premere. Basta girare il telefono. Corretto, con un e2e in `navigation.spec.ts`.
+1. ⚠️ **`MIGRATIONS_DIRECTORY` non è provata dopo il bundle.** La trova con `import.meta.url`, che
+   regge finché il modulo si legge come sorgente — i test, `tsx`, `next dev` — ma in una build
+   quel file diventa un chunk sotto `.next/` e `../migrations/` punta altrove.
+   `outputFileTracingIncludes` in `next.config.ts` è **metà** della risposta: spedisce i `.sql`, non
+   dice dove il modulo andrà a cercarli. **Nessuna rotta apre ancora il database**, quindi non c'è
+   niente su cui provarlo: la prima che lo farà deve verificarlo per prima cosa.
+2. ⚠️ **Lo schema è un file solo, non diciotto tradotte una per una**, e il commento in testa a
+   `0001_initial_schema.sql` dice perché: nessun database SQLite di quest'app esiste ancora, quindi
+   non c'è niente da portare avanti, e replicare la storia vorrebbe dire tradurre dei `drop column`
+   su colonne che nessuno ha mai creato, in un dialetto che non sa togliere una colonna con un
+   vincolo sopra. Il meccanismo resta: file numerati, `schema_migrations`, e sono i file **dopo**
+   questo a portare righe vere.
+3. ⚠️ **Tre cose di Postgres non sono passate, e una è una regola senza casa.** RLS, policy, grant e
+   i tre ruoli non hanno più una seconda risposta da dare (#210). `claim_pending_summaries` era un
+   recinto che adesso è il lock di scrittura di SQLite. Ma **`enforce_current_version` è scomparso**:
+   voleva una regex SemVer e un confronto fra array, e SQLite non ha né l'una né l'altro. **Finché
+   la fetta dopo non lo rimette nella funzione di scrittura dei `follows`, nessuno controlla che la
+   Versione in uso non sia più nuova dell'ultima Release stabile.** Lo schema tiene i due vincoli
+   che sa dire: le due colonne vere o nulle insieme, e la forma che `glob` sa descrivere, più larga
+   di `is_semver` ma abbastanza da rifiutare `not-a-version` e `16.x`.
 
 ### La prossima mossa
 
-**La #211, SQLite al posto di Supabase**, dopo il merge della #235: prossima della catena dell'ADR
-0011 e la più grossa (59 file leggono i dati con `supabase-js`). Poi #212 → #213 → #217 → #214 →
-#218 → #221 → #222 → #216, con la **#222** `ready-for-human` e una porta a senso unico.
+**La seconda fetta della #211**: lo strato di lettura e scrittura che sostituisce `supabase-js`,
+tabella per tabella, con dentro la regola della Versione in uso. È il pezzo grosso, ed è quello che
+sblocca i tre criteri di accettazione ancora aperti — niente import di `@supabase/*`,
+`test:integration` senza servizi esterni, i comandi verdi senza Docker. Poi lo script che esporta la
+produzione nel file iniziale (**le Sintesi sono già pagate e non si ricomprano**), e infine via la
+cartella `supabase/` e `deploy-database.yml`. Dopo la #211: #212 → #213 → #217 → #214 → #218 →
+#221 → #222 → #216, con la **#222** `ready-for-human` e una porta a senso unico.
 
-⚠️ **Prima serve una decisione tua**: i cinque documenti parlano ancora di account — `terms` nomina
-l'accesso con GitHub, `privacy` e `faq` spiegano come si cancella l'account, `contact` dice che è un
-bottone. Il nome ha smesso di essere un link (puntava a `/account`, 404 anche nell'app installata),
-ma il testo è prosa in cinque lingue, legale due volte su cinque, e **nessuna issue aperta la
-copre**: la #221 è la landing, la #216 i contributi. Serve una issue sua, e il testo lo decidi tu.
-
-### Le due deviazioni dalla issue #210, da confermare al merge
-
-1. **La migrazione sta nella stessa PR del codice.** La CI applica le migrazioni da zero e **poi**
-   gira `integration` ed `e2e` sullo stesso commit: *smettere di usare* una tabella è sicuro in
-   entrambi gli ordini (#219, #209), *togliere la colonna che ogni scrittura porta* non lo è.
-2. **`E2E_AUTH_SECRET` resta**: non è il login, è la guardia di `/api/test/revalidate` e
-   `/test/throw`. ⚠️ Rinominarla costa una riga di `ci.yml`, e **il token di Cletus non può toccare i
-   workflow**: provato, respinto dal remoto.
+⚠️ **I quattro file che il workflow scarica nella radice** — `REGOLE-CLETUS.md`, `REGOLE-STACK.md`,
+`giro-configurazione.json`, `giro-prompt.md` — erano finiti in un commit di questo branch. Tolti, e
+messi in `.gitignore` perché non tornino.
 
 ### Cosa resta a te
 
-1. ⚠️ **Quello che la migrazione apre in produzione fino alla #222**, e ⚠️ **le `add primary key`
-   che possono fermare il deploy** se ci sono follow di più account: il dettaglio è nel diario di
-   novembre, sotto il trentaseiesimo giro, e vale parola per parola.
-2. ⚠️ **Gli e2e non si leggono senza il Catalogo** (`pnpm catalog:sync` prima di `pnpm build`, con
-   `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY` esportati a mano); lo stesso per
-   `pnpm build:static`. ⚠️ In locale si lanciano con `E2E_PORT=3100 pnpm test:e2e`.
-3. **La #185** resta valida, col suo testo ancora da correggere. ⚠️ **`package.json` dice ancora
-   `"name": "release-tracker"`**, da cambiare nella **#214**, che è quella che pubblica.
-4. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ In produzione il Rilevamento è
+1. ⚠️ **La decisione sui cinque documenti, ancora da prendere**: `terms` nomina l'accesso con
+   GitHub, `privacy` e `faq` spiegano come si cancella l'account, `contact` dice che è un bottone.
+   È prosa in cinque lingue, legale due volte su cinque, e **nessuna issue aperta la copre**: la
+   #221 è la landing, la #216 i contributi. Serve una issue sua, e il testo lo decidi tu.
+2. ⚠️ **Quello che la migrazione della #210 ha aperto in produzione fino alla #222**: il dettaglio è
+   nel diario di novembre, sotto il trentaseiesimo giro, e vale parola per parola.
+3. ⚠️ **Le suite in locale vogliono un ordine preciso**, e girarle nell'altro verso dà due rossi che
+   non sono regressioni: l'`integration` dopo un `catalog:sync`, e gli e2e della sitemap senza
+   buttare `.next`. Il perché e l'ordine giusto stanno in `AMBIENTE.md`, spostati lì da questo giro.
+4. **Due cose per la #214**, che è quella che pubblica: ⚠️ `package.json` dice ancora
+   `"name": "release-tracker"`, e ⚠️ **non ha nessun `engines`**. La CI si salva da sé perché
+   `ci.yml` fissa `node-version: 24`, ma `node:sqlite` su Node 22 gira stampando
+   `ExperimentalWarning`, e chi installa l'app non legge `ci.yml`. **La #185** resta valida, col suo
+   testo ancora da correggere.
+5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ In produzione il Rilevamento è
    fermo dalla #215. ⚠️ **Credito basso: non spendere senza chiedere.**

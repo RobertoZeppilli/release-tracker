@@ -18,6 +18,10 @@ cosa era stata decisa.
 
 ### Novembre 2026 (`docs/handoff/2026-11.md`)
 
+- Il trentasettesimo giro: la #210 finita e verde, e le quattro cose rotte, 2026-11-12
+  - ⚠️ Un titolo di test duplicato ferma Playwright in fase di raccolta: non gira *niente*
+  - ⚠️ Gli e2e vogliono un worker solo (`workers: 1`): senza lo Sviluppatore il conteggio è globale
+  - ⚠️ Con la tendina delle Notifiche aperta axe misura quello che resta scoperto, non il pannello
 - Il trentaseiesimo giro: la #210 fatta, e la migrazione nella stessa PR, 2026-11-12
   - ⚠️ Quello che i grant per `anon` aprono in produzione fino alla #222, e le `add primary key`
     che possono fermare `deploy-database.yml` se esistono follow di più di un account

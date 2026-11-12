@@ -117,6 +117,35 @@ ventesimo giro, e sono state trovate dopo. Ora le due prove verificano la **form
 sul Catalogo che CI sincronizza: un percorso Release ha **due** segmenti sotto `/technologies`, e di
 quelli non ne esiste nessuno sotto `/it`, `/fr`, `/es`, `/de`.
 
+## ⚠️ L'ordine in cui si girano le suite in locale, che la CI tiene separando i lavori
+
+Spostato qui da `../HANDOFF.md` dal trentottesimo giro, 2026-11-12.
+
+- **Gli e2e non si leggono senza il Catalogo**: `pnpm catalog:sync` prima di `pnpm build`, con
+  `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY` esportati **a mano**, perché quello script non
+  legge `.env.local`. Lo stesso vale per `pnpm build:static`. In locale gli e2e si lanciano con
+  `E2E_PORT=3100 pnpm test:e2e`.
+- ⚠️ **Ma il Catalogo sincronizzato fa cadere l'`integration`**: `paged-reads` conta 1201 invece di
+  1200, perché conta tutto il database e non solo le righe che si è seminato. Non è una
+  regressione, è l'ordine sbagliato. Quello che funziona è quello della CI, due lavori separati:
+  `pnpm db:reset` e `pnpm test:integration` **prima**, `pnpm catalog:sync` e `pnpm build` e
+  `pnpm test:e2e` **dopo**.
+- ⚠️ **Dopo un `catalog:sync` va buttato `.next`.** La sitemap resta quella presa quando il Catalogo
+  era vuoto — la cache ISR sopravvive a una build nuova — e tre test se ne accorgono:
+  `seo.spec.ts:79` e le due di `locales.spec.ts` sulla sitemap. Con `rm -rf .next` passano.
+
+## ⚠️ Due e2e del menu sono flaky: il clic arriva prima dell'idratazione
+
+Visto dal trentottesimo giro, 2026-11-12, su una corsa completa sul runner.
+
+`navigation.spec.ts:137` ("at 390px the sections are in the menu") e `:192` ("the menu hands the
+keyboard its first line") non trovano `#menu-panel` dopo il clic sul bottone Menu, e cadono con
+`element(s) not found` dopo 5 secondi. **Passano al secondo tentativo**, quindi in CI il retry le
+nasconde e la check resta verde. Il bottone e' reso dal server ma il suo `onClick` esiste solo dopo
+l'idratazione: un clic che arriva prima non fa scattare `open`, e Playwright aspetta un pannello che
+non verra'. Vengono dalla #210 e sono gia' su `main`, non da una PR in volo. La correzione vera e'
+aspettare che il bottone sia idratato invece del solo `toBeVisible`.
+
 ## Preferenze dell'utente
 
 - Vuole consigli motivati con una raccomandazione; approva spesso le raccomandazioni.
