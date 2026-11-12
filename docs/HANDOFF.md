@@ -66,10 +66,6 @@ arriva prima dell'idratazione, il retry le salva e in CI non si vedono. Il detta
    che sa dire: le due colonne vere o nulle insieme, e la forma che `glob` sa descrivere, più larga
    di `is_semver` ma abbastanza da rifiutare `not-a-version` e `16.x`.
 
-⚠️ **Il runner ha Node 22, e `node:sqlite` c'è ma stampa `ExperimentalWarning`**: la issue dice
-Node 24. Tutto gira, ma in `package.json` non c'è nessun `engines` che lo imponga — da decidere
-nella **#214**, che è quella che pubblica.
-
 ### La prossima mossa
 
 **La seconda fetta della #211**: lo strato di lettura e scrittura che sostituisce `supabase-js`,
@@ -95,7 +91,9 @@ messi in `.gitignore` perché non tornino.
 3. ⚠️ **Le suite in locale vogliono un ordine preciso**, e girarle nell'altro verso dà due rossi che
    non sono regressioni: l'`integration` dopo un `catalog:sync`, e gli e2e della sitemap senza
    buttare `.next`. Il perché e l'ordine giusto stanno in `AMBIENTE.md`, spostati lì da questo giro.
-4. **La #185** resta valida, col suo testo ancora da correggere. ⚠️ **`package.json` dice ancora
-   `"name": "release-tracker"`**, da cambiare nella **#214**.
+4. **Due cose per la #214**, che è quella che pubblica: ⚠️ `package.json` dice ancora
+   `"name": "release-tracker"`, e ⚠️ **il runner ha Node 22, dove `node:sqlite` c'è ma stampa
+   `ExperimentalWarning`** mentre la #211 dice Node 24 — tutto gira, ma nessun `engines` lo impone.
+   **La #185** resta valida, col suo testo ancora da correggere.
 5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ In produzione il Rilevamento è
    fermo dalla #215. ⚠️ **Credito basso: non spendere senza chiedere.**
