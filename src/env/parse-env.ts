@@ -20,12 +20,15 @@ const ServerEnvSchema = z.object({
   CRON_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(32).optional()),
   // Raises GitHub's limit from 60 requests an hour; the Detection reads notes only for new Releases.
   GITHUB_TOKEN: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional()),
-  // Only for the end-to-end tests: it is what /api/test/revalidate asks for before it forgets a
-  // render. Never set in production, where the route answers 404.
-  // ⚠️ It was `E2E_AUTH_SECRET` until issue #210, and the name was the whole of what tied it to the
-  // login: the route it guards has nothing to do with signing in, and a guard is not something to
-  // drop along with the thing that was named after it.
-  E2E_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(32).optional()),
+  // Only for the end-to-end tests: it is what /api/test/revalidate and /test/throw ask for before
+  // they answer at all. Never set in production, where both are a 404.
+  // ⚠️ **It stays, and it keeps its name**, although issue #210 lists it with the three variables
+  // of the login. The three were the login; this one only shared its prefix, and what it guards --
+  // dropping a cached render, and a page that throws on purpose -- has nothing to do with signing
+  // in. Removing it would not remove a login, it would remove a guard and leave two test-only
+  // routes answering in production. Renaming it to `E2E_SECRET` would be right and costs one line
+  // in `.github/workflows/ci.yml`, which is a file this branch may not touch.
+  E2E_AUTH_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(32).optional()),
   // The Slack app behind "Add to Slack" (#188), which Verdict owns: the client ID travels in the
   // open in the consent URL, the secret never leaves the server and also signs the `state`. Both
   // unset is the normal state in development, where the round cannot run at all: Slack demands an

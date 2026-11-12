@@ -227,16 +227,16 @@ export async function retireTechnology(technologyId: string): Promise<void> {
 }
 
 // The app reads the secret from .env.local, which the Playwright process does not load.
-export function e2eSecret(): string {
-  const fromEnv = process.env.E2E_SECRET;
+export function e2eAuthSecret(): string {
+  const fromEnv = process.env.E2E_AUTH_SECRET;
   if (fromEnv) return fromEnv;
   // Playwright runs from the repository root.
   const file = readFileSync(resolve(process.cwd(), ".env.local"), "utf8");
   for (const line of file.split("\n")) {
     const [name, ...rest] = line.trim().split("=");
-    if (name === "E2E_SECRET" && rest.length > 0) return rest.join("=");
+    if (name === "E2E_AUTH_SECRET" && rest.length > 0) return rest.join("=");
   }
-  throw new Error("E2E_SECRET is not set: add it to .env.local (see .env.example).");
+  throw new Error("E2E_AUTH_SECRET is not set: add it to .env.local (see .env.example).");
 }
 
 // ⚠️ **The page has arrived, as opposed to the wait for it.** `/dashboard` and `/technologies` sit
@@ -260,7 +260,7 @@ export async function arrived(page: Page): Promise<void> {
 // not one path, so one call reaches every slug in every language.
 export async function forgetRender(page: Page, route: string): Promise<void> {
   const response = await page.request.post("/api/test/revalidate", {
-    data: { secret: e2eSecret(), route },
+    data: { secret: e2eAuthSecret(), route },
   });
   expect(response.status(), "the test-only revalidation route answered").toBe(204);
 }
