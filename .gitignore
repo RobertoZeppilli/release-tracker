@@ -31,3 +31,10 @@ next-env.d.ts
 
 # Screenshot incollati in chat: non appartengono al repository.
 docs/Cattura.JPG
+
+# Le istruzioni che `.github/workflows/cletus.yml` scarica nella radice a ogni giro: vivono nel
+# repository Cletus, qui sono una copia usa e getta e in un commit non ci vanno.
+/REGOLE-CLETUS.md
+/REGOLE-STACK.md
+/giro-configurazione.json
+/giro-prompt.md
