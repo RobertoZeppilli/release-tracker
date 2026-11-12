@@ -79,8 +79,15 @@ async function useTheme(page: Page, theme: Theme): Promise<void> {
   await page.addInitScript((value) => window.localStorage.setItem("theme", value), theme);
 }
 
-async function scan(page: Page, theme: Theme): Promise<void> {
-  const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+// `within` narrows the scan to one region, and the only thing it is for is a panel that hangs over
+// the page: axe measures a target by the part of it that is still visible, so a link the open panel
+// covers is a 4px target for as long as the panel is up. That is the dropdown's doing and not the
+// row's, it depends on how tall the translated sentence above the list happens to be, and the page
+// under the panel is scanned whole anyway in the pass before the panel is opened.
+async function scan(page: Page, theme: Theme, within?: string): Promise<void> {
+  const builder = new AxeBuilder({ page }).withTags(TAGS);
+  if (within) builder.include(within);
+  const { violations } = await builder.analyze();
   const readable = violations.map((violation) => ({
     id: violation.id,
     impact: violation.impact,
@@ -308,7 +315,7 @@ for (const locale of ["it", "fr", "es", "de"] as const) {
 
       await page.locator('button[aria-controls="notification-panel"]').click();
       await expect(page.locator("#notification-panel")).toBeVisible();
-      await scan(page, "dark");
+      await scan(page, "dark", "#notification-panel");
     });
   });
 }

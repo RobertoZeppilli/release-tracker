@@ -40,7 +40,9 @@ test("under 640px the Follow sits below the header facts, not beside the Sources
   await page.goto("/technologies/vite");
 
   const sources = page.getByRole("list", { name: "Sources" });
-  const follow = page.getByRole("link", { name: "Follow Vite" });
+  // A button, not a link: with the login gone the header carries the Toggle itself, and the page it
+  // used to point at does not exist (issue #210).
+  const follow = page.getByRole("button", { name: "Follow Vite" });
   await expect(follow).toBeVisible();
 
   const facts = await sources.boundingBox();
