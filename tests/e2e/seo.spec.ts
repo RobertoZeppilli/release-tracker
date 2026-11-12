@@ -62,13 +62,13 @@ test("the canonical address of a Technology page drops the Upgrade Path query", 
   );
 });
 
-test("robots keeps the pages behind the login out and names the sitemap", async ({ request }) => {
+test("robots keeps the pages of the reader out and names the sitemap", async ({ request }) => {
   const body = await (await request.get("/robots.txt")).text();
 
   // The `$` matters: without it the rule would shut out every Technology page as well.
   expect(body).toContain("Disallow: /technologies$");
   expect(body).toContain("Disallow: /dashboard");
-  expect(body).toContain("Disallow: /login");
+  expect(body).toContain("Disallow: /settings");
   expect(body).toContain("Sitemap: http://localhost:3000/sitemap.xml");
 });
 

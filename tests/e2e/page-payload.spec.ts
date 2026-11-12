@@ -20,7 +20,7 @@ const SERVER_ONLY = [
 // A message a Client Component does ask for: the back-to-top control, which is `"use client"`.
 const CLIENT_SIDE = "Back to top";
 
-const PAGES = ["/", "/login"];
+const PAGES = ["/", "/faq"];
 
 for (const path of PAGES) {
   test(`${path} does not carry the messages only the server reads`, async ({ request }) => {

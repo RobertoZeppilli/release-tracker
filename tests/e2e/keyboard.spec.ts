@@ -1,10 +1,8 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
-  e2eAuthSecret,
+  clearFollows,
   followWritten,
-  type FixtureDeveloper,
   type FixtureTechnology,
-  seedDeveloper,
   seedTechnology,
 } from "./fixtures";
 
@@ -16,12 +14,10 @@ function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
 
-let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 
 test.beforeAll(async () => {
-  [developer, technology] = await Promise.all([
-    seedDeveloper(),
+  [technology] = await Promise.all([
     seedTechnology([
       {
         version: "2.0.0",
@@ -48,16 +44,10 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  await developer.clearFollows();
-  await Promise.all([developer.remove(), technology.remove()]);
+  await clearFollows();
+  await technology.remove();
 });
 
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 // Tab until the element has focus, the way a visitor without a pointer reaches it. A step that never
 // arrives is the failure: the element is out of the tab order, or behind something that traps it.
@@ -141,8 +131,7 @@ test("the invalid version is announced and its way out is on the keyboard path",
 });
 
 test("Following: the toggle is reached and flipped with the keyboard", async ({ page }) => {
-  await signIn(page);
-  await developer.clearFollows();
+  await clearFollows();
   await page.goto("/technologies");
 
   // The filter is the keyboard's way into a long list: it narrows to one row, and the toggle for
@@ -163,8 +152,7 @@ test("Following: the toggle is reached and flipped with the keyboard", async ({ 
 });
 
 test("Following from the Technology page, then on to the Dashboard", async ({ page }) => {
-  await signIn(page);
-  await developer.clearFollows();
+  await clearFollows();
   await page.goto(`/technologies/${technology.slug}`);
 
   const toggle = page.getByRole("button", { name: `Follow ${technology.name}` });

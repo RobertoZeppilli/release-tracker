@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { CARET_WIDTHS, fits } from "@/modules/summaries";
-import { addFollows, arrived, e2eAuthSecret, type FixtureDeveloper, type FixtureTechnology, seedDeveloper, seedTechnology } from "./fixtures";
+import { clearFollows, addFollows, arrived, type FixtureTechnology, seedTechnology } from "./fixtures";
 
 // The guard of issue #62: no page may be wider than the window. The overflow there came from the
 // release notes themselves, so it never showed up on hand-written fixtures and will come back on its
@@ -22,12 +22,10 @@ const SHORT_QUOTE = "The default export is gone.";
 const boundary = (length: number) => "The boundary line ".padEnd(length, "x").slice(0, length);
 const BOUNDARY_QUOTES = CARET_WIDTHS.map((width) => boundary(fits(width)));
 
-let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 
 test.beforeAll(async () => {
-  [developer, technology] = await Promise.all([
-    seedDeveloper(),
+  [technology] = await Promise.all([
     seedTechnology([
       {
         version: "3.0.0",
@@ -87,20 +85,14 @@ test.beforeAll(async () => {
       },
     ]),
   ]);
-  await addFollows(developer.id, [technology.id]);
+  await addFollows([technology.id]);
 });
 
 test.afterAll(async () => {
-  await developer.clearFollows();
-  await Promise.all([developer.remove(), technology.remove()]);
+  await clearFollows();
+  await technology.remove();
 });
 
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 // The page is measured whole, and the leaves that stick out are named: knowing a page overflows is
 // not enough to fix it, and the element that did it is what the measurement of issue #62 reported.
@@ -132,7 +124,7 @@ for (const width of WIDTHS) {
       // the one that would break a measure first (ADR 0008). `/de/terms` is here as well because
       // it is the page of German compounds: `Nutzungsbedingungen` and `Gewährleistung` are the
       // longest unbreakable words the product prints, and a document page is where they sit.
-      for (const path of ["/", "/it", "/de", "/de/terms", "/login", `/technologies/${technology.slug}`, `/technologies/${technology.slug}?from=2.0.0`]) {
+      for (const path of ["/", "/it", "/de", "/de/terms", "/faq", `/technologies/${technology.slug}`, `/technologies/${technology.slug}?from=2.0.0`]) {
         await page.goto(path);
         await expectNoOverflow(page, path);
       }
@@ -152,11 +144,10 @@ for (const width of WIDTHS) {
     });
 
     test("the signed-in pages stay inside the window", async ({ page }) => {
-      await signIn(page);
       // The German ones are measured beside the English: the Standing panel is 326px wide and its
       // verdict is one line by rule (DESIGN.md), so the language with the longest words is the one
       // that would push it out. `/de/settings` is the page the language itself is chosen on.
-      for (const path of ["/dashboard", "/technologies", "/account", "/settings", "/de/dashboard", "/de/technologies", "/de/account", "/de/settings"]) {
+      for (const path of ["/dashboard", "/technologies", "/settings", "/de/dashboard", "/de/technologies", "/de/settings"]) {
         await page.goto(path);
         await expectNoOverflow(page, path);
       }
@@ -195,7 +186,7 @@ test("the release notes keep scrolling for themselves", async ({ page }) => {
 // The bar is **one 56px row at every width**. It was three on every common phone once, 153px
 // measured at 375 and 390, then two: 56px plus a 40px strip holding the sections, with the Free
 // Plan's quota coming down to share that strip below 430px (issue #47, #119). The strip is gone,
-// because the sections moved into the account on a phone and took their 40px with them: 96px held
+// because the sections moved into the menu on a phone and took their 40px with them: 96px held
 // on a 667px screen was a seventh of it spent on furniture, and the quota is gone with the Plan
 // itself (issue #209). What the suite now guards is that the row they left behind holds the wordmark
 // and the actions without growing and without overflowing, down to 320px, which is the narrowest
@@ -204,9 +195,8 @@ test.describe("the top bar is one row on a phone", () => {
   const ONE_ROW = 56 + 1; // the rule under the bar belongs to the header too
 
   async function dashboardAt(page: Page, width: number): Promise<void> {
-    await signIn(page);
-    await developer.clearFollows();
-    await addFollows(developer.id, [technology.id]);
+    await clearFollows();
+    await addFollows([technology.id]);
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/dashboard");
     // Every assertion below measures a box, and a box is the one thing that is wrong while the wait

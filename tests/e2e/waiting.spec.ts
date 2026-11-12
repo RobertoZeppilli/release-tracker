@@ -67,7 +67,7 @@ test.describe("the skeleton", () => {
   });
 });
 
-test("the two pages behind the login have a wait, and the public ones do not", async ({ page }) => {
+test("the two pages of the app have a wait, and the public ones do not", async ({ page }) => {
   // The loading boundary belongs to the segment and to everything under it: this is what keeps the
   // public Technology and Release pages out of it, and their 404s answering 404.
   const response = await page.goto("/technologies/not-a-technology");

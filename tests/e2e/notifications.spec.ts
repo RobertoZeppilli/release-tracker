@@ -5,25 +5,20 @@ import {
   arrived,
   clearNotifications,
   countUnseen,
-  e2eAuthSecret,
-  type FixtureDeveloper,
   type FixtureTechnology,
   releaseIdFor,
-  seedDeveloper,
   seedTechnology,
 } from "./fixtures";
 
 // The bell and its panel (issue #170). The number is read in the browser, so every assertion here is
 // about what the bar shows **after** the session has arrived, never about the first paint.
 
-let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 let featured: string;
 let notable: string;
 
 test.beforeAll(async () => {
-  [developer, technology] = await Promise.all([
-    seedDeveloper(),
+  [technology] = await Promise.all([
     seedTechnology([
       { version: "1.0.0", significance: "notable", origin: "detected", status: "ready", notes: "# 1.0.0", actionRequired: false },
       { version: "2.0.0", significance: "featured", origin: "detected", status: "ready", notes: "# 2.0.0", actionRequired: true },
@@ -33,27 +28,20 @@ test.beforeAll(async () => {
     releaseIdFor(technology.id, "1.0.0"),
     releaseIdFor(technology.id, "2.0.0"),
   ]);
-  await addFollows(developer.id, [technology.id]);
+  await addFollows([technology.id]);
 });
 
 // ⚠️ The Notifications go first: `release_id` is a plain foreign key, so a Release with a
 // Notification pointing at it cannot be deleted, and `remove` deletes the Releases.
 test.afterAll(async () => {
-  await clearNotifications(developer.id);
+  await clearNotifications();
   await technology.remove();
-  await developer.remove();
 });
 
 test.afterEach(async () => {
-  await clearNotifications(developer.id);
+  await clearNotifications();
 });
 
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 // By what it controls and not by its name: the name is the thing under test and it is translated,
 // so a locator reading it would only work in English (ADR 0008).
@@ -62,9 +50,8 @@ function bell(page: Page) {
 }
 
 test("the number is in the bell's own name, and the panel names the Technology and the Version", async ({ page }) => {
-  await addNotification(developer.id, featured);
-  await addNotification(developer.id, notable, "notable_release");
-  await signIn(page);
+  await addNotification(featured);
+  await addNotification(notable, "notable_release");
   await page.goto("/dashboard");
   await arrived(page);
 
@@ -78,16 +65,15 @@ test("the number is in the bell's own name, and the panel names the Technology a
 });
 
 test("marking one as seen takes the number down without a reload, and it stays down", async ({ page }) => {
-  await addNotification(developer.id, featured);
-  await addNotification(developer.id, notable, "notable_release");
-  await signIn(page);
+  await addNotification(featured);
+  await addNotification(notable, "notable_release");
   await page.goto("/dashboard");
   await arrived(page);
   await bell(page).click();
 
   await page.getByRole("button", { name: `Mark ${technology.name} 2.0.0 as seen` }).click();
   await expect(bell(page)).toHaveAccessibleName("Notifications, 1 unseen");
-  await expect.poll(() => countUnseen(developer.id)).toBe(1);
+  await expect.poll(() => countUnseen()).toBe(1);
 
   await page.reload();
   await arrived(page);
@@ -95,20 +81,18 @@ test("marking one as seen takes the number down without a reload, and it stays d
 });
 
 test("marking everything as seen clears the number and the database with it", async ({ page }) => {
-  await addNotification(developer.id, featured);
-  await addNotification(developer.id, notable, "notable_release");
-  await signIn(page);
+  await addNotification(featured);
+  await addNotification(notable, "notable_release");
   await page.goto("/dashboard");
   await arrived(page);
   await bell(page).click();
 
   await page.getByRole("button", { name: "mark all as seen" }).click();
   await expect(bell(page)).toHaveAccessibleName("Notifications, none unseen");
-  await expect.poll(() => countUnseen(developer.id)).toBe(0);
+  await expect.poll(() => countUnseen()).toBe(0);
 });
 
 test("says what an empty bell means instead of opening on nothing", async ({ page }) => {
-  await signIn(page);
   await page.goto("/dashboard");
   await arrived(page);
 
@@ -118,8 +102,7 @@ test("says what an empty bell means instead of opening on nothing", async ({ pag
 });
 
 test("Escape closes the panel and gives the focus back to the bell", async ({ page }) => {
-  await addNotification(developer.id, featured);
-  await signIn(page);
+  await addNotification(featured);
   await page.goto("/dashboard");
   await arrived(page);
 
@@ -131,8 +114,7 @@ test("Escape closes the panel and gives the focus back to the bell", async ({ pa
 });
 
 test("the version in the panel opens the Release page", async ({ page }) => {
-  await addNotification(developer.id, featured);
-  await signIn(page);
+  await addNotification(featured);
   await page.goto("/dashboard");
   await arrived(page);
 
@@ -141,27 +123,24 @@ test("the version in the panel opens the Release page", async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`/technologies/${technology.slug}/2.0.0$`));
   // Reading the Release is seeing the Notification, so the number is already down when the page
   // lands: nothing else would make the bell disagree with the page the reader is on.
-  await expect.poll(() => countUnseen(developer.id)).toBe(0);
+  await expect.poll(() => countUnseen()).toBe(0);
 });
 
-test("a visitor has no bell, and nothing is asked for on their behalf", async ({ page }) => {
-  const asked: string[] = [];
-  page.on("request", (request) => {
-    if (request.url().includes("/notifications")) asked.push(request.url());
-  });
-
-  await page.goto("/en");
+// The bell belongs to the installed app, so the public landing has none: `/en` is a 308 to `/`,
+// which the showcase and the app both serve, and the bar there is the product's own.
+test("the bell is in the bar of the app, on every one of its pages", async ({ page }) => {
+  await page.goto("/technologies");
   await arrived(page);
-  // The session has to have arrived for the absence to mean anything: `sign in` is what says so.
-  await expect(page.locator("header").getByRole("link", { name: "sign in" })).toBeVisible();
-  await expect(bell(page)).toHaveCount(0);
-  expect(asked).toEqual([]);
+  await expect(bell(page)).toBeVisible();
+
+  await page.goto("/settings");
+  await arrived(page);
+  await expect(bell(page)).toBeVisible();
 });
 
 test("the bar holds one row at 320px in German, with the number in it", async ({ page }) => {
-  await addNotification(developer.id, featured);
-  await addNotification(developer.id, notable, "notable_release");
-  await signIn(page);
+  await addNotification(featured);
+  await addNotification(notable, "notable_release");
   await page.setViewportSize({ width: 320, height: 667 });
   await page.goto("/de/dashboard");
   await arrived(page);

@@ -1,18 +1,15 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
+  clearFollows,
   addFollows,
-  e2eAuthSecret,
   followWritten,
   forgetRender,
-  type FixtureDeveloper,
   type FixtureTechnology,
   retireTechnology,
-  seedDeveloper,
   seedTechnology,
   wired,
 } from "./fixtures";
 
-let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 // One retired Technology each, because retiring one is not undone, and a follow written after the
 // retirement is refused by the trigger: the order of the two cases is the opposite of each other.
@@ -23,8 +20,7 @@ test.beforeAll(async () => {
   const release = [
     { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false },
   ] as const;
-  [developer, technology, leaving, gone] = await Promise.all([
-    seedDeveloper(),
+  [technology, leaving, gone] = await Promise.all([
     seedTechnology([...release]),
     seedTechnology([...release]),
     seedTechnology([...release], { retired: true }),
@@ -33,20 +29,12 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await Promise.all([
-    developer.remove(),
     technology.remove(),
     leaving.remove(),
     gone.remove(),
   ]);
 });
 
-// page.request shares the browser context cookie jar, so the session lands in the browser.
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 function toggle(page: Page, action: "Follow" | "Unfollow", of: FixtureTechnology = technology): Locator {
   return page.getByRole("button", { name: `${action} ${of.name}`, exact: true });
@@ -56,34 +44,18 @@ function path(of: FixtureTechnology = technology): string {
   return `/technologies/${of.slug}`;
 }
 
-test.describe("a Visitor", () => {
-  test("is sent to the login by the Follow and comes back to the Technology", async ({ page }) => {
-    await page.goto(path());
-    const offer = page.getByRole("link", { name: `Follow ${technology.name}`, exact: true });
-    await expect(offer).toBeVisible();
-
-    await offer.click();
-    await expect(page).toHaveURL(`/login?next=${encodeURIComponent(path())}`);
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
-
-    // GitHub cannot be driven from here, so the session arrives the way the callback would leave it.
-    await signIn(page);
-    await page.reload();
-    await expect(page).toHaveURL(path());
-    await expect(toggle(page, "Follow")).toBeVisible();
-  });
-
-  test("is offered no Follow on a retired Technology", async ({ page }) => {
-    await page.goto(path(gone));
-    await expect(page.getByRole("note")).toContainText("no longer tracked");
-    await expect(page.getByRole("link", { name: /^Follow / })).toHaveCount(0);
-  });
+// The link that used to stand here for a Visitor is gone with the login (issue #210): whoever opens
+// their own copy gets the Toggle itself, and the only Technology with no control at all is one that
+// has left the Catalog.
+test("a retired Technology offers no Follow at all", async ({ page }) => {
+  await page.goto(path(gone));
+  await expect(page.getByRole("note")).toContainText("no longer tracked");
+  await expect(page.getByRole("button", { name: /^Follow / })).toHaveCount(0);
 });
 
-test.describe("a Developer", () => {
-  test.beforeEach(async ({ page }) => {
-    await developer.clearFollows();
-    await signIn(page);
+test.describe("the Follow of the Technology page", () => {
+  test.beforeEach(async () => {
+    await clearFollows();
   });
 
   test("follows from the Technology page, and the follow is still there after a reload", async ({ page }) => {
@@ -137,13 +109,13 @@ test.describe("a Developer", () => {
     expect(await border(toggle(page, "Unfollow")), "the on state").toBe(expected);
 
     await followWritten(toggle(page, "Unfollow"));
-    await developer.clearFollows();
+    await clearFollows();
     await page.reload();
     expect(await border(toggle(page, "Follow")), "the off state after a reload").toBe(expected);
   });
 
   test("can only unfollow a retired Technology, and the page says so", async ({ page }) => {
-    await addFollows(developer.id, [leaving.id]);
+    await addFollows([leaving.id]);
     await retireTechnology(leaving.id);
     // The retirement has to reach the page, which may hold a render from before it: see
     // `forgetRender()`.
@@ -171,9 +143,8 @@ test.describe("a Developer", () => {
 // as `Follow`, on a Technology this Developer already follows. The reserved box waits instead, so
 // nothing is stated before there is something true to state, and nothing moves when it arrives.
 test("the Follow says nothing while the follows are still on the way", async ({ page }) => {
-  await developer.clearFollows();
-  await addFollows(developer.id, [technology.id]);
-  await signIn(page);
+  await clearFollows();
+  await addFollows([technology.id]);
 
   let release = () => {};
   const held = new Promise<void>((done) => {
@@ -189,10 +160,6 @@ test("the Follow says nothing while the follows are still on the way", async ({ 
   });
 
   await page.goto(path());
-  // The query only starts once the browser knows who is looking, and the Account button in the bar
-  // is that moment: before it, the Toggle is waiting on the session instead and the test would be
-  // measuring the wrong wait.
-  await page.getByRole("button", { name: /^Account/ }).waitFor();
   await expect.poll(() => asked, { message: "the follows are read over the wire" }).toBe(true);
 
   // The control's place is kept, with neither state claimed.

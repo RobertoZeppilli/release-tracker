@@ -48,9 +48,9 @@ test("the path is there before anyone asks, starting from the last release of th
 });
 
 // Issue #113: the two controls and the facts they work on are one panel, and no fact of it is left
-// inside a sentence. A Visitor gets the path half of it and nothing else: declaring a Version in use
-// exists only behind the login, so the `in use` row is not there to be found.
-test("the panel carries the path and its facts, and the declaration only behind the login", async ({ page }) => {
+// inside a sentence. The `in use` row belongs to a Technology that is followed, and this fixture is
+// not: the row is not there to be found, and the path half of the panel is.
+test("the panel carries the path and its facts, and the declaration only when followed", async ({ page }) => {
   await page.goto(`/technologies/${technology.slug}`, { waitUntil: "networkidle" });
 
   const panel = page.getByRole("region", { name: "upgrade path" });

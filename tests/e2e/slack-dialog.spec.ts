@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { clearNotificationSettings, e2eAuthSecret, type FixtureDeveloper, seedDeveloper } from "./fixtures";
+import { clearNotificationSettings } from "./fixtures";
 
 // The dialog "Add to Slack" opens before leaving for Slack (#199), and the layout of production
 // around it: no field to paste a webhook into (#194).
@@ -15,22 +15,11 @@ import { clearNotificationSettings, e2eAuthSecret, type FixtureDeveloper, seedDe
 // slack.com is Slack's half of the round, proved by hand in production. A skipped test says so out
 // loud, which is the point: it is not a hole hidden behind a pass.
 
-let developer: FixtureDeveloper;
-
-test.beforeAll(async () => {
-  developer = await seedDeveloper();
-});
-
 test.afterAll(async () => {
-  await clearNotificationSettings(developer.id);
-  await developer.remove();
+  await clearNotificationSettings();
 });
 
 test("the dialog says what Slack will ask, and nothing else", async ({ page }) => {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
   await page.goto("/settings");
 
   const button = page.getByRole("link", { name: "Add to Slack" });

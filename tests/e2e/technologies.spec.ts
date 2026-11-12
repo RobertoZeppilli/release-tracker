@@ -1,18 +1,15 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
+  clearFollows,
   addFollows,
-  e2eAuthSecret,
   followWritten,
-  type FixtureDeveloper,
   type FixtureFillers,
   type FixtureTechnology,
   retireTechnology,
-  seedDeveloper,
   seedFillers,
   seedTechnology,
 } from "./fixtures";
 
-let developer: FixtureDeveloper;
 let technology: FixtureTechnology;
 // Its own Technology, because retiring one is not undone.
 let leaving: FixtureTechnology;
@@ -22,8 +19,7 @@ test.beforeAll(async () => {
   const release = [
     { version: "1.0.0", significance: "featured", origin: "imported", status: "ready", notes: "Notes.", actionRequired: false },
   ] as const;
-  [developer, technology, leaving, fillers] = await Promise.all([
-    seedDeveloper(),
+  [technology, leaving, fillers] = await Promise.all([
     seedTechnology([...release]),
     seedTechnology([...release]),
     seedFillers(3),
@@ -31,16 +27,9 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  await Promise.all([developer.remove(), technology.remove(), leaving.remove(), fillers.remove()]);
+  await Promise.all([technology.remove(), leaving.remove(), fillers.remove()]);
 });
 
-// page.request shares the browser context cookie jar, so the session lands in the browser.
-async function signIn(page: Page): Promise<void> {
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
-}
 
 function toggle(page: Page, action: "Follow" | "Unfollow"): Locator {
   return page.getByRole("button", { name: `${action} ${technology.name}`, exact: true });
@@ -78,9 +67,8 @@ function matches(page: Page): Locator {
   return page.locator("#matches");
 }
 
-test.beforeEach(async ({ page }) => {
-  await developer.clearFollows();
-  await signIn(page);
+test.beforeEach(async () => {
+  await clearFollows();
 });
 
 test("a Developer follows a Technology, and the follow is still there after a reload", async ({ page }) => {
@@ -170,7 +158,7 @@ test("the Catalog is grouped by Category, and a followed row leaves its group", 
 
   // A group loses the row the moment it is followed, and its count says so on the same tick the
   // panel's figure does.
-  await developer.clearFollows();
+  await clearFollows();
   await page.goto("/technologies");
   const before = await library.getByRole("heading").textContent();
   const total = Number(/\((\d+)\)/.exec(before ?? "")?.[1]);
@@ -178,7 +166,7 @@ test("the Catalog is grouped by Category, and a followed row leaves its group", 
   await toggle(page, "Follow").click();
   await expect(library.getByRole("heading")).toHaveText(`library (${total - 1})`);
   await expect(library.getByRole("link", { name: technology.name, exact: true })).toHaveCount(0);
-  await developer.clearFollows();
+await clearFollows();
 });
 
 test("a filter with no match in a group hides that group, and counts over the whole Catalog", async ({ page }) => {
@@ -295,7 +283,7 @@ test("a follow the database refuses puts the row back and says what to do", asyn
 });
 
 test("a retired Technology closes the stack, can only be let go, and the row says so", async ({ page }) => {
-  await addFollows(developer.id, [leaving.id]);
+  await addFollows([leaving.id]);
   await retireTechnology(leaving.id);
   await page.goto("/technologies");
 

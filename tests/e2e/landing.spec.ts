@@ -1,5 +1,4 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
-import { e2eAuthSecret, type FixtureDeveloper, seedDeveloper } from "./fixtures";
 
 // The landing argues by showing the work, so what is tested is that the work is on the page: the
 // proof over the fold, the four stages in the DOM rather than behind a tab, the four Significance
@@ -8,8 +7,7 @@ import { e2eAuthSecret, type FixtureDeveloper, seedDeveloper } from "./fixtures"
 const STAGES = ["source", "cite", "verdict", "help"];
 const WORDS = ["featured", "notable", "digest", "preview"];
 
-const ENTRY_VISITOR = "Sign in with GitHub";
-const ENTRY_DEVELOPER = "Go to your dashboard";
+const ENTRY = "Go to your dashboard";
 
 const carets = (page: Page) => page.locator(".caret-run");
 
@@ -19,15 +17,6 @@ declare global {
   }
 }
 
-let developer: FixtureDeveloper;
-
-test.beforeAll(async () => {
-  developer = await seedDeveloper();
-});
-
-test.afterAll(async () => {
-  await developer.remove();
-});
 
 // Every band arrived and every transition finished. An arrival moves an element 10px while it runs,
 // so a box read mid-arrival differs from the same box afterwards for a reason that has nothing to do
@@ -198,7 +187,7 @@ test("the four words of the Rilevanza are defined in words, under the id the app
   }
 });
 
-test("the two actions lead to a public release page and to the login, and nowhere else", async ({ page }) => {
+test("the two actions lead to a public release page and to the Dashboard, and nowhere else", async ({ page }) => {
   await page.goto("/");
   const main = page.getByRole("main");
 
@@ -206,10 +195,12 @@ test("the two actions lead to a public release page and to the login, and nowher
     "href",
     "/technologies/react/19.0.0",
   );
-  const signIn = main.getByRole("link", { name: ENTRY_VISITOR });
+  const entry = main.getByRole("link", { name: ENTRY });
   // Twice and no more: the first screen and the closing band (DESIGN.md, The Bench).
-  await expect(signIn).toHaveCount(2);
-  await expect(signIn.first()).toHaveAttribute("href", "/login?next=%2Fdashboard");
+  await expect(entry).toHaveCount(2);
+  for (const link of await entry.all()) {
+    await expect(link).toHaveAttribute("href", "/dashboard");
+  }
   await expect(main.getByRole("link", { name: /^browse all \d+ technologies$/ })).toHaveAttribute(
     "href",
     "/technologies",
@@ -228,31 +219,13 @@ test("the landing is in the index and in the sitemap, and the brand mark is the 
   expect(body).toContain("<loc>http://localhost:3000</loc>");
 });
 
-// Issue #140: the landing is a static document, so it cannot know who is reading it. The entry
-// action is the one element that learns, and what it owes the page is that learning it changes
-// nothing but its own words.
-//
-// The two faces are measured on two pages rather than across one load, because there is no moment
-// in between to measure: `onAuthStateChange` hands `useSession` the session out of the cookie, with
-// no request to wait for, so the face changes as hydration runs. Holding back `/auth/v1/user` was
-// tried and proves nothing, since nobody waits for it.
-test("with a session open both entry actions lead to the Dashboard, and the change moves nothing", async ({
-  browser,
-  page,
-}) => {
-  const visitor = await browser.newContext();
-  const visitorPage = await visitor.newPage();
-  await visitorPage.goto("/");
-  // Measured once the fonts have settled: a box read mid-swap differs from the same box afterwards
-  // for a reason that has nothing to do with the session.
-  await visitorPage.evaluate(() => document.fonts.ready);
-  await settled(visitorPage);
-  const offered = visitorPage.getByRole("main").getByRole("link", { name: ENTRY_VISITOR });
-  await expect(offered).toHaveCount(2);
-  const asVisitor = await boxesOf(offered);
-  await visitor.close();
-
-  // Watches the quoted line from before the document exists: a page rebuilt when the session lands
+// Issue #140: the landing is a static document, and its entry action used to be the one element
+// that learned who was reading, with two faces measured against each other so that the change moved
+// nothing. The login left in issue #210 and took the second face with it, so what is left to prove
+// is the half that was never about the session: the page is built once, and the quoted line over
+// the fold is the same node from the first paint to the last.
+test("the landing is built once: nothing over the fold is swapped after it arrives", async ({ page }) => {
+  // Watches the quoted line from before the document exists: a page rebuilt after the first paint
   // would put a different node in its place, and that is the trap of 2026-09-30.
   await page.addInitScript(() => {
     window.quoteSwaps = 0;
@@ -268,23 +241,14 @@ test("with a session open both entry actions lead to the Dashboard, and the chan
     requestAnimationFrame(tick);
   });
 
-  const response = await page.request.post("/api/test/session", {
-    data: { secret: e2eAuthSecret(), email: developer.email, password: developer.password },
-  });
-  expect(response.status()).toBe(204);
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
   await settled(page);
-  const main = page.getByRole("main");
 
-  const arrived = main.getByRole("link", { name: ENTRY_DEVELOPER });
-  await expect(arrived).toHaveCount(2);
-  await expect(main.getByRole("link", { name: ENTRY_VISITOR })).toHaveCount(0);
-  for (const link of await arrived.all()) {
-    await expect(link).toHaveAttribute("href", "/dashboard");
-  }
-
-  // Measured, not supposed: the same two boxes, in the same places, whoever is reading.
-  expect(await boxesOf(arrived)).toEqual(asVisitor);
+  const entry = page.getByRole("main").getByRole("link", { name: ENTRY });
+  await expect(entry).toHaveCount(2);
+  // Measured once the fonts have settled: a box read mid-swap differs from the same box afterwards
+  // for a reason that has nothing to do with the page.
+  expect((await boxesOf(entry)).length).toBe(2);
   expect(await page.evaluate(() => window.quoteSwaps)).toBe(0);
 });

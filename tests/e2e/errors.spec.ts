@@ -58,7 +58,7 @@ test("the 404 is no dead end, at 390px either", async ({ page }) => {
   await expect(page.getByRole("link", { name: "browse the catalog" })).toBeVisible();
 
   await page.getByRole("link", { name: "browse the catalog" }).click();
-  await expect(page).toHaveURL(`/login?next=${encodeURIComponent("/technologies")}`);
+  await expect(page).toHaveURL("/technologies");
 });
 
 test("a page that fails shows the error page, with a way to try again and no internal detail", async ({ page }) => {
