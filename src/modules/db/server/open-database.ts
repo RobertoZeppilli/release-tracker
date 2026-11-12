@@ -11,6 +11,12 @@ import { planMigrations } from "../domain/plan-migrations";
 
 export type Database = DatabaseSync;
 
+// ⚠️ Resolved from this file, so it holds while the module is read as source: the tests, a script
+// run with `tsx`, `next dev`. **It is not yet proved against a bundled build**, where this file
+// becomes a chunk under `.next/` and `import.meta.url` points there instead of at `src/`. Nothing in
+// the app opens the database yet, so there is nothing to prove it on; the first route that does must
+// check it, and `outputFileTracingIncludes` in `next.config.ts` is only half the answer -- it ships
+// the files, it does not say where this module will look for them.
 export const MIGRATIONS_DIRECTORY = fileURLToPath(new URL("../migrations/", import.meta.url));
 
 export type OpenOptions = {
@@ -71,7 +77,12 @@ function migrate(database: Database, directory: string): void {
         .run(name, new Date().toISOString());
       database.exec("commit");
     } catch (error) {
-      database.exec("rollback");
+      // A full disk, an I/O error or a lost lock roll the transaction back by themselves, and then
+      // `rollback` throws "no transaction is active" -- which would replace the sentence that says
+      // what actually went wrong with one about bookkeeping. The schema is already where it was.
+      try {
+        database.exec("rollback");
+      } catch {}
       throw new Error(`migration ${name} failed: ${error instanceof Error ? error.message : String(error)}`, {
         cause: error,
       });
