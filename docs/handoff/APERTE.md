@@ -3,6 +3,16 @@
 Spostato qui da `docs/HANDOFF.md` il 2026-10-10, parola per parola. Qui sta tutto quello che e' vivo
 ma non deciso, piu' i riferimenti di contesto che non sono stato.
 
+### Il Rilevamento fermo in produzione
+
+Spostato qui da `../HANDOFF.md` parola per parola il 2026-11-12, per tenere lo stato vivo sotto le
+100 righe: e' una condizione che dura finche' due issue non la chiudono, quindi non e' stato.
+
+⚠️ **In produzione il Rilevamento e' fermo.** Il cron giornaliero e' uscito da `vercel.json`, perche'
+`/api/jobs/detection` su un sito statico non esiste, e i dati della vetrina restano a quelli
+dell'ultimo deploy finche' la #211 e la #213 non lo portano in locale. E' l'ADR 0011, non una
+perdita.
+
 
 **Le due sezioni qui sotto non sono uno stato**: sono vive, e restano qui finché l'utente non le
 chiude. Sono nate il 2026-10-06, insieme allo stato del ritento dei transitori, che è stato spostato

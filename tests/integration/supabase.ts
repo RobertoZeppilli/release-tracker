@@ -95,7 +95,7 @@ export async function deleteContent({ technologyId, releaseId }: Content): Promi
 
 export type Catalog = { technologyIds: string[]; remove: () => Promise<void> };
 
-// Bare Technologies, enough to reach the Free limit: no Releases, no Sources, no Summaries.
+// Bare Technologies, as many as a test asks for: no Releases, no Sources, no Summaries.
 export async function seedCatalog(count: number): Promise<Catalog> {
   const db = serviceClient();
   const rows = Array.from({ length: count }, () => {

@@ -10,9 +10,6 @@
 -- e2e, so a migration that drops the table while the old code is still asserting against it turns
 -- two required checks red. Nothing reads the table in between -- production has been a static
 -- showcase since #215 and has no server to read with.
---
--- ⚠️ This file is parked outside `supabase/migrations/` so the CI does not apply it yet. Move it
--- there with a fresh timestamp, and delete this copy in the same commit.
 
 -- Without the Free branch, and without the advisory lock that went with it: the lock serialized the
 -- two sessions that could both count nine follows and both pass, and there is no count left to race
