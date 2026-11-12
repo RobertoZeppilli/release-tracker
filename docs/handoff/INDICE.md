@@ -18,6 +18,10 @@ cosa era stata decisa.
 
 ### Novembre 2026 (`docs/handoff/2026-11.md`)
 
+- Il trentacinquesimo giro: la #209 chiusa, e la porta a senso unico passata, 2026-11-12
+  - Le tre PR di workflow dopo il merge: `--max-turns` a 400, `allowed_bots`, il reusable di Cletus
+  - ⚠️ Il PAT non entra nello step dell'agente: il repo è pubblico, lì va `github.token`
+  - Le sette righe di `docs/DECISIONI.md` sull'accesso, e la sezione Account, spostate qui dalla #210
 - Il trentaquattresimo giro: la #209 finita, e la tabella del Piano che aspetta il merge, 2026-11-12
   - ⚠️ `deploy-database.yml` fa `supabase db push` a ogni push su `main`: il merge cancella in produzione
   - ⚠️ Gli e2e su un database resettato danno 13 falliti: è il Catalogo vuoto, serve `catalog:sync`

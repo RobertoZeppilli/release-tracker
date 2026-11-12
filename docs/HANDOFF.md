@@ -28,67 +28,73 @@ sposta parola per parola** in cima al file del suo mese, con un titolo `##` prop
 riga in `INDICE.md`. Niente riassunti: un riassunto è dove si perde la ragione per cui una cosa era
 stata decisa. Se questo file supera le 100 righe, **si sposta, non si taglia**.## Stato
 
-**Da dove ripartire (trentacinquesimo giro, 2026-11-12): la #209 è chiusa, e la porta a senso unico
-è passata.** La PR #231 è mergiata in `405c87a` e `deploy-database.yml` ha fatto il suo giro: su quel
-commit sono verdi sia `CI` sia `Deploy database`, quindi `public.plans`, il tipo `plan` e
-`notification_settings.external_trial_started_at` **non esistono più nel database di produzione**.
-Non c'è migrazione di ritorno, ed è quello che la issue chiedeva. La finestra in cui l'undicesimo
-Follow veniva rifiutato con un codice che il codice non conosceva più è chiusa anche lei.
+**Da dove ripartire (trentaseiesimo giro, 2026-11-12): la #210 è fatta e aspetta il merge nella PR
+#235.** Branch `210-via-il-login`. Non c'è più login: via `src/modules/auth`, `/login`, `/auth/*`,
+`/account`, `/api/test/session`, `use-session`, `pnpm dev:login`, `images.remotePatterns` e le cinque
+`account.*`; `20261112140000_drop_user_id.sql` toglie `user_id` da `follows` e dalle quattro
+`notification_*`, con le policy RLS e i grant per utente.
 
-Della #209 non resta niente: la #174 era già chiusa, e le uniche occorrenze di `plan` nel codice
-sono `planCatalogSync` e `plan-catalog-sync.ts` in `src/modules/catalog`, dove è il verbo
-*pianificare*. Rinominarlo tocca sei file per una parola che non parla di soldi.
+### ⚠️ La migrazione sta nella **stessa** PR del codice, al contrario della #219 e della #209
 
-### Le tre PR di workflow dopo il merge
+La issue chiedeva una PR a sé, e la casa lo aveva già fatto due volte (#223 → #224, #228 → #231). Il
+commento in testa a `20261112072500_drop_plans.sql` dice perché lì si poteva e qui no: la CI applica
+le migrazioni da zero e **poi** gira `integration` ed `e2e` su ogni PR, quindi le due metà non possono
+discordare sullo stesso commit. *Smettere di usare* una tabella è sicuro in entrambi gli ordini;
+*togliere la colonna che ogni scrittura porta* non lo è in nessuno dei due. **Se preferisci lo split,
+è da rifare a mano e una delle due check resta rossa.**
 
-Nessuna tocca il prodotto: sono tutte la macchina che fa lavorare Cletus.
+### ⚠️ Quello che la migrazione apre in produzione, fino alla #222
 
-1. **#230** (`654ceae`): `--max-turns` da 60 a 400 e `timeout-minutes` da 45 a 60. Il primo giro vero
-   era morto sui 60 turni con il lavoro fatto e niente consegnato.
-2. **#232** (`7811699`): `allowed_bots: 'github-actions'` in `claude-review`. Le PR di Cletus le apre
-   `github-actions`, e la protezione contro gli attori non umani tagliava fuori proprio quelle.
-3. **#233** (`6c1ee87`): il workflow qui scende a 64 righe e chiama
-   `RobertoZeppilli/Cletus/.github/workflows/cletus-lavora.yml@main`. Turni, minuti, modello e prompt
-   adesso si cambiano nel repo Cletus e valgono subito su ogni progetto. ⚠️ **Il PAT non entra più
-   nello step dell'agente**: lì va `${{ github.token }}`, perché questo repo è pubblico e il testo
-   delle issue lo scrive chiunque. `CLETUS_PAT` resta negli step prima e dopo, dove l'agente non
-   arriva; per avvisare a metà giro l'agente scrive `AVVISO.md` e lo spedisce il runner.
+Il browser parla con Postgres direttamente (`follows-store`, la campanella) e senza sessione è
+`anon`. I grant nuovi fanno funzionare la copia installata — **e lasciano anche chiunque abbia la
+chiave publishable, che viaggia in chiaro, leggere e scrivere quelle cinque tabelle sul progetto di
+produzione**. La vetrina non le legge dalla #215 e la #211 porta i dati su un file: è una ragione per
+non far aspettare la #222. Catalogo, Release, Note e Sintesi restano in sola lettura;
+`notification_secrets` e `notification_deliveries` restano chiuse due volte (RLS **e** grant).
 
-⚠️ **Le ultime due non sono verificate**: il prossimo giro di Cletus è la prova. Se il reusable
-workflow non parte, il motivo probabile è l'accesso di Cletus (privato) agli altri repo.
+### ⚠️ La migrazione non cancella niente, e può fermare il deploy
+
+Se in produzione esistono follow di più di un account, o più di una riga di impostazioni, le
+`add primary key` falliscono su chiave duplicata e `deploy-database.yml` diventa rosso: quale riga
+sopravvive non è una decisione da prendere in silenzio dentro una migrazione.
+
+### Cosa cambia nell'interfaccia
+
+Il pannello account della barra diventa **il menu del telefono**: sotto i 640px apre sezioni e
+`settings`, sopra non esiste e `settings` è una parola accanto alla campanella (chiavi nuove
+`shell.menu.open/close` in cinque lingue). La landing ha una faccia sola (`entryFace`) e
+`STATIC_SITE` è quello che resta del "non so chi legge" nei provider dei Follow.
+
+### Due cose che la issue chiedeva e che non ho fatto
+
+1. **`E2E_AUTH_SECRET` resta**, col suo nome: non è il login, è la guardia di
+   `/api/test/revalidate` e `/test/throw`, e toglierla le lascerebbe rispondere in produzione.
+   Rinominarla costa una riga di `.github/workflows/ci.yml`, e ⚠️ **il token di Cletus non può
+   toccare i workflow**: provato, respinto dal remoto (`refusing to allow a GitHub App…`).
+2. **La prosa di `/faq`, `/terms` e `/privacy` parla ancora di account**: è testo per persone, e la
+   #216 e la #221 ci passano sopra comunque.
 
 ### La prossima mossa
 
-**La #210, via il login**, aperta e `ready-for-agent`: la #209 che la bloccava è chiusa, quindi si
-può prendere. Poi #211 → #212 → #213 → #217 → #214 → #218 → #221 → #222 → #216, con la **#222** che
-è `ready-for-human` ed è una porta a senso unico.
-
-### Quattro rami da cancellare, e li cancelli tu
-
-Tutti mergiati, nessuno serve più:
-
-```
-git push origin --delete 209-migrazione-via-plans cletus/alza-i-tetti cletus/chiama-invece-di-copiare cletus/review-sulle-pr-del-bot
-git branch -D 209-filtro-deploy
-```
+**La #211, SQLite al posto di Supabase**, dopo il merge della #235: prossima della catena dell'ADR
+0011 e la più grossa (59 file leggono i dati con `supabase-js`). Poi #212 → #213 → #217 → #214 →
+#218 → #221 → #222 → #216, con la **#222** `ready-for-human` e una porta a senso unico.
 
 ### Cosa resta a te
 
 1. ⚠️ **Gli e2e non si leggono senza il Catalogo.** Su un database appena resettato la suite dà 13
-   falliti — pagine della Tecnologia, sitemap, spaziatura delle liste — e non è una regressione: è il
-   Catalogo vuoto. La CI fa `pnpm catalog:sync` **prima** di `pnpm build`, perché
-   `generateStaticParams` enumera le Tecnologie, e in locale va fatto uguale. ⚠️ `catalog:sync` legge
-   `process.env` diretto, senza `--env-file`: vuole `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY`
-   esportati a mano.
+   falliti — Tecnologia, sitemap, spaziatura delle liste — e non è una regressione: è il Catalogo
+   vuoto. La CI fa `pnpm catalog:sync` **prima** di `pnpm build`, e in locale va fatto uguale.
+   ⚠️ `catalog:sync` legge `process.env` diretto: vuole `NEXT_PUBLIC_SUPABASE_URL` e
+   `SUPABASE_SECRET_KEY` esportati a mano. ⚠️ Lo stesso per `pnpm build:static`: col Catalogo vuoto
+   `generateStaticParams` torna vuoto e `output: "export"` rifiuta la build.
 2. **La #185** resta valida: la pagina è statica, ma le 121 righe di prosa pesano uguale. ⚠️ Il suo
    testo va ancora corretto, e la misura che lo smentisce è nel diario di novembre.
-3. ⚠️ **`package.json` dice ancora `"name": "release-tracker"`**, e va cambiato nella **#214**, che
-   è quella che pubblica. ⚠️ `verdict-tracker` su npm era libero l'11 novembre e resta libero fino
-   al giorno in cui qualcuno lo pubblica: è una ragione per non far aspettare la #214.
-4. ⚠️ **Gli e2e si lanciano con `E2E_PORT=3100 pnpm test:e2e`** (sulla 3000 vive `ai-intake-agent`,
-   il perché in `AMBIENTE.md`); i falliti da carico passano rilanciati da soli.
-5. ⚠️ **In produzione il Rilevamento è fermo** dalla #215, e il perché sta in `APERTE.md`.
-6. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit e gli
-   header di sicurezza adesso **sono irrilevanti**.
-7. **Ambiente**: Supabase locale **acceso**, avviato con
+3. ⚠️ **`package.json` dice ancora `"name": "release-tracker"`**, da cambiare nella **#214**, che è
+   quella che pubblica; `verdict-tracker` su npm era libero l'11 novembre.
+4. ⚠️ **Gli e2e si lanciano con `E2E_PORT=3100 pnpm test:e2e`** (`AMBIENTE.md`); i falliti da carico
+   passano rilanciati da soli. ⚠️ **In produzione il Rilevamento è fermo** dalla #215 (`APERTE.md`).
+5. **Gli accertamenti di sempre**, in `APERTE.md` e `AMBIENTE.md`. ⚠️ I tre `curl` dell'audit sono
+   **irrilevanti**, e i due su `/api/test/session` e `/auth/dev-sign-in` non hanno più un indirizzo.
+6. **Ambiente**: Supabase locale **acceso**, avviato con
    `pnpm exec supabase start -x studio,inbucket`. ⚠️ **Credito basso: non spendere senza chiedere.**
