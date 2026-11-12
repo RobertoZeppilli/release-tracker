@@ -26,11 +26,12 @@ const FollowRowSchema = z.object({
 
 export type DashboardData = { followed: FollowedTechnology[]; releases: DashboardRelease[] };
 
-// One query for the whole page, read with the Developer's own client: RLS picks their follows, so
-// the query carries no `user_id`. Every Release comes back, not just the window: the compact row
-// needs the latest major however old, and the Weekly Digest of the next slice needs them all.
+// One query for the whole page, read with the browser's own client. The query names nobody because
+// there is nobody to name (issue #210, ADR 0011). Every Release comes back, not just the window:
+// the compact row needs the latest major however old, and the Weekly Digest of the next slice needs
+// them all.
 //
-// Unpaged because a Developer cannot follow more Technologies than the Catalog holds, which is sixty
+// Unpaged because nobody can follow more Technologies than the Catalog holds, which is sixty
 // (issue #190). ⚠️ The embedded Releases are a different matter: measured against the local
 // database, `max_rows` cuts an embedded list at a thousand **per parent row**, and an embedded list
 // cannot be paged. Today the busiest Technology has 245, so the day one passes a thousand this

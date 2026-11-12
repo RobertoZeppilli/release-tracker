@@ -10,10 +10,6 @@ export const page = {
     "Verdict verfolgt die Releases der Technologien in deinem Stack und gibt jeder ein einziges Urteil: ob sie etwas von dir verlangt, was bricht und wie man migriert, und jede Aussage zeigt auf die Zeile der Release Notes, aus der sie gelesen wurde.",
   "page.dashboard.title": "Dashboard",
   "page.technologies.title": "Technologien",
-  "page.account.title": "Account",
-  "page.login.title": "Anmelden",
-  "page.login.description":
-    "Melde dich mit GitHub an, um Technologien zu folgen und dein Dashboard zu sehen.",
   // The five document pages. The title says the word the foot calls the page by, not a synonym:
   // `Nutzungsbedingungen` is the long form of `bedingungen`, which the foot keeps short to fit its
   // column at 320px.

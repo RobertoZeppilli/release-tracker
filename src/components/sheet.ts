@@ -13,7 +13,7 @@ export function inside(panel: HTMLElement | null): HTMLElement[] {
   return items.filter((item) => item.getClientRects().length > 0);
 }
 
-// What the account panel and the Notification panel both are: a panel hanging from the bar above
+// What the menu panel and the Notification panel both are: a panel hanging from the bar above
 // 640px, a sheet over the whole screen below it. The behaviour is the same in both and it is the
 // half that is easy to get wrong, so it is written once rather than twice (WCAG 2.2 AA 2.4.11).
 //

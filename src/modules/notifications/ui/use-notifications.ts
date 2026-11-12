@@ -17,10 +17,10 @@ export type Notifications = Feed & {
   seeEverything: () => void;
 };
 
-// The bell's data, read in the browser (see `notifications-store`). Nothing is asked for while
-// `developerId` is null, which is both a visitor and the instant before the browser knows which of
-// the two it is talking to: a visitor has no Notifications and the request would be refused anyway.
-export function useNotifications(developerId: string | null): Notifications {
+// The bell's data, read in the browser (see `notifications-store`). It asks from the first render:
+// there is one person per installed copy (ADR 0011), so there is no session to wait for and no
+// state in which the request would be refused.
+export function useNotifications(): Notifications {
   const [feed, setFeed] = useState<Feed>(EMPTY_FEED);
   const [counted, setCounted] = useState(false);
   const [listed, setListed] = useState(false);
@@ -28,13 +28,7 @@ export function useNotifications(developerId: string | null): Notifications {
   // flag cannot be the state above, which is only true once the rows are there.
   const asked = useRef(false);
 
-  // ⚠️ Nothing here resets what a previous Developer's session had read, and nothing has to: the
-  // bell is rendered under `key={developerId}`, so another Developer is another instance of this
-  // hook rather than this one asked to forget. A reset written as `setState` in the effect below is
-  // also what the React Compiler lint refuses, and rightly: it is a cascading render for a state
-  // that a key expresses without one.
   useEffect(() => {
-    if (developerId === null) return;
     let active = true;
     void fetchUnseen()
       .then((unseen) => {
@@ -47,10 +41,10 @@ export function useNotifications(developerId: string | null): Notifications {
     return () => {
       active = false;
     };
-  }, [developerId]);
+  }, []);
 
   const open = useCallback(() => {
-    if (developerId === null || asked.current) return;
+    if (asked.current) return;
     asked.current = true;
     void fetchFeed()
       .then((items) => {
@@ -60,7 +54,7 @@ export function useNotifications(developerId: string | null): Notifications {
       .catch(() => {
         asked.current = false;
       });
-  }, [developerId]);
+  }, []);
 
   // The number falls before the database answers, because the press it answers is a press on a row
   // the reader is looking at. A refusal is not guessed at: the number is read again, so what the

@@ -1,5 +1,4 @@
 import type { MessageDictionary } from "../index";
-import { account } from "./account";
 import { attributions } from "./attributions";
 import { catalog } from "./catalog";
 import { contact } from "./contact";
@@ -23,7 +22,6 @@ import { summary } from "./summary";
 // test is the net, and this is the thing that catches it before the test runs.
 export const IT: MessageDictionary = {
   ...shell,
-  ...account,
   ...attributions,
   ...catalog,
   ...contact,

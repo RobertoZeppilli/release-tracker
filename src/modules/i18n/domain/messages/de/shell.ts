@@ -1,7 +1,7 @@
 import type { MessageDictionary } from "../index";
 
-// The frame, in German. `Dashboard` and `Account` stay as they are: they are the words a German
-// developer uses, and `Übersicht` and `Konto` would name things the reader does not call them.
+// The frame, in German. `Dashboard` stays as it is: it is the word a German developer uses, and
+// `Übersicht` would name something the reader does not call it.
 // `technologien` does translate, because the rule is that a glossary name reads with that
 // language's word inside a sentence (ADR 0008).
 // ⚠️ The navigation and the foot keep the lower case the design gives them in every language
@@ -14,15 +14,9 @@ export const shell = {
   "shell.sections": "Bereiche",
   "shell.nav.dashboard": "dashboard",
   "shell.nav.technologies": "technologien",
-  "shell.signIn": "anmelden",
-  "shell.signOut": "abmelden",
-  "shell.account": "account",
   "shell.settings": "einstellungen",
-  "shell.account.open": "Account",
-  "shell.account.openAs": "Account, angemeldet als {handle}",
-  // Not `Account schließen`: a button that closes a panel must not be read as the one that ends the
-  // account.
-  "shell.account.close": "Account-Panel schließen",
+  "shell.menu.open": "Menü",
+  "shell.menu.close": "Menü schließen",
   "shell.breadcrumb": "Pfadnavigation",
   "shell.backToTop": "Zurück nach oben",
   "shell.theme.toDark": "Zum dunklen Theme wechseln",

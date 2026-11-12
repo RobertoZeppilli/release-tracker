@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useState } from "react";
+import { STATIC_SITE } from "@/lib/static-site";
 import {
   type CurrentVersion,
   type Decline,
@@ -15,7 +16,7 @@ export type Follows = {
   // Whether the follows are in hand. A page that lets the query fetch them has none for a moment,
   // and `isFollowing` answers false for every Technology until it does: that is not knowing, and a
   // control that reads it must say so rather than state the wrong half (DESIGN.md, The Reserved
-  // Space Rule). Nobody signed in has nothing to know, so there the answer is in hand at once.
+  // Space Rule). On the showcase there is nothing to fetch, so the answer is in hand at once.
   known: boolean;
   count: number;
   isFollowing: (technologyId: string) => boolean;
@@ -43,16 +44,16 @@ const FollowsContext = createContext<Follows | null>(null);
 // Dashboard). On `/technologies` the server already knows them, so the cache starts full and the
 // page makes no request; the public Technology page (issue #19) lets the query fetch instead.
 //
-// `developerId` is null while nobody is signed in, or before the browser knows who is: the provider
-// is still there, with no follows and nothing to write. A page that wraps itself in it can then do so
-// once and for good, instead of growing the provider around its content the moment the session
-// arrives, which would take the content down and build it again.
+// ⚠️ **The showcase is the one place with nothing behind it**: it is files alone and has no database
+// to ask (issue #215), so there the provider holds no follows, asks for none and writes none. It is
+// still there, and still the same shape, which is what lets a page wrap itself in it once and for
+// good. Until issue #210 the same half-state meant "nobody is signed in, or the browser does not
+// know yet"; there is nobody to know now, so `STATIC_SITE` is all that is left of it -- and it is a
+// build constant, so the branch is settled before the browser sees it.
 export function FollowsProvider({
-  developerId,
   follows,
   children,
 }: {
-  developerId: string | null;
   follows?: readonly Follow[];
   children: React.ReactNode;
 }) {
@@ -66,14 +67,14 @@ export function FollowsProvider({
 
   return (
     <QueryClientProvider client={client}>
-      <FollowsScope developerId={developerId}>{children}</FollowsScope>
+      <FollowsScope>{children}</FollowsScope>
     </QueryClientProvider>
   );
 }
 
 // One mutation for the whole page, not one per row: the row that pressed and the row that shows the
 // refusal are two components, and a mutation of its own for each would keep the refusal to itself.
-function FollowsScope({ developerId, children }: { developerId: string | null; children: React.ReactNode }) {
+function FollowsScope({ children }: { children: React.ReactNode }) {
   const client = useQueryClient();
   // A tick and not a flag, because pressing the same row twice has to count twice: the row goes
   // back where it came from, and the focus is lost again on the way.
@@ -81,12 +82,12 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
   const { data: follows = [], isSuccess } = useQuery({
     queryKey: FOLLOWS_KEY,
     queryFn: fetchFollows,
-    enabled: developerId !== null,
+    enabled: !STATIC_SITE,
   });
 
   const mutation = useMutation({
     mutationFn: ({ technologyId, follow }: { technologyId: string; follow: boolean }) =>
-      writeFollow(developerId ?? "", technologyId, follow),
+      writeFollow(technologyId, follow),
     // The row answers before the database does; a refusal puts the follows back as they were.
     onMutate: async ({ technologyId, follow }) => {
       await client.cancelQueries({ queryKey: FOLLOWS_KEY });
@@ -106,7 +107,7 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
   // added at once and a refusal puts all of them back. Nothing is followed halfway on either side
   // of the wire, which is what the database already guarantees (see `writeFollows`).
   const group = useMutation({
-    mutationFn: (technologyIds: string[]) => writeFollows(developerId ?? "", technologyIds),
+    mutationFn: (technologyIds: string[]) => writeFollows(technologyIds),
     onMutate: async (technologyIds) => {
       await client.cancelQueries({ queryKey: FOLLOWS_KEY });
       const previous = client.getQueryData<Follow[]>(FOLLOWS_KEY) ?? [];
@@ -146,13 +147,13 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
   const following = new Map(follows.map((row) => [row.technologyId, row]));
 
   const value: Follows = {
-    known: developerId === null || isSuccess,
+    known: STATIC_SITE || isSuccess,
     count: following.size,
     isFollowing: (technologyId) => following.has(technologyId),
-    // Nothing is written for somebody the browser has not identified: no control that could ask for
-    // it is on the page, and a write would be refused anyway.
+    // Nothing is written on the showcase: no control that could ask for it is on the page there,
+    // and there is no database behind it to write to.
     toggle: (technologyId) => {
-      if (!developerId) return;
+      if (STATIC_SITE) return;
       setPress((previous) => ({ technologyId, tick: (previous?.tick ?? 0) + 1 }));
       mutation.mutate({ technologyId, follow: !following.has(technologyId) });
     },
@@ -160,13 +161,13 @@ function FollowsScope({ developerId, children }: { developerId: string | null; c
     pressedAt: (technologyId) => (press?.technologyId === technologyId ? press.tick : null),
     rejectionOn: (technologyId) => (technologyId === rejected ? rejection : null),
     followMany: (technologyIds) => {
-      if (developerId && technologyIds.length > 0) group.mutate(technologyIds);
+      if (!STATIC_SITE && technologyIds.length > 0) group.mutate(technologyIds);
     },
     followingMany: group.isPending,
     groupRejection: rejectionOf(group.error),
     currentVersionOf: (technologyId) => following.get(technologyId)?.currentVersion ?? null,
     declare: (technologyId, version) => {
-      if (developerId) declaration.mutate({ technologyId, version });
+      if (!STATIC_SITE) declaration.mutate({ technologyId, version });
     },
     isDeclaring: (technologyId) => declaration.isPending && declaration.variables?.technologyId === technologyId,
     declineOn: (technologyId) => (technologyId === declined ? decline : null),

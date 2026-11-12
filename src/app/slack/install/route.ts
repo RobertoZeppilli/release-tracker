@@ -1,16 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { slackApp } from "@/lib/slack-app";
-import { createRequestClient } from "@/lib/supabase-request";
 import { DEFAULT_LOCALE, localePath, localeSchema } from "@/modules/i18n";
 import { authorizeUrl, buildState } from "@/modules/notifications";
 import { slackStateSigner } from "@/modules/notifications/server";
 
-// The first half of "Add to Slack" (#188): it sends the Developer to Slack's consent screen, where
-// the channel is picked. Outside `[locale]` like the login routes, because it is a redirect and not
-// a page; the language travels in the `state` instead, so the return lands where the Developer left.
+// The first half of "Add to Slack" (#188): it sends the reader to Slack's consent screen, where the
+// channel is picked. Outside `[locale]` because it is a redirect and not a page; the language
+// travels in the `state` instead, so the return lands where it was left.
 //
-// GET and not POST although it is a button: it writes nothing. What binds the round to this
-// Developer is the signed `state`, read back in the callback, and not the method.
+// GET and not POST although it is a button: it writes nothing. What binds the round is the signed
+// `state`, read back in the callback, and not the method.
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const parsed = localeSchema.safeParse(request.nextUrl.searchParams.get("locale"));
   const locale = parsed.success ? parsed.data : DEFAULT_LOCALE;
@@ -21,12 +20,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // this is the answer to a URL typed by hand, and `/settings` still has the manual field.
   if (!app) return NextResponse.redirect(new URL(`${settings}?slack=unavailable`, request.nextUrl.origin));
 
-  const { data, error } = await (await createRequestClient()).auth.getUser();
-  if (error || !data.user) return NextResponse.redirect(new URL("/login?next=/settings", request.nextUrl.origin));
-
-  const state = buildState(
-    { userId: data.user.id, locale, now: new Date() },
-    slackStateSigner(app.clientSecret),
-  );
+  const state = buildState({ locale, now: new Date() }, slackStateSigner(app.clientSecret));
   return NextResponse.redirect(authorizeUrl({ clientId: app.clientId, redirectUri: app.redirectUri, state }));
 }

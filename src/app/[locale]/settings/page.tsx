@@ -2,14 +2,13 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { slackApp } from "@/lib/slack-app";
 import { createRequestClient } from "@/lib/supabase-request";
-import { requireAccount } from "@/modules/auth/server";
 import { currentLocale, getTranslator } from "@/modules/i18n/server";
 import { LocalePicker } from "@/modules/i18n/ui";
 import { slackOutcomeKey } from "@/modules/notifications";
 import { readNotificationSettings } from "@/modules/notifications/server";
 import { NotificationSettings, PreferredLocaleSection } from "@/modules/notifications/ui";
 
-// Behind the login and never indexed, so the whole of its metadata is the title in the page's own
+// Never indexed, so the whole of its metadata is the title in the page's own
 // language (ADR 0008). It reads `settings.title`, the key the heading below reads, and not a key of
 // its own in `page`: the tab and the heading of this page are one word, and two keys holding it
 // would be two places to translate it.
@@ -18,12 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("settings.title"), robots: { index: false } };
 }
 
-// What the reader changes about the app, as opposed to what the account *is*, which is `/account`.
-// It is a page and not a row of the account panel because every preference after the language lands
-// beside it here, while in the panel each one would make the panel taller; and the panel's height is
-// the reason the foot had to be rebuilt in two columns (`LocalePicker`, the foot variant).
-// ⚠️ Signed in only, like `/account`: the language itself is reachable from the foot of every public
-// page, so a visitor sent here would find a page of preferences they have nowhere to keep.
+// What the reader changes about the app. It is a page and not a row of the top bar's menu because
+// every preference after the language lands beside it here, while in a panel each one would make
+// the panel taller; and that panel's height is the reason the foot had to be rebuilt in two columns
+// (`LocalePicker`, the foot variant). The account page it used to sit beside is gone with the login
+// (issue #210, ADR 0011), and this is the one page left that belongs to the reader.
 // `?slack=` is what the two routes of "Add to Slack" leave in the address on the way back (#188);
 // reading it is also what makes this page say which channel it reached, since the hint below is read
 // from the database after the write.
@@ -32,11 +30,9 @@ export default async function SettingsPage({
 }: {
   searchParams: Promise<{ slack?: string | string[] }>;
 }) {
-  await requireAccount("/settings");
   const t = await getTranslator();
   const slack = (await searchParams).slack;
-  // Read here and handed down, so the section stays a component that is given what it draws. The
-  // Developer's own client: RLS is what keeps the two rows theirs (`readNotificationSettings`).
+  // Read here and handed down, so the section stays a component that is given what it draws.
   const settings = await readNotificationSettings(await createRequestClient());
 
   return (

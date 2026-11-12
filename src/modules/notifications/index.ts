@@ -8,7 +8,6 @@ export {
   releaseEventFor,
 } from "./domain/events";
 export {
-  type Follower,
   type PlannedNotification,
   planReleaseNotifications,
   type ReleaseCandidate,

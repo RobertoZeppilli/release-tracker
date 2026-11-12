@@ -9,21 +9,14 @@ import type { LocaleSaved, SwitchSaved } from "../domain/saving";
 import { writePreference, writePreferredLocale } from "./write-notification-settings";
 
 // ⚠️ **The first Server Actions in this project**, chosen with the user on 2026-10-23 and written
-// down in `docs/DECISIONI.md`. Everything else that writes from a page either writes from the
-// browser with the Developer's own session (`follows-store`, the bell) or posts a form to a route
-// handler (`/auth/delete-account`). A switch is neither: issue #171 asks for a save **from the
-// server**, and nine switches that each cost a redirect and a full page would be a page of settings
-// that blinks. An action is the one shape that keeps the write on the server and the page still.
+// down in `docs/DECISIONI.md`. Everything else that writes from a page writes from the browser
+// (`follows-store`, the bell). A switch is neither: issue #171 asks for a save **from the server**,
+// and nine switches that each cost a redirect and a full page would be a page of settings that
+// blinks. An action is the one shape that keeps the write on the server and the page still.
 //
-// What the route handler taught, and is kept here: the identity is read **on the server** from the
-// request cookies, never taken from the form, so the row written belongs to whoever is signed in;
-// and the form is validated here too, because a form can be posted without the page.
-//
-// The two preferences are written with the Developer's own client, not the service role: RLS is what
-// binds the row to them (`with check (user_id = auth.uid())`), so a crafted post cannot write a
-// preference for somebody else even though the id travels in the statement. The one exception was
-// the trial of the external channels, written with the service role since the audit of 2026-11-02;
-// it left with the Plan (issue #209), and every write on this page is the Developer's own again.
+// The form is still validated here, because a form can be posted without the page. What is no
+// longer validated is who is asking: there is nobody to be (issue #210, ADR 0011), so the action
+// reads no identity and the statement carries none.
 
 // ⚠️ The two controls are **handed** these actions as props by the server component that draws
 // them, rather than importing this file: a client component may not import a module's `server`
@@ -50,12 +43,8 @@ export async function savePreference(previous: SwitchSaved, form: FormData): Pro
     return { status: "failed", enabled: previous.enabled };
   }
 
-  const supabase = await createRequestClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return { status: "failed", enabled: previous.enabled };
-
   try {
-    await writePreference(supabase, data.user.id, parsed.data);
+    await writePreference(await createRequestClient(), parsed.data);
   } catch {
     // The reason is not shown to the reader: what they can do about it is press again, and the line
     // that says so is in the dictionary (`settings.notifications.error`). Nothing is logged here
@@ -69,12 +58,8 @@ export async function savePreferredLocale(previous: LocaleSaved, form: FormData)
   const parsed = localeSchema.safeParse(form.get("locale"));
   if (!parsed.success) return { status: "failed", locale: previous.locale };
 
-  const supabase = await createRequestClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return { status: "failed", locale: previous.locale };
-
   try {
-    await writePreferredLocale(supabase, data.user.id, parsed.data);
+    await writePreferredLocale(await createRequestClient(), parsed.data);
   } catch {
     return { status: "failed", locale: previous.locale };
   }

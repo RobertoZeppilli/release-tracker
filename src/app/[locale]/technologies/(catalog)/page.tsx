@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { BackToTop } from "@/components/back-to-top";
 import { SiteHeader } from "@/components/site-header";
 import { createRequestClient } from "@/lib/supabase-request";
-import { requireDeveloper } from "@/modules/auth/server";
 import { getTranslator } from "@/modules/i18n/server";
 import { splitPicker } from "@/modules/follows";
 import { listPickerTechnologies, readFollows } from "@/modules/follows/server";
@@ -19,14 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
 const SPLIT =
   "grid max-w-content items-start gap-7 min-[1041px]:grid-cols-[minmax(0,360px)_minmax(0,1fr)] min-[1041px]:gap-8";
 
-// The page is behind the login, so it is dynamic anyway: the columns are split on the server and
-// arrive already right, and the browser only writes follows from there on.
+// Dynamic: the columns are split on the server and arrive already right, and the browser only
+// writes follows from there on.
 //
 // The top bar carries **no quota here**: its quota is a link to this page, and the panel at the head
 // of the left column prints the same number 60px below it (DESIGN.md, Navigation).
 export default async function TechnologiesRoute() {
   const t = await getTranslator();
-  const developer = await requireDeveloper("/technologies");
   const db = await createRequestClient();
   const [technologies, follows] = await Promise.all([listPickerTechnologies(db), readFollows(db)]);
   const sections = splitPicker(
@@ -35,7 +33,7 @@ export default async function TechnologiesRoute() {
   );
 
   return (
-    <FollowsProvider developerId={developer.id} follows={follows}>
+    <FollowsProvider follows={follows}>
       <SiteHeader section="technologies" />
       <main id="content" className={`mx-auto px-4 pt-5 pb-8 sm:px-5 sm:pt-6 ${SPLIT}`}>
         <h1 className="sr-only">{t("page.technologies.title")}</h1>

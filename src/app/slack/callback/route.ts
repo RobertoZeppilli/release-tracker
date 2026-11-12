@@ -31,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!state) return back(origin, DEFAULT_LOCALE, "denied");
 
   // "Cancel" on the consent screen comes back with an `error` and no `code`, and it is not a failure
-  // of ours: the Developer changed their mind and the page says so plainly.
+  // of ours: the reader changed their mind and the page says so plainly.
   const code = searchParams.get("code");
   if (!code) return back(origin, state.locale, "cancelled");
 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // `hooks.slack.com/…4321` about itself, because nobody had told it where it went (#172, #188).
   const hint = channelHint(channel);
   try {
-    await writeSlackWebhook(createServiceClient(), state.userId, { url, hint });
+    await writeSlackWebhook(createServiceClient(), { url, hint });
   } catch (cause) {
     console.error("slack oauth: write failed", writeReason(cause));
     return back(origin, state.locale, "failed");

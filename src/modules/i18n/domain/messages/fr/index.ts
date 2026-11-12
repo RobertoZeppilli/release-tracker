@@ -1,5 +1,4 @@
 import type { MessageDictionary } from "../index";
-import { account } from "./account";
 import { attributions } from "./attributions";
 import { catalog } from "./catalog";
 import { contact } from "./contact";
@@ -24,7 +23,6 @@ import { terms } from "./terms";
 // ⚠️ Not reviewed by a native speaker, and to be reviewed before the launch (ADR 0008).
 export const FR: MessageDictionary = {
   ...shell,
-  ...account,
   ...attributions,
   ...catalog,
   ...contact,
