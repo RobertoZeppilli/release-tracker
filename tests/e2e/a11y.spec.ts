@@ -73,7 +73,6 @@ test.afterAll(async () => {
   await technology.remove();
 });
 
-
 // The theme is stored, and the init script reads it before the first paint: the same path a
 // returning Developer takes, so nothing has to be toggled after the page is up.
 async function useTheme(page: Page, theme: Theme): Promise<void> {
@@ -111,22 +110,15 @@ for (const theme of THEMES) {
       });
     }
 
-    // The preferences, which is the one page left that belongs to the reader rather than to the
-    // product: the account page it used to sit beside left with the login (issue #210).
-    test("the settings page", async ({ page }) => {
-      await page.goto("/settings");
-      await scan(page, theme);
-    });
-
     // The bell's panel, open, which is the one part of the bar that holds a list (issue #170). It is
-    // scanned on the Dashboard because the bell only exists for a signed-in Developer, and the rows
-    // in it carry the three things axe has to weigh here: a name on the button that says how many,
-    // a Significance shape with a word beside it, and a control per row that is not a bare glyph.
+    // scanned on the Dashboard because that is where the bar carries the bell, and the rows in it
+    // carry the three things axe has to weigh here: a name on the button that says how many, a
+    // Significance shape with a word beside it, and a control per row that is not a bare glyph.
     test("the notification panel, open", async ({ page }) => {
       // No follow is written: a Notification is a row of its own and the bell reads it directly, so
       // nothing here touches the follows the rest of this file shares. Cleared first because the two
-      // themes run this twice, and one Notification per Developer and per Release is what the unique
-      // index allows (ADR 0009).
+      // themes run this twice, and one Notification per Release is what the unique index allows
+      // (ADR 0009).
       await clearNotifications();
       await addNotification(await releaseIdFor(technology.id, "2.0.0"));
       await page.goto("/dashboard");
